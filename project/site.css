@@ -209,6 +209,7 @@ input,textarea,select { font-family: inherit; }
 .spec-cell:last-child { border-right: none; }
 .spec-cell b { display: block; font-size: 13px; font-weight: 700; color: var(--ink); }
 .spec-cell span { font-size: 9.5px; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.08em; }
+.sc-ic { display: none; width: 11px; height: 11px; flex: 0 0 11px; opacity: 0.45; }
 
 .crow { display: flex; align-items: center; justify-content: space-between; padding-top: 15px; border-top: 1px solid var(--border); }
 .cprice { font-size: 19px; font-weight: 800; color: var(--ink); }
@@ -389,6 +390,12 @@ input,textarea,select { font-family: inherit; }
   .kicker { margin-bottom:8px; }
   .sb-field { padding:10px 12px; }
   .stats-row { grid-template-columns:repeat(2,1fr) !important; }
+  /* car cards on index — show icons, 2×2 spec grid */
+  .sc-ic { display:block; }
+  .cars-grid .spec-row, .vitrine-track .spec-row { flex-wrap:wrap; border:none; border-radius:0; margin-bottom:10px; }
+  .cars-grid .spec-cell, .vitrine-track .spec-cell { flex:0 0 50%; display:flex; align-items:center; gap:3px; border:none !important; padding:3px 6px; }
+  .cars-grid .spec-cell b, .vitrine-track .spec-cell b { font-size:11px; font-weight:500; }
+  .cars-grid .spec-cell span, .vitrine-track .spec-cell span { display:none; }
   .sec-head { flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:28px; }
   .sec-head h2 { font-size:22px; }
 }
