@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Blog & Haberler — MSE Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="site.css" />
+<style>
+/* ---- Page Hero ---- */
+.blog-hero {
+  position: relative; min-height: 300px; display: flex; align-items: center;
+  overflow: hidden; margin-top: 78px;
+}
+.blog-hero img.bg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.blog-hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, rgba(15,11,6,0.82) 0%, rgba(15,11,6,0.58) 50%, rgba(15,11,6,0.22) 100%);
+}
+.blog-hero-content {
+  position: relative; z-index: 2; color: #fff; padding: 70px 0;
+}
+.blog-hero-content .kicker { margin-bottom: 16px; }
+.blog-hero-content h1 {
+  font-size: 52px; font-weight: 700; letter-spacing: -0.025em;
+  margin: 0 0 14px; line-height: 1.06;
+}
+.blog-hero-content p {
+  font-size: 17px; font-weight: 300; color: rgba(255,255,255,0.78);
+  line-height: 1.6; margin: 0; max-width: 500px;
+}
+
+/* ---- Category filter chips ---- */
+.cat-chips {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 32px 0 36px;
+}
+.cat-chip {
+  display: inline-flex; align-items: center; padding: 9px 18px; border-radius: 999px;
+  border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.04em; cursor: pointer;
+  transition: 0.2s; font-family: inherit; white-space: nowrap;
+}
+.cat-chip:hover { border-color: var(--gold-2); color: var(--gold); }
+.cat-chip.active { background: var(--gold-grad); color: #2a1e05; border-color: transparent; box-shadow: var(--sh-gold); }
+
+/* ---- Blog grid ---- */
+.blog-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+}
+.blog-card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
+  overflow: hidden; box-shadow: var(--sh-sm); display: flex; flex-direction: column;
+  transition: transform 0.4s var(--ease), box-shadow 0.4s; text-decoration: none; color: inherit;
+}
+.blog-card:hover { transform: translateY(-6px); box-shadow: var(--sh-lg); }
+.blog-card .bimg {
+  aspect-ratio: 16 / 10; overflow: hidden; background: var(--surface); position: relative;
+}
+.blog-card .bimg img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.7s var(--ease);
+}
+.blog-card:hover .bimg img { transform: scale(1.06); }
+.blog-card .bimg::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 55%, rgba(15,11,6,0.22));
+  pointer-events: none;
+}
+.blog-card .bimg .bcat {
+  position: absolute; top: 14px; left: 14px; z-index: 2;
+  background: rgba(20,15,9,0.55); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff; font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 6px 12px; border-radius: 9px;
+}
+.blog-card.skeleton .bcat {
+  background: var(--gold-grad); color: #2a1e05;
+  border-color: transparent;
+}
+.blog-card .bbody {
+  padding: 22px 22px 24px; flex: 1; display: flex; flex-direction: column; gap: 10px;
+}
+.blog-card .bdate {
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted);
+}
+.blog-card .btitle { font-size: 18px; font-weight: 700; line-height: 1.25; margin: 0; flex: 1; }
+.blog-card .bexcerpt { font-size: 13.5px; font-weight: 300; color: var(--ink-2); line-height: 1.6; margin: 0; }
+.blog-card .bread {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--gold); margin-top: auto;
+}
+.blog-card .bread .ar { transition: transform 0.25s var(--ease); }
+.blog-card:hover .bread .ar { transform: translateX(4px); }
+
+/* Skeleton state */
+.blog-card.skeleton .btitle { color: var(--muted); font-size: 15px; font-weight: 600; }
+.blog-card.skeleton .bdate { color: var(--muted); }
+.blog-card.skeleton .bexcerpt { color: var(--ink-2); opacity: 0.6; }
+.blog-card.skeleton .bread { color: var(--line-2); pointer-events: none; }
+
+/* Empty state notice */
+.blog-empty-banner {
+  grid-column: 1 / -1;
+  background: var(--paper); border: 1px solid var(--line-2);
+  border-radius: var(--r); padding: 22px 26px;
+  display: flex; align-items: center; gap: 18px;
+  margin-bottom: 4px; box-shadow: var(--sh-sm);
+}
+.blog-empty-banner .e-ic {
+  width: 46px; height: 46px; flex: 0 0 46px; border-radius: 13px;
+  background: var(--gold-grad-soft); display: flex; align-items: center;
+  justify-content: center; color: #4a3608;
+}
+.blog-empty-banner b { font-weight: 700; display: block; font-size: 15px; }
+.blog-empty-banner span { font-size: 13.5px; color: var(--ink-2); font-weight: 300; }
+
+/* Admin notice card */
+.admin-notice {
+  background: linear-gradient(135deg, var(--espresso-2), var(--espresso));
+  border-radius: var(--r); padding: 28px 32px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  margin-top: 12px; box-shadow: var(--sh); position: relative; overflow: hidden;
+}
+.admin-notice::before {
+  content: ""; position: absolute; width: 300px; height: 300px;
+  right: -60px; top: -120px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(199,159,64,0.2), transparent 65%);
+}
+.admin-notice-left { display: flex; align-items: center; gap: 16px; position: relative; z-index: 2; }
+.admin-notice-icon {
+  width: 46px; height: 46px; border-radius: 13px; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center;
+  justify-content: center; color: var(--gold-bright); flex: 0 0 46px;
+}
+.admin-notice-text b { font-weight: 700; font-size: 15px; color: #fff; display: block; margin-bottom: 3px; }
+.admin-notice-text span { font-size: 13.5px; color: rgba(255,255,255,0.65); font-weight: 300; }
+.admin-notice-link {
+  position: relative; z-index: 2; display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  white-space: nowrap; flex: 0 0 auto;
+}
+.admin-notice-link .ar { color: var(--gold); }
+
+/* Pagination */
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 52px 0 24px;
+}
+.pagination button {
+  min-width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line-2);
+  background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: 0.2s; font-family: inherit; padding: 0 14px;
+}
+.pagination button:hover { border-color: var(--gold); color: var(--gold); }
+.pagination button.active { background: var(--gold-grad); color: #2a1e05; border-color: transparent; box-shadow: var(--sh-gold); }
+.pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (max-width: 980px) {
+  .blog-hero-content h1 { font-size: 36px; }
+  .blog-hero { min-height: 240px; }
+  .blog-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-notice { flex-direction: column; align-items: flex-start; }
+}
+@media (max-width: 600px) {
+  .blog-hero-content h1 { font-size: 28px; }
+  .blog-hero { min-height: 220px; }
+  .blog-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-inner">
+    <a class="logo" href="index.html"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></a>
+    <ul class="nav">
+      <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="sell.html">Aracını Sat</a></li>
+      <li><a href="about.html">Hakkımızda</a></li>
+      <li><a href="blog.html" aria-current="page">Blog</a></li>
+      <li><a href="contact.html">İletişim</a></li>
+    </ul>
+    <div class="hdr-cta">
+      <a class="hdr-phone" href="tel:+90">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg>
+        Hemen Ara
+      </a>
+      <a class="btn btn-gold" href="sell.html"><span>Ücretsiz Değerleme</span></a>
+      <button class="burger" id="burger" aria-label="Menü"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ BLOG HERO ============ -->
+<section class="blog-hero">
+  <img class="bg" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=1600&q=78" alt="Blog & Haberler" />
+  <div class="wrap">
+    <div class="blog-hero-content reveal">
+      <span class="kicker">Blog & Haberler</span>
+      <h1>Blog & Haberler</h1>
+      <p>Otomotiv dünyasından haberler ve ipuçları</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BLOG CONTENT ============ -->
+<div class="wrap">
+  <!-- Category filter chips -->
+  <div class="cat-chips" id="catChips">
+    <button class="cat-chip active" data-cat="all">Tümü</button>
+    <button class="cat-chip" data-cat="inceleme">Araç İncelemeleri</button>
+    <button class="cat-chip" data-cat="haber">Pazar Haberleri</button>
+    <button class="cat-chip" data-cat="ipucu">İpuçları</button>
+    <button class="cat-chip" data-cat="duyuru">Duyurular</button>
+  </div>
+
+  <!-- Blog grid — rendered by JS -->
+  <div class="blog-grid" id="blogGrid"></div>
+
+  <!-- Admin notice card -->
+  <div class="admin-notice reveal" style="margin-top:32px">
+    <div class="admin-notice-left">
+      <div class="admin-notice-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+      </div>
+      <div class="admin-notice-text">
+        <b>İçerik admin panelinden yönetilir</b>
+        <span>Blog yazıları eklendikçe burada otomatik olarak görünür.</span>
+      </div>
+    </div>
+    <a class="admin-notice-link" href="admin.html">
+      Admin Paneline Git <span class="ar">→</span>
+    </a>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="blogPagination">
+    <button disabled>‹ Önceki</button>
+    <button class="active">1</button>
+    <button>2</button>
+    <button>3</button>
+    <button disabled>Sonraki ›</button>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot" style="margin-top:40px">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="fabout">
+        <a class="flogo" href="index.html"><span class="m">MSE<b>.</b> AUTO</span></a>
+        <p data-c="footer.about">Güvenilir 2. el araç alım &amp; satım.</p>
+        <div class="foot-soc">
+          <a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="tel:+90" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
+        </div>
+      </div>
+      <div id="footCols" style="display:contents"></div>
+      <div class="fcontact">
+        <h5>İletişim</h5>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg><span id="footPhone">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="2"/></svg><span id="footAddr">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/></svg><span id="footHours">—</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 MSE Auto. Tüm hakları saklıdır.</span>
+      <span>Tüm içerik, ilanlar ve iletişim bilgileri admin panelinden yönetilir.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MOBILE DRAWER ============ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <span class="logo"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></span>
+    <button class="x" id="drawerClose" aria-label="Kapat">×</button>
+  </div>
+  <nav>
+    <a href="gallery.html">Araçlar</a>
+    <a href="sell.html">Aracını Sat</a>
+    <a href="about.html">Hakkımızda</a>
+    <a href="blog.html" aria-current="page">Blog</a>
+    <a href="contact.html">İletişim</a>
+  </nav>
+  <div class="drawer-cta">
+    <a class="btn btn-gold" href="sell.html" style="justify-content:center">Ücretsiz Değerleme</a>
+    <a class="btn btn-line" href="tel:+90" style="justify-content:center">Hemen Ara</a>
+  </div>
+</div>
+
+<!-- ============ MOBILE BOTTOM BAR ============ -->
+<nav class="mobile-bar">
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>Araçlar</a>
+  <a href="sell.html" class="prime"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg>Aracını Sat</a>
+  <a href="https://wa.me/" target="_blank"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>WhatsApp</a>
+</nav>
+
+<!-- ============ AI ASSISTANT ============ -->
+<div class="ai-fab" id="aiFab">
+  <div class="ai-hint" id="aiHint"><b data-c="assistant.name">MSE Asistan</b> · <span data-c="assistant.hint">Size nasıl yardımcı olabilirim?</span></div>
+  <button class="ai-orb" id="aiOrb" aria-label="MSE Asistan">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg>
+  </button>
+</div>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg></div>
+    <div class="ti"><b data-c="assistant.name">MSE Asistan</b><span data-c="assistant.status">Çevrimiçi · Groq destekli</span></div>
+    <button class="x" id="aiClose" aria-label="Kapat">×</button>
+  </div>
+  <div class="ai-body" id="aiBody"></div>
+  <div class="ai-chips" id="aiChips"></div>
+  <div class="ai-foot">
+    <input id="aiInput" placeholder="Mesajınızı yazın…" />
+    <button class="send" id="aiSend" aria-label="Gönder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<script src="image-slot.js"></script>
+<script src="site-content.js"></script>
+<script src="db.js"></script>
+<script src="shared-init.js"></script>
+<script src="site.js"></script>
+<script>
+(function () {
+  var S = window.MSE_SETTINGS || {};
+  var set = function (id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; };
+  set("footPhone", S.phone); set("footAddr", S.address); set("footHours", S.hours);
+
+  // Unsplash photos for blog skeleton cards
+  var BLOG_PHOTOS = [
+    "1504215728-1983-44d1-a54a",
+    "1461749280-a1b1-4523-abf1-a4c6b63f5c76",
+    "1558618666-fcd25c85cd64",
+    "1486006920555-c77dcf18193c",
+    "1449824913935-59a10b8d2000",
+    "1568605117036-5fe5e7bab0b7"
+  ];
+  function blogPhoto(i) {
+    return "https://images.unsplash.com/photo-" + BLOG_PHOTOS[i % BLOG_PHOTOS.length] + "?auto=format&fit=crop&w=800&q=75";
+  }
+
+  var CATS = ["inceleme", "haber", "ipucu", "inceleme", "duyuru", "haber"];
+  var CAT_LABELS = {
+    inceleme: "Araç İncelemesi",
+    haber: "Pazar Haberleri",
+    ipucu: "İpuçları",
+    duyuru: "Duyuru"
+  };
+
+  var activeCat = "all";
+
+  // Get real posts if available
+  var posts = [];
+  if (window.MSE_DB && typeof window.MSE_DB.getPosts === "function") {
+    posts = window.MSE_DB.getPosts();
+  }
+
+  function renderSkeletonCards() {
+    var html = '<div class="blog-empty-banner">' +
+      '<div class="e-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none">' +
+      '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="1.8"/>' +
+      '<path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.8"/>' +
+      '</svg></div>' +
+      '<div><b>Henüz yazı eklenmedi</b>' +
+      '<span>Blog yazıları admin panelinden yönetilebilir. Eklendikçe burada otomatik görünür.</span></div>' +
+      '</div>';
+
+    for (var i = 0; i < 6; i++) {
+      var delay = i > 0 ? ' d' + Math.min(i, 3) : '';
+      html += '<div class="blog-card skeleton reveal' + delay + '">' +
+        '<div class="bimg">' +
+        '<img src="' + blogPhoto(i) + '" alt="Blog" loading="lazy" />' +
+        '<div class="bcat">' + CAT_LABELS[CATS[i]] + '</div>' +
+        '</div>' +
+        '<div class="bbody">' +
+        '<span class="bdate">Yakında</span>' +
+        '<h3 class="btitle">Yazı başlığı admin panelinden eklenecek</h3>' +
+        '<p class="bexcerpt">İçerik admin panelinden yönetilebilir. Bu alan yazının kısa özeti için kullanılır.</p>' +
+        '<span class="bread">Devamını Oku <span class="ar">→</span></span>' +
+        '</div>' +
+        '</div>';
+    }
+    return html;
+  }
+
+  function renderPosts(filtered) {
+    if (!filtered.length) return renderSkeletonCards();
+    return filtered.map(function (p, i) {
+      var delay = i > 0 ? ' d' + Math.min(i, 3) : '';
+      return '<a class="blog-card reveal' + delay + '" href="' + (p.url || "#") + '">' +
+        '<div class="bimg">' +
+        '<img src="' + (p.image || blogPhoto(i)) + '" alt="' + (p.title || "Blog") + '" loading="lazy" />' +
+        '<div class="bcat">' + (CAT_LABELS[p.cat] || p.cat || "Yazı") + '</div>' +
+        '</div>' +
+        '<div class="bbody">' +
+        '<span class="bdate">' + (p.date || "Yakında") + '</span>' +
+        '<h3 class="btitle">' + (p.title || "—") + '</h3>' +
+        '<p class="bexcerpt">' + (p.excerpt || "") + '</p>' +
+        '<span class="bread">Devamını Oku <span class="ar">→</span></span>' +
+        '</div></a>';
+    }).join("");
+  }
+
+  function triggerReveal() {
+    var els = document.querySelectorAll(".reveal:not(.in)");
+    for (var i = 0; i < els.length; i++) {
+      (function (el) {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.08 });
+        io.observe(el);
+      })(els[i]);
+    }
+  }
+
+  function render() {
+    var filtered = activeCat === "all" ? posts : posts.filter(function (p) { return p.cat === activeCat; });
+    var grid = document.getElementById("blogGrid");
+    if (grid) grid.innerHTML = renderPosts(filtered);
+    triggerReveal();
+  }
+
+  // Category filter
+  var chipsEl = document.getElementById("catChips");
+  if (chipsEl) {
+    chipsEl.addEventListener("click", function (e) {
+      var chip = e.target.closest(".cat-chip");
+      if (!chip) return;
+      var chips = document.querySelectorAll(".cat-chip");
+      for (var i = 0; i < chips.length; i++) chips[i].classList.remove("active");
+      chip.classList.add("active");
+      activeCat = chip.dataset.cat || "all";
+      render();
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

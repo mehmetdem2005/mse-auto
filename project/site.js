@@ -161,16 +161,49 @@
 
   window.MSE_AI = {
     tools: TOOLS,
+    history: [],
     async ask(q) {
-      if (window.MSE_AI_ENDPOINT) {
+      this.history.push({ role: "user", content: q });
+      const apiBase = window.MSE_API_BASE || localStorage.getItem("mse_api_base");
+      const groqKey = window.MSE_GROQ_KEY || localStorage.getItem("mse_groq_key");
+
+      // Try backend proxy first
+      if (apiBase && apiBase !== "https://mse-auto-api.onrender.com") {
         try {
-          const r = await fetch(window.MSE_AI_ENDPOINT, {
+          const r = await fetch(apiBase + "/api/chat", {
             method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: q, tools: TOOLS }),
+            body: JSON.stringify({ message: q, history: this.history.slice(-6) }),
           });
-          return (await r.json()).reply;
-        } catch (e) { /* fallback below */ }
+          if (r.ok) {
+            const d = await r.json();
+            this.history.push({ role: "assistant", content: d.reply });
+            return d.reply;
+          }
+        } catch (_) { /* try next */ }
       }
+
+      // Try Groq directly (client-side, API key must be configured)
+      if (groqKey) {
+        try {
+          const sysPrompt = `Sen MSE Auto'nun yapay zeka asistanısın. MSE Auto güvenilir bir 2. el araç alım-satım galerisidir. Türkçe, kısa ve yardımsever cevap ver. Uydurma fiyat verme.`;
+          const msgs = [
+            { role: "system", content: sysPrompt },
+            ...this.history.slice(-6).map((h) => ({ role: h.role, content: h.content })),
+          ];
+          const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": "Bearer " + groqKey },
+            body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: msgs, max_tokens: 512, temperature: 0.7 }),
+          });
+          if (r.ok) {
+            const d = await r.json();
+            const reply = d.choices[0].message.content;
+            this.history.push({ role: "assistant", content: reply });
+            return reply;
+          }
+        } catch (_) { /* fallback */ }
+      }
+
       await new Promise((r) => setTimeout(r, 600));
       return localAnswer(q);
     },
