@@ -12,6 +12,8 @@
     { "src": "/gallery", "dest": "/project/gallery.html" },
     { "src": "/gallery.html", "dest": "/project/gallery.html" },
     { "src": "/car-detail.html", "dest": "/project/car-detail.html" },
+    { "src": "/compare", "dest": "/project/compare.html" },
+    { "src": "/compare.html", "dest": "/project/compare.html" },
     { "src": "/sell.html", "dest": "/project/sell.html" },
     { "src": "/about.html", "dest": "/project/about.html" },
     { "src": "/contact.html", "dest": "/project/contact.html" },
