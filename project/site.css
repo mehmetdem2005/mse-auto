@@ -373,7 +373,25 @@ input,textarea,select { font-family: inherit; }
   .ai-panel { bottom:76px; right:6px; left:6px; width:auto; height:68vh; }
 }
 @media (max-width:480px) {
+  .wrap, .hdr-inner { padding-left:16px; padding-right:16px; }
   .hero h1 { font-size:28px; }
   .sell-l h2 { font-size:26px; }
   .stat-item .sv { font-size:28px; }
+  /* Page hero smaller on mobile */
+  .page-hero { height:220px !important; }
+  /* Hero CTA full width */
+  .hero-actions .btn { width:100%; justify-content:center; }
+  /* Sell band full-width buttons */
+  .sell-band .btn { width:100%; justify-content:center; }
+  /* CTA band actions full-width */
+  .ctaband-actions .btn { flex:1; justify-content:center; min-width:0; }
+  /* Better kicker spacing */
+  .kicker { margin-bottom:8px; }
+  /* Searchbar compact */
+  .sb-field { padding:10px 12px; }
+  /* Stats: keep 2x2 */
+  .stats-row { grid-template-columns:repeat(2,1fr) !important; }
+  /* Sec heading */
+  .sec-head { flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:28px; }
+  .sec-head h2 { font-size:22px; }
 }

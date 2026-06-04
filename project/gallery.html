@@ -41,7 +41,62 @@
 .no-results { grid-column:1/-1; text-align:center; padding:60px 20px; color:var(--ink-3); }
 .no-results svg { margin:0 auto 14px; opacity:.4; }
 .no-results p { font-size:15px; font-weight:500; }
-@media(max-width:900px) { .gallery-layout{grid-template-columns:1fr;} .gallery-sidebar{position:static;} .gallery-grid{grid-template-columns:1fr;} }
+/* Mobile filter toggle */
+.filter-toggle-btn { display:none; align-items:center; gap:8px; padding:10px 18px; background:var(--bg-2); border:1px solid var(--border-2); border-radius:var(--r); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+.filter-toggle-btn svg { color:var(--blue); }
+.filter-toggle-btn:hover { border-color:var(--blue); color:var(--blue); }
+.sidebar-close-btn { display:none; width:100%; margin-bottom:16px; justify-content:center; gap:8px; padding:11px; background:var(--bg-3); border:1px solid var(--border-2); border-radius:var(--r); color:var(--ink-2); font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+
+@media(max-width:900px) {
+  .gallery-layout { grid-template-columns:1fr; }
+  .filter-toggle-btn { display:flex; }
+  .gallery-sidebar {
+    display:none; position:fixed; inset:0; z-index:250;
+    background:var(--bg); overflow-y:auto; padding:20px 16px;
+    padding-bottom:calc(80px + env(safe-area-inset-bottom));
+  }
+  .gallery-sidebar.open { display:block; }
+  .sidebar-close-btn { display:flex; }
+  .gallery-grid { grid-template-columns:1fr; }
+}
+
+@media(max-width:640px) {
+  .gallery-grid { gap:10px; }
+
+  /* List view */
+  .gallery-grid .car {
+    display:flex !important;
+    flex-direction:row !important;
+    border-radius:var(--r);
+    min-height:0;
+  }
+  .gallery-grid .car .cimg {
+    width:120px; flex:0 0 120px;
+    aspect-ratio:unset !important; height:100px;
+    border-radius:0;
+  }
+  .gallery-grid .car .cimg::after {
+    background:linear-gradient(90deg,transparent 50%,rgba(7,9,15,0.55));
+  }
+  .gallery-grid .car .cbody {
+    padding:10px 12px; flex:1; min-width:0;
+    display:flex; flex-direction:column; justify-content:space-between;
+  }
+  .gallery-grid .car .cbody h3 {
+    font-size:13.5px; margin-bottom:6px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .gallery-grid .car .spec-row {
+    grid-template-columns:1fr 1fr; margin-bottom:6px;
+  }
+  .gallery-grid .car .spec-cell b { font-size:11.5px; }
+  .gallery-grid .car .spec-cell span { font-size:9px; }
+  .gallery-grid .car .crow { padding-top:6px; }
+  .gallery-grid .car .cprice { font-size:15px; }
+  .gallery-grid .car .clink { display:none !important; }
+  /* Hide the "Detayları İncele" wrapper div */
+  .gallery-grid .car .cbody > div:last-child:not(.crow):not(.spec-row) { display:none !important; }
+}
 </style>
 </head>
 <body>
@@ -115,7 +170,11 @@
     <div class="gallery-layout">
 
       <!-- SIDEBAR -->
-      <aside class="gallery-sidebar">
+      <aside class="gallery-sidebar" id="gallerySidebar">
+        <button class="sidebar-close-btn" onclick="closeSidebar()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Kapat
+        </button>
         <div class="filter-card">
           <h3>Filtrele</h3>
           <div class="filter-group">
@@ -160,6 +219,14 @@
 
       <!-- MAIN -->
       <div>
+        <!-- Mobile filter row -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;" id="mobileFilterRow">
+          <button class="filter-toggle-btn" onclick="openSidebar()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>
+            Filtrele
+          </button>
+        </div>
+
         <!-- Results header -->
         <div class="gallery-header">
           <div class="count" id="resultCount"><span>0</span> Araç Bulundu</div>
@@ -617,6 +684,18 @@
 
   populateFilters();
   renderGrid();
+
+  window.openSidebar = function() {
+    document.getElementById("gallerySidebar").classList.add("open");
+    document.body.style.overflow = "hidden";
+  };
+  window.closeSidebar = function() {
+    document.getElementById("gallerySidebar").classList.remove("open");
+    document.body.style.overflow = "";
+  };
+  /* Close sidebar on Filtrele/Temizle button tap */
+  var origApply = window.applyFilters;
+  window.applyFilters = function() { origApply(); closeSidebar(); };
 })();
 </script>
 </body>

@@ -86,22 +86,42 @@
 /* ── Responsive ── */
 @media(max-width:1000px) {
   .story-grid { grid-template-columns:1fr; gap:36px; }
-  .features-grid { grid-template-columns:1fr 1fr; }
+  .features-grid { grid-template-columns:1fr 1fr !important; }
   .stats-row { grid-template-columns:1fr 1fr; }
   .timeline-rail { display:none; }
-  .timeline-track { grid-template-columns:repeat(3,1fr); }
   .services-head h2 { font-size:26px; }
   .ctaband { padding:40px 32px; }
   .ctaband-text h2 { font-size:26px; }
 }
 @media(max-width:640px) {
-  .page-hero-content h1 { font-size:32px; }
-  .features-grid { grid-template-columns:1fr; }
+  .page-hero-content h1 { font-size:28px !important; }
+  .page-hero-content p { font-size:14px; }
+  .features-grid { grid-template-columns:1fr !important; }
   .stats-row { grid-template-columns:1fr 1fr; }
-  .timeline-track { grid-template-columns:1fr; }
-  .story-text h2 { font-size:26px; }
+  .story-text h2 { font-size:24px; }
   .ctaband { padding:28px 20px; }
   .ctaband-text h2 { font-size:22px; }
+
+  /* Services: horizontal list on mobile */
+  .features-grid .feat-card {
+    display:flex; flex-direction:row; align-items:flex-start; gap:16px;
+    padding:20px 18px; transform:none !important;
+  }
+  .features-grid .feat-card:hover { transform:none !important; }
+  .features-grid .feat-ic { margin-bottom:0; flex:0 0 44px; width:44px; height:44px; }
+  .features-grid .feat-card h3 { font-size:15px; margin-bottom:6px; }
+  .features-grid .feat-card p { font-size:13px; }
+
+  /* Timeline: horizontal scroll */
+  .timeline-scroll-wrap {
+    overflow-x:auto; -webkit-overflow-scrolling:touch;
+    margin:0 -16px; padding:0 16px 12px;
+    scrollbar-width:thin; scrollbar-color:var(--border-2) transparent;
+  }
+  .timeline-scroll-wrap::-webkit-scrollbar { height:4px; }
+  .timeline-scroll-wrap::-webkit-scrollbar-thumb { background:var(--border-2); border-radius:4px; }
+  .timeline-track { grid-template-columns:repeat(6,170px) !important; gap:0 20px; }
+  .timeline-outer { padding-top:0; }
 }
 </style>
 </head>
@@ -264,7 +284,7 @@
       <span class="kicker" data-c="services.kicker">Hizmetlerimiz</span>
       <h2 data-c="services.title">Hizmetlerimizle Güvendesiniz.</h2>
     </div>
-    <div class="features-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="features-grid">
       <div class="feat-card reveal">
         <div class="feat-ic">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -274,26 +294,12 @@
       </div>
       <div class="feat-card reveal d1">
         <div class="feat-ic">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-        </div>
-        <h3 data-c="features.3.title">Bakım Desteği</h3>
-        <p data-c="features.3.desc">Satış sonrası bakım ve servis desteğiyle aracınız her zaman en iyi kondisyonda kalır.</p>
-      </div>
-      <div class="feat-card reveal d2">
-        <div class="feat-ic">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z"/><path d="M9 12l2 2 4-4"/></svg>
-        </div>
-        <h3 data-c="features.4.title">Garanti Belgesi</h3>
-        <p data-c="features.4.desc">Her satışta resmi garanti belgesi ve eksiksiz evrak teslim edilir. Güvenle alın, güvenle kullanın.</p>
-      </div>
-      <div class="feat-card reveal d3">
-        <div class="feat-ic">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
         </div>
         <h3 data-c="features.1.title">Takas Desteği</h3>
         <p data-c="features.1.desc">Mevcut aracınızı takas ederek yeni aracınıza kolayca geçiş yapın. Değer kaybı olmadan hızlı ve güvenli takas.</p>
       </div>
-      <div class="feat-card reveal" style="transition-delay:0.4s;">
+      <div class="feat-card reveal d2">
         <div class="feat-ic">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
         </div>
@@ -313,6 +319,7 @@
         <h2>Zaman İçinde MSE Auto</h2>
       </div>
     </div>
+    <div class="timeline-scroll-wrap">
     <div class="timeline-outer reveal d1">
       <div class="timeline-rail"></div>
       <div class="timeline-track">
@@ -378,6 +385,7 @@
         </div>
       </div>
     </div>
+    </div><!-- /.timeline-scroll-wrap -->
   </div>
 </section>
 
