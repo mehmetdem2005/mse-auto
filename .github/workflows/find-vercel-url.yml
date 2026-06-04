@@ -1,0 +1,42 @@
+name: Find Vercel URL
+
+on:
+  workflow_dispatch:
+
+jobs:
+  find-url:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI and get URL
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          GH_PAT:       ${{ secrets.GH_PAT }}
+        run: |
+          npm install -g vercel@latest -q
+          # List recent deployments
+          DEPLOYMENTS=$(vercel ls --token="$VERCEL_TOKEN" --yes 2>&1 || true)
+          echo "=== vercel ls output ==="
+          echo "$DEPLOYMENTS"
+
+          # Get production URL
+          PROD_URL=$(vercel --prod --token="$VERCEL_TOKEN" --yes inspect 2>&1 | grep -oE 'https://[^ ]+\.vercel\.app' | head -1 || true)
+          echo "=== inspect url: $PROD_URL ==="
+
+          # Also try env
+          vercel env ls --token="$VERCEL_TOKEN" 2>&1| head -20 || true
+
+          # Save whatever we find to the repo
+          echo "$DEPLOYMENTS" > /tmp/vercel_info.txt
+          CONTENT=$(base64 -w0 /tmp/vercel_info.txt)
+          SHA=$(curl -s "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/VERCEL_INFO.txt" \
+            -H "Authorization: Bearer $GH_PAT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
+          PAYLOAD="{\"message\":\"ci: vercel deployment info\",\"content\":\"$CONTENT\""
+          [ -n "$SHA" ] && PAYLOAD="${PAYLOAD},\"sha\":\"$SHA\""
+          PAYLOAD="${PAYLOAD}}"
+          curl -s -X PUT \
+            "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/VERCEL_INFO.txt" \
+            -H "Authorization: Bearer $GH_PAT" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" | python3 -c "import sys,json; d=json.load(sys.stdin); print('saved ok' if 'content' in d else d.get('message','?'))"
