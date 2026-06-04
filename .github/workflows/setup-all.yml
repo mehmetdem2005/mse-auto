@@ -1,0 +1,217 @@
+name: Full Setup — Supabase + Render + Vercel
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get install -y postgresql-client python3-pip -q
+          pip3 install PyNaCl -q
+
+      - name: Full Setup Script
+        env:
+          SUPABASE_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_KEY }}
+          RENDER_KEY:     ${{ secrets.RENDER_API_KEY }}
+          GEMINI_KEY:     ${{ secrets.GEMINI_API_KEY }}
+          GROQ_KEY:       ${{ secrets.GROQ_API_KEY }}
+          VERCEL_TOKEN:   ${{ secrets.VERCEL_TOKEN }}
+          GH_PAT:         ${{ secrets.GH_PAT }}
+          REPO:           mehmetdem2005/mse-auto
+        run: |
+          python3 << 'PYEOF'
+          import urllib.request, urllib.error, json, base64, os, time, subprocess, sys
+          from nacl import encoding, public as nacl_public
+
+          SB_TOKEN   = os.environ["SUPABASE_TOKEN"]
+          RENDER_KEY = os.environ["RENDER_KEY"]
+          GEMINI_KEY = os.environ["GEMINI_KEY"]
+          GROQ_KEY   = os.environ.get("GROQ_KEY", "")
+          GH_PAT     = os.environ["GH_PAT"]
+          REPO       = os.environ["REPO"]
+
+          def req(method, url, data=None, headers={}):
+              body = json.dumps(data).encode() if data else None
+              r = urllib.request.Request(url, data=body, method=method, headers={
+                  "Content-Type": "application/json", **headers
+              })
+              try:
+                  with urllib.request.urlopen(r, timeout=30) as resp:
+                      return json.loads(resp.read()), resp.status
+              except urllib.error.HTTPError as e:
+                  txt = e.read().decode()
+                  print(f"  HTTP {e.code} {url}: {txt[:200]}")
+                  return None, e.code
+
+          def sb(method, path, data=None):
+              return req(method, f"https://api.supabase.com/v1{path}", data,
+                         {"Authorization": f"Bearer {SB_TOKEN}"})
+
+          def gh(method, path, data=None):
+              return req(method, f"https://api.github.com{path}", data, {
+                  "Authorization": f"Bearer {GH_PAT}",
+                  "Accept": "application/vnd.github.v3+json"
+              })
+
+          def render(method, path, data=None):
+              return req(method, f"https://api.render.com/v1{path}", data,
+                         {"Authorization": f"Bearer {RENDER_KEY}"})
+
+          # ── GitHub Secrets helper ─────────────────────────────────────
+          pk_data, _ = gh("GET", f"/repos/{REPO}/actions/secrets/public-key")
+          pk_b64 = pk_data["key"]
+          pk_id  = pk_data["key_id"]
+
+          def gh_secret(name, value):
+              if not value: return
+              pub = nacl_public.PublicKey(pk_b64.encode(), encoding.Base64Encoder())
+              enc = base64.b64encode(nacl_public.SealedBox(pub).encrypt(value.encode())).decode()
+              gh("PUT", f"/repos/{REPO}/actions/secrets/{name}",
+                 {"encrypted_value": enc, "key_id": pk_id})
+              print(f"  ✓ GH secret: {name}")
+
+          # ════════════════════════════════════════════════════════════════
+          print("\n━━━ 1. SUPABASE ━━━")
+
+          orgs, _ = sb("GET", "/organizations")
+          org_id = orgs[0]["id"] if orgs else None
+          print(f"  Org: {org_id}")
+
+          # Check existing project
+          projects, _ = sb("GET", "/projects")
+          project = next((p for p in (projects or []) if p.get("name") == "mse-auto"), None)
+
+          if project:
+              project_id = project["id"]
+              print(f"  ✓ Proje mevcut: {project_id}")
+          else:
+              import secrets as sec
+              db_pass = sec.token_urlsafe(24)
+              create_data = {
+                  "name": "mse-auto",
+                  "organization_id": org_id,
+                  "plan": "free",
+                  "region": "eu-central-1",
+                  "db_pass": db_pass
+              }
+              result, status = sb("POST", "/projects", create_data)
+              project_id = result["id"]
+              print(f"  ✓ Proje oluşturuldu: {project_id}")
+
+              # Wait up to 5 min for project to be healthy
+              print("  ⏳ Proje hazırlanıyor (max 5dk)...")
+              for i in range(30):
+                  time.sleep(10)
+                  p, _ = sb("GET", f"/projects/{project_id}")
+                  status = p.get("status", "")
+                  print(f"    [{i+1}/30] Status: {status}")
+                  if status == "ACTIVE_HEALTHY":
+                      break
+              else:
+                  print("  ⚠️  Proje zaman aşımı - sonraki adımlara devam ediliyor")
+
+          # Get API keys
+          keys, _ = sb("GET", f"/projects/{project_id}/api-keys")
+          anon_key    = next((k["api_key"] for k in (keys or []) if k["name"] == "anon"), "")
+          service_key = next((k["api_key"] for k in (keys or []) if k["name"] == "service_role"), "")
+          project_url = f"https://{project_id}.supabase.co"
+          print(f"  ✓ URL: {project_url}")
+          print(f"  ✓ Anon key: {anon_key[:20]}...")
+
+          # Save to GitHub secrets
+          gh_secret("SUPABASE_URL",              project_url)
+          gh_secret("SUPABASE_ANON_KEY",         anon_key)
+          gh_secret("SUPABASE_SERVICE_ROLE_KEY",  service_key)
+
+          # Run schema via Supabase SQL endpoint
+          print("  📄 Schema çalıştırılıyor...")
+          with open("supabase/schema.sql") as f:
+              sql = f.read()
+          # Run in chunks by splitting on semicolons wouldn't work well, use management API
+          result, status = sb("POST", f"/projects/{project_id}/database/query",
+                              {"query": sql})
+          if status in (200, 201):
+              print("  ✓ Schema uygulandı")
+          else:
+              print(f"  ⚠️  Schema status: {status} — SQL Editor'dan manuel çalıştırın")
+
+          # ════════════════════════════════════════════════════════════════
+          print("\n━━━ 2. RENDER ━━━")
+
+          services, _ = render("GET", "/services?limit=20")
+          service_id = ""
+          for item in (services or []):
+              if isinstance(item, dict) and item.get("service", {}).get("name") == "mse-auto-api":
+                  service_id = item["service"]["id"]
+                  break
+
+          if not service_id:
+              owners, _ = render("GET", "/owners?limit=1")
+              owner_id = owners[0]["owner"]["id"] if owners else ""
+              print(f"  Owner: {owner_id}")
+
+              create_svc = {
+                  "type": "web_service",
+                  "name": "mse-auto-api",
+                  "ownerId": owner_id,
+                  "repo": "https://github.com/mehmetdem2005/mse-auto",
+                  "branch": "main",
+                  "rootDir": "api",
+                  "serviceDetails": {
+                      "buildCommand": "npm install",
+                      "startCommand": "npm start",
+                      "plan": "free",
+                      "runtime": "node"
+                  }
+              }
+              result, _ = render("POST", "/services", create_svc)
+              service_id = result["service"]["id"]
+              print(f"  ✓ Servis oluşturuldu: {service_id}")
+          else:
+              print(f"  ✓ Servis bulundu: {service_id}")
+
+          # Set all env vars on Render
+          env_vars = [
+              {"key": "GEMINI_API_KEY",            "value": GEMINI_KEY},
+              {"key": "GROQ_API_KEY",              "value": GROQ_KEY},
+              {"key": "SUPABASE_URL",              "value": project_url},
+              {"key": "SUPABASE_SERVICE_ROLE_KEY", "value": service_key},
+              {"key": "ALLOWED_ORIGIN",            "value": "*"},
+              {"key": "NODE_ENV",                  "value": "production"},
+          ]
+          render("PUT", f"/services/{service_id}/env-vars",
+                 [e for e in env_vars if e["value"]])
+          print("  ✓ Env vars ayarlandı")
+
+          # Trigger deploy
+          render("POST", f"/services/{service_id}/deploys", {})
+          print("  ✓ Render deploy tetiklendi")
+
+          # Save service ID
+          gh_secret("RENDER_SERVICE_ID", service_id)
+
+          # ════════════════════════════════════════════════════════════════
+          print("\n━━━ 3. ÖZET ━━━")
+          print(f"  Supabase URL:  {project_url}")
+          print(f"  Render API:    https://mse-auto-api.onrender.com")
+          print(f"  Frontend:      GitHub Actions → deploy-vercel.yml")
+          print("\n✅ Kurulum tamamlandı!")
+          PYEOF
+
+      - name: Trigger Vercel Deploy
+        run: |
+          echo "🚀 Vercel deploy tetikleniyor..."
+          curl -s -X POST \
+            "https://api.github.com/repos/${{ env.REPO }}/actions/workflows/deploy-vercel.yml/dispatches" \
+            -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            -d '{"ref":"main"}'
+          echo "✓ Vercel workflow tetiklendi"
+        env:
+          REPO: mehmetdem2005/mse-auto
