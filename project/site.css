@@ -370,8 +370,9 @@ input,textarea,select { font-family: inherit; }
   .sb-field label { font-size:9px; margin-bottom:2px; }
   .sb-field select, .sb-field input { font-size:14px; }
   .sb-btn { width:100%; padding:14px; justify-content:center; margin:6px 0 0; border-radius:13px; }
-  .sec { padding:32px 0; }
-  .sec-head h2 { font-size:22px; }
+  .sec { padding:56px 0; }
+  .home .sec { padding:32px 0; }
+  .sec-head h2 { font-size:26px; }
   .cars-grid { grid-template-columns:1fr; }
   .features-grid { grid-template-columns:1fr !important; }
   .sell-band { grid-template-columns:1fr; gap:28px; padding:34px 26px; }
@@ -400,10 +401,14 @@ input,textarea,select { font-family: inherit; }
   .kicker { margin-bottom:8px; }
   .sb-field { padding:10px 12px; }
   .stats-row { grid-template-columns:repeat(2,1fr) !important; }
-  .sec-head { flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; }
-  .sec-head .sh-l { min-width:0; }
-  .sec-head h2 { font-size:20px; }
-  .see-all { font-size:12px; white-space:nowrap; flex-shrink:0; }
+  /* other pages: keep stacked section heads */
+  .sec-head { flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:28px; }
+  .sec-head h2 { font-size:22px; }
+  /* home only: title left + see-all right (ref img 8) */
+  .home .sec-head { flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  .home .sec-head .sh-l { min-width:0; }
+  .home .sec-head h2 { font-size:20px; }
+  .home .see-all { font-size:12px; white-space:nowrap; flex-shrink:0; }
 
   /* Hero kicker/buttons app-look */
   .hero-trust { display:none; }
