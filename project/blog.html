@@ -359,6 +359,27 @@
   if(s.phone && document.getElementById("footPhone")) document.getElementById("footPhone").textContent = s.phone;
   if(s.address && document.getElementById("footAddr")) document.getElementById("footAddr").textContent = s.address;
   if(s.hours && document.getElementById("footHours")) document.getElementById("footHours").textContent = s.hours;
+
+  /* Category filter */
+  var CAT_MAP = { "Araç İncelemesi":"inceleme", "Pazar Haberleri":"haber", "İpuçları":"ipucu", "Duyuru":"duyuru" };
+  var pillsEl = document.getElementById("catPills");
+  if(pillsEl){
+    pillsEl.addEventListener("click", function(e){
+      var pill = e.target.closest(".cat-pill");
+      if(!pill) return;
+      document.querySelectorAll(".cat-pill").forEach(function(p){ p.classList.remove("active"); });
+      pill.classList.add("active");
+      var filter = pill.dataset.cat;
+      var grid = document.getElementById("blogGrid");
+      if(!grid) return;
+      var cards = grid.querySelectorAll(".blog-card");
+      cards.forEach(function(card){
+        var catText = (card.querySelector(".bc-cat") || {}).textContent || "";
+        var cardCat = CAT_MAP[catText.trim()] || "";
+        card.style.display = (filter === "all" || cardCat === filter) ? "" : "none";
+      });
+    });
+  }
 })();
 </script>
 </body>
