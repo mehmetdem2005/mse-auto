@@ -7,6 +7,12 @@ services:
     startCommand: npm start
     plan: free
     envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: SUPABASE_URL
@@ -14,6 +20,6 @@ services:
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
       - key: ALLOWED_ORIGIN
-        value: https://mehmetdem2005.github.io
+        value: "*"
       - key: NODE_ENV
         value: production
