@@ -388,20 +388,57 @@ input,textarea,select { font-family: inherit; }
   .sell-l h2 { font-size:26px; }
   .stat-item .sv { font-size:28px; }
   .page-hero { height:220px !important; }
-  /* Pill-shaped CTAs on mobile */
-  .hero-actions .btn { width:100%; justify-content:center; border-radius:999px; }
+  /* Pill-shaped CTAs on mobile — side by side (ref img 8) */
+  .hero-actions { display:flex; gap:10px; }
+  .hero-actions .btn { flex:1; justify-content:center; border-radius:999px; padding-left:10px; padding-right:10px; font-size:13px; white-space:nowrap; }
   .sell-band .btn { width:100%; justify-content:center; border-radius:999px; }
   .ctaband-actions .btn { flex:1; justify-content:center; min-width:0; border-radius:999px; }
   .mobile-bar .mb-item span { font-size:10px; }
   .kicker { margin-bottom:8px; }
   .sb-field { padding:10px 12px; }
   .stats-row { grid-template-columns:repeat(2,1fr) !important; }
-  /* car cards on index — show icons, 2×2 spec grid */
+  .sec-head { flex-direction:row; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:20px; }
+  .sec-head .sh-l { min-width:0; }
+  .sec-head h2 { font-size:20px; }
+  .see-all { font-size:12px; white-space:nowrap; flex-shrink:0; }
+
+  /* Hero kicker/buttons app-look */
+  .hero-trust { display:none; }
+
+  /* Hide auto-scroll vitrine on mobile (app shows static featured list) */
+  .vitrine-sec { display:none !important; }
+
+  /* Öne Çıkan Araçlar — app-style horizontal list cards (ref img 8) */
   .sc-ic { display:block; }
-  .cars-grid .spec-row, .vitrine-track .spec-row { flex-wrap:wrap; border:none; border-radius:0; margin-bottom:10px; }
-  .cars-grid .spec-cell, .vitrine-track .spec-cell { flex:0 0 50%; display:flex; align-items:center; gap:3px; border:none !important; padding:3px 6px; }
-  .cars-grid .spec-cell b, .vitrine-track .spec-cell b { font-size:11px; font-weight:500; }
-  .cars-grid .spec-cell span, .vitrine-track .spec-cell span { display:none; }
-  .sec-head { flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:28px; }
-  .sec-head h2 { font-size:22px; }
+  .cars-grid { grid-template-columns:1fr; gap:10px; }
+  .cars-grid .car {
+    display:flex !important; flex-direction:row !important;
+    align-items:stretch; border-radius:var(--r); position:relative;
+    border-left:3px solid rgba(59,128,255,0.45) !important;
+  }
+  .cars-grid .car::after {
+    content:'›'; position:absolute; right:12px; top:50%;
+    transform:translateY(-50%); font-size:24px; font-weight:700;
+    color:var(--blue); pointer-events:none;
+  }
+  .cars-grid .car .cimg {
+    width:116px; flex:0 0 116px; aspect-ratio:unset !important;
+    height:auto; border-radius:0;
+  }
+  .cars-grid .car .cbody {
+    padding:11px 34px 11px 13px; flex:1; min-width:0;
+    display:flex; flex-direction:column; justify-content:center; gap:2px;
+  }
+  .cars-grid .car .cbody h3 {
+    font-size:13.5px; font-weight:700; margin-bottom:2px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .cars-grid .car .spec-row { flex-wrap:wrap; gap:0; margin:1px 0; border:none; border-radius:0; }
+  .cars-grid .car .spec-cell { flex:0 0 50%; display:flex; align-items:center; gap:3px; border:none !important; padding:1px 0; text-align:left; }
+  .cars-grid .car .spec-cell b { font-size:11px; font-weight:500; color:var(--ink-2); }
+  .cars-grid .car .spec-cell span { display:none; }
+  .cars-grid .car .crow { padding-top:4px; border:none; }
+  .cars-grid .car .cprice { font-size:15px; font-weight:800; }
+  .cars-grid .car .clink { display:none !important; }
+  .cars-grid .car .fav { top:8px; right:8px; width:28px; height:28px; }
 }

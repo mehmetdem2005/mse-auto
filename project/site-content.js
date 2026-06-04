@@ -10,12 +10,13 @@ window.MSE_CONTENT = {
   },
 
   hero: {
-    kicker:    "MSE Auto · 2. El Galeri",
-    title:     "Doğru araç,",
-    titleEm:   "doğru fiyatla.",
-    sub:       "Aramak da satmak da kolay. Araçları yüksek çözünürlüklü görünümle inceleyin ya da aracınızı değerinde nakde çevirin.",
+    kicker:    "Performans · Prestij · Güven",
+    title:     "Size Uygun",
+    titleEm:   "Aracı",
+    titleRest: "Bulun",
+    sub:       "En kaliteli markalar, en uygun modeller ve size özel çözümlerle hayalinizdeki araca bir adım daha yakınsınız.",
     primary:   "Araçları Keşfet",
-    secondary: "Aracımı Sat",
+    secondary: "Tanıtım Videosu",
   },
 
   trust: {
@@ -25,7 +26,7 @@ window.MSE_CONTENT = {
   },
 
   vitrine: { kicker: "Öne Çıkanlar", title: "Vitrindeki araçlar", link: "Tüm araçlar" },
-  gallery: { kicker: "Galeri",       title: "Satılık araçlar",    link: "Galeriye git" },
+  gallery: { kicker: "Öne Çıkanlar", title: "Öne Çıkan Araçlar",  link: "Tüm Araçları Gör" },
 
   stats: {
     s1: { val: "8+",     label: "Marka"          },
