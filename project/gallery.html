@@ -441,8 +441,11 @@
   /* ── URL params ── */
   var params = new URLSearchParams(window.location.search);
   var urlBrand = params.get("brand") || "";
+  var urlModel = params.get("model") || "";
   var urlYear = params.get("year") || "";
   var urlMaxKm = params.get("maxkm") || "";
+  var urlFuel = params.get("fuel") || "";
+  var urlTrans = params.get("trans") || "";
 
   /* ── Populate filters ── */
   function populateFilters() {
@@ -482,13 +485,19 @@
     /* Fuel */
     var fuelEl = document.getElementById("fuelFilter");
     if (fuelEl) {
-      fuels.forEach(function (f) { var o = document.createElement("option"); o.value = f; o.textContent = f; fuelEl.appendChild(o); });
+      fuels.forEach(function (f) { var o = document.createElement("option"); o.value = f; o.textContent = f; if (urlFuel && urlFuel.toLowerCase() === f.toLowerCase()) o.selected = true; fuelEl.appendChild(o); });
     }
 
     /* Transmission */
     var transEl = document.getElementById("transFilter");
     if (transEl) {
-      transmissions.forEach(function (t) { var o = document.createElement("option"); o.value = t; o.textContent = t; transEl.appendChild(o); });
+      transmissions.forEach(function (t) { var o = document.createElement("option"); o.value = t; o.textContent = t; if (urlTrans && urlTrans.toLowerCase() === t.toLowerCase()) o.selected = true; transEl.appendChild(o); });
+    }
+
+    /* Model from URL */
+    if (urlModel) {
+      var modelEl2 = document.getElementById("modelFilter");
+      if (modelEl2) Array.from(modelEl2.options).forEach(function(o){ if(o.value.toLowerCase()===urlModel.toLowerCase()) o.selected=true; });
     }
 
     /* Max km from URL */
@@ -698,6 +707,20 @@
   if (urlBrand) {
     activeBrands = [urlBrand];
     activeQuickBrand = urlBrand;
+  }
+
+  var urlBudget = params.get("budget") || "";
+  if (urlBudget) {
+    var minEl = document.getElementById("minPrice"), maxEl2 = document.getElementById("maxPrice");
+    if (urlBudget.endsWith("+")) {
+      if (minEl) minEl.value = urlBudget.replace("+", "");
+    } else {
+      var parts = urlBudget.split("-");
+      if (parts.length === 2) {
+        if (minEl) minEl.value = parts[0];
+        if (maxEl2) maxEl2.value = parts[1];
+      }
+    }
   }
 
   populateFilters();

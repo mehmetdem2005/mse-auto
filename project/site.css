@@ -355,9 +355,11 @@ input,textarea,select { font-family: inherit; }
   .hero { padding-top:calc(var(--hdr) + 24px); }
   .hero h1 { font-size:36px; }
   .hero-inner { grid-template-columns:1fr; }
-  .searchbar { flex-wrap:wrap; }
+  .searchbar { display:grid; grid-template-columns:1fr 1fr; }
   .sb-field { border-right:none; border-bottom:1px solid var(--border); }
-  .sb-btn { width:100%; padding:14px; justify-content:center; }
+  .sb-field:nth-child(odd) { border-right:1px solid var(--border); }
+  .sb-field:nth-last-child(2), .sb-field:nth-last-child(3) { border-bottom:none; }
+  .sb-btn { grid-column:1/-1; width:100%; padding:14px; justify-content:center; margin:0; border-radius:0 0 var(--r-xl) var(--r-xl); }
   .sec { padding:56px 0; }
   .sec-head h2 { font-size:26px; }
   .cars-grid { grid-template-columns:1fr; }

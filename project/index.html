@@ -100,8 +100,23 @@
               <select id="sbYear"><option value="">Tümü</option></select>
             </div>
             <div class="sb-field">
-              <label>Max Km</label>
-              <input type="text" id="sbKm" placeholder="500.000" />
+              <label>Bütçe</label>
+              <select id="sbBudget">
+                <option value="">Tümü</option>
+                <option value="0-100000">0 – 100.000 ₺</option>
+                <option value="100000-250000">100.000 – 250.000 ₺</option>
+                <option value="250000-500000">250.000 – 500.000 ₺</option>
+                <option value="500000-1000000">500.000 – 1.000.000 ₺</option>
+                <option value="1000000+">1.000.000 ₺ üzeri</option>
+              </select>
+            </div>
+            <div class="sb-field">
+              <label>Yakıt</label>
+              <select id="sbFuel"><option value="">Tümü</option></select>
+            </div>
+            <div class="sb-field">
+              <label>Vites</label>
+              <select id="sbTrans"><option value="">Tümü</option></select>
             </div>
             <button class="btn btn-blue sb-btn" id="sbSearch">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -369,16 +384,29 @@
   document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
   var cars = (window.MSE_DB ? window.MSE_DB.getCars() : []);
   var brands = [...new Set(cars.map(function(c){ return c.brand; }).filter(Boolean))].sort();
+  var models = [...new Set(cars.map(function(c){ return c.model; }).filter(Boolean))].sort();
   var years = [...new Set(cars.map(function(c){ return c.year; }).filter(Boolean))].sort(function(a,b){ return b-a; });
-  var sbBrand=document.getElementById("sbBrand"), sbYear=document.getElementById("sbYear");
+  var fuels = [...new Set(cars.map(function(c){ return c.fuel; }).filter(Boolean))].sort();
+  var transmissions = [...new Set(cars.map(function(c){ return c.transmission; }).filter(Boolean))].sort();
+  var sbBrand=document.getElementById("sbBrand"), sbModel=document.getElementById("sbModel"),
+      sbYear=document.getElementById("sbYear"), sbFuel=document.getElementById("sbFuel"),
+      sbTrans=document.getElementById("sbTrans");
   brands.forEach(function(b){ var o=document.createElement("option"); o.value=b; o.textContent=b; sbBrand.appendChild(o); });
+  models.forEach(function(m){ var o=document.createElement("option"); o.value=m; o.textContent=m; sbModel.appendChild(o); });
   years.forEach(function(y){ var o=document.createElement("option"); o.value=y; o.textContent=y; sbYear.appendChild(o); });
-  document.getElementById("sbSearch").addEventListener("click",function(e){
-    var b=document.getElementById("sbBrand").value, y=document.getElementById("sbYear").value, k=document.getElementById("sbKm").value;
+  fuels.forEach(function(f){ var o=document.createElement("option"); o.value=f; o.textContent=f; sbFuel.appendChild(o); });
+  transmissions.forEach(function(t){ var o=document.createElement("option"); o.value=t; o.textContent=t; sbTrans.appendChild(o); });
+  document.getElementById("sbSearch").addEventListener("click",function(){
+    var b=document.getElementById("sbBrand").value, m=document.getElementById("sbModel").value,
+        y=document.getElementById("sbYear").value, budget=document.getElementById("sbBudget").value,
+        fuel=document.getElementById("sbFuel").value, trans=document.getElementById("sbTrans").value;
     var p=[];
     if(b) p.push("brand="+encodeURIComponent(b));
+    if(m) p.push("model="+encodeURIComponent(m));
     if(y) p.push("year="+encodeURIComponent(y));
-    if(k) p.push("maxkm="+encodeURIComponent(k));
+    if(budget) p.push("budget="+encodeURIComponent(budget));
+    if(fuel) p.push("fuel="+encodeURIComponent(fuel));
+    if(trans) p.push("trans="+encodeURIComponent(trans));
     location.href="gallery.html"+(p.length?"?"+p.join("&"):"");
   });
 })();
