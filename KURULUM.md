@@ -36,10 +36,12 @@
 ## 3. Admin Panel Girişi
 
 **URL:** https://mehmetdem2005.github.io/mse-auto/admin.html  
-**Kullanıcı adı:** `admin`  
+**E-posta:** `admin@msesauto.com`  
 **Şifre:** `mseauto2024`
 
-Admin panelinden şifreyi değiştirebilirsiniz.
+- Supabase yapılandırılmışsa **Supabase Auth** ile giriş yapılır (e-posta/şifre).  
+- Supabase yoksa **yerel mod** devreye girer — varsayılan e-posta/şifre yukardakidir.  
+- Admin paneli → Ayarlar bölümünden e-posta ve şifre değiştirilebilir.
 
 ---
 
