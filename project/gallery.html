@@ -87,10 +87,14 @@
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .gallery-grid .car .spec-row {
-    grid-template-columns:1fr 1fr; margin-bottom:6px;
+    flex-wrap:wrap; margin-bottom:6px; border:none; border-radius:0;
   }
-  .gallery-grid .car .spec-cell b { font-size:11.5px; }
-  .gallery-grid .car .spec-cell span { font-size:9px; }
+  .gallery-grid .car .spec-cell {
+    flex:0 0 50%; border-right:none; border-bottom:1px solid var(--border); padding:5px 0;
+  }
+  .gallery-grid .car .spec-cell:nth-child(odd) { padding-right:6px; }
+  .gallery-grid .car .spec-cell b { font-size:11px; }
+  .gallery-grid .car .spec-cell span { font-size:8.5px; }
   .gallery-grid .car .crow { padding-top:6px; }
   .gallery-grid .car .cprice { font-size:15px; }
   .gallery-grid .car .clink { display:none !important; }
