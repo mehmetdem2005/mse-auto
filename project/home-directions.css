@@ -1,0 +1,394 @@
+/* ============================================================
+   MSE AUTO — Ana sayfa görsel yönleri (ortak + yöne özel stiller)
+   Üç yön: A "Sinematik Vitrin", B "Showroom Bold", C "Modern Ferah"
+   ============================================================ */
+
+:root {
+  --gold: #d4af37;
+  --gold-bright: #ebcb6b;
+  --gold-deep: #9c7a1e;
+  --ink: #0b0b0c;
+  --ink-2: #141416;
+  --ink-3: #1c1c1f;
+  --cream: #f3efe6;
+  --line: rgba(212, 175, 55, 0.22);
+}
+
+.home {
+  width: 1440px;
+  font-family: "Manrope", system-ui, sans-serif;
+  color: #fff;
+  background: var(--ink);
+  overflow: hidden;
+  position: relative;
+}
+.home * { box-sizing: border-box; }
+
+/* ---------- NAV (shared skeleton) ---------- */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 26px 56px;
+  position: relative;
+  z-index: 5;
+}
+.nav-logo { display: flex; align-items: baseline; gap: 4px; }
+.nav-logo .mark {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-size: 28px;
+  color: #fff;
+}
+.nav-logo .mark b { color: var(--gold); }
+.nav-logo .sub {
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-left: 2px;
+}
+.nav-links {
+  display: flex;
+  gap: 34px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.nav-links li { color: rgba(255, 255, 255, 0.82); cursor: pointer; white-space: nowrap; }
+.nav-links li:hover { color: var(--gold); }
+.nav-cta {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: var(--gold);
+  color: #111;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: 999px;
+}
+
+/* ---------- VITRINE marquee (shared) ---------- */
+.vitrine { padding: 0 0 64px; position: relative; }
+.vitrine-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 56px 24px;
+}
+.vitrine-track-wrap { overflow: hidden; width: 100%; }
+.vitrine-track {
+  display: flex;
+  gap: 20px;
+  padding: 0 56px;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+.vitrine:hover .vitrine-track { animation-play-state: paused; }
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.vcard {
+  width: 320px;
+  flex: 0 0 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+}
+.vcard .slot { width: 100%; height: 200px; display: block; }
+.vcard image-slot { width: 100%; height: 100%; display: block; }
+.vcard .vmeta { padding: 16px 18px; }
+.vcard .vmeta h4 { margin: 0 0 4px; font-size: 17px; font-weight: 700; }
+.vcard .vmeta p { margin: 0; font-size: 13px; color: rgba(255, 255, 255, 0.55); }
+.vcard .vprice { margin-top: 10px; color: var(--gold); font-weight: 800; font-size: 16px; }
+
+/* ---------- FEATURED grid (shared) ---------- */
+.featured { padding: 8px 56px 70px; }
+.feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.fcard {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--ink-2);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: transform 0.3s, border-color 0.3s;
+}
+.fcard:hover { transform: translateY(-6px); border-color: var(--line); }
+.fcard .fimg { position: relative; height: 230px; }
+.fcard image-slot { width: 100%; height: 100%; display: block; }
+.fcard .badge3d {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(11, 11, 12, 0.78);
+  border: 1px solid var(--line);
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 5px 10px;
+  border-radius: 7px;
+  backdrop-filter: blur(6px);
+}
+.fcard .fbody { padding: 18px 20px 22px; }
+.fcard .fbody h3 { margin: 0 0 4px; font-size: 19px; font-weight: 700; }
+.fcard .fbody .fspecs { display: flex; gap: 14px; font-size: 12.5px; color: rgba(255, 255, 255, 0.5); margin: 8px 0 14px; }
+.fcard .fbody .fspecs span::before { content: "•"; color: var(--gold); margin-right: 6px; }
+.fcard .fbody .fspecs span:first-child::before { content: none; }
+.fcard .frow { display: flex; align-items: center; justify-content: space-between; }
+.fcard .fprice { color: var(--gold); font-weight: 800; font-size: 21px; }
+.fcard .faddr { font-size: 11px; color: rgba(255, 255, 255, 0.4); margin-top: 12px; display: flex; align-items: center; gap: 5px; }
+
+/* ---------- SELL band (shared) ---------- */
+.sellband {
+  margin: 0 56px 64px;
+  border-radius: 22px;
+  padding: 54px 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.sellband .sb-text { max-width: 560px; display: flex; flex-direction: column; align-items: flex-start; }
+.sellband .sb-kick { color: var(--gold); font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; }
+.sellband .sb-title { font-size: 40px; line-height: 1.1; margin: 14px 0 14px; font-weight: 800; }
+.sellband .sb-sub { font-size: 16px; color: rgba(255, 255, 255, 0.7); line-height: 1.5; }
+.sellband .sb-cta {
+  margin-top: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gold);
+  color: #111;
+  font-weight: 800;
+  font-size: 16px;
+  padding: 15px 30px;
+  border-radius: 999px;
+}
+.sellband .sb-steps { display: flex; flex-direction: column; gap: 16px; }
+.sellband .sb-step { display: flex; gap: 14px; align-items: center; }
+.sellband .sb-step .n {
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; flex: 0 0 42px;
+}
+.sellband .sb-step .t { font-size: 15px; }
+.sellband .sb-step .t b { display: block; font-weight: 700; }
+.sellband .sb-step .t span { color: rgba(255, 255, 255, 0.55); font-size: 13px; }
+
+/* ---------- FOOTER mini (shared) ---------- */
+.foot {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 36px 56px 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 13px;
+}
+.foot .fcol h5 { color: #fff; font-size: 14px; margin: 0 0 12px; }
+.foot .fcol p { margin: 4px 0; }
+
+/* ---------- AI bubble (shared) ---------- */
+.ai-bubble {
+  position: absolute;
+  right: 34px;
+  bottom: 34px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 30;
+}
+.ai-bubble .label {
+  background: rgba(20, 20, 22, 0.92);
+  border: 1px solid var(--line);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+.ai-bubble .label b { color: var(--gold); }
+.ai-orb {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, var(--gold-bright), var(--gold-deep));
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 12px 34px rgba(212, 175, 55, 0.45);
+  flex: 0 0 64px;
+}
+.ai-orb svg { width: 30px; height: 30px; }
+
+/* common section kicker */
+.kicker { color: var(--gold); font-size: 13px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; }
+.sec-title { font-size: 30px; font-weight: 800; margin: 10px 0 0; }
+.sec-link { color: var(--gold); font-size: 14px; font-weight: 700; }
+
+/* ====================================================================
+   DIRECTION A — "Sinematik Vitrin"  (serif elegance, ultra dark)
+   ==================================================================== */
+.dir-a { font-family: "Jost", sans-serif; background: #08080a; }
+.dir-a .nav-logo .mark { font-family: "Jost", sans-serif; }
+.dir-a .hero {
+  position: relative;
+  min-height: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 320px 56px 70px;
+}
+.dir-a .hero-img { position: absolute; inset: 0; }
+.dir-a .hero-img image-slot { width: 100%; height: 100%; display: block; }
+.dir-a .hero::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(8, 8, 10, 0.92) 0%, rgba(8, 8, 10, 0.55) 42%, rgba(8, 8, 10, 0.1) 100%),
+    linear-gradient(0deg, rgba(8, 8, 10, 0.95), rgba(8, 8, 10, 0) 55%);
+}
+.dir-a .hero-content { position: relative; z-index: 2; max-width: 700px; }
+.dir-a .hero-kick {
+  color: var(--gold);
+  letter-spacing: 0.32em;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-bottom: 22px;
+}
+.dir-a .hero h1 {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 600;
+  font-size: 84px;
+  line-height: 0.98;
+  margin: 0 0 22px;
+  letter-spacing: -0.01em;
+}
+.dir-a .hero h1 em { color: var(--gold); font-style: italic; }
+.dir-a .hero p { font-size: 18px; color: rgba(255, 255, 255, 0.72); max-width: 520px; line-height: 1.55; margin: 0 0 30px; }
+.dir-a .hero-actions { display: flex; gap: 14px; }
+.dir-a .btn-gold { background: var(--gold); color: #111; font-weight: 700; padding: 15px 30px; border-radius: 4px; font-size: 15px; }
+.dir-a .btn-ghost { border: 1px solid var(--line); color: #fff; padding: 15px 30px; border-radius: 4px; font-size: 15px; font-weight: 600; }
+.dir-a .hero-stats { position: absolute; right: 56px; bottom: 70px; z-index: 2; display: flex; gap: 40px; text-align: right; }
+.dir-a .hero-stats .st b { font-family: "Cormorant Garamond", serif; display: block; font-size: 44px; color: var(--gold); line-height: 1; }
+.dir-a .hero-stats .st span { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); }
+.dir-a .vitrine { padding-top: 64px; }
+.dir-a .vitrine-head h2 { font-family: "Cormorant Garamond", serif; font-weight: 600; }
+.dir-a .sec-title, .dir-a .sellband .sb-title { font-family: "Cormorant Garamond", serif; font-weight: 600; }
+.dir-a .sellband { background: linear-gradient(115deg, #15110a, #0c0c0e); border: 1px solid var(--line); }
+.dir-a .sellband .sb-title { font-size: 46px; }
+
+/* ====================================================================
+   DIRECTION B — "Showroom Bold"  (heavy grotesque, gold blocks)
+   ==================================================================== */
+.dir-b { font-family: "Manrope", sans-serif; background: #0a0a0a; }
+.dir-b .nav-logo .mark { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 30px; }
+.dir-b .hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 30px 56px 60px;
+  gap: 30px;
+  position: relative;
+}
+.dir-b .hero::before {
+  content: "MSE";
+  position: absolute;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: 360px;
+  color: rgba(212, 175, 55, 0.05);
+  right: -30px;
+  top: -40px;
+  z-index: 0;
+  letter-spacing: -0.04em;
+}
+.dir-b .hero-content { position: relative; z-index: 2; }
+.dir-b .hero-kick { display: inline-block; background: rgba(212, 175, 55, 0.12); border: 1px solid var(--line); color: var(--gold); font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; padding: 8px 14px; border-radius: 6px; }
+.dir-b .hero h1 {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-weight: 800;
+  font-size: 74px;
+  line-height: 0.96;
+  letter-spacing: -0.02em;
+  margin: 22px 0 18px;
+}
+.dir-b .hero h1 .hl { color: var(--gold); }
+.dir-b .hero p { font-size: 17px; color: rgba(255, 255, 255, 0.7); line-height: 1.55; max-width: 440px; margin: 0 0 28px; }
+.dir-b .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+.dir-b .btn-gold { background: var(--gold); color: #111; font-weight: 800; padding: 16px 30px; border-radius: 10px; font-size: 15px; }
+.dir-b .btn-ghost { border: 1.5px solid var(--gold); color: var(--gold); padding: 16px 30px; border-radius: 10px; font-size: 15px; font-weight: 700; }
+.dir-b .hero-visual { position: relative; z-index: 2; border-radius: 18px; overflow: hidden; height: 460px; border: 1px solid var(--line); }
+.dir-b .hero-visual image-slot { width: 100%; height: 100%; display: block; }
+.dir-b .hero-trust { position: absolute; left: 18px; bottom: 18px; right: 18px; display: flex; gap: 10px; }
+.dir-b .hero-trust .chip { background: rgba(11, 11, 12, 0.82); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; flex: 1; backdrop-filter: blur(6px); }
+.dir-b .hero-trust .chip b { display: block; color: var(--gold); font-size: 14px; }
+.dir-b .hero-trust .chip span { font-size: 11px; color: rgba(255, 255, 255, 0.6); }
+.dir-b .sec-title, .dir-b .vitrine-head h2 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; }
+.dir-b .sellband { background: var(--gold); color: #111; }
+.dir-b .sellband .sb-kick { color: #6b4e00; }
+.dir-b .sellband .sb-title { font-family: "Bricolage Grotesque", sans-serif; color: #111; font-size: 42px; }
+.dir-b .sellband .sb-sub { color: rgba(0, 0, 0, 0.65); }
+.dir-b .sellband .sb-cta { background: #111; color: var(--gold); }
+.dir-b .sellband .sb-step .n { border-color: #111; color: #111; }
+.dir-b .sellband .sb-step .t span { color: rgba(0, 0, 0, 0.6); }
+
+/* ====================================================================
+   DIRECTION C — "Modern Ferah"  (charcoal + cream, rounded, approachable)
+   ==================================================================== */
+.dir-c { font-family: "Manrope", sans-serif; background: var(--cream); color: #15140f; }
+.dir-c .nav { background: #0b0b0c; color: #fff; }
+.dir-c .nav-logo .mark { font-family: "Space Grotesk", sans-serif; }
+.dir-c .hero {
+  background: #0b0b0c;
+  color: #fff;
+  padding: 20px 56px 64px;
+  position: relative;
+  border-radius: 0 0 36px 36px;
+}
+.dir-c .hero-inner { display: grid; grid-template-columns: 1.05fr 1fr; gap: 36px; align-items: center; }
+.dir-c .hero-kick { color: var(--gold); font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+.dir-c .hero h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 62px; line-height: 1.02; letter-spacing: -0.02em; margin: 18px 0 18px; }
+.dir-c .hero h1 .hl { color: var(--gold); }
+.dir-c .hero p { font-size: 17px; color: rgba(255, 255, 255, 0.72); line-height: 1.55; max-width: 440px; margin: 0 0 26px; }
+.dir-c .hero-search {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+.dir-c .hero-search .field { flex: 1; }
+.dir-c .hero-search .field span { font-size: 11px; color: #888; display: block; }
+.dir-c .hero-search .field b { font-size: 14px; color: #15140f; }
+.dir-c .hero-search .field + .field { border-left: 1px solid #eee; padding-left: 14px; }
+.dir-c .hero-search .go { background: var(--gold); color: #111; font-weight: 800; border-radius: 10px; padding: 14px 22px; font-size: 14px; }
+.dir-c .hero-visual { border-radius: 20px; overflow: hidden; height: 400px; position: relative; }
+.dir-c .hero-visual image-slot { width: 100%; height: 100%; display: block; }
+.dir-c .hero-visual .vtag { position: absolute; top: 14px; left: 14px; background: rgba(11,11,12,.8); color: var(--gold); font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 8px; backdrop-filter: blur(6px); letter-spacing: .08em; }
+/* light sections */
+.dir-c .vitrine { background: var(--cream); padding-top: 56px; }
+.dir-c .vitrine-head h2, .dir-c .sec-title { font-family: "Space Grotesk", sans-serif; font-weight: 700; color: #15140f; }
+.dir-c .vitrine-head .kicker, .dir-c .featured .kicker { color: var(--gold-deep); }
+.dir-c .vcard { background: #fff; border: 1px solid #e7e1d4; }
+.dir-c .vcard .vmeta h4 { color: #15140f; }
+.dir-c .vcard .vmeta p { color: #8a8madd; color: #8a857a; }
+.dir-c .vcard .vprice { color: var(--gold-deep); }
+.dir-c .featured { background: var(--cream); }
+.dir-c .fcard { background: #fff; border: 1px solid #e7e1d4; }
+.dir-c .fcard .fbody h3 { color: #15140f; }
+.dir-c .fcard .fbody .fspecs { color: #8a857a; }
+.dir-c .fcard .fprice { color: var(--gold-deep); }
+.dir-c .fcard .faddr { color: #a39d8f; }
+.dir-c .fcard .badge3d { background: rgba(255,255,255,.9); color: var(--gold-deep); border-color: #e7e1d4; }
+.dir-c .sec-link { color: var(--gold-deep); }
+.dir-c .sellband { background: #0b0b0c; color: #fff; }
+.dir-c .sellband .sb-title { font-family: "Space Grotesk", sans-serif; }
+.dir-c .foot { background: #0b0b0c; color: rgba(255,255,255,.55); border-radius: 36px 36px 0 0; margin-top: 0; }
+.dir-c .foot .fcol h5 { color: #fff; }
