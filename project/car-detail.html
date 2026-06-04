@@ -156,7 +156,7 @@
   border-radius: 999px; font-size: 11.5px; font-weight: 700; padding: 5px 12px; letter-spacing: 0.06em; text-transform: uppercase;
 }
 .spec-bar {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   margin: 20px 0; padding: 18px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
 }
 .spec-bar .sc { text-align: center; }
@@ -379,6 +379,8 @@
         <div class="sc"><b id="specKm">&#8212;</b><span>Km</span></div>
         <div class="sc"><b id="specFuel">&#8212;</b><span>Yakıt</span></div>
         <div class="sc"><b id="specGear">&#8212;</b><span>Vites</span></div>
+        <div class="sc"><b id="specBrand">&#8212;</b><span>Marka</span></div>
+        <div class="sc"><b id="specColor">&#8212;</b><span>Renk</span></div>
       </div>
 
       <div class="price-display">
@@ -639,7 +641,9 @@
     set("specYear", car.year || "—");
     set("specKm", car.km || "—");
     set("specFuel", car.fuel || "—");
-    set("specGear", car.gear || "—");
+    set("specGear", car.transmission || "—");
+    set("specBrand", car.brand || "—");
+    set("specColor", car.color || "—");
 
     var priceBlock = document.getElementById("priceBlock");
     if (priceBlock) {

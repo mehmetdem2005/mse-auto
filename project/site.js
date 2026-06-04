@@ -39,6 +39,12 @@
   ];
   const photoAt = (i) => `https://images.unsplash.com/photo-${PHOTOS[i % PHOTOS.length]}?auto=format&fit=crop&w=720&q=72`;
 
+  /* ---- spec icons (shared across cards) ---- */
+  const IC_CAL  = '<svg class="sc-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2.5" width="14" height="12" rx="2"/><line x1="1" y1="6.5" x2="15" y2="6.5"/><line x1="5" y1=".5" x2="5" y2="4.5"/><line x1="11" y1=".5" x2="11" y2="4.5"/></svg>';
+  const IC_KM   = '<svg class="sc-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11a6 6 0 1 1 12 0"/><line x1="8" y1="11" x2="5.5" y2="7"/></svg>';
+  const IC_FUEL = '<svg class="sc-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="8" height="12" rx="1"/><line x1="2" y1="7" x2="10" y2="7"/><path d="M10 6l3-2 1 1v7a1 1 0 0 1-2 0V9"/></svg>';
+  const IC_GEAR = '<svg class="sc-ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M3.6 12.4l1.4-1.4M11 5l1.4-1.4"/></svg>';
+
   /* ---- car card ---- */
   const carCard = (c, extra = "", i = 0) => `
     <a class="car ${extra}" href="car-detail.html?id=${esc(c.id)}">
@@ -50,16 +56,15 @@
       <div class="cbody">
         <h3>${esc(c.title)}</h3>
         <div class="spec-row">
-          <div class="spec-cell"><b>${esc(c.year || "—")}</b><span>Yıl</span></div>
-          <div class="spec-cell"><b>${esc(c.km || "—")}</b><span>km</span></div>
-          <div class="spec-cell"><b>${esc(c.fuel || "—")}</b><span>Yakıt</span></div>
-          <div class="spec-cell"><b>${esc(c.transmission || "—")}</b><span>Vites</span></div>
+          <div class="spec-cell sc-year">${IC_CAL}<b>${esc(c.year || "—")}</b><span>Yıl</span></div>
+          <div class="spec-cell sc-km">${IC_KM}<b>${esc(c.km || "—")}</b><span>km</span></div>
+          <div class="spec-cell sc-fuel">${IC_FUEL}<b>${esc(c.fuel || "—")}</b><span>Yakıt</span></div>
+          <div class="spec-cell sc-trans">${IC_GEAR}<b>${esc(c.transmission || "—")}</b><span>Vites</span></div>
         </div>
         <div class="crow">
           <div class="cprice">${esc(c.price || "—")}</div>
           <span class="clink">İncele <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
         </div>
-        ${S.address ? `<div class="caddr">📍 ${esc(S.address)}</div>` : ""}
       </div>
     </a>`;
 
