@@ -118,7 +118,7 @@
         var linkPage = href.split("/").pop();
         if (linkPage === page) {
           a.setAttribute("aria-current", "page");
-          a.style.color = "var(--gold, #a87f1d)";
+          a.style.color = "var(--blue, #3b80ff)";
         }
       }
     });

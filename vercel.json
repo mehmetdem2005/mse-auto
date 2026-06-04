@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "name": "mse-auto",
+  "builds": [
+    {
+      "src": "project/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/project/index.html" },
+    { "src": "/gallery", "dest": "/project/gallery.html" },
+    { "src": "/gallery.html", "dest": "/project/gallery.html" },
+    { "src": "/car-detail.html", "dest": "/project/car-detail.html" },
+    { "src": "/sell.html", "dest": "/project/sell.html" },
+    { "src": "/about.html", "dest": "/project/about.html" },
+    { "src": "/contact.html", "dest": "/project/contact.html" },
+    { "src": "/blog.html", "dest": "/project/blog.html" },
+    { "src": "/faq.html", "dest": "/project/faq.html" },
+    { "src": "/admin.html", "dest": "/project/admin.html" },
+    { "src": "/(.*)", "dest": "/project/$1" }
+  ]
+}
