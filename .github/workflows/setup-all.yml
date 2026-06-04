@@ -9,6 +9,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check prerequisites
+        env:
+          SUPABASE_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_KEY }}
+          RENDER_KEY:     ${{ secrets.RENDER_API_KEY }}
+          GH_PAT:         ${{ secrets.GH_PAT }}
+        run: |
+          echo "SUPABASE_TOKEN set: $([ -n "$SUPABASE_TOKEN" ] && echo YES || echo NO) (${SUPABASE_TOKEN:0:8}...)"
+          echo "RENDER_KEY set:     $([ -n "$RENDER_KEY"     ] && echo YES || echo NO) (${RENDER_KEY:0:8}...)"
+          echo "GH_PAT set:         $([ -n "$GH_PAT"         ] && echo YES || echo NO)"
+          echo "gh version: $(gh --version | head -1)"
+          python3 --version
+
       - name: Run setup script
         env:
           SUPABASE_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_KEY }}
