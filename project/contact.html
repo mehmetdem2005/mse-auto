@@ -8,47 +8,109 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="site.css" />
 <style>
+/* ── Page hero ── */
+.page-hero { position:relative; display:flex; align-items:flex-end; overflow:hidden; padding-top:var(--hdr); }
+.page-hero-bg { position:absolute; inset:0; z-index:0; }
+.page-hero-bg img { width:100%; height:100%; object-fit:cover; object-position:center 60%; filter:brightness(0.3) saturate(0.65); display:block; }
+.page-hero-bg::after { content:""; position:absolute; inset:0; background:linear-gradient(100deg,rgba(7,9,15,0.94) 0%,rgba(7,9,15,0.68) 55%,rgba(7,9,15,0.2) 100%); }
+.page-hero-content { position:relative; z-index:2; width:100%; padding:56px 0 52px; }
+.breadcrumb { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:500; color:var(--ink-3); margin-bottom:18px; }
+.breadcrumb a { color:var(--ink-3); transition:color 0.2s; }
+.breadcrumb a:hover { color:var(--blue); }
+.breadcrumb svg { color:var(--ink-3); flex-shrink:0; }
+.page-hero-content h1 { font-size:46px; font-weight:800; letter-spacing:-0.025em; margin-bottom:14px; }
+.page-hero-content p { font-size:16px; color:var(--ink-2); max-width:520px; line-height:1.72; }
+
 /* ── Info cards row ── */
-.info-cards-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; padding: 52px 0 44px; }
-.info-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 26px 22px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.3s, transform 0.3s var(--ease); }
-.info-card:hover { border-color: var(--border-b); transform: translateY(-4px); }
-.info-card .ic { width: 48px; height: 48px; border-radius: 13px; background: rgba(59,128,255,0.1); display: flex; align-items: center; justify-content: center; color: var(--blue); flex: 0 0 48px; }
-.info-card .ic-wa { width: 48px; height: 48px; border-radius: 13px; background: rgba(34,197,94,0.12); display: flex; align-items: center; justify-content: center; color: var(--green); flex: 0 0 48px; }
-.info-card h3 { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0; }
-.info-card .val { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; margin: 0; }
-.info-card .val a { color: var(--ink-2); transition: color 0.2s; }
-.info-card .val a:hover { color: var(--blue); }
+.info-cards-row { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; padding:52px 0 40px; }
+.info-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:28px 24px; display:flex; flex-direction:column; gap:12px; transition:border-color 0.3s,transform 0.3s var(--ease); }
+.info-card:hover { border-color:var(--border-b); transform:translateY(-4px); }
+.info-card .ic { width:48px; height:48px; border-radius:13px; background:rgba(59,128,255,0.12); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); flex:0 0 48px; }
+.info-card .ic-wa { width:48px; height:48px; border-radius:13px; background:linear-gradient(135deg,#25d366,#1da851); display:flex; align-items:center; justify-content:center; color:#fff; flex:0 0 48px; box-shadow:0 6px 20px -6px rgba(37,211,102,0.4); }
+.info-card h3 { font-size:14px; font-weight:700; color:var(--ink); margin:0; }
+.info-card .val { font-size:13.5px; color:var(--ink-2); line-height:1.62; margin:0; }
+.info-card .val a { color:var(--ink-2); text-decoration:none; transition:color 0.2s; }
+.info-card .val a:hover { color:var(--blue); }
 
 /* ── WhatsApp button ── */
-.btn-wa { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; background: linear-gradient(135deg,#25d366,#1da851); color: #fff; border-radius: var(--r); font-weight: 700; font-size: 12.5px; letter-spacing: 0.04em; transition: 0.25s; text-decoration: none; margin-top: 4px; box-shadow: 0 6px 18px -6px rgba(34,197,94,0.45); }
-.btn-wa:hover { background: linear-gradient(135deg,#1ebe5a,#179645); transform: translateY(-2px); box-shadow: 0 12px 28px -8px rgba(34,197,94,0.55); }
+.btn-wa { display:inline-flex; align-items:center; gap:8px; padding:11px 16px; background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border-radius:var(--r); font-weight:700; font-size:12.5px; letter-spacing:0.04em; text-transform:uppercase; transition:0.25s; text-decoration:none; box-shadow:0 6px 18px -6px rgba(37,211,102,0.4); }
+.btn-wa:hover { background:linear-gradient(135deg,#1ebe5a,#179645); transform:translateY(-2px); box-shadow:0 12px 28px -8px rgba(37,211,102,0.55); }
 
-/* ── Map + Form layout ── */
-.map-ph { height:420px; border-radius:var(--r-xl); background:var(--bg-2); border:1px solid var(--border); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--ink-3); font-size:14px; text-align:center; gap:10px; }
-.contact-grid { display:grid; grid-template-columns:1.1fr 0.9fr; gap:36px; }
-.contact-form .form-group { margin-bottom:16px; }
-.contact-form label { display:block; font-size:10.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3); margin-bottom:7px; }
-.contact-form input, .contact-form select, .contact-form textarea { width:100%; background:var(--bg-3); border:1px solid var(--border-2); border-radius:var(--r); padding:12px 14px; color:var(--ink); font-size:13.5px; outline:none; font-family:"Inter",sans-serif; -webkit-appearance:none; }
-.contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { border-color:var(--blue); }
-.contact-form select option { background:var(--bg-2); }
-.contact-form textarea { min-height:110px; resize:vertical; line-height:1.55; }
+/* ── Contact main layout ── */
+.contact-main { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; padding-bottom:0; }
+
+/* ── Form card ── */
+.contact-form-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:36px 32px; }
+.contact-form-card h2 { font-size:22px; font-weight:800; margin-bottom:6px; }
+.contact-form-card .form-sub { font-size:13.5px; color:var(--ink-2); line-height:1.55; margin-bottom:28px; display:block; }
+.fld-group { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+.fld-group label { font-size:11px; font-weight:700; letter-spacing:0.13em; text-transform:uppercase; color:var(--ink-3); }
+.fld-group input,
+.fld-group select,
+.fld-group textarea { border:1px solid var(--border-2); border-radius:var(--r); padding:12px 14px; font-size:14px; font-family:inherit; color:var(--ink); background:var(--bg-3); transition:border-color 0.2s,box-shadow 0.2s; width:100%; outline:none; }
+.fld-group input::placeholder,
+.fld-group textarea::placeholder { color:var(--ink-3); }
+.fld-group input:focus,
+.fld-group select:focus,
+.fld-group textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-glow); }
+.fld-group select { appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%236ba3ff' stroke-width='2'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 13px center; padding-right:36px; cursor:pointer; }
+.fld-group select option { background:var(--bg-2); color:var(--ink); }
+.fld-group textarea { resize:vertical; min-height:112px; line-height:1.58; }
+.fld-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+
+/* ── Contact info column ── */
+.contact-info-col { display:flex; flex-direction:column; gap:16px; }
+.ci-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:22px 20px; display:flex; align-items:flex-start; gap:15px; transition:border-color 0.3s; }
+.ci-card:hover { border-color:var(--border-b); }
+.ci-icon { width:42px; height:42px; border-radius:12px; background:rgba(59,128,255,0.12); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); flex:0 0 42px; }
+.ci-icon.ci-wa { background:linear-gradient(135deg,#25d366,#1da851); border-color:transparent; color:#fff; box-shadow:0 4px 14px -4px rgba(37,211,102,0.4); }
+.ci-body h4 { font-size:13px; font-weight:700; color:var(--ink); margin-bottom:4px; }
+.ci-body span, .ci-body a { font-size:13px; color:var(--ink-2); line-height:1.6; text-decoration:none; display:block; }
+.ci-body a:hover { color:var(--blue); }
+.ci-body .btn-wa { margin-top:10px; }
+
+/* ── Map placeholder ── */
+.map-placeholder { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); height:240px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; text-align:center; padding:32px; position:relative; overflow:hidden; }
+.map-placeholder::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.02) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.02) 40px); }
+.map-placeholder::after { content:""; position:absolute; width:300px; height:300px; top:-120px; right:-60px; border-radius:50%; background:radial-gradient(circle,rgba(59,128,255,0.1),transparent 65%); }
+.map-placeholder-inner { position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.map-pin { width:46px; height:46px; border-radius:50%; background:rgba(59,128,255,0.15); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); }
+.map-placeholder b { font-size:15px; font-weight:700; color:var(--ink); }
+.map-placeholder p { font-size:12.5px; color:var(--ink-3); max-width:240px; line-height:1.6; margin:0; }
+.map-tag { background:rgba(59,128,255,0.1); border:1px solid var(--border-b); color:var(--blue-bright); padding:5px 13px; border-radius:999px; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; }
 
 /* ── WhatsApp CTA band ── */
-.wa-band { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-xl); padding:48px 56px; display:flex; align-items:center; justify-content:space-between; gap:32px; }
-.wa-band h2 { font-size:28px; font-weight:800; }
-.wa-band p { font-size:15px; color:var(--ink-2); margin-top:8px; }
-.btn-wa-lg { display:inline-flex; align-items:center; gap:10px; padding:16px 28px; background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border-radius:var(--r-lg); font-weight:700; font-size:14px; letter-spacing:0.04em; transition:0.25s; text-decoration:none; white-space:nowrap; box-shadow:0 12px 32px -8px rgba(34,197,94,0.5); }
-.btn-wa-lg:hover { background:linear-gradient(135deg,#1ebe5a,#179645); transform:translateY(-2px); box-shadow:0 18px 40px -10px rgba(34,197,94,0.6); }
+.wa-band { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-xl); padding:52px 56px; display:flex; align-items:center; justify-content:space-between; gap:36px; margin:48px 0 80px; position:relative; overflow:hidden; }
+.wa-band::before { content:""; position:absolute; width:400px; height:400px; right:-80px; top:-180px; border-radius:50%; background:radial-gradient(circle,rgba(37,211,102,0.08),transparent 65%); pointer-events:none; }
+.wa-band::after { content:""; position:absolute; width:300px; height:300px; left:-60px; bottom:-140px; border-radius:50%; background:radial-gradient(circle,rgba(59,128,255,0.06),transparent 65%); pointer-events:none; }
+.wa-band-text { position:relative; z-index:1; }
+.wa-band-text .kicker { margin-bottom:12px; }
+.wa-band-text h2 { font-size:28px; font-weight:800; margin-bottom:10px; }
+.wa-band-text p { font-size:14.5px; color:var(--ink-2); max-width:420px; line-height:1.65; margin:0; }
+.wa-band-btn { position:relative; z-index:1; flex:0 0 auto; }
+.btn-wa-lg { display:inline-flex; align-items:center; gap:10px; padding:16px 28px; background:linear-gradient(135deg,#25d366,#1da851); color:#fff; border-radius:var(--r-lg); font-weight:700; font-size:14px; letter-spacing:0.05em; text-transform:uppercase; transition:0.25s; text-decoration:none; white-space:nowrap; box-shadow:0 12px 32px -8px rgba(37,211,102,0.45); }
+.btn-wa-lg:hover { background:linear-gradient(135deg,#1ebe5a,#179645); transform:translateY(-2px); box-shadow:0 18px 40px -8px rgba(37,211,102,0.6); }
 
 /* ── Toast ── */
-.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg-2); color:var(--ink); border:1px solid var(--border-2); border-radius:var(--r-lg); padding:14px 22px; font-size:14px; font-weight:600; box-shadow:var(--sh-lg); z-index:500; opacity:0; pointer-events:none; transition:0.4s var(--ease); display:flex; align-items:center; gap:10px; white-space:nowrap; }
+.toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--bg-4); color:var(--ink); border:1px solid var(--border-2); border-radius:var(--r-lg); padding:14px 22px; font-size:14px; font-weight:600; box-shadow:var(--sh-lg); z-index:500; opacity:0; pointer-events:none; transition:0.4s var(--ease); display:flex; align-items:center; gap:10px; white-space:nowrap; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-.toast .t-ic { width:28px; height:28px; border-radius:50%; background:var(--blue-grad); display:flex; align-items:center; justify-content:center; color:#fff; flex:0 0 28px; }
+.toast .t-ic { width:26px; height:26px; border-radius:50%; background:var(--blue-grad); display:flex; align-items:center; justify-content:center; color:#fff; flex:0 0 26px; }
 
 /* ── Responsive ── */
-@media(max-width:1100px){ .info-cards-row{grid-template-columns:1fr 1fr;} }
-@media(max-width:820px){ .contact-grid{grid-template-columns:1fr;} .wa-band{flex-direction:column;} .info-cards-row{grid-template-columns:1fr 1fr;} }
-@media(max-width:520px){ .info-cards-row{grid-template-columns:1fr;} .wa-band{padding:32px 24px;} }
+@media(max-width:1100px) { .info-cards-row { grid-template-columns:1fr 1fr; } }
+@media(max-width:900px) {
+  .contact-main { grid-template-columns:1fr; }
+  .wa-band { flex-direction:column; padding:36px 28px; text-align:center; }
+  .wa-band-text p { max-width:100%; }
+  .wa-band-text h2 { font-size:22px; }
+  .fld-row { grid-template-columns:1fr; }
+}
+@media(max-width:640px) {
+  .page-hero-content h1 { font-size:32px; }
+  .info-cards-row { grid-template-columns:1fr; }
+  .contact-form-card { padding:24px 20px; }
+  .wa-band { padding:28px 20px; }
+}
 </style>
 </head>
 <body>
@@ -62,6 +124,7 @@
     <ul class="nav">
       <li><a href="index.html">Ana Sayfa</a></li>
       <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="about.html">Hizmetler</a></li>
       <li><a href="about.html">Hakkımızda</a></li>
       <li><a href="contact.html" aria-current="page">İletişim</a></li>
     </ul>
@@ -87,6 +150,7 @@
   <nav>
     <a href="index.html">Ana Sayfa</a>
     <a href="gallery.html">Araçlar</a>
+    <a href="about.html">Hizmetler</a>
     <a href="about.html">Hakkımızda</a>
     <a href="contact.html">İletişim</a>
   </nav>
@@ -97,142 +161,185 @@
 </div>
 
 <!-- PAGE HERO -->
-<section class="page-hero" style="height:280px;">
+<div class="page-hero" style="height:280px;">
   <div class="page-hero-bg">
-    <img src="https://images.unsplash.com/photo-1486006920555-c77dcf18193c?auto=format&fit=crop&w=1400&q=78" alt="İletişim" />
+    <img src="https://images.unsplash.com/photo-1621929747188-0b4dc28498d2?auto=format&fit=crop&w=1400&q=80" alt="MSE Auto İletişim" />
   </div>
-  <div class="page-hero-content wrap">
-    <div class="breadcrumb">
-      <a href="index.html">Ana Sayfa</a>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-      <span data-c="contact.kicker">İletişim</span>
+  <div class="page-hero-content">
+    <div class="wrap">
+      <nav class="breadcrumb">
+        <a href="index.html">Ana Sayfa</a>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+        <span>İletişim</span>
+      </nav>
+      <h1 data-c="contact.title">İletişim</h1>
+      <p data-c="contact.sub">Sorularınız, randevu ve değerleme talepleriniz için bize ulaşın.</p>
     </div>
-    <h1 data-c="contact.title">Sizinle İletişime Geçmekten Mutluluk Duyarız.</h1>
   </div>
-</section>
+</div>
 
 <!-- INFO CARDS -->
 <div class="wrap">
   <div class="info-cards-row">
 
-    <!-- Adres -->
     <div class="info-card reveal">
       <div class="ic">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
       </div>
       <h3>Adresimiz</h3>
-      <p class="val"><span id="cAddr">Admin panelinden ayarlanır</span></p>
+      <p class="val"><span id="contactAddr">Admin panelinden ayarlanır</span></p>
     </div>
 
-    <!-- Telefon -->
     <div class="info-card reveal d1">
       <div class="ic">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
       </div>
       <h3>Telefon</h3>
-      <p class="val"><a id="cPhone" href="tel:">Panelden ayarlanır</a></p>
+      <p class="val"><a id="contactPhone" href="tel:">Panelden ayarlanır</a></p>
     </div>
 
-    <!-- Çalışma Saatleri -->
     <div class="info-card reveal d2">
       <div class="ic">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </div>
       <h3>Çalışma Saatleri</h3>
-      <p class="val"><span id="cHours">Panelden ayarlanır</span></p>
+      <p class="val"><span id="contactHours">Panelden ayarlanır</span></p>
     </div>
 
-    <!-- WhatsApp -->
     <div class="info-card reveal d3">
       <div class="ic-wa">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
       </div>
-      <h3>Hızlı İletişim</h3>
-      <p class="val">WhatsApp üzerinden anında ulaşın, sorularınızı yazın.</p>
-      <a class="btn-wa" id="cWhatsApp" href="#" target="_blank" rel="noopener">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <h3>WhatsApp</h3>
+      <p class="val">Hızlı iletişim için WhatsApp üzerinden yazın.</p>
+      <a class="btn-wa" id="contactWa" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp ile Yazın
       </a>
     </div>
 
   </div>
-</div>
 
-<!-- MAP + FORM -->
-<section class="sec" style="padding-top:0;">
-  <div class="wrap">
-    <div class="contact-grid">
+  <!-- FORM + INFO 2-COL -->
+  <div class="contact-main" style="margin-bottom:0;">
 
-      <!-- Map -->
-      <div class="reveal">
-        <div class="map-ph" id="mapContainer">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--blue);opacity:0.5;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span style="font-weight:700;color:var(--ink-2);font-size:15px;">Haritayı Görüntüle</span>
-          <span style="max-width:280px;line-height:1.6;color:var(--ink-3);">Harita admin panelinden aktif edilir — Google Maps embed kodunu ayarlara yapıştırın</span>
-        </div>
-      </div>
-
-      <!-- Form -->
-      <div class="reveal d1">
-        <form class="contact-form" id="contactForm" data-form="contact" novalidate>
-          <div style="margin-bottom:22px;">
-            <div class="kicker" style="margin-bottom:8px;">Bize Yazın</div>
-            <h2 style="font-size:24px;font-weight:800;">Mesajınızı Gönderin</h2>
-            <p style="font-size:13.5px;color:var(--ink-2);margin-top:6px;">En kısa sürede yanıt vereceğiz.</p>
+    <!-- FORM COL -->
+    <div class="reveal">
+      <div class="contact-form-card">
+        <h2>Bize Yazın</h2>
+        <span class="form-sub">En kısa sürede yanıt vereceğiz.</span>
+        <form id="contactForm" data-form="contact" novalidate>
+          <div class="fld-row">
+            <div class="fld-group">
+              <label for="cfName">Ad Soyad</label>
+              <input type="text" id="cfName" name="name" placeholder="Adınız Soyadınız" required />
+            </div>
+            <div class="fld-group">
+              <label for="cfEmail">E-posta</label>
+              <input type="email" id="cfEmail" name="email" placeholder="ornek@email.com" required />
+            </div>
           </div>
-          <div class="form-group">
-            <label for="cfName">Ad Soyad</label>
-            <input type="text" id="cfName" name="name" placeholder="Adınız Soyadınız" required />
-          </div>
-          <div class="form-group">
-            <label for="cfEmail">E-posta</label>
-            <input type="email" id="cfEmail" name="email" placeholder="ornek@email.com" required />
-          </div>
-          <div class="form-group">
-            <label for="cfPhone">Telefon</label>
-            <input type="tel" id="cfPhone" name="phone" placeholder="0 5xx xxx xx xx" />
-          </div>
-          <div class="form-group">
+          <div class="fld-group">
             <label for="cfSubject">Konu</label>
-            <select id="cfSubject" name="subject" required>
-              <option value="">Konu seçin</option>
-              <option value="Araç İnceleme">Araç İnceleme</option>
-              <option value="Değerleme Talebi">Değerleme Talebi</option>
-              <option value="Takas">Takas</option>
-              <option value="Genel">Genel</option>
-            </select>
+            <input type="text" id="cfSubject" name="subject" placeholder="Mesajınızın konusu" />
           </div>
-          <div class="form-group">
+          <div class="fld-group">
             <label for="cfMessage">Mesaj</label>
-            <textarea id="cfMessage" name="message" placeholder="Mesajınızı yazın..." required></textarea>
+            <textarea id="cfMessage" name="message" placeholder="Mesajınızı yazın…" required></textarea>
           </div>
-          <button type="submit" class="btn btn-blue" style="width:100%;justify-content:center;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
+          <button type="submit" class="btn btn-blue" style="width:100%;justify-content:center;margin-top:4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg>
             Gönder
           </button>
         </form>
       </div>
+    </div>
+
+    <!-- INFO COL -->
+    <div class="contact-info-col reveal d1">
+
+      <div class="ci-card">
+        <div class="ci-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+        </div>
+        <div class="ci-body">
+          <h4>Telefon</h4>
+          <a id="ciPhone" href="tel:">Panelden ayarlanır</a>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div class="ci-body">
+          <h4>Adres</h4>
+          <span id="ciAddr">Admin panelinden ayarlanır</span>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="ci-body">
+          <h4>Çalışma Saatleri</h4>
+          <span id="ciHours">Panelden ayarlanır</span>
+        </div>
+      </div>
+
+      <div class="ci-card">
+        <div class="ci-icon ci-wa">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        </div>
+        <div class="ci-body">
+          <h4>WhatsApp</h4>
+          <span>Anında mesaj gönderin.</span>
+          <a class="btn-wa" id="ciWa" href="#" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp ile Yazın
+          </a>
+        </div>
+      </div>
+
+      <!-- Map placeholder -->
+      <div class="map-placeholder" id="mapContainer">
+        <div class="map-placeholder-inner">
+          <div class="map-pin">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <b>MSE Auto Galerisi</b>
+          <p data-c="contact.mapNote">Konum haritası — admin panelinden Google Maps embed kodu eklenebilir</p>
+          <span class="map-tag">Harita Yakında Aktif</span>
+        </div>
+      </div>
 
     </div>
-  </div>
-</section>
 
-<!-- WHATSAPP CTA BAND -->
-<section class="sec sec-alt" style="padding-top:0;padding-bottom:88px;">
-  <div class="wrap">
-    <div class="wa-band reveal">
-      <div>
-        <span class="kicker">Anında Cevap</span>
-        <h2>Hızlıca Ulaşın</h2>
-        <p>Form doldurmak yerine direkt mesaj atabilirsiniz. Çalışma saatleri içinde ortalama 5 dakikada yanıt veriyoruz.</p>
-      </div>
+  </div>
+
+  <!-- WHATSAPP CTA BAND -->
+  <div class="wa-band reveal">
+    <div class="wa-band-text">
+      <span class="kicker">Anında Cevap</span>
+      <h2>Hızlıca Ulaşın</h2>
+      <p>Form doldurmak yerine direkt mesaj atabilirsiniz. Çalışma saatleri içinde ortalama 5 dakikada yanıt veriyoruz.</p>
+    </div>
+    <div class="wa-band-btn">
       <a class="btn-wa-lg" id="waBandBtn" href="#" target="_blank" rel="noopener">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp ile Yazın
       </a>
     </div>
   </div>
-</section>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="t-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12l4 4L19 7"/></svg></div>
+  Mesajınız iletildi! En kısa sürede yanıt vereceğiz.
+</div>
 
 <!-- FOOTER -->
 <footer class="foot">
@@ -243,7 +350,7 @@
         <p data-c="footer.about">Güvenilir 2. el araç alım &amp; satım.</p>
         <div class="foot-soc">
           <a href="#" aria-label="Instagram" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/></svg></a>
-          <a href="https://wa.me/" aria-label="WhatsApp" id="footSocWa" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+          <a href="https://wa.me/" aria-label="WhatsApp" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
         </div>
       </div>
       <div>
@@ -267,18 +374,9 @@
       <div class="foot-contact">
         <h5>İletişim</h5>
         <ul>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-            <span id="footPhone">Panelden ayarlanır</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span id="footAddr">Adres panelden ayarlanır</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span id="footHours">Çalışma saatleri panelden</span>
-          </li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg><span id="footPhone">Panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="footAddr">Adres panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="footHours">Çalışma saatleri panelden</span></li>
         </ul>
       </div>
     </div>
@@ -291,22 +389,10 @@
 
 <!-- MOBILE BAR -->
 <nav class="mobile-bar">
-  <a href="index.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Ana Sayfa
-  </a>
-  <a href="gallery.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l2-5a3 3 0 013-2h4a3 3 0 013 2l2 5M3 13h18v5H3v-5z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>
-    Araçlar
-  </a>
-  <a href="sell.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Sat
-  </a>
-  <a href="contact.html" class="prime">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    İletişim
-  </a>
+  <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Ana Sayfa</a>
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l2-5a3 3 0 013-2h4a3 3 0 013 2l2 5M3 13h18v5H3v-5z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>Araçlar</a>
+  <a href="sell.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Sat</a>
+  <a href="contact.html" class="prime"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>İletişim</a>
 </nav>
 
 <!-- AI ASSISTANT -->
@@ -335,12 +421,6 @@
   </div>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="toast">
-  <div class="t-ic"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4L19 7"/></svg></div>
-  Mesajınız iletildi! En kısa sürede yanıt vereceğiz.
-</div>
-
 <!-- SCRIPTS -->
 <script src="api-config.js"></script>
 <script src="db.js"></script>
@@ -349,78 +429,74 @@
 <script src="site.js"></script>
 <script>
 (function(){
-  'use strict';
   document.getElementById("footYear").textContent = new Date().getFullYear();
-
-  /* Resolve settings */
   var s = window.MSE_SETTINGS || {};
-  try { if(window.MSE_DB && typeof window.MSE_DB.getSettings==="function") s = window.MSE_DB.getSettings() || s; } catch(e){}
+  try { if(window.MSE_DB && typeof window.MSE_DB.getSettings==="function") s=window.MSE_DB.getSettings()||s; } catch(e){}
 
-  /* Header phone */
   var hp = document.getElementById("hdrPhone");
   var ht = document.getElementById("hdrPhoneText");
-  if(s.phone){ if(hp) hp.href="tel:"+s.phone.replace(/\D/g,""); if(ht) ht.textContent=s.phone; }
+  if(s.phone){ if(hp) hp.href="tel:"+s.phone.replace(/\s/g,""); if(ht) ht.textContent=s.phone; }
+
+  function setText(id, val){ var el=document.getElementById(id); if(el&&val) el.textContent=val; }
 
   /* Info cards */
-  var cAddr  = document.getElementById("cAddr");
-  var cPhone = document.getElementById("cPhone");
-  var cHours = document.getElementById("cHours");
-  if(s.address && cAddr) cAddr.textContent = s.address;
-  if(s.hours   && cHours) cHours.textContent = s.hours;
-  if(s.phone && cPhone){ cPhone.textContent = s.phone; cPhone.href = "tel:"+s.phone.replace(/\D/g,""); }
+  setText("contactAddr", s.address);
+  setText("contactHours", s.hours);
+  var cpEl = document.getElementById("contactPhone");
+  if(cpEl && s.phone){ cpEl.textContent=s.phone; cpEl.href="tel:"+s.phone.replace(/\D/g,""); }
+
+  /* Info column */
+  var ciPhone = document.getElementById("ciPhone");
+  if(ciPhone && s.phone){ ciPhone.textContent=s.phone; ciPhone.href="tel:"+s.phone.replace(/\D/g,""); }
+  setText("ciAddr", s.address);
+  setText("ciHours", s.hours);
 
   /* WhatsApp URLs */
-  function buildWa(msg){
-    var phone = (s.whatsapp || s.phone || "").replace(/\D/g,"");
-    return phone ? "https://wa.me/"+phone+(msg?"?text="+encodeURIComponent(msg):"") : "#";
+  function buildWaUrl(msg){
+    var phone=(s.whatsapp||s.phone||"").replace(/\D/g,"");
+    return phone?"https://wa.me/"+phone+"?text="+encodeURIComponent(msg||"Merhaba, bilgi almak istiyorum."):"#";
   }
-  var waUrl = buildWa("Merhaba, bilgi almak istiyorum.");
-  ["cWhatsApp","waBandBtn"].forEach(function(id){
+  var waUrl = buildWaUrl("Merhaba, bilgi almak istiyorum.");
+  ["contactWa","ciWa","waBandBtn"].forEach(function(id){
     var el=document.getElementById(id); if(el) el.href=waUrl;
   });
-  var footSocWa = document.getElementById("footSocWa");
-  if(footSocWa) footSocWa.href = waUrl;
 
   /* Footer */
-  if(s.phone){ var fp=document.getElementById("footPhone"); if(fp) fp.textContent=s.phone; }
-  if(s.address){ var fa=document.getElementById("footAddr"); if(fa) fa.textContent=s.address; }
-  if(s.hours){ var fh=document.getElementById("footHours"); if(fh) fh.textContent=s.hours; }
+  setText("footPhone", s.phone);
+  setText("footAddr", s.address);
+  setText("footHours", s.hours);
 
   /* Map embed */
   if(s.mapEmbed){
     var mc=document.getElementById("mapContainer");
-    if(mc){ mc.innerHTML=s.mapEmbed; mc.style.padding="0"; mc.style.display="block"; }
+    if(mc){ mc.innerHTML=s.mapEmbed; mc.style.padding="0"; mc.style.height="240px"; }
   }
 
-  /* Scroll header */
-  var hdr=document.getElementById("hdr");
+  /* Header scroll */
+  var hdr = document.getElementById("hdr");
   window.addEventListener("scroll",function(){ hdr.classList.toggle("scrolled",window.scrollY>20); },{passive:true});
-
-  /* Drawer */
   document.getElementById("burger").addEventListener("click",function(){ document.getElementById("drawer").classList.add("open"); });
   document.getElementById("drawerClose").addEventListener("click",function(){ document.getElementById("drawer").classList.remove("open"); });
-
-  /* Reveal */
-  var io=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:0.1});
+  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:0.1});
   document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
 
-  /* Contact form — if shared-init doesn't catch it, handle manually */
+  /* Contact form submit */
   var form = document.getElementById("contactForm");
-  if(form && !(window.MSE_handleContactForms)){
-    form.addEventListener("submit",function(e){
+  if(form){
+    form.addEventListener("submit", function(e){
       e.preventDefault();
-      var btn=form.querySelector("button[type='submit']");
+      var btn = form.querySelector("button[type=submit]");
       if(btn) btn.disabled=true;
-      var payload={
-        name:    (form.querySelector("[name='name']")||{}).value||"",
-        email:   (form.querySelector("[name='email']")||{}).value||"",
-        phone:   (form.querySelector("[name='phone']")||{}).value||"",
-        subject: (form.querySelector("[name='subject']")||{}).value||"",
-        message: (form.querySelector("[name='message']")||{}).value||""
+      var payload = {
+        name:    (document.getElementById("cfName")   ||{}).value||"",
+        email:   (document.getElementById("cfEmail")  ||{}).value||"",
+        subject: (document.getElementById("cfSubject")||{}).value||"",
+        message: (document.getElementById("cfMessage")||{}).value||""
       };
-      var base=window.MSE_API_BASE||"";
+      var base = window.MSE_API_BASE||"";
       fetch(base+"/api/contact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})
-        .then(function(){ showToast(); }).catch(function(){ showToast(); })
+        .then(function(){ showToast(); })
+        .catch(function(){ showToast(); })
         .finally(function(){ form.reset(); if(btn) btn.disabled=false; });
     });
   }
