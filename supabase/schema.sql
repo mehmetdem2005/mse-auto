@@ -75,3 +75,43 @@ create policy "Content public read" on site_content for select using (true);
 
 alter table ai_config enable row level security;
 create policy "AI config public read" on ai_config for select using (true);
+
+-- ── Gemini RAG: Araç Embeddings ──────────────────────────────────────────
+-- pgvector eklentisini etkinleştir (Supabase'de varsayılan olarak mevcut)
+create extension if not exists vector;
+
+-- Araç embedding tablosu
+create table if not exists car_embeddings (
+  id        uuid primary key default gen_random_uuid(),
+  car_id    text not null unique,
+  text      text not null,
+  embedding vector(768),  -- Gemini text-embedding-004 boyutu
+  created_at timestamptz default now()
+);
+
+-- Benzerlik arama fonksiyonu (RAG için)
+create or replace function match_cars(
+  query_embedding vector(768),
+  match_count     int default 3
+)
+returns table (
+  car_id text,
+  text   text,
+  similarity float
+)
+language sql stable
+as $$
+  select
+    car_id,
+    text,
+    1 - (embedding <=> query_embedding) as similarity
+  from car_embeddings
+  order by embedding <=> query_embedding
+  limit match_count;
+$$;
+
+-- RLS
+alter table car_embeddings enable row level security;
+create policy "Embeddings public read" on car_embeddings for select using (true);
+create policy "Embeddings insert" on car_embeddings for insert with check (true);
+create policy "Embeddings upsert" on car_embeddings for update using (true);

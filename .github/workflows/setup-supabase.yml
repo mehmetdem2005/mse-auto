@@ -1,0 +1,27 @@
+name: Setup Supabase Schema
+
+on:
+  workflow_dispatch:
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        run: |
+          curl -sSL https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz | tar -xz
+          sudo mv supabase /usr/local/bin/
+
+      - name: Run Schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            psql "$SUPABASE_DB_URL" -f supabase/schema.sql
+            echo "✅ Schema uygulandı"
+          else
+            echo "⚠️  SUPABASE_DB_URL secret eksik. Supabase dashboard > Settings > Database > Connection string"
+          fi

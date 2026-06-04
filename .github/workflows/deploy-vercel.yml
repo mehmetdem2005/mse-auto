@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy Frontend to Vercel
 
 on:
   push:
@@ -15,12 +15,21 @@ jobs:
         run: npm install -g vercel@latest
 
       - name: Deploy to Vercel
+        id: deploy
         run: |
           vercel --prod \
-            --token=${{ secrets.VERCEL_TOKEN }} \
+            --token="${{ secrets.VERCEL_TOKEN }}" \
             --yes \
-            --scope=${{ secrets.VERCEL_ORG_ID }}
+            2>&1 | tee deploy.log
+          URL=$(grep -oP 'https://[^ ]+\.vercel\.app' deploy.log | head -1 || echo "")
+          if [ -n "$URL" ]; then
+            echo "✅ Vercel'e yayınlandı: $URL"
+            echo "url=$URL" >> $GITHUB_OUTPUT
+          fi
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_TOKEN:      ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Summary
+        run: echo "🌐 Site URL → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
