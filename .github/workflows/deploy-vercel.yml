@@ -32,15 +32,28 @@ jobs:
           VERCEL_ORG_ID:     ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
-      - name: Summary
+      - name: Save Vercel project info
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
           URL="${{ steps.deploy.outputs.url }}"
-          echo "🌐 Vercel URL: $URL"
-          echo "🌐 Vercel URL: $URL" >> $GITHUB_STEP_SUMMARY
-          # Write .vercel/project.json project ID and org to secrets if available
+          echo "Captured URL: $URL"
+
+          # Save .vercel/project.json to repo via GitHub API
           if [ -f .vercel/project.json ]; then
+            echo "=== .vercel/project.json ==="
             cat .vercel/project.json
-            ORG_ID=$(python3 -c "import json; d=json.load(open('.vercel/project.json')); print(d.get('orgId',''))" 2>/dev/null)
-            PROJ_ID=$(python3 -c "import json; d=json.load(open('.vercel/project.json')); print(d.get('projectId',''))" 2>/dev/null)
-            echo "orgId=$ORG_ID projectId=$PROJ_ID"
+            CONTENT=$(base64 -w0 .vercel/project.json)
+            # Check if file already exists (need SHA for updates)
+            SHA=$(curl -s "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/.vercel/project.json" \
+              -H "Authorization: Bearer $GH_PAT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
+            PAYLOAD="{\"message\":\"ci: save vercel project info\",\"content\":\"$CONTENT\""
+            [ -n "$SHA" ] && PAYLOAD="${PAYLOAD},\"sha\":\"$SHA\""
+            PAYLOAD="${PAYLOAD}}"
+            curl -s -X PUT \
+              "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/.vercel/project.json" \
+              -H "Authorization: Bearer $GH_PAT" \
+              -H "Content-Type: application/json" \
+              -d "$PAYLOAD" | python3 -c "import sys,json; d=json.load(sys.stdin); print('saved:', d.get('content',{}).get('name','err'))" 2>/dev/null
           fi
+          echo "🌐 Vercel URL: $URL" >> $GITHUB_STEP_SUMMARY
