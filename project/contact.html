@@ -199,8 +199,8 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         <span>İletişim</span>
       </nav>
-      <h1 data-c="contact.title">İletişim</h1>
-      <p data-c="contact.sub">Sorularınız, randevu ve değerleme talepleriniz için bize ulaşın.</p>
+      <h1 data-c="contact.heroTitle">Sizinle İletişime Geçmekten Mutluluk Duyarız.</h1>
+      <p data-c="contact.heroSub">Sorularınız, randevu ve araç değerleme talepleriniz için bizimle iletişime geçin. Size en kısa sürede geri döneceğiz.</p>
     </div>
   </div>
 </div>
@@ -282,50 +282,49 @@
       </div>
     </div>
 
-    <!-- TEST DRIVE COL -->
+    <!-- WHATSAPP + QUICK CONTACT COL -->
     <div class="reveal d1">
-      <div class="testdrive-card">
-        <h2>Test Sürüşü</h2>
-        <span class="form-sub">Tarih ve saat seçerek randevu oluşturun.</span>
-        <div class="cal-nav">
-          <button id="calPrev" aria-label="Önceki ay">&#8249;</button>
-          <span id="calTitle"></span>
-          <button id="calNext" aria-label="Sonraki ay">&#8250;</button>
-        </div>
-        <div class="cal-grid" id="calGrid">
-          <div class="cal-day-name">Pt</div><div class="cal-day-name">Sa</div>
-          <div class="cal-day-name">Ça</div><div class="cal-day-name">Pe</div>
-          <div class="cal-day-name">Cu</div><div class="cal-day-name">Ct</div>
-          <div class="cal-day-name">Pz</div>
-        </div>
-        <div class="fld-group" style="margin-bottom:12px;">
-          <label>Saat Seçin</label>
-          <div class="time-slots" id="timeSlots">
-            <button class="tslot" data-time="09:00">09:00</button>
-            <button class="tslot" data-time="10:00">10:00</button>
-            <button class="tslot" data-time="11:00">11:00</button>
-            <button class="tslot" data-time="13:00">13:00</button>
-            <button class="tslot" data-time="14:00">14:00</button>
-            <button class="tslot" data-time="15:00">15:00</button>
-            <button class="tslot" data-time="16:00">16:00</button>
-            <button class="tslot" data-time="17:00">17:00</button>
-            <button class="tslot" data-time="18:00">18:00</button>
+      <div class="contact-form-card" style="display:flex;flex-direction:column;gap:16px;">
+        <h2>Hızlı İletişim</h2>
+        <span class="form-sub" style="display:block;margin-bottom:4px;">Aramak ya da mesaj atmak için aşağıdaki kanalları kullanın.</span>
+
+        <a id="waQuickBtn" href="#" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;gap:14px;padding:18px 20px;background:linear-gradient(135deg,#25d366,#1da851);border-radius:var(--r-lg);color:#fff;text-decoration:none;transition:0.25s;box-shadow:0 8px 24px -8px rgba(37,211,102,0.45);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="flex:0 0 28px;"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          <div>
+            <div style="font-size:15px;font-weight:700;margin-bottom:2px;">WhatsApp ile Yazın</div>
+            <div style="font-size:12px;opacity:0.88;">Ortalama 5 dk içinde yanıt</div>
+          </div>
+        </a>
+
+        <a id="callQuickBtn" href="tel:" style="display:flex;align-items:center;gap:14px;padding:18px 20px;background:var(--bg-3);border:1px solid var(--border-2);border-radius:var(--r-lg);color:var(--ink);text-decoration:none;transition:0.25s;">
+          <div style="width:48px;height:48px;border-radius:50%;background:rgba(59,128,255,0.12);border:1px solid var(--border-b);display:flex;align-items:center;justify-content:center;flex:0 0 48px;color:var(--blue);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--ink-3);margin-bottom:2px;">Hemen Ara</div>
+            <div id="quickCallNum" style="font-size:16px;font-weight:700;">Panelden ayarlanır</div>
+          </div>
+        </a>
+
+        <div style="background:var(--bg-3);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink-2);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <span id="quickAddr">Adres panelden ayarlanır</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;font-size:13.5px;color:var(--ink-2);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="quickHours">Çalışma saatleri panelden</span>
           </div>
         </div>
-        <div class="fld-group" style="margin-bottom:12px;">
-          <label for="tdPhone">Telefon</label>
-          <input type="tel" id="tdPhone" name="tdPhone" placeholder="0 (5XX) XXX XX XX" />
-        </div>
-        <button class="btn btn-blue" id="tdSubmit" style="width:100%;justify-content:center;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-          Randevu Onayla
-        </button>
-        <p id="tdMsg" style="margin-top:10px;font-size:12.5px;color:var(--blue);text-align:center;display:none;"></p>
       </div>
     </div>
 
     <!-- INFO + MAP COL -->
     <div class="contact-info-col reveal d2">
+
+      <h2 style="font-size:20px;font-weight:800;margin-bottom:6px;">İletişim Bilgileri</h2>
+      <span class="form-sub" style="display:block;margin-bottom:22px;">Tüm kanallardan bize ulaşabilirsiniz.</span>
 
       <div class="ci-card">
         <div class="ci-icon">
@@ -520,13 +519,20 @@
   setText("ciAddr", s.address);
   setText("ciHours", s.hours);
 
+  /* Quick contact column */
+  setText("quickCallNum", s.phone);
+  setText("quickAddr", s.address);
+  setText("quickHours", s.hours);
+  var callBtn = document.getElementById("callQuickBtn");
+  if(callBtn && s.phone) callBtn.href = "tel:"+s.phone.replace(/\D/g,"");
+
   /* WhatsApp URLs */
   function buildWaUrl(msg){
     var phone=(s.whatsapp||s.phone||"").replace(/\D/g,"");
     return phone?"https://wa.me/"+phone+"?text="+encodeURIComponent(msg||"Merhaba, bilgi almak istiyorum."):"#";
   }
   var waUrl = buildWaUrl("Merhaba, bilgi almak istiyorum.");
-  ["contactWa","ciWa","waBandBtn"].forEach(function(id){
+  ["contactWa","ciWa","waBandBtn","waQuickBtn"].forEach(function(id){
     var el=document.getElementById(id); if(el) el.href=waUrl;
   });
 
@@ -576,86 +582,6 @@
     setTimeout(function(){ t.classList.remove("show"); },4500);
   }
 
-  /* ── Calendar ── */
-  (function(){
-    var TR_MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
-    var today = new Date();
-    var viewYear = today.getFullYear();
-    var viewMonth = today.getMonth();
-    var selDay = null;
-    var selTime = null;
-
-    function renderCal(){
-      var title = document.getElementById("calTitle");
-      if(title) title.textContent = TR_MONTHS[viewMonth] + " " + viewYear;
-      var grid = document.getElementById("calGrid");
-      if(!grid) return;
-      var headers = grid.querySelectorAll(".cal-day-name");
-      var days = Array.from(grid.querySelectorAll(".cal-day"));
-      days.forEach(function(d){ d.remove(); });
-
-      var firstDay = new Date(viewYear, viewMonth, 1).getDay();
-      var offset = (firstDay === 0) ? 6 : firstDay - 1;
-      var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-
-      for(var i=0; i < offset; i++){
-        var blank = document.createElement("div");
-        blank.className = "cal-day cal-empty";
-        grid.appendChild(blank);
-      }
-      for(var d=1; d<=daysInMonth; d++){
-        var cell = document.createElement("div");
-        cell.className = "cal-day";
-        cell.textContent = d;
-        var cellDate = new Date(viewYear, viewMonth, d);
-        var isSun = cellDate.getDay() === 0;
-        var isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        if(isPast || isSun){ cell.classList.add("cal-past"); }
-        else {
-          var isToday = (d===today.getDate() && viewMonth===today.getMonth() && viewYear===today.getFullYear());
-          if(isToday) cell.classList.add("cal-today");
-          if(selDay===d && viewMonth===selDay._m && viewYear===selDay._y) cell.classList.add("cal-selected");
-          (function(day,year,month){ cell.addEventListener("click", function(){
-            selDay = {d:day, _m:month, _y:year};
-            renderCal();
-          }); })(d, viewYear, viewMonth);
-        }
-        grid.appendChild(cell);
-      }
-    }
-
-    var prev = document.getElementById("calPrev");
-    var next = document.getElementById("calNext");
-    if(prev) prev.addEventListener("click", function(){
-      viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; } renderCal();
-    });
-    if(next) next.addEventListener("click", function(){
-      viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; } renderCal();
-    });
-
-    document.querySelectorAll(".tslot").forEach(function(btn){
-      btn.addEventListener("click", function(){
-        selTime = btn.dataset.time;
-        document.querySelectorAll(".tslot").forEach(function(b){ b.classList.remove("selected"); });
-        btn.classList.add("selected");
-      });
-    });
-
-    var tdSubmit = document.getElementById("tdSubmit");
-    if(tdSubmit) tdSubmit.addEventListener("click", function(){
-      if(!selDay){ alert("Lütfen bir tarih seçin."); return; }
-      if(!selTime){ alert("Lütfen bir saat seçin."); return; }
-      var phone = (document.getElementById("tdPhone")||{}).value||"";
-      var msg = document.getElementById("tdMsg");
-      if(msg){
-        msg.style.display="block";
-        msg.textContent = "Randevu talebiniz alındı: " + selDay._y + "/" + (selDay._m+1) + "/" + selDay.d + " saat " + selTime;
-        setTimeout(function(){ msg.style.display="none"; selDay=null; selTime=null; document.querySelectorAll(".tslot").forEach(function(b){ b.classList.remove("selected"); }); renderCal(); },4000);
-      }
-    });
-
-    renderCal();
-  })();
 })();
 </script>
 </body>

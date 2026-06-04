@@ -45,6 +45,15 @@
 .feat-card h3 { font-size:16px; font-weight:700; margin-bottom:10px; }
 .feat-card p { font-size:14px; color:var(--ink-2); line-height:1.72; }
 
+/* ── Değerlerimiz ── */
+.deger-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:20px; }
+.deger-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:28px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; transition:border-color 0.3s,transform 0.3s var(--ease); }
+.deger-card:hover { border-color:var(--border-b); transform:translateY(-4px); }
+.deger-ic { width:52px; height:52px; border-radius:14px; background:rgba(59,128,255,0.12); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); }
+.deger-card h4 { font-size:14px; font-weight:700; color:var(--ink); margin:0; }
+@media(max-width:1000px) { .deger-grid { grid-template-columns:repeat(3,1fr); } }
+@media(max-width:640px) { .deger-grid { grid-template-columns:repeat(2,1fr); } }
+
 /* ── Stats ── */
 .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; }
 .stat-item { text-align:center; background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:36px 24px; }
@@ -54,7 +63,7 @@
 /* ── Timeline ── */
 .timeline-outer { position:relative; padding-top:8px; }
 .timeline-rail { position:absolute; top:50px; left:0; right:0; height:2px; background:var(--border); z-index:0; }
-.timeline-track { display:grid; grid-template-columns:repeat(4,1fr); gap:24px; position:relative; z-index:1; }
+.timeline-track { display:grid; grid-template-columns:repeat(6,1fr); gap:24px; position:relative; z-index:1; }
 .tl-item { display:flex; flex-direction:column; align-items:center; text-align:center; }
 .tl-top { display:flex; flex-direction:column; align-items:center; margin-bottom:20px; }
 .tl-year { font-size:12px; font-weight:800; letter-spacing:0.14em; color:var(--blue); margin-bottom:10px; text-transform:uppercase; }
@@ -80,7 +89,7 @@
   .features-grid { grid-template-columns:1fr 1fr; }
   .stats-row { grid-template-columns:1fr 1fr; }
   .timeline-rail { display:none; }
-  .timeline-track { grid-template-columns:1fr 1fr; }
+  .timeline-track { grid-template-columns:repeat(3,1fr); }
   .services-head h2 { font-size:26px; }
   .ctaband { padding:40px 32px; }
   .ctaband-text h2 { font-size:26px; }
@@ -155,8 +164,8 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
         <span>Hakkımızda</span>
       </nav>
-      <h1 data-c="about.title">Hakkımızda</h1>
-      <p data-c="about.sub">Güvenilir ikinci el araç alım satımında on yılı aşkın deneyim.</p>
+      <h1 data-c="about.heroTitle">Yolculuğumuz Sizinle Anlam Kazanıyor.</h1>
+      <p data-c="about.heroSub">MSE Auto ile, araç alışverişiniz size özel premium hizmetler sunuluyor. Güvenilir, şeffaf ve kaliteli hizmet anlayışımızla her adımda yanınızdayız.</p>
     </div>
   </div>
 </div>
@@ -175,6 +184,50 @@
       </div>
       <div class="story-img reveal d1">
         <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=800&q=80" alt="MSE Auto Galerisi" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEĞERLERİMİZ -->
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head reveal" style="margin-bottom:40px;">
+      <div class="sh-l">
+        <span class="kicker">Değerlerimiz</span>
+        <h2>Bizi Biz Yapan İlkeler</h2>
+      </div>
+    </div>
+    <div class="deger-grid">
+      <div class="deger-card reveal">
+        <div class="deger-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <h4>Dürüstlük</h4>
+      </div>
+      <div class="deger-card reveal d1">
+        <div class="deger-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </div>
+        <h4>Şeffaflık</h4>
+      </div>
+      <div class="deger-card reveal d2">
+        <div class="deger-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h4>Müşteri Güveni</h4>
+      </div>
+      <div class="deger-card reveal d3">
+        <div class="deger-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <h4>Birliktelik</h4>
+      </div>
+      <div class="deger-card reveal" style="transition-delay:0.4s;">
+        <div class="deger-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h4>Benzersizlik</h4>
       </div>
     </div>
   </div>
@@ -285,12 +338,32 @@
         </div>
         <div class="tl-item">
           <div class="tl-top">
-            <span class="tl-year">2021</span>
+            <span class="tl-year">2020</span>
             <div class="tl-dot"></div>
           </div>
           <div class="tl-content">
-            <h4 data-c="timeline.2.title">Dijital Dönüşüm</h4>
-            <p data-c="timeline.2.desc">Online platformumuzu hayata geçirdik; araçları dijital ortamda inceleme imkânı sunduk.</p>
+            <h4 data-c="timeline.2.title">Yeni Şube</h4>
+            <p data-c="timeline.2.desc">İkinci şubemizi açarak daha geniş bir müşteri kitlesine ulaştık ve hizmet kalitemizi artırdık.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-top">
+            <span class="tl-year">2023</span>
+            <div class="tl-dot"></div>
+          </div>
+          <div class="tl-content">
+            <h4 data-c="timeline.3.title">Dijital Dönüşüm</h4>
+            <p data-c="timeline.3.desc">Online platformumuzu hayata geçirdik; araçları dijital ortamda inceleme imkânı sunduk.</p>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-top">
+            <span class="tl-year">2024</span>
+            <div class="tl-dot"></div>
+          </div>
+          <div class="tl-content">
+            <h4 data-c="timeline.4.title">AI Destekli Hizmet</h4>
+            <p data-c="timeline.4.desc">Yapay zeka destekli asistanımızla müşterilerimize 7/24 anlık destek sunmaya başladık.</p>
           </div>
         </div>
         <div class="tl-item">
@@ -299,8 +372,8 @@
             <div class="tl-dot tl-dot-now"></div>
           </div>
           <div class="tl-content">
-            <h4 data-c="timeline.3.title">Lider Galeri</h4>
-            <p data-c="timeline.3.desc">Bin'i aşkın mutlu müşteri ve güçlenen ekibimizle büyümeye devam ediyoruz.</p>
+            <h4 data-c="timeline.5.title">Lider Galeri</h4>
+            <p data-c="timeline.5.desc">Bin'i aşkın mutlu müşteri ve güçlenen ekibimizle büyümeye devam ediyoruz.</p>
           </div>
         </div>
       </div>
