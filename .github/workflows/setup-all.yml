@@ -46,21 +46,18 @@ jobs:
           REPO:           mehmetdem2005/mse-auto
         run: bash -x .github/scripts/setup_all.sh 2>&1 | tee setup_debug.log; exit ${PIPESTATUS[0]}
 
-      - name: Push debug log on failure
+      - name: Create debug gist on failure
         if: steps.setup_script.outcome == 'failure'
         env:
-          GH_TOKEN: ${{ secrets.GH_PAT }}
+          GH_PAT: ${{ secrets.GH_PAT }}
         run: |
-          git config user.email "ci-bot@mse-auto"
-          git config user.name "CI Bot"
-          git add setup_debug.log
-          git commit -m "ci: debug log from failed setup [skip ci]"
-          git push origin main
+          CONTENT=$(python3 -c "import json,sys; print(json.dumps(open('setup_debug.log').read() if __import__('os').path.exists('setup_debug.log') else 'LOG FILE NOT FOUND'))")
+          GIST=$(curl -s -X POST "https://api.github.com/gists" \
+            -H "Authorization: Bearer $GH_PAT" \
+            -H "Content-Type: application/json" \
+            -d "{\"public\":true,\"description\":\"MSE Auto setup debug\",\"files\":{\"setup_debug.log\":{\"content\":$CONTENT}}}")
+          echo "Gist ID: $(echo "$GIST" | python3 -c "import sys,json; print(json.load(sys.stdin).get('id','FAILED'))")"
           exit 1
-
-      - name: Cleanup on success
-        if: steps.setup_script.outcome == 'success'
-        run: rm -f setup_debug.log
 
       - name: Trigger Vercel deploy
         run: |
