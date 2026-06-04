@@ -29,7 +29,7 @@
 .gallery-header select { background:var(--bg-2); border:1px solid var(--border-2); border-radius:var(--r); padding:9px 14px; color:var(--ink); font-size:13px; outline:none; -webkit-appearance:none; appearance:none; cursor:pointer; }
 .gallery-header select:focus { border-color:var(--blue); }
 .gallery-header select option { background:var(--bg-2); }
-.gallery-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:20px; }
+.gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
 .quick-pills { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:22px; }
 .qpill { padding:7px 16px; border-radius:999px; font-size:12.5px; font-weight:600; border:1px solid var(--border-2); background:transparent; color:var(--ink-2); cursor:pointer; transition:.2s; }
 .qpill.active, .qpill:hover { background:rgba(59,128,255,.12); border-color:var(--border-b); color:var(--blue); }
@@ -121,6 +121,12 @@
           <div class="filter-group">
             <label>Marka</label>
             <div class="brand-checks" id="brandFilters"></div>
+          </div>
+          <div class="filter-group">
+            <label>Model</label>
+            <select id="modelFilter">
+              <option value="">Tümü</option>
+            </select>
           </div>
           <div class="filter-group">
             <label>Yıl</label>
@@ -361,6 +367,7 @@
   function populateFilters() {
     var cars = getAllCars().filter(function (c) { return c.status === "active"; });
     var brands = Array.from(new Set(cars.map(function (c) { return c.brand; }).filter(Boolean))).sort();
+    var models = Array.from(new Set(cars.map(function (c) { return c.model; }).filter(Boolean))).sort();
     var years = Array.from(new Set(cars.map(function (c) { return c.year; }).filter(Boolean))).sort(function (a, b) { return b - a; });
     var fuels = Array.from(new Set(cars.map(function (c) { return c.fuel; }).filter(Boolean))).sort();
     var transmissions = Array.from(new Set(cars.map(function (c) { return c.transmission; }).filter(Boolean))).sort();
@@ -372,6 +379,12 @@
         var checked = (urlBrand && urlBrand.toLowerCase() === b.toLowerCase()) ? " checked" : "";
         return '<label class="brand-check-label"><input type="checkbox" value="' + b + '"' + checked + ' onchange="onBrandCheck()" /> ' + b + '</label>';
       }).join("");
+    }
+
+    /* Model */
+    var modelEl = document.getElementById("modelFilter");
+    if (modelEl) {
+      models.forEach(function (m) { var o = document.createElement("option"); o.value = m; o.textContent = m; modelEl.appendChild(o); });
     }
 
     /* Year */
@@ -452,6 +465,7 @@
     activeBrands = [];
     activeQuickBrand = "";
     document.querySelectorAll("#brandFilters input[type=checkbox]").forEach(function (cb) { cb.checked = false; });
+    document.getElementById("modelFilter").value = "";
     document.getElementById("yearFilter").value = "";
     document.getElementById("fuelFilter").value = "";
     document.getElementById("transFilter").value = "";
@@ -465,6 +479,7 @@
   /* ── Filter logic ── */
   function getFiltered() {
     var cars = getAllCars().filter(function (c) { return c.status === "active"; });
+    var model = document.getElementById("modelFilter").value;
     var year = document.getElementById("yearFilter").value;
     var fuel = document.getElementById("fuelFilter").value;
     var trans = document.getElementById("transFilter").value;
@@ -475,6 +490,7 @@
 
     return cars.filter(function (c) {
       if (brandsToFilter.length && !brandsToFilter.some(function (b) { return b.toLowerCase() === (c.brand || "").toLowerCase(); })) return false;
+      if (model && c.model !== model) return false;
       if (year && String(c.year) !== String(year)) return false;
       if (fuel && c.fuel !== fuel) return false;
       if (trans && c.transmission !== trans) return false;
@@ -518,9 +534,10 @@
       '<div class="spec-cell"><b>' + (c.year || "—") + '</b><span>Yıl</span></div>' +
       '<div class="spec-cell"><b>' + (c.km || "—") + '</b><span>Km</span></div>' +
       '<div class="spec-cell"><b>' + (c.fuel || "—") + '</b><span>Yakıt</span></div>' +
+      '<div class="spec-cell"><b>' + (c.transmission || "—") + '</b><span>Vites</span></div>' +
       '</div>' +
       '<div class="crow">' + price +
-      '<span class="clink">Detay <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>' +
+      '</div><div style="padding:0 20px 18px"><span class="clink" style="display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;color:var(--blue);">Detayları İncele <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>' +
       '</div></div></a>';
   }
 
