@@ -21,9 +21,10 @@ jobs:
             --token="${{ secrets.VERCEL_TOKEN }}" \
             --yes \
             2>&1 | tee deploy.log
-          URL=$(grep -oP 'https://[^ ]+\.vercel\.app' deploy.log | head -1 || echo "")
+          cat deploy.log
+          URL=$(grep -oE 'https://[^[:space:]]+\.vercel\.app' deploy.log | tail -1 || echo "")
+          echo "Captured URL: '$URL'"
           if [ -n "$URL" ]; then
-            echo "✅ Vercel'e yayınlandı: $URL"
             echo "url=$URL" >> $GITHUB_OUTPUT
           fi
         env:
@@ -34,13 +35,12 @@ jobs:
       - name: Summary
         run: |
           URL="${{ steps.deploy.outputs.url }}"
-          echo "🌐 Site URL → $URL" >> $GITHUB_STEP_SUMMARY
-          # Also write URL to a repo file via API so it's readable
-          if [ -n "$URL" ]; then
-            curl -s -X PUT \
-              "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/DEPLOYMENT_URL.txt" \
-              -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
-              -H "Content-Type: application/json" \
-              -d "{\"message\":\"ci: update deployment URL\",\"content\":\"$(echo "$URL" | base64 -w0)\"}" \
-              > /dev/null && echo "URL saved: $URL"
+          echo "🌐 Vercel URL: $URL"
+          echo "🌐 Vercel URL: $URL" >> $GITHUB_STEP_SUMMARY
+          # Write .vercel/project.json project ID and org to secrets if available
+          if [ -f .vercel/project.json ]; then
+            cat .vercel/project.json
+            ORG_ID=$(python3 -c "import json; d=json.load(open('.vercel/project.json')); print(d.get('orgId',''))" 2>/dev/null)
+            PROJ_ID=$(python3 -c "import json; d=json.load(open('.vercel/project.json')); print(d.get('projectId',''))" 2>/dev/null)
+            echo "orgId=$ORG_ID projectId=$PROJ_ID"
           fi
