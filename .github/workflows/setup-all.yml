@@ -21,6 +21,19 @@ jobs:
           echo "gh version: $(gh --version | head -1)"
           python3 --version
 
+      - name: Test Supabase API
+        env:
+          SUPABASE_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_KEY }}
+        run: |
+          echo "Testing Supabase organizations API..."
+          RESP=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+            "https://api.supabase.com/v1/organizations" \
+            -H "Authorization: Bearer $SUPABASE_TOKEN")
+          HTTP_CODE=$(echo "$RESP" | grep "HTTP_STATUS:" | cut -d: -f2)
+          BODY=$(echo "$RESP" | grep -v "HTTP_STATUS:")
+          echo "HTTP status: $HTTP_CODE"
+          echo "Body: $BODY"
+
       - name: Run setup script
         env:
           SUPABASE_TOKEN: ${{ secrets.SUPABASE_MANAGEMENT_KEY }}
@@ -29,7 +42,14 @@ jobs:
           GROQ_KEY:       ${{ secrets.GROQ_API_KEY }}
           GH_PAT:         ${{ secrets.GH_PAT }}
           REPO:           mehmetdem2005/mse-auto
-        run: bash .github/scripts/setup_all.sh
+        run: bash .github/scripts/setup_all.sh 2>&1 | tee /tmp/setup_output.txt; exit ${PIPESTATUS[0]}
+
+      - name: Upload setup log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: setup-log
+          path: /tmp/setup_output.txt
 
       - name: Trigger Vercel deploy
         run: |
