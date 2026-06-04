@@ -603,6 +603,9 @@
     document.getElementById("tab3d").classList.toggle("active", tab === "3d");
   };
 
+  var tab3dEl = document.getElementById("tab3d");
+  if (tab3dEl && !(car && car.has3d)) tab3dEl.style.display = "none";
+
   document.addEventListener("keydown", function (e) {
     if (e.key === "ArrowLeft") navPhoto(-1);
     if (e.key === "ArrowRight") navPhoto(1);
