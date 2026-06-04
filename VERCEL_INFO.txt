@@ -1,6 +1,40 @@
+{"user":{"id":"7kqLK3VYX56r7CHj34D0TSkP","email":"mehmetdem2005@gmail.com","name":null,"username":"mehmetdem2005","avatar":null,"defaultTeamId":"team_qD4CCjd1H6f4bYdabzhQHmIZ","version":"northstar","createdAt":1774786867411,"billing":{"plan":"hobby","period":null,"trial":null,"cancelation":null,"email":null,"platform":"stripe","tax":null,"language":null,"address":null,"name":null,"currency":"usd","status":"active"},"resourceConfig":{"concurrentBuilds":1},"softBlock":null,"stagingPrefix":"mehmetdem2005","importFlowGitProvider":"github","importFlowGitNamespaceId":119871207,"hasTrialAvailable":true,"remoteCaching":{"enabled":true},"dataCache":{"excessBillingEnabled":false},"featureBlocks":{}}}
+---
 Vercel CLI 54.9.1 (Node.js 22.22.3)
 > NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
 > This information is used to shape the CLI roadmap and prioritize features.
 > You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
 > https://vercel.com/docs/cli/about-telemetry
-Error: The token provided via `--token` argument is not valid. Please provide a valid token.
+
+  Set up "~/work/mse-auto/mse-auto"
+Loading user…
+Loading team…
+Searching for existing projects…
+  Linked      mehmetdem2005s-projects/mse-auto
+The `name` property in vercel.json is deprecated (https://vercel.link/name-prop)
+Deploying mehmetdem2005s-projects/mse-auto
+Uploading [--------------------] (0.0B/2.2MB)
+Uploading [=====---------------] (582.1KB/2.2MB)
+Uploading [==========----------] (1.1MB/2.2MB)
+Uploading [===============-----] (1.7MB/2.2MB)
+Uploading [====================] (2.2MB/2.2MB)
+  Inspect     https://vercel.com/mehmetdem2005s-projects/mse-auto/7jA1jD3pY5NH4Mz37JQtKQDrWpES
+▲ Production  https://mse-auto-gzyrl9eq4-mehmetdem2005s-projects.vercel.app
+https://mse-auto-gzyrl9eq4-mehmetdem2005s-projects.vercel.appBuilding…
+Building…
+Running build in Washington, D.C., USA (East) – iad1
+Build machine configuration: 2 cores, 8 GB
+Retrieving list of deployment files...
+Previous build caches not available.
+Downloading 70 deployment files...
+Running "vercel build"
+Vercel CLI 54.9.0
+WARNING! Due to `builds` existing in your configuration file, the Build and Development Settings defined in your Project Settings will not apply. Learn More: https://vercel.link/unused-build-settings
+Build Completed in /vercel/output [119ms]
+Deploying outputs...
+[2K[1A[2K[G▲ Production  https://mse-auto-gzyrl9eq4-mehmetdem2005s-projects.vercel.app
+Completing…
+▲ Aliased     https://mse-auto.vercel.app
+
+✓ Ready in 12s
+Due to `builds` existing in your configuration file, the Build and Development Settings defined in your Project Settings will not apply. Learn More: https://vercel.link/unused-build-settings
