@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: mse-auto-api
+    env: node
+    rootDir: api
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ALLOWED_ORIGIN
+        value: https://mehmetdem2005.github.io
+      - key: NODE_ENV
+        value: production

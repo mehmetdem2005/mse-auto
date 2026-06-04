@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MSE Auto — 2. El Araç Alım & Satım</title>
+<meta name="description" content="MSE Auto — Güvenilir 2. el araç alım ve satım galerisi. 3D araç inceleme, anında değerleme, yerinde ödeme." />
+<meta property="og:title" content="MSE Auto" />
+<meta property="og:description" content="Doğru araç, doğru fiyatla. Araçları 3D görünümle inceleyin ya da aracınızı değerinde nakde çevirin." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="site.css" />
+<style>
+/* ── Homepage extras ─────────────────────────────── */
+.hero { padding: 148px 0 0; background: var(--canvas); }
+.hero-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 60px; align-items: center; }
+.hero h1 { font-size: 72px; letter-spacing: -0.03em; line-height: 1.01; margin: 18px 0 22px; }
+.hero h1 em { font-style: normal; background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.stat-strip { display: flex; gap: 0; margin-top: 36px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--paper); }
+.stat-strip .st { flex: 1; padding: 18px 20px; border-right: 1px solid var(--line); text-align: center; }
+.stat-strip .st:last-child { border-right: none; }
+.stat-strip .st b { display: block; font-size: 22px; font-weight: 700; color: var(--ink); }
+.stat-strip .st span { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+/* voice button */
+.ai-voice { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--canvas); color: var(--ink-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+.ai-voice:hover { border-color: var(--gold); color: var(--gold); }
+.ai-voice.recording { background: #fee; border-color: #c00; color: #c00; animation: pulse-red 1s infinite; }
+@keyframes pulse-red { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+/* trust badges row */
+.trust-row { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.trust-badge { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.trust-badge svg { color: var(--gold); }
+/* Animated counter on hero chips */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+.hero-chips .hc { animation: fadeUp 0.5s both; }
+.hero-chips .hc:nth-child(1) { animation-delay: 0.5s; }
+.hero-chips .hc:nth-child(2) { animation-delay: 0.65s; }
+.hero-chips .hc:nth-child(3) { animation-delay: 0.8s; }
+@media (max-width: 980px) {
+  .hero { padding: 110px 0 0; }
+  .hero-grid { grid-template-columns: 1fr; gap: 30px; }
+  .hero h1 { font-size: 44px; }
+  .stat-strip { flex-wrap: wrap; }
+  .stat-strip .st { min-width: 50%; }
+}
+@media (max-width: 520px) {
+  .hero h1 { font-size: 36px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-inner">
+    <a class="logo" href="index.html"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></a>
+    <ul class="nav">
+      <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="sell.html">Aracını Sat</a></li>
+      <li><a href="about.html">Hakkımızda</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="contact.html">İletişim</a></li>
+    </ul>
+    <div class="hdr-cta">
+      <a class="hdr-phone" href="tel:+90" id="hdrPhone"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg> Hemen Ara</a>
+      <a class="btn btn-gold" href="sell.html"><span>Ücretsiz Değerleme</span></a>
+      <button class="burger" id="burger" aria-label="Menü"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="kicker reveal" data-c="hero.kicker">MSE Auto · 2. El Galeri</span>
+        <h1 class="reveal d1" data-c="hero.title">Doğru araç, <em>doğru fiyatla.</em></h1>
+        <p class="lead reveal d2" data-c="hero.sub">Aramak da satmak da kolay. Araçları yüksek çözünürlüklü ve 3D görünümle inceleyin ya da aracınızı değerinde nakde çevirin.</p>
+        <div class="hero-actions reveal d2">
+          <a class="btn btn-gold" href="gallery.html"><span>Satılık Araçlar</span></a>
+          <a class="btn btn-line" href="sell.html"><span>Aracımı Sat</span></a>
+        </div>
+        <div class="trust-row reveal d3">
+          <span class="trust-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Güvenilir işlem</span>
+          <span class="trust-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg> Şeffaf ekspertiz</span>
+          <span class="trust-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Yerinde hizmet</span>
+          <span class="trust-badge"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Güvenli ödeme</span>
+        </div>
+      </div>
+      <div class="hero-side reveal d2">
+        <div class="hero-visual">
+          <span class="tag3d"><b>◆</b> 3D Görünüm</span>
+          <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1100&q=78" alt="Öne çıkan araç" />
+          <div class="hero-glass">
+            <div class="hg-l"><b>Vitrindeki araç</b><span>3D görünüm · 360° inceleme</span></div>
+            <div class="hg-dots"><i></i><i></i><i></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="searchbar reveal d1">
+      <div class="fld"><span>Marka</span><b>Tümü</b></div>
+      <div class="fld"><span>Fiyat</span><b>Tümü</b></div>
+      <div class="fld"><span>Yakıt</span><b>Tümü</b></div>
+      <button class="btn btn-dark go">Ara</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURES ============ -->
+<section class="features">
+  <div class="wrap">
+    <div class="features-grid" id="features"></div>
+  </div>
+</section>
+
+<!-- ============ VITRINE ============ -->
+<section class="sec" id="araclar">
+  <div class="wrap sec-head">
+    <div>
+      <span class="kicker reveal" data-c="vitrine.kicker">Öne Çıkanlar</span>
+      <h2 class="reveal d1" data-c="vitrine.title">Vitrindeki araçlar</h2>
+    </div>
+    <a class="ul-link reveal d1" href="gallery.html"><span data-c="vitrine.link">Tüm araçlar</span> <span class="ar">→</span></a>
+  </div>
+  <div class="vitrine-wrap">
+    <div class="vitrine-track" id="vitrineTrack"></div>
+  </div>
+</section>
+
+<!-- ============ GALLERY ============ -->
+<section class="sec surface">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <span class="kicker reveal" data-c="gallery.kicker">Galeri</span>
+        <h2 class="reveal d1" data-c="gallery.title">Satılık araçlar</h2>
+      </div>
+      <a class="ul-link reveal d1" href="gallery.html"><span data-c="gallery.link">Galeriye git</span> <span class="ar">→</span></a>
+    </div>
+    <div class="empty-state reveal" id="emptyState">
+      <div class="e-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></div>
+      <div>
+        <b>Henüz araç eklenmedi</b>
+        <span>İlanlar admin panelinden eklenecek; eklendikçe burada otomatik listelenir. Aşağıdaki kartlar yalnızca yerleşim örneğidir.</span>
+      </div>
+    </div>
+    <div class="cars-grid" id="carsGrid"></div>
+  </div>
+</section>
+
+<!-- ============ SELL BAND ============ -->
+<section class="sec" id="sat">
+  <div class="wrap sell reveal">
+    <div class="sell-l">
+      <span class="kicker" data-c="sell.kicker">Aracını Sat</span>
+      <h2 data-c="sell.title">Aracınız değerinde, anında nakit.</h2>
+      <p data-c="sell.sub">Birkaç bilgi ve fotoğrafla başvurun; ekibimiz değerlemeyi yapsın, anlaşınca ödemeyi yerinde gerçekleştirelim.</p>
+      <a class="btn btn-gold" href="sell.html"><span data-c="sell.cta">Ücretsiz Değerleme Al</span></a>
+    </div>
+    <div class="sell-steps">
+      <div class="sstep"><div class="n">01</div><div class="tx"><b data-c="sell.steps.0.t">Bilgileri gönder</b><span data-c="sell.steps.0.s">Marka, model, km ve fotoğraf</span></div></div>
+      <div class="sstep"><div class="n">02</div><div class="tx"><b data-c="sell.steps.1.t">Değerleme al</b><span data-c="sell.steps.1.s">Ekibimiz en kısa sürede döner</span></div></div>
+      <div class="sstep"><div class="n">03</div><div class="tx"><b data-c="sell.steps.2.t">Anında nakit</b><span data-c="sell.steps.2.s">Anlaşınca yerinde ödeme</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA BAND ============ -->
+<section class="sec" style="padding-top:0">
+  <div class="wrap">
+    <div class="ctaband reveal">
+      <div class="cb-text">
+        <span class="kicker" data-c="cta.kicker">Güvenilir Hizmet</span>
+        <h2 data-c="cta.title">Almak da satmak da MSE Auto ile güvende.</h2>
+        <p data-c="cta.sub">Şeffaf ekspertiz, eksiksiz belge ve değerinde fiyat. Aklınıza takılanı asistana sorun ya da bize ulaşın.</p>
+        <div class="cb-actions">
+          <a class="btn btn-gold" data-href="cta.primary" href="#araclar"><span data-c="cta.primary.label">Araçları Gör</span></a>
+          <a class="btn btn-line" data-href="cta.secondary" href="#iletisim"><span data-c="cta.secondary.label">İletişime Geç</span></a>
+        </div>
+      </div>
+      <div class="cb-img">
+        <img src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1300&q=78" alt="MSE Auto" />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot" id="iletisim">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="fabout">
+        <a class="flogo" href="#"><span class="m">MSE<b>.</b> AUTO</span></a>
+        <p data-c="footer.about">Güvenilir 2. el araç alım & satım.</p>
+        <div class="foot-soc">
+          <a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="tel:+90" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
+        </div>
+      </div>
+      <div id="footCols" style="display:contents"></div>
+      <div class="fcontact">
+        <h5>İletişim</h5>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg><span id="footPhone">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="2"/></svg><span id="footAddr">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/></svg><span id="footHours">—</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 MSE Auto. Tüm hakları saklıdır.</span>
+      <span>Tüm içerik, ilanlar ve iletişim bilgileri admin panelinden yönetilir.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MOBILE DRAWER ============ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <span class="logo"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></span>
+    <button class="x" id="drawerClose" aria-label="Kapat">×</button>
+  </div>
+  <nav>
+    <a href="gallery.html">Araçlar</a>
+    <a href="sell.html">Aracını Sat</a>
+    <a href="about.html">Hakkımızda</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">İletişim</a>
+  </nav>
+  <div class="drawer-cta">
+    <a class="btn btn-gold" href="sell.html" style="justify-content:center">Ücretsiz Değerleme</a>
+    <a class="btn btn-line" id="drawerPhone" href="tel:+90" style="justify-content:center">Hemen Ara</a>
+  </div>
+</div>
+
+<!-- ============ MOBILE BOTTOM BAR ============ -->
+<nav class="mobile-bar">
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>Araçlar</a>
+  <a href="sell.html" class="prime"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg>Aracını Sat</a>
+  <a href="#" id="mobileWhatsApp"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>WhatsApp</a>
+</nav>
+
+<!-- ============ AI ASSISTANT ============ -->
+<div class="ai-fab" id="aiFab">
+  <div class="ai-hint" id="aiHint"><b data-c="assistant.name">MSE Asistan</b> · <span data-c="assistant.hint">Size nasıl yardımcı olabilirim?</span></div>
+  <button class="ai-orb" id="aiOrb" aria-label="MSE Asistan">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg>
+  </button>
+</div>
+
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg></div>
+    <div class="ti"><b data-c="assistant.name">MSE Asistan</b><span data-c="assistant.status">Çevrimiçi · Groq destekli</span></div>
+    <button class="x" id="aiClose" aria-label="Kapat">×</button>
+  </div>
+  <div class="ai-body" id="aiBody"></div>
+  <div class="ai-chips" id="aiChips"></div>
+  <div class="ai-foot">
+    <button class="ai-voice" id="aiVoice" aria-label="Sesli mesaj" title="Sesle sor">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3M8 22h8"/></svg>
+    </button>
+    <input id="aiInput" placeholder="Mesajınızı yazın…" />
+    <button class="send" id="aiSend" aria-label="Gönder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<script src="image-slot.js"></script>
+<script src="site-content.js"></script>
+<script src="db.js"></script>
+<script src="shared-init.js"></script>
+<script src="site.js"></script>
+<script>
+/* ── Config (set by admin panel) ───────────── */
+window.MSE_API_BASE = localStorage.getItem("mse_api_base") || "https://mse-auto-api.onrender.com";
+
+/* ── Override Groq AI with real backend ───── */
+window.MSE_AI = window.MSE_AI || {};
+window.MSE_AI.history = [];
+window.MSE_AI.ask = async function(q) {
+  window.MSE_AI.history.push({ role: "user", content: q });
+  try {
+    const res = await fetch(window.MSE_API_BASE + "/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: q, history: window.MSE_AI.history.slice(-6) }),
+    });
+    if (!res.ok) throw new Error("API " + res.status);
+    const data = await res.json();
+    window.MSE_AI.history.push({ role: "assistant", content: data.reply });
+    return data.reply;
+  } catch (e) {
+    return "Üzgünüm, şu an yanıt veremiyorum. Lütfen doğrudan bizi arayın.";
+  }
+};
+
+/* ── Voice Assistant (Groq Whisper) ──────── */
+(function () {
+  var btn = document.getElementById("aiVoice");
+  if (!btn || !navigator.mediaDevices) return;
+  var rec = null;
+  var chunks = [];
+  btn.addEventListener("click", async function () {
+    if (rec && rec.state === "recording") {
+      rec.stop();
+      return;
+    }
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      chunks = [];
+      rec = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      rec.ondataavailable = function (e) { if (e.data.size) chunks.push(e.data); };
+      rec.onstop = async function () {
+        btn.classList.remove("recording");
+        stream.getTracks().forEach(function(t) { t.stop(); });
+        var blob = new Blob(chunks, { type: "audio/webm" });
+        var fd = new FormData();
+        fd.append("audio", blob, "voice.webm");
+        try {
+          var r = await fetch(window.MSE_API_BASE + "/api/voice", { method: "POST", body: fd });
+          var d = await r.json();
+          if (d.transcript) {
+            document.getElementById("aiInput").value = d.transcript;
+            document.getElementById("aiSend").click();
+          }
+        } catch (e) { console.warn("Voice error:", e); }
+      };
+      rec.start();
+      btn.classList.add("recording");
+      setTimeout(function () { if (rec && rec.state === "recording") rec.stop(); }, 10000);
+    } catch (e) { alert("Mikrofon erişimi reddedildi."); }
+  });
+})();
+
+/* ── Settings from DB ────────────────────── */
+(function () {
+  var s = (window.MSE_DB && window.MSE_DB.getSettings()) || window.MSE_SETTINGS || {};
+  var $ = function(id) { return document.getElementById(id); };
+  if (s.phone) {
+    var ph = $("footPhone"); if (ph) ph.textContent = s.phone;
+    var hdrPh = $("hdrPhone"); if (hdrPh) hdrPh.href = "tel:" + s.phone.replace(/\s/g,"");
+    var drawerPh = $("drawerPhone"); if (drawerPh) drawerPh.href = "tel:" + s.phone.replace(/\s/g,"");
+  }
+  if (s.address) { var fa = $("footAddr"); if (fa) fa.textContent = s.address; }
+  if (s.hours) { var fh = $("footHours"); if (fh) fh.textContent = s.hours; }
+  if (s.whatsapp) {
+    var waLink = "https://wa.me/" + s.whatsapp.replace(/[^0-9]/g,"");
+    var mwa = $("mobileWhatsApp"); if (mwa) mwa.href = waLink;
+    document.querySelectorAll('a[href="https://wa.me/"]').forEach(function(a) { a.href = waLink; });
+  }
+})();
+</script>
+</body>
+</html>

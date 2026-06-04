@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Satılık Araçlar — MSE Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="site.css" />
+<style>
+/* ---- Page hero ---- */
+.page-hero {
+  padding: 120px 0 52px;
+  background: linear-gradient(180deg, rgba(231,223,208,0.5), transparent);
+  border-bottom: 1px solid var(--line);
+}
+.page-hero .breadcrumb {
+  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.page-hero .breadcrumb a { color: var(--gold); }
+.page-hero .breadcrumb span { color: var(--muted); }
+.page-hero h1 { font-size: 52px; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+
+/* ---- Filter bar ---- */
+.filter-bar {
+  position: sticky; top: 70px; z-index: 90; background: rgba(255,253,248,0.95);
+  backdrop-filter: blur(14px); border-bottom: 1px solid var(--line);
+  padding: 14px 0; box-shadow: 0 4px 20px -8px rgba(40,28,8,0.1);
+}
+.filter-inner {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.filter-select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23968d7c' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 11px center;
+  border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 9px 32px 9px 14px;
+  font-size: 13px; font-family: inherit; font-weight: 600; color: var(--ink);
+  cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; min-width: 120px;
+}
+.filter-select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,127,29,0.12); }
+.filter-range-group {
+  display: flex; align-items: center; gap: 4px;
+}
+.filter-range-group span { font-size: 12px; color: var(--muted); font-weight: 600; }
+.filter-input {
+  border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 9px 12px;
+  font-size: 13px; font-family: inherit; font-weight: 600; color: var(--ink); width: 90px;
+  background: var(--paper); transition: border-color 0.2s;
+}
+.filter-input:focus { outline: none; border-color: var(--gold); }
+.filter-sep { width: 1px; height: 28px; background: var(--line-2); margin: 0 4px; }
+.btn-filter { background: var(--espresso); color: #fff; border: none; border-radius: var(--r-sm); padding: 10px 22px; font-weight: 700; font-size: 13px; font-family: inherit; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; transition: background 0.2s, transform 0.2s; }
+.btn-filter:hover { background: #000; transform: translateY(-1px); }
+.btn-clear { background: transparent; border: none; font-size: 13px; font-weight: 700; color: var(--gold); cursor: pointer; letter-spacing: 0.04em; text-decoration: underline; text-underline-offset: 3px; padding: 0 4px; }
+.btn-clear:hover { color: var(--gold-2); }
+
+/* ---- Sort + result count row ---- */
+.gallery-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 0 20px; gap: 16px; flex-wrap: wrap;
+}
+.result-count { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.result-count b { color: var(--ink); }
+.sort-select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23968d7c' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 11px center;
+  border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 9px 36px 9px 14px;
+  font-size: 13px; font-family: inherit; font-weight: 700; color: var(--ink); cursor: pointer;
+  transition: border-color 0.2s; background-color: var(--paper);
+}
+.sort-select:focus { outline: none; border-color: var(--gold); }
+
+/* ---- Active filter chips ---- */
+.filter-chips-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding-bottom: 20px;
+}
+.filter-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--espresso); color: #fff; border-radius: 999px;
+  font-size: 12px; font-weight: 700; padding: 5px 12px 5px 14px; letter-spacing: 0.04em;
+}
+.filter-chip button {
+  background: rgba(255,255,255,0.2); border: none; color: #fff;
+  width: 18px; height: 18px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+  line-height: 1; transition: background 0.2s; padding: 0;
+}
+.filter-chip button:hover { background: rgba(255,255,255,0.4); }
+
+/* ---- Gallery grid (3 cols) ---- */
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+
+/* ---- Pagination ---- */
+.pagination {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 52px 0 20px;
+}
+.pagination button, .pagination .pgnum {
+  min-width: 40px; height: 40px; border-radius: 11px; border: 1px solid var(--line-2);
+  background: var(--paper); color: var(--ink); font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: 0.2s; font-family: inherit; padding: 0 10px;
+}
+.pagination button:hover, .pagination .pgnum:hover { border-color: var(--gold); color: var(--gold); }
+.pagination .pgnum.active { background: var(--gold-grad); color: #2a1e05; border-color: transparent; box-shadow: var(--sh-gold); }
+.pagination button:disabled { opacity: 0.35; cursor: not-allowed; }
+.pagination .pg-ellipsis { color: var(--muted); padding: 0 4px; font-size: 14px; }
+
+@media (max-width: 980px) {
+  .page-hero h1 { font-size: 36px; }
+  .filter-inner { gap: 8px; }
+  .filter-select { min-width: 100px; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .page-hero h1 { font-size: 28px; }
+  .gallery-grid { grid-template-columns: 1fr; }
+  .filter-range-group { flex-wrap: wrap; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-inner">
+    <a class="logo" href="index.html"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></a>
+    <ul class="nav">
+      <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="sell.html">Aracını Sat</a></li>
+      <li><a href="about.html">Hakkımızda</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="contact.html">İletişim</a></li>
+    </ul>
+    <div class="hdr-cta">
+      <a class="hdr-phone" href="tel:+90"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg> Hemen Ara</a>
+      <a class="btn btn-gold" href="sell.html"><span>Ücretsiz Değerleme</span></a>
+      <button class="burger" id="burger" aria-label="Menü"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ PAGE HERO ============ -->
+<section class="page-hero">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="index.html">Anasayfa</a>
+      <span>›</span>
+      <span>Araçlar</span>
+    </div>
+    <h1 class="reveal">Satılık Araçlar</h1>
+  </div>
+</section>
+
+<!-- ============ FILTER BAR ============ -->
+<div class="filter-bar" id="filterBar">
+  <div class="wrap">
+    <div class="filter-inner">
+      <select class="filter-select" id="fMarka" aria-label="Marka">
+        <option value="">Marka</option>
+      </select>
+      <select class="filter-select" id="fModel" aria-label="Model">
+        <option value="">Model</option>
+      </select>
+      <div class="filter-range-group">
+        <input class="filter-input" type="number" id="fYilMin" placeholder="Yıl min" min="1990" max="2026" aria-label="Yıl min" />
+        <span>–</span>
+        <input class="filter-input" type="number" id="fYilMax" placeholder="Yıl max" min="1990" max="2026" aria-label="Yıl max" />
+      </div>
+      <div class="filter-sep"></div>
+      <div class="filter-range-group">
+        <input class="filter-input" type="number" id="fKmMin" placeholder="Km min" aria-label="Km min" />
+        <span>–</span>
+        <input class="filter-input" type="number" id="fKmMax" placeholder="Km max" aria-label="Km max" />
+      </div>
+      <select class="filter-select" id="fYakit" aria-label="Yakıt">
+        <option value="">Yakıt</option>
+        <option value="Benzin">Benzin</option>
+        <option value="Dizel">Dizel</option>
+        <option value="Hibrit">Hibrit</option>
+        <option value="Elektrik">Elektrik</option>
+        <option value="LPG">LPG</option>
+      </select>
+      <div class="filter-range-group">
+        <input class="filter-input" type="number" id="fFiyatMin" placeholder="Fiyat min" aria-label="Fiyat min" />
+        <span>–</span>
+        <input class="filter-input" type="number" id="fFiyatMax" placeholder="Fiyat max" aria-label="Fiyat max" />
+      </div>
+      <button class="btn-filter" id="btnFiltrele">Filtrele</button>
+      <button class="btn-clear" id="btnTemizle">Temizle</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ GALLERY CONTENT ============ -->
+<section class="sec" style="padding-top: 0;">
+  <div class="wrap">
+    <div class="gallery-toolbar">
+      <div class="result-count" id="resultCount"><b>—</b> araç bulundu</div>
+      <select class="sort-select" id="sortSelect" aria-label="Sıralama">
+        <option value="default">Varsayılan sıralama</option>
+        <option value="price-asc">Fiyata göre: artan</option>
+        <option value="price-desc">Fiyata göre: azalan</option>
+        <option value="km-asc">Km'ye göre: az</option>
+        <option value="km-desc">Km'ye göre: çok</option>
+        <option value="year-desc">En yeni</option>
+        <option value="year-asc">En eski</option>
+      </select>
+    </div>
+
+    <!-- Active filter chips -->
+    <div class="filter-chips-row" id="activeChips" style="display:none"></div>
+
+    <!-- Empty state / skeleton notice -->
+    <div class="empty-state reveal" id="galleryEmptyState">
+      <div class="e-ic">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>
+      </div>
+      <div>
+        <b>Henüz araç eklenmedi</b>
+        <span>İlanlar admin panelinden eklenecek; eklendikçe burada otomatik listelenir. Aşağıdaki kartlar yalnızca yerleşim örneğidir.</span>
+      </div>
+    </div>
+
+    <!-- Car grid -->
+    <div class="gallery-grid cars-grid" id="galleryGrid"></div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination"></div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot" id="iletisim">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="fabout">
+        <a class="flogo" href="index.html"><span class="m">MSE<b>.</b> AUTO</span></a>
+        <p data-c="footer.about">Güvenilir 2. el araç alım & satım.</p>
+        <div class="foot-soc">
+          <a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="tel:+90" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
+        </div>
+      </div>
+      <div id="footCols" style="display:contents"></div>
+      <div class="fcontact">
+        <h5>İletişim</h5>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg><span id="footPhone">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="2"/></svg><span id="footAddr">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/></svg><span id="footHours">—</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 MSE Auto. Tüm hakları saklıdır.</span>
+      <span>Tüm içerik, ilanlar ve iletişim bilgileri admin panelinden yönetilir.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MOBILE DRAWER ============ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <span class="logo"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></span>
+    <button class="x" id="drawerClose" aria-label="Kapat">×</button>
+  </div>
+  <nav>
+    <a href="gallery.html">Araçlar</a>
+    <a href="sell.html">Aracını Sat</a>
+    <a href="about.html">Hakkımızda</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">İletişim</a>
+  </nav>
+  <div class="drawer-cta">
+    <a class="btn btn-gold" href="sell.html" style="justify-content:center">Ücretsiz Değerleme</a>
+    <a class="btn btn-line" href="tel:+90" style="justify-content:center">Hemen Ara</a>
+  </div>
+</div>
+
+<!-- ============ MOBILE BOTTOM BAR ============ -->
+<nav class="mobile-bar">
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>Araçlar</a>
+  <a href="sell.html" class="prime"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg>Aracını Sat</a>
+  <a href="https://wa.me/" target="_blank"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>WhatsApp</a>
+</nav>
+
+<!-- ============ AI ASSISTANT ============ -->
+<div class="ai-fab" id="aiFab">
+  <div class="ai-hint" id="aiHint"><b data-c="assistant.name">MSE Asistan</b> · <span data-c="assistant.hint">Size nasıl yardımcı olabilirim?</span></div>
+  <button class="ai-orb" id="aiOrb" aria-label="MSE Asistan">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg>
+  </button>
+</div>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg></div>
+    <div class="ti"><b data-c="assistant.name">MSE Asistan</b><span data-c="assistant.status">Çevrimiçi · Groq destekli</span></div>
+    <button class="x" id="aiClose" aria-label="Kapat">×</button>
+  </div>
+  <div class="ai-body" id="aiBody"></div>
+  <div class="ai-chips" id="aiChips"></div>
+  <div class="ai-foot">
+    <input id="aiInput" placeholder="Mesajınızı yazın…" />
+    <button class="send" id="aiSend" aria-label="Gönder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<script src="image-slot.js"></script>
+<script src="site-content.js"></script>
+<script src="db.js"></script>
+<script src="shared-init.js"></script>
+<script src="site.js"></script>
+<script>
+(function () {
+  var S = window.MSE_SETTINGS || {};
+  var set = function (id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; };
+  set("footPhone", S.phone); set("footAddr", S.address); set("footHours", S.hours);
+
+  var PAGE_SIZE = 9;
+  var currentPage = 1;
+  var activeFilters = {};
+  var sortMode = "default";
+
+  var PHOTOS = [
+    "1503376780353-7e6692767b70","1555215695-3004980ad54e","1583121274602-3e2820c69888",
+    "1606664515524-ed2f786a0bd6","1494976388531-d1058494cdd8","1568605117036-5fe5e7bab0b7",
+    "1517994112540-009c47ea476b","1605559424843-9e4c228bf1c2","1502877338535-766e1452684a",
+    "1580273916550-e323be2ae537","1552519507-da3b142c6e3d","1542362567-b07e54358753",
+  ];
+  function photoAt(i) { return "https://images.unsplash.com/photo-" + PHOTOS[i % PHOTOS.length] + "?auto=format&fit=crop&w=720&q=72"; }
+
+  function getCars() {
+    if (window.MSE_DB && typeof window.MSE_DB.getCars === "function") return window.MSE_DB.getCars();
+    return window.MSE_CARS || [];
+  }
+
+  function applyFilters(cars) {
+    return cars.filter(function (c) {
+      if (activeFilters.marka && c.brand && c.brand.toLowerCase() !== activeFilters.marka.toLowerCase()) return false;
+      if (activeFilters.model && c.model && !c.model.toLowerCase().includes(activeFilters.model.toLowerCase())) return false;
+      if (activeFilters.yilMin && c.year && Number(c.year) < Number(activeFilters.yilMin)) return false;
+      if (activeFilters.yilMax && c.year && Number(c.year) > Number(activeFilters.yilMax)) return false;
+      if (activeFilters.yakit && c.fuel && c.fuel !== activeFilters.yakit) return false;
+      var km = parseInt(String(c.km).replace(/\D/g, "")) || 0;
+      if (activeFilters.kmMin && km < Number(activeFilters.kmMin)) return false;
+      if (activeFilters.kmMax && km > Number(activeFilters.kmMax)) return false;
+      var price = parseInt(String(c.price).replace(/\D/g, "")) || 0;
+      if (activeFilters.fiyatMin && price && price < Number(activeFilters.fiyatMin)) return false;
+      if (activeFilters.fiyatMax && price && price > Number(activeFilters.fiyatMax)) return false;
+      return true;
+    });
+  }
+
+  function applySort(cars) {
+    var arr = cars.slice();
+    if (sortMode === "price-asc") arr.sort(function (a, b) { return (parseInt(String(a.price).replace(/\D/g,""))||0) - (parseInt(String(b.price).replace(/\D/g,""))||0); });
+    else if (sortMode === "price-desc") arr.sort(function (a, b) { return (parseInt(String(b.price).replace(/\D/g,""))||0) - (parseInt(String(a.price).replace(/\D/g,""))||0); });
+    else if (sortMode === "km-asc") arr.sort(function (a, b) { return (parseInt(String(a.km).replace(/\D/g,""))||0) - (parseInt(String(b.km).replace(/\D/g,""))||0); });
+    else if (sortMode === "km-desc") arr.sort(function (a, b) { return (parseInt(String(b.km).replace(/\D/g,""))||0) - (parseInt(String(a.km).replace(/\D/g,""))||0); });
+    else if (sortMode === "year-desc") arr.sort(function (a, b) { return (Number(b.year)||0) - (Number(a.year)||0); });
+    else if (sortMode === "year-asc") arr.sort(function (a, b) { return (Number(a.year)||0) - (Number(b.year)||0); });
+    return arr;
+  }
+
+  function renderCard(c, i, realCar) {
+    if (realCar) {
+      return '<a class="car reveal" href="car-detail.html?id=' + (c.id || i) + '">' +
+        '<div class="cimg">' +
+        (c.has3d ? '<span class="badge"><b>◆</b> 3D Görünüm</span>' : '') +
+        '<button class="fav" aria-label="Favori">♡</button>' +
+        '<img src="' + (c.image || photoAt(i)) + '" alt="' + (c.title || "") + '" loading="lazy" />' +
+        '</div><div class="cbody">' +
+        '<h3>' + (c.title || "—") + '</h3>' +
+        '<div class="spec-row">' +
+        '<div class="spec-cell"><b>' + (c.year || "—") + '</b><span>Yıl</span></div>' +
+        '<div class="spec-cell"><b>' + (c.km || "—") + '</b><span>km</span></div>' +
+        '<div class="spec-cell"><b>' + (c.fuel || "—") + '</b><span>Yakıt</span></div>' +
+        '</div>' +
+        '<div class="crow"><div class="cprice">' + (c.price || '<span class="cprice empty">Fiyat · panelden</span>') + '</div><span class="ul-link">Detay <span class="ar">→</span></span></div>' +
+        '<div class="caddr">📍 ' + (S.address || "—") + '</div>' +
+        '</div></a>';
+    }
+    return '<div class="car skeleton reveal">' +
+      '<div class="cimg"><span class="badge"><b>◆</b> 3D Görünüm</span><button class="fav" aria-label="Favori">♡</button>' +
+      '<img src="' + photoAt(i) + '" alt="Örnek araç" loading="lazy" /></div>' +
+      '<div class="cbody">' +
+      '<h3 style="color:var(--muted);font-weight:600;font-size:16px">Araç modeli</h3>' +
+      '<div class="spec-row"><div class="spec-cell"><b>—</b><span>Yıl</span></div><div class="spec-cell"><b>—</b><span>km</span></div><div class="spec-cell"><b>—</b><span>Yakıt</span></div></div>' +
+      '<div class="crow"><div class="cprice empty">Fiyat · panelden</div><span class="ul-link" style="color:var(--muted)">Detay <span class="ar">→</span></span></div>' +
+      '<div class="caddr">📍 ' + (S.address || "—") + '</div>' +
+      '</div></div>';
+  }
+
+  function renderPagination(total, page) {
+    var totalPages = Math.ceil(total / PAGE_SIZE);
+    if (totalPages <= 1) { document.getElementById("pagination").innerHTML = ""; return; }
+    var html = '';
+    html += '<button onclick="galleryGoPage(' + (page - 1) + ')" ' + (page <= 1 ? 'disabled' : '') + '>‹ Önceki</button>';
+    for (var p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - page) <= 1) {
+        html += '<button class="pgnum' + (p === page ? ' active' : '') + '" onclick="galleryGoPage(' + p + ')">' + p + '</button>';
+      } else if (Math.abs(p - page) === 2) {
+        html += '<span class="pg-ellipsis">…</span>';
+      }
+    }
+    html += '<button onclick="galleryGoPage(' + (page + 1) + ')" ' + (page >= totalPages ? 'disabled' : '') + '>Sonraki ›</button>';
+    document.getElementById("pagination").innerHTML = html;
+  }
+
+  function renderChips() {
+    var row = document.getElementById("activeChips");
+    var labels = { marka: "Marka", model: "Model", yilMin: "Yıl min", yilMax: "Yıl max", kmMin: "Km min", kmMax: "Km max", yakit: "Yakıt", fiyatMin: "Fiyat min", fiyatMax: "Fiyat max" };
+    var keys = Object.keys(activeFilters).filter(function (k) { return activeFilters[k]; });
+    if (!keys.length) { row.style.display = "none"; return; }
+    row.style.display = "flex";
+    row.innerHTML = keys.map(function (k) {
+      return '<span class="filter-chip">' + labels[k] + ': ' + activeFilters[k] +
+        '<button onclick="galleryRemoveFilter(\'' + k + '\')" aria-label="Filteri kaldır">×</button></span>';
+    }).join("");
+  }
+
+  function render() {
+    var all = getCars();
+    var filtered = applyFilters(all);
+    var sorted = applySort(filtered);
+    var total = sorted.length;
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var page = sorted.slice(start, start + PAGE_SIZE);
+
+    var rc = document.getElementById("resultCount");
+    if (rc) rc.innerHTML = '<b>' + total + '</b> araç bulundu';
+
+    var grid = document.getElementById("galleryGrid");
+    var empty = document.getElementById("galleryEmptyState");
+
+    if (all.length === 0) {
+      if (empty) empty.style.display = "flex";
+      grid.innerHTML = Array.from({length: 6}, function (_, i) { return renderCard(null, i, false); }).join("");
+    } else {
+      if (empty) empty.style.display = "none";
+      if (page.length === 0) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);font-size:15px">Bu kriterlere uygun araç bulunamadı.</div>';
+      } else {
+        grid.innerHTML = page.map(function (c, i) { return renderCard(c, start + i, true); }).join("");
+      }
+    }
+    renderPagination(all.length === 0 ? 0 : total, currentPage);
+    renderChips();
+
+    // Re-observe reveal elements
+    if (window.MSE_REVEAL_OBS) {
+      document.querySelectorAll(".reveal:not(.in)").forEach(function (el) { window.MSE_REVEAL_OBS.observe(el); });
+    }
+
+    // Fav toggle
+    grid.addEventListener("click", function (e) {
+      var f = e.target.closest(".fav");
+      if (f) { e.preventDefault(); var on = f.textContent.trim() === "♡"; f.textContent = on ? "♥" : "♡"; f.style.color = on ? "#b23b3b" : ""; }
+    }, { once: true });
+  }
+
+  window.galleryGoPage = function (p) {
+    currentPage = p;
+    render();
+    window.scrollTo({ top: document.getElementById("filterBar").offsetTop - 80, behavior: "smooth" });
+  };
+  window.galleryRemoveFilter = function (key) {
+    delete activeFilters[key];
+    var map = { marka: "fMarka", model: "fModel", yilMin: "fYilMin", yilMax: "fYilMax", kmMin: "fKmMin", kmMax: "fKmMax", yakit: "fYakit", fiyatMin: "fFiyatMin", fiyatMax: "fFiyatMax" };
+    var el = document.getElementById(map[key]);
+    if (el) el.value = "";
+    currentPage = 1;
+    render();
+  };
+
+  document.getElementById("btnFiltrele").addEventListener("click", function () {
+    activeFilters = {};
+    var marka = document.getElementById("fMarka").value; if (marka) activeFilters.marka = marka;
+    var model = document.getElementById("fModel").value; if (model) activeFilters.model = model;
+    var yilMin = document.getElementById("fYilMin").value; if (yilMin) activeFilters.yilMin = yilMin;
+    var yilMax = document.getElementById("fYilMax").value; if (yilMax) activeFilters.yilMax = yilMax;
+    var kmMin = document.getElementById("fKmMin").value; if (kmMin) activeFilters.kmMin = kmMin;
+    var kmMax = document.getElementById("fKmMax").value; if (kmMax) activeFilters.kmMax = kmMax;
+    var yakit = document.getElementById("fYakit").value; if (yakit) activeFilters.yakit = yakit;
+    var fiyatMin = document.getElementById("fFiyatMin").value; if (fiyatMin) activeFilters.fiyatMin = fiyatMin;
+    var fiyatMax = document.getElementById("fFiyatMax").value; if (fiyatMax) activeFilters.fiyatMax = fiyatMax;
+    currentPage = 1;
+    render();
+  });
+
+  document.getElementById("btnTemizle").addEventListener("click", function () {
+    activeFilters = {};
+    ["fMarka","fModel","fYilMin","fYilMax","fKmMin","fKmMax","fYakit","fFiyatMin","fFiyatMax"].forEach(function (id) {
+      var el = document.getElementById(id); if (el) el.value = "";
+    });
+    currentPage = 1;
+    render();
+  });
+
+  document.getElementById("sortSelect").addEventListener("change", function () {
+    sortMode = this.value;
+    currentPage = 1;
+    render();
+  });
+
+  // Populate brand dropdown from cars
+  (function () {
+    var cars = getCars();
+    var brands = Array.from(new Set(cars.map(function (c) { return c.brand; }).filter(Boolean))).sort();
+    var sel = document.getElementById("fMarka");
+    brands.forEach(function (b) { var o = document.createElement("option"); o.value = b; o.textContent = b; sel.appendChild(o); });
+  })();
+
+  render();
+})();
+</script>
+</body>
+</html>

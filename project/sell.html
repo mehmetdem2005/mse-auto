@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aracınızı Satın — MSE Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="site.css" />
+<style>
+/* ---- Page hero ---- */
+.sell-hero {
+  padding: 120px 0 60px;
+  background: linear-gradient(135deg, var(--espresso-2), var(--espresso));
+  position: relative; overflow: hidden;
+}
+.sell-hero::before { content: ""; position: absolute; width: 600px; height: 600px; right: -100px; top: -200px; border-radius: 50%; background: radial-gradient(circle, rgba(199,159,64,0.22), transparent 65%); pointer-events: none; }
+.sell-hero::after { content: ""; position: absolute; inset: 0; opacity: 0.3; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); pointer-events: none; }
+.sell-hero-inner { position: relative; z-index: 2; }
+.sell-hero .kicker { margin-bottom: 16px; }
+.sell-hero h1 { font-size: 54px; font-weight: 700; letter-spacing: -0.025em; color: #fff; margin-bottom: 18px; }
+.sell-hero p { font-size: 18px; font-weight: 300; color: rgba(255,255,255,0.72); max-width: 560px; line-height: 1.62; margin: 0; }
+
+/* ---- Step indicator ---- */
+.step-indicator {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; padding: 40px 0 36px; max-width: 600px; margin: 0 auto;
+}
+.step-item { display: flex; align-items: center; flex: 1; }
+.step-circle {
+  width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-weight: 700; font-size: 15px;
+  border: 2px solid var(--line-2); background: var(--paper); color: var(--muted);
+  transition: 0.3s; flex: 0 0 42px; position: relative; z-index: 1;
+}
+.step-item.active .step-circle { background: var(--gold-grad); color: #2a1e05; border-color: transparent; box-shadow: var(--sh-gold); }
+.step-item.done .step-circle { background: var(--espresso); color: #fff; border-color: transparent; }
+.step-item.done .step-circle::after { content: "✓"; }
+.step-item.done .step-num { display: none; }
+.step-label { font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-top: 8px; white-space: nowrap; }
+.step-item.active .step-label { color: var(--gold); }
+.step-item.done .step-label { color: var(--ink-2); }
+.step-col { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.step-line { flex: 1; height: 2px; background: var(--line-2); margin: 0 -1px; margin-top: -28px; transition: background 0.3s; }
+.step-line.done { background: var(--espresso); }
+
+/* ---- Main sell layout ---- */
+.sell-layout {
+  display: grid; grid-template-columns: 1fr 320px; gap: 36px;
+  padding: 50px 0 80px; align-items: start;
+}
+
+/* ---- Form card ---- */
+.form-card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r-lg);
+  box-shadow: var(--sh); overflow: hidden;
+}
+.form-card-head {
+  padding: 26px 32px 22px; border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(231,223,208,0.4), transparent);
+}
+.form-card-head h2 { font-size: 24px; margin-bottom: 4px; }
+.form-card-head p { font-size: 14px; font-weight: 300; color: var(--ink-2); margin: 0; }
+.form-body { padding: 32px; }
+
+/* Form fields */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.fld-group { display: flex; flex-direction: column; gap: 7px; }
+.fld-group label { font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.fld-group input, .fld-group select, .fld-group textarea {
+  border: 1px solid var(--line-2); border-radius: var(--r-sm); padding: 12px 14px;
+  font-size: 14.5px; font-family: inherit; font-weight: 400; color: var(--ink);
+  background: var(--canvas); transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+.fld-group input:focus, .fld-group select:focus, .fld-group textarea:focus {
+  outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,127,29,0.12);
+}
+.fld-group select { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%23968d7c' stroke-width='2'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+.fld-group textarea { resize: vertical; min-height: 110px; line-height: 1.55; }
+.fld-group input::placeholder, .fld-group textarea::placeholder { color: var(--muted); }
+.fld-group .hint { font-size: 12px; color: var(--muted); font-weight: 300; }
+
+/* Radio group */
+.radio-group { display: flex; gap: 14px; margin-top: 2px; }
+.radio-label {
+  display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 10px 18px; border: 1px solid var(--line-2); border-radius: var(--r-sm);
+  font-size: 14px; font-weight: 600; transition: 0.2s; background: var(--canvas);
+}
+.radio-label:hover { border-color: var(--gold-2); }
+.radio-label input { accent-color: var(--gold); }
+.radio-label:has(input:checked) { border-color: var(--gold); background: rgba(168,127,29,0.07); color: var(--gold); }
+
+/* Photo upload zone */
+.upload-zone {
+  border: 2px dashed var(--line-2); border-radius: var(--r); padding: 40px 24px;
+  text-align: center; cursor: pointer; transition: border-color 0.25s, background 0.25s;
+  background: var(--canvas); position: relative;
+}
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--gold); background: rgba(168,127,29,0.04); }
+.upload-zone .uz-icon { margin: 0 auto 14px; width: 56px; height: 56px; border-radius: 16px; background: var(--gold-grad-soft); display: flex; align-items: center; justify-content: center; color: #4a3608; }
+.upload-zone b { font-size: 16px; display: block; margin-bottom: 6px; }
+.upload-zone span { font-size: 13.5px; color: var(--muted); font-weight: 300; }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-previews { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
+.photo-preview { width: 90px; height: 70px; border-radius: 10px; overflow: hidden; position: relative; border: 1px solid var(--line-2); }
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-preview .rm { position: absolute; top: 4px; right: 4px; background: rgba(15,11,6,0.7); color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+/* Step nav buttons */
+.step-actions { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--line); margin-top: 8px; }
+.step-actions .btn-back { background: transparent; border: 1px solid var(--line-2); color: var(--ink-2); border-radius: var(--r-sm); padding: 13px 24px; font-weight: 700; font-size: 13px; font-family: inherit; cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; transition: 0.2s; }
+.step-actions .btn-back:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Success screen */
+.success-screen {
+  text-align: center; padding: 60px 40px; display: none; flex-direction: column; align-items: center; gap: 20px;
+}
+.success-screen.show { display: flex; }
+.success-icon {
+  width: 80px; height: 80px; border-radius: 50%; background: var(--gold-grad);
+  display: flex; align-items: center; justify-content: center; animation: popIn 0.5s var(--ease);
+  box-shadow: var(--sh-gold);
+}
+@keyframes popIn { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.success-screen h2 { font-size: 28px; margin: 0; }
+.success-screen p { font-size: 15px; font-weight: 300; color: var(--ink-2); margin: 0; max-width: 340px; line-height: 1.6; }
+
+/* Sidebar WhatsApp CTA */
+.wa-sidebar-card {
+  background: linear-gradient(135deg, #1a3d2b, #1c4d30);
+  border-radius: var(--r); padding: 28px; box-shadow: var(--sh);
+  display: flex; flex-direction: column; gap: 16px;
+}
+.wa-sidebar-card .kicker { background: linear-gradient(135deg, #5bf59a, #25d366); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.wa-sidebar-card h3 { font-size: 20px; color: #fff; margin: 0; }
+.wa-sidebar-card p { font-size: 13.5px; font-weight: 300; color: rgba(255,255,255,0.72); margin: 0; line-height: 1.55; }
+.btn-wa-big { display: flex; align-items: center; justify-content: center; gap: 10px; background: #25d366; color: #fff; border: none; border-radius: var(--r-sm); padding: 15px 20px; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer; transition: 0.25s; text-decoration: none; }
+.btn-wa-big:hover { background: #1ebe5a; transform: translateY(-2px); box-shadow: 0 12px 28px -8px rgba(37,211,102,0.4); }
+.quick-info-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 24px; box-shadow: var(--sh-sm); margin-top: 16px; }
+.quick-info-card h4 { font-size: 16px; margin-bottom: 16px; }
+.qi-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.qi-item:last-child { border-bottom: none; padding-bottom: 0; }
+.qi-item .qi-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--gold-grad-soft); display: flex; align-items: center; justify-content: center; color: #4a3608; flex: 0 0 34px; }
+.qi-item span { font-weight: 300; color: var(--ink-2); }
+
+@media (max-width: 980px) {
+  .sell-hero h1 { font-size: 36px; }
+  .sell-layout { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.triple { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 520px) {
+  .sell-hero h1 { font-size: 28px; }
+  .form-body { padding: 20px; }
+  .form-row.triple { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<header class="hdr" id="hdr">
+  <div class="wrap hdr-inner">
+    <a class="logo" href="index.html"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></a>
+    <ul class="nav">
+      <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="sell.html">Aracını Sat</a></li>
+      <li><a href="about.html">Hakkımızda</a></li>
+      <li><a href="blog.html">Blog</a></li>
+      <li><a href="contact.html">İletişim</a></li>
+    </ul>
+    <div class="hdr-cta">
+      <a class="hdr-phone" href="tel:+90"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg> Hemen Ara</a>
+      <a class="btn btn-gold" href="sell.html"><span>Ücretsiz Değerleme</span></a>
+      <button class="burger" id="burger" aria-label="Menü"><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ SELL HERO ============ -->
+<section class="sell-hero">
+  <div class="wrap sell-hero-inner">
+    <span class="kicker">Aracını Sat</span>
+    <h1 class="reveal">Aracınızı Değerinde Satın</h1>
+    <p class="reveal d1">Birkaç bilgi ve fotoğrafla başvurun; ekibimiz değerlemeyi yapsın, anlaşınca ödemeyi yerinde gerçekleştirelim.</p>
+  </div>
+</section>
+
+<!-- ============ STEP INDICATOR ============ -->
+<div class="wrap">
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-item active" id="stepItem1">
+      <div class="step-col">
+        <div class="step-circle"><span class="step-num">1</span></div>
+        <div class="step-label">Araç Bilgileri</div>
+      </div>
+    </div>
+    <div class="step-line" id="stepLine1"></div>
+    <div class="step-item" id="stepItem2">
+      <div class="step-col">
+        <div class="step-circle"><span class="step-num">2</span></div>
+        <div class="step-label">İletişim</div>
+      </div>
+    </div>
+    <div class="step-line" id="stepLine2"></div>
+    <div class="step-item" id="stepItem3">
+      <div class="step-col">
+        <div class="step-circle"><span class="step-num">3</span></div>
+        <div class="step-label">Fotoğraf & Gönder</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN LAYOUT ============ -->
+<div class="wrap sell-layout">
+
+  <!-- Form card -->
+  <div class="form-card">
+
+    <!-- STEP 1 -->
+    <div id="step1">
+      <div class="form-card-head">
+        <h2>Adım 1: Araç Bilgileri</h2>
+        <p>Aracınızın temel bilgilerini girin. Tüm alanlar değerleme doğruluğunu etkiler.</p>
+      </div>
+      <div class="form-body">
+        <div class="form-row">
+          <div class="fld-group">
+            <label>Marka</label>
+            <input type="text" id="s1Marka" placeholder="Örn: Toyota, BMW, Mercedes…" />
+          </div>
+          <div class="fld-group">
+            <label>Model</label>
+            <input type="text" id="s1Model" placeholder="Örn: Corolla, 3 Serisi…" />
+          </div>
+        </div>
+        <div class="form-row triple">
+          <div class="fld-group">
+            <label>Yıl</label>
+            <select id="s1Yil">
+              <option value="">Seçin</option>
+            </select>
+          </div>
+          <div class="fld-group">
+            <label>Kilometre</label>
+            <input type="number" id="s1Km" placeholder="Örn: 85000" min="0" />
+          </div>
+          <div class="fld-group">
+            <label>Renk</label>
+            <input type="text" id="s1Renk" placeholder="Örn: Beyaz, Siyah…" />
+          </div>
+        </div>
+        <div class="form-row triple">
+          <div class="fld-group">
+            <label>Yakıt Tipi</label>
+            <select id="s1Yakit">
+              <option value="">Seçin</option>
+              <option>Benzin</option>
+              <option>Dizel</option>
+              <option>Hibrit</option>
+              <option>Elektrik</option>
+              <option>LPG</option>
+              <option>Benzin+LPG</option>
+            </select>
+          </div>
+          <div class="fld-group">
+            <label>Vites</label>
+            <select id="s1Vites">
+              <option value="">Seçin</option>
+              <option>Manuel</option>
+              <option>Otomatik</option>
+              <option>Yarı Otomatik</option>
+            </select>
+          </div>
+          <div class="fld-group">
+            <label>Durum</label>
+            <select id="s1Durum">
+              <option value="">Seçin</option>
+              <option>Çok iyi</option>
+              <option>İyi</option>
+              <option>Orta</option>
+              <option>Hasar var</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fld-group">
+            <label>Açıklama (isteğe bağlı)</label>
+            <textarea id="s1Aciklama" placeholder="Aracınız hakkında eklemek istediğiniz özellikler, notlar veya hasar bilgisi…"></textarea>
+          </div>
+        </div>
+        <div class="step-actions">
+          <div></div>
+          <button class="btn btn-gold" onclick="goStep(2)"><span>Devam →</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="step2" style="display:none">
+      <div class="form-card-head">
+        <h2>Adım 2: İletişim Bilgileri</h2>
+        <p>Değerleme teklifini sizinle paylaşabilmemiz için iletişim bilgilerinizi girin.</p>
+      </div>
+      <div class="form-body">
+        <div class="form-row">
+          <div class="fld-group">
+            <label>Ad Soyad</label>
+            <input type="text" id="s2Ad" placeholder="Adınız ve soyadınız" />
+          </div>
+          <div class="fld-group">
+            <label>Telefon</label>
+            <input type="tel" id="s2Tel" placeholder="0 5xx xxx xx xx" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="fld-group">
+            <label>E-posta (isteğe bağlı)</label>
+            <input type="email" id="s2Email" placeholder="ornek@email.com" />
+          </div>
+          <div class="fld-group">
+            <label>İl / İlçe</label>
+            <input type="text" id="s2Sehir" placeholder="Örn: İstanbul / Kadıköy" />
+          </div>
+        </div>
+        <div class="form-row single">
+          <div class="fld-group">
+            <label>Aranmamı ister misiniz?</label>
+            <div class="radio-group">
+              <label class="radio-label"><input type="radio" name="arama" value="evet" checked /> Evet, arayın</label>
+              <label class="radio-label"><input type="radio" name="arama" value="hayir" /> Hayır, mesaj yeterli</label>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn-back" onclick="goStep(1)">‹ Geri</button>
+          <button class="btn btn-gold" onclick="goStep(3)"><span>Devam →</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="step3" style="display:none">
+      <div class="form-card-head">
+        <h2>Adım 3: Fotoğraf & Gönder</h2>
+        <p>Fotoğraflar doğru değerleme için önemlidir. En fazla 10 fotoğraf yükleyebilirsiniz.</p>
+      </div>
+      <div class="form-body">
+        <div class="fld-group" style="margin-bottom:22px">
+          <label>Araç Fotoğrafları (maks. 10)</label>
+          <div class="upload-zone" id="photoZone">
+            <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotos(this.files)" />
+            <div class="uz-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <b>Fotoğraf sürükle veya tıkla</b>
+            <span>JPG, PNG, HEIC desteklenir · Maks. 10 adet</span>
+          </div>
+          <div class="photo-previews" id="photoPreviews"></div>
+        </div>
+
+        <div class="fld-group" style="margin-bottom:22px">
+          <label>Belgeler (isteğe bağlı — PDF veya görsel)</label>
+          <div class="upload-zone" style="padding: 24px;" id="docZone">
+            <input type="file" id="docInput" accept=".pdf,image/*" multiple onchange="handleDocs(this.files)" />
+            <div class="uz-icon" style="width:40px;height:40px">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="currentColor" stroke-width="2"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="2"/></svg>
+            </div>
+            <b style="font-size:14px">Belge yükle (ruhsat, ekspertiz vb.)</b>
+            <span>İsteğe bağlı · PDF veya görsel</span>
+          </div>
+          <div id="docPreviews" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-back" onclick="goStep(2)">‹ Geri</button>
+          <button class="btn btn-gold" onclick="submitForm()" id="btnGonder"><span>Gönder ✓</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M5 12l4 4L19 7" stroke="#2a1e05" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <h2>Talebiniz Alındı!</h2>
+      <p>En kısa sürede sizi arayacağız. Teşekkür ederiz.</p>
+      <a class="btn btn-gold" href="index.html" style="margin-top:8px"><span>Ana Sayfaya Dön</span></a>
+      <a class="btn btn-line" href="gallery.html" style="margin-top:4px"><span>Araçlara Bak</span></a>
+    </div>
+
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sell-sidebar">
+    <div class="wa-sidebar-card reveal">
+      <span class="kicker">Hızlı İletişim</span>
+      <h3>WhatsApp ile Hemen Yazın</h3>
+      <p>Form doldurmadan direkt mesaj atabilirsiniz. Ekibimiz en kısa sürede yanıt verir.</p>
+      <a class="btn-wa-big" id="waSidebarBtn" href="#" target="_blank">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>
+        WhatsApp ile Yazın
+      </a>
+    </div>
+
+    <div class="quick-info-card reveal d1">
+      <h4>Neden MSE Auto?</h4>
+      <div class="qi-item">
+        <div class="qi-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><b>Güvenilir İşlem</b><br/><span>Eksiksiz ekspertiz ve belge</span></div>
+      </div>
+      <div class="qi-item">
+        <div class="qi-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><b>Anında Nakit</b><br/><span>Anlaşınca yerinde ödeme</span></div>
+      </div>
+      <div class="qi-item">
+        <div class="qi-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><b>Hızlı Değerleme</b><br/><span>En kısa sürede geri dönüş</span></div>
+      </div>
+      <div class="qi-item">
+        <div class="qi-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="2"/></svg></div>
+        <div><b>Uzman Ekip</b><br/><span>Sektör tecrübeli danışmanlar</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="fabout">
+        <a class="flogo" href="index.html"><span class="m">MSE<b>.</b> AUTO</span></a>
+        <p data-c="footer.about">Güvenilir 2. el araç alım & satım.</p>
+        <div class="foot-soc">
+          <a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="tel:+90" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
+        </div>
+      </div>
+      <div id="footCols" style="display:contents"></div>
+      <div class="fcontact">
+        <h5>İletişim</h5>
+        <ul>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg><span id="footPhone">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 22s8-4.5 8-11a8 8 0 10-16 0c0 6.5 8 11 8 11z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="2"/></svg><span id="footAddr">—</span></li>
+          <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="2"/></svg><span id="footHours">—</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>© 2026 MSE Auto. Tüm hakları saklıdır.</span>
+      <span>Tüm içerik, ilanlar ve iletişim bilgileri admin panelinden yönetilir.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============ MOBILE DRAWER ============ -->
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <span class="logo"><span class="m">MSE<b>.</b></span><span class="s">AUTO</span></span>
+    <button class="x" id="drawerClose" aria-label="Kapat">×</button>
+  </div>
+  <nav>
+    <a href="gallery.html">Araçlar</a>
+    <a href="sell.html">Aracını Sat</a>
+    <a href="about.html">Hakkımızda</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">İletişim</a>
+  </nav>
+  <div class="drawer-cta">
+    <a class="btn btn-gold" href="sell.html" style="justify-content:center">Ücretsiz Değerleme</a>
+    <a class="btn btn-line" href="tel:+90" style="justify-content:center">Hemen Ara</a>
+  </div>
+</div>
+
+<!-- ============ MOBILE BOTTOM BAR ============ -->
+<nav class="mobile-bar">
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>Araçlar</a>
+  <a href="sell.html" class="prime"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg>Aracını Sat</a>
+  <a href="https://wa.me/" target="_blank"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>WhatsApp</a>
+</nav>
+
+<!-- ============ AI ASSISTANT ============ -->
+<div class="ai-fab" id="aiFab">
+  <div class="ai-hint" id="aiHint"><b data-c="assistant.name">MSE Asistan</b> · <span data-c="assistant.hint">Size nasıl yardımcı olabilirim?</span></div>
+  <button class="ai-orb" id="aiOrb" aria-label="MSE Asistan">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg>
+  </button>
+</div>
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-head">
+    <div class="av"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l1.6 4.2L18 8.8l-3.4 2.6L15.8 16 12 13.2 8.2 16l1.2-4.6L6 8.8l4.4-1.6L12 3z" fill="#1c1505"/></svg></div>
+    <div class="ti"><b data-c="assistant.name">MSE Asistan</b><span data-c="assistant.status">Çevrimiçi · Groq destekli</span></div>
+    <button class="x" id="aiClose" aria-label="Kapat">×</button>
+  </div>
+  <div class="ai-body" id="aiBody"></div>
+  <div class="ai-chips" id="aiChips"></div>
+  <div class="ai-foot">
+    <input id="aiInput" placeholder="Mesajınızı yazın…" />
+    <button class="send" id="aiSend" aria-label="Gönder"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+  </div>
+</div>
+
+<script src="image-slot.js"></script>
+<script src="site-content.js"></script>
+<script src="db.js"></script>
+<script src="shared-init.js"></script>
+<script src="site.js"></script>
+<script>
+(function () {
+  var S = window.MSE_SETTINGS || {};
+  var set = function (id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; };
+  set("footPhone", S.phone); set("footAddr", S.address); set("footHours", S.hours);
+
+  // Populate year select
+  var yilSel = document.getElementById("s1Yil");
+  if (yilSel) {
+    for (var y = 2026; y >= 2000; y--) {
+      var o = document.createElement("option"); o.value = y; o.textContent = y; yilSel.appendChild(o);
+    }
+  }
+
+  // WhatsApp sidebar
+  var waBtn = document.getElementById("waSidebarBtn");
+  if (waBtn) {
+    var phone = S.whatsapp || S.phone || "";
+    var phoneClean = phone.replace(/\D/g, "");
+    waBtn.href = phoneClean ? "https://wa.me/" + phoneClean + "?text=" + encodeURIComponent("Merhaba, araç satmak istiyorum. Değerleme almak istiyorum.") : "#";
+  }
+
+  // Drag/drop
+  var zone = document.getElementById("photoZone");
+  if (zone) {
+    zone.addEventListener("dragover", function (e) { e.preventDefault(); zone.classList.add("drag-over"); });
+    zone.addEventListener("dragleave", function () { zone.classList.remove("drag-over"); });
+    zone.addEventListener("drop", function (e) { e.preventDefault(); zone.classList.remove("drag-over"); handlePhotos(e.dataTransfer.files); });
+  }
+
+  var uploadedPhotos = [];
+  window.handlePhotos = function (files) {
+    var remaining = 10 - uploadedPhotos.length;
+    var toAdd = Math.min(files.length, remaining);
+    for (var i = 0; i < toAdd; i++) {
+      var f = files[i];
+      if (!f.type.startsWith("image/")) continue;
+      uploadedPhotos.push(f);
+      (function (file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var prev = document.getElementById("photoPreviews");
+          var idx = uploadedPhotos.indexOf(file);
+          var div = document.createElement("div"); div.className = "photo-preview"; div.dataset.idx = idx;
+          div.innerHTML = '<img src="' + e.target.result + '" alt="" /><button class="rm" onclick="removePhoto(' + idx + ')">×</button>';
+          if (prev) prev.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+      })(f);
+    }
+  };
+  window.removePhoto = function (idx) {
+    uploadedPhotos.splice(idx, 1);
+    var prev = document.getElementById("photoPreviews"); if (prev) prev.innerHTML = "";
+    // Re-render (simplified)
+    uploadedPhotos.forEach(function (f, i) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var prev2 = document.getElementById("photoPreviews");
+        var div = document.createElement("div"); div.className = "photo-preview"; div.dataset.idx = i;
+        div.innerHTML = '<img src="' + e.target.result + '" alt="" /><button class="rm" onclick="removePhoto(' + i + ')">×</button>';
+        if (prev2) prev2.appendChild(div);
+      };
+      reader.readAsDataURL(f);
+    });
+  };
+
+  window.handleDocs = function (files) {
+    var prevEl = document.getElementById("docPreviews");
+    if (!prevEl) return;
+    Array.from(files).forEach(function (f) {
+      var span = document.createElement("span");
+      span.style.cssText = "padding:6px 12px;background:var(--paper);border:1px solid var(--line-2);border-radius:8px;font-size:12.5px;font-weight:600";
+      span.textContent = "📄 " + f.name;
+      prevEl.appendChild(span);
+    });
+  };
+
+  var currentStep = 1;
+  window.goStep = function (step) {
+    document.getElementById("step" + currentStep).style.display = "none";
+    document.getElementById("step" + step).style.display = "block";
+
+    [1, 2, 3].forEach(function (s) {
+      var item = document.getElementById("stepItem" + s);
+      if (!item) return;
+      item.classList.remove("active", "done");
+      if (s < step) item.classList.add("done");
+      else if (s === step) item.classList.add("active");
+    });
+    if (document.getElementById("stepLine1")) document.getElementById("stepLine1").classList.toggle("done", step > 1);
+    if (document.getElementById("stepLine2")) document.getElementById("stepLine2").classList.toggle("done", step > 2);
+
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  window.submitForm = function () {
+    var btn = document.getElementById("btnGonder");
+    if (btn) { btn.disabled = true; btn.innerHTML = "<span>Gönderiliyor…</span>"; }
+    setTimeout(function () {
+      document.getElementById("step3").style.display = "none";
+      document.getElementById("successScreen").classList.add("show");
+      [1,2,3].forEach(function (s) {
+        var item = document.getElementById("stepItem" + s);
+        if (item) { item.classList.remove("active"); item.classList.add("done"); }
+      });
+    }, 800);
+  };
+})();
+</script>
+</body>
+</html>
