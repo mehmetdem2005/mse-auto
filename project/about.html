@@ -45,6 +45,7 @@
 .feat-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
 .feat-card-top .feat-ic { margin-bottom:0; }
 .feat-num { font-size:28px; font-weight:800; color:rgba(59,128,255,0.18); letter-spacing:-1px; line-height:1; }
+.feat-body { flex:1; min-width:0; }
 .feat-card h3 { font-size:16px; font-weight:700; margin-bottom:10px; }
 .feat-card p { font-size:14px; color:var(--ink-2); line-height:1.72; }
 
@@ -105,17 +106,33 @@
   .ctaband { padding:28px 20px; }
   .ctaband-text h2 { font-size:22px; }
 
-  /* Services: horizontal list on mobile */
-  .features-grid .feat-card {
-    display:flex; flex-direction:row; align-items:flex-start; gap:16px;
-    padding:20px 18px; transform:none !important;
+  /* Services: accordion list on mobile */
+  .features-grid {
+    background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg);
+    overflow:hidden; grid-template-columns:1fr !important;
   }
-  .features-grid .feat-card:hover { transform:none !important; }
-  .features-grid .feat-card-top { flex:0 0 44px; flex-direction:column; justify-content:flex-start; gap:8px; margin-bottom:0; }
-  .features-grid .feat-ic { margin-bottom:0; width:44px; height:44px; }
-  .features-grid .feat-num { font-size:16px; }
-  .features-grid .feat-card h3 { font-size:15px; margin-bottom:6px; }
-  .features-grid .feat-card p { font-size:13px; }
+  .features-grid .feat-card {
+    display:flex; flex-direction:row; align-items:center; gap:14px;
+    padding:16px 46px 16px 18px; transform:none !important;
+    border-radius:0 !important; border:none;
+    border-bottom:1px solid var(--border); position:relative;
+  }
+  .features-grid .feat-card:last-child { border-bottom:none; }
+  .features-grid .feat-card::after {
+    content:'›'; position:absolute; right:16px; top:50%;
+    transform:translateY(-50%);
+    font-size:22px; font-weight:700; color:var(--blue);
+  }
+  .features-grid .feat-card:hover { transform:none !important; border-color:transparent; }
+  .features-grid .feat-card-top {
+    flex:0 0 auto; flex-direction:column; align-items:center; gap:5px;
+    margin-bottom:0; min-width:44px;
+  }
+  .features-grid .feat-ic { margin-bottom:0; width:40px; height:40px; flex:none; }
+  .features-grid .feat-num { font-size:12px; opacity:0.7; }
+  .features-grid .feat-body { flex:1; min-width:0; }
+  .features-grid .feat-card h3 { font-size:14px; margin-bottom:4px; }
+  .features-grid .feat-card p { font-size:12.5px; line-height:1.55; }
 
   /* Timeline: horizontal scroll */
   .timeline-scroll-wrap {
@@ -297,8 +314,10 @@
           </div>
           <span class="feat-num">01</span>
         </div>
-        <h3 data-c="features.0.title">Kapsamlı Ekspertiz</h3>
-        <p data-c="features.0.desc">Satın almadan önce aracınız uzman ekibimiz tarafından detaylı incelenir. Şeffaf raporla bilinçli karar alın.</p>
+        <div class="feat-body">
+          <h3 data-c="features.0.title">Kapsamlı Ekspertiz</h3>
+          <p data-c="features.0.desc">Satın almadan önce aracınız uzman ekibimiz tarafından detaylı incelenir. Şeffaf raporla bilinçli karar alın.</p>
+        </div>
       </div>
       <div class="feat-card reveal d1">
         <div class="feat-card-top">
@@ -307,8 +326,10 @@
           </div>
           <span class="feat-num">02</span>
         </div>
-        <h3 data-c="features.1.title">Takas Desteği</h3>
-        <p data-c="features.1.desc">Mevcut aracınızı takas ederek yeni aracınıza kolayca geçiş yapın. Değer kaybı olmadan hızlı ve güvenli takas.</p>
+        <div class="feat-body">
+          <h3 data-c="features.1.title">Takas Desteği</h3>
+          <p data-c="features.1.desc">Mevcut aracınızı takas ederek yeni aracınıza kolayca geçiş yapın. Değer kaybı olmadan hızlı ve güvenli takas.</p>
+        </div>
       </div>
       <div class="feat-card reveal d2">
         <div class="feat-card-top">
@@ -317,8 +338,10 @@
           </div>
           <span class="feat-num">03</span>
         </div>
-        <h3 data-c="features.2.title">7/24 Destek</h3>
-        <p data-c="features.2.desc">Sorularınız için her zaman yanınızdayız. WhatsApp veya telefon ile dilediğiniz zaman bize ulaşabilirsiniz.</p>
+        <div class="feat-body">
+          <h3 data-c="features.2.title">7/24 Destek</h3>
+          <p data-c="features.2.desc">Sorularınız için her zaman yanınızdayız. WhatsApp veya telefon ile dilediğiniz zaman bize ulaşabilirsiniz.</p>
+        </div>
       </div>
     </div>
   </div>

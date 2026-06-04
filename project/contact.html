@@ -129,14 +129,19 @@
   .fld-row { grid-template-columns:1fr; }
 }
 @media(max-width:640px) {
-  .page-hero-content h1 { font-size:32px; }
-  .info-cards-row { grid-template-columns:1fr; }
-  .contact-form-card { padding:24px 20px; }
-  .testdrive-card { padding:22px 18px; }
-  .wa-band { padding:28px 20px; }
+  .page-hero-content h1 { font-size:28px; }
+  .page-hero-content p { font-size:14px; }
+  .info-cards-row { grid-template-columns:1fr 1fr; gap:12px; padding:32px 0 24px; }
+  .info-card { padding:18px 16px; gap:10px; }
+  .info-card .ic, .info-card .ic-wa { width:40px; height:40px; border-radius:12px; flex:0 0 40px; }
+  .contact-form-card { padding:22px 18px; }
+  .testdrive-card { padding:20px 16px; }
+  .wa-band { padding:24px 18px; }
   .contact-main { grid-template-columns:1fr; }
   .contact-info-col { grid-column:auto; display:flex; flex-direction:column; }
   .time-slots { grid-template-columns:repeat(3,1fr); }
+  .ci-card { padding:16px 14px; gap:12px; }
+  .ci-icon { width:36px; height:36px; flex:0 0 36px; border-radius:10px; }
 }
 </style>
 </head>

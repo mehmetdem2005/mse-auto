@@ -195,12 +195,28 @@
   .detail-wrap { grid-template-columns: 1fr; }
   .detail-sidebar { position: static; }
   .doc-cards { grid-template-columns: repeat(2, 1fr); }
-  .spec-bar { grid-template-columns: repeat(2, 1fr); }
+  .spec-bar { grid-template-columns: repeat(3, 1fr); }
   .features-grid-detail { grid-template-columns: 1fr; }
   .similar-track { padding: 0 18px; }
 }
+@media (max-width: 640px) {
+  .spec-bar { grid-template-columns: repeat(3, 1fr); }
+  .spec-bar .sc b { font-size: 14px; }
+  .car-info-card { padding: 20px 16px; }
+  .car-title-area h1 { font-size: 20px; }
+  .price-big { font-size: 28px; }
+  .sidebar-actions .btn { border-radius: 999px !important; justify-content: center; }
+  .sidebar-actions { flex-direction: row; gap: 8px; }
+  .sidebar-actions .btn-wa { flex: 1; border-radius: 999px !important; }
+  .photo-gallery { border-radius: 0; margin: 0 -16px; }
+  .gallery-tabs button { font-size: 11px; padding: 12px 12px; }
+  .detail-desc { padding: 20px 16px; }
+  .docs-section { padding: 18px 16px; }
+  .location-card { padding: 18px 16px; }
+}
 @media (max-width: 520px) {
   .doc-cards { grid-template-columns: 1fr 1fr; }
+  .similar-track .car { width: 260px; flex: 0 0 260px; }
 }
 </style>
 </head>
