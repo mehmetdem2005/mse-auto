@@ -32,4 +32,15 @@ jobs:
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Summary
-        run: echo "🌐 Site URL → ${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+        run: |
+          URL="${{ steps.deploy.outputs.url }}"
+          echo "🌐 Site URL → $URL" >> $GITHUB_STEP_SUMMARY
+          # Also write URL to a repo file via API so it's readable
+          if [ -n "$URL" ]; then
+            curl -s -X PUT \
+              "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/DEPLOYMENT_URL.txt" \
+              -H "Authorization: Bearer ${{ secrets.GH_PAT }}" \
+              -H "Content-Type: application/json" \
+              -d "{\"message\":\"ci: update deployment URL\",\"content\":\"$(echo "$URL" | base64 -w0)\"}" \
+              > /dev/null && echo "URL saved: $URL"
+          fi
