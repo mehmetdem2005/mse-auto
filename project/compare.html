@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Araç Karşılaştırma — MSE Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="site.css" />
+<style>
+/* ── Page hero ── */
+.cmp-hero { padding:calc(var(--hdr) + 32px) 0 32px; background:var(--bg-2); border-bottom:1px solid var(--border); }
+.cmp-hero h1 { font-size:32px; font-weight:800; margin-bottom:6px; }
+.cmp-hero p { font-size:14px; color:var(--ink-2); max-width:480px; }
+
+/* ── Car slots row ── */
+.slots-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:32px 0 0; }
+.slot { background:var(--bg-2); border:2px dashed var(--border-2); border-radius:var(--r-lg); min-height:140px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; cursor:pointer; transition:.25s; position:relative; overflow:hidden; }
+.slot:hover { border-color:var(--blue); background:rgba(59,128,255,.05); }
+.slot.filled { border-style:solid; border-color:var(--border); cursor:default; padding:0; align-items:stretch; }
+.slot-add-ic { width:44px; height:44px; border-radius:50%; background:rgba(59,128,255,.12); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); }
+.slot-add-lbl { font-size:13px; font-weight:600; color:var(--ink-3); }
+.slot-img { width:100%; height:100px; object-fit:cover; display:block; }
+.slot-body { padding:12px 14px; flex:1; }
+.slot-brand { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--blue); margin-bottom:3px; }
+.slot-title { font-size:13px; font-weight:700; color:var(--ink); margin-bottom:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.slot-price { font-size:14px; font-weight:800; background:var(--blue-grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.slot-remove { position:absolute; top:8px; right:8px; width:26px; height:26px; border-radius:50%; background:rgba(0,0,0,.55); border:none; color:#fff; font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1; z-index:2; }
+.slot-remove:hover { background:var(--red); }
+.slot-detail-link { display:flex; align-items:center; justify-content:space-between; padding:8px 14px; background:rgba(59,128,255,.06); border-top:1px solid var(--border); font-size:11.5px; font-weight:700; color:var(--blue); text-decoration:none; }
+.slot-detail-link:hover { background:rgba(59,128,255,.12); }
+
+/* ── Tabs ── */
+.cmp-tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin:28px 0 0; overflow-x:auto; scrollbar-width:none; }
+.cmp-tabs::-webkit-scrollbar { display:none; }
+.ctab { padding:12px 20px; background:transparent; border:none; border-bottom:2px solid transparent; margin-bottom:-1px; font-family:inherit; font-size:13px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); cursor:pointer; white-space:nowrap; transition:.2s; }
+.ctab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.ctab:hover { color:var(--ink); }
+
+/* ── Comparison table ── */
+.cmp-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:0 -2px; }
+.cmp-table { width:100%; border-collapse:collapse; margin-top:2px; }
+.cmp-table thead th { padding:14px 16px; font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); background:var(--bg-3); border-bottom:1px solid var(--border); text-align:center; min-width:160px; }
+.cmp-table thead th:first-child { text-align:left; min-width:130px; position:sticky; left:0; background:var(--bg-3); z-index:2; }
+.cmp-table tbody tr:nth-child(even) { background:rgba(255,255,255,.02); }
+.cmp-table tbody tr:hover { background:rgba(59,128,255,.04); }
+.cmp-table td { padding:12px 16px; font-size:13.5px; border-bottom:1px solid var(--border); vertical-align:middle; text-align:center; }
+.cmp-table td:first-child { text-align:left; font-size:12px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); position:sticky; left:0; background:var(--bg); z-index:1; white-space:nowrap; }
+.cmp-table tbody tr:nth-child(even) td:first-child { background:rgba(255,255,255,.015); }
+.cmp-table td b { color:var(--ink); font-weight:600; }
+.cmp-table .best { color:var(--green); font-weight:700; }
+.cmp-table .check-y { color:var(--green); font-size:16px; }
+.cmp-table .check-n { color:var(--ink-3); font-size:16px; }
+.cmp-price-row td:not(:first-child) { font-size:16px; font-weight:800; background:var(--blue-grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+
+/* ── Features list ── */
+.feat-compare { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px; }
+.feat-col { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:20px; }
+.feat-col h4 { font-size:13px; font-weight:700; margin-bottom:14px; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.feat-col ul { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+.feat-col li { font-size:12.5px; color:var(--ink-2); display:flex; align-items:flex-start; gap:8px; line-height:1.45; }
+.feat-col li::before { content:'✓'; color:var(--green); font-weight:700; flex:0 0 auto; }
+.feat-empty { color:var(--ink-3); font-size:13px; font-style:italic; }
+
+/* ── Actions bar ── */
+.cmp-actions { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:28px 0 40px; flex-wrap:wrap; }
+
+/* ── Picker panel ── */
+.picker-overlay { position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:400; opacity:0; pointer-events:none; transition:.3s; }
+.picker-overlay.open { opacity:1; pointer-events:all; }
+.picker-panel { position:fixed; bottom:0; left:0; right:0; max-height:82vh; background:var(--bg-2); border-radius:20px 20px 0 0; z-index:401; display:flex; flex-direction:column; transform:translateY(100%); transition:.35s var(--ease); }
+.picker-panel.open { transform:translateY(0); }
+.picker-head { display:flex; align-items:center; justify-content:space-between; padding:18px 20px 12px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.picker-head h3 { font-size:16px; font-weight:800; }
+.picker-head button { background:var(--bg-3); border:1px solid var(--border-2); width:32px; height:32px; border-radius:50%; color:var(--ink-2); font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-family:inherit; }
+.picker-search { padding:12px 20px; flex-shrink:0; }
+.picker-search input { width:100%; background:var(--bg-3); border:1px solid var(--border-2); border-radius:var(--r); padding:11px 14px; color:var(--ink); font-size:14px; font-family:inherit; outline:none; transition:.2s; }
+.picker-search input:focus { border-color:var(--blue); }
+.picker-list { overflow-y:auto; flex:1; padding:0 12px 24px; }
+.picker-item { display:flex; align-items:center; gap:12px; padding:10px 8px; border-radius:var(--r); cursor:pointer; transition:.2s; border:1px solid transparent; }
+.picker-item:hover { background:rgba(59,128,255,.08); border-color:var(--border-b); }
+.picker-item.selected { background:rgba(59,128,255,.12); border-color:var(--border-b); }
+.picker-item img { width:70px; height:50px; object-fit:cover; border-radius:8px; flex:0 0 70px; background:var(--bg-3); }
+.picker-item .pi-info { flex:1; min-width:0; }
+.picker-item .pi-brand { font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--blue); }
+.picker-item .pi-title { font-size:13px; font-weight:700; color:var(--ink); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.picker-item .pi-sub { font-size:11.5px; color:var(--ink-3); }
+.picker-item .pi-chk { width:22px; height:22px; border-radius:50%; border:2px solid var(--border-2); flex:0 0 22px; display:flex; align-items:center; justify-content:center; color:transparent; font-size:12px; font-weight:700; }
+.picker-item.selected .pi-chk { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+/* ── Empty state ── */
+.cmp-empty { text-align:center; padding:60px 20px; color:var(--ink-3); }
+.cmp-empty svg { opacity:.3; margin-bottom:16px; }
+.cmp-empty h3 { font-size:18px; font-weight:700; color:var(--ink); margin-bottom:8px; }
+.cmp-empty p { font-size:13.5px; }
+
+/* ── Responsive ── */
+@media(max-width:820px) {
+  .slots-row { grid-template-columns:repeat(2,1fr); }
+  .cmp-hero h1 { font-size:24px; }
+  .feat-compare { grid-template-columns:1fr; }
+}
+@media(max-width:520px) {
+  .slots-row { grid-template-columns:1fr; }
+  .slot.filled { min-height:0; flex-direction:row; }
+  .slot-img { width:100px; height:80px; flex:0 0 100px; border-radius:var(--r-lg) 0 0 var(--r-lg); }
+  .slot-body { padding:10px 12px; }
+  .slot-detail-link { display:none; }
+  .cmp-actions { flex-direction:column; }
+  .cmp-actions .btn { width:100%; justify-content:center; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="hdr" id="hdr">
+  <div class="hdr-inner">
+    <a class="logo" href="index.html">
+      <span class="lmark">MS<b>E</b></span><span class="lsub">AUTO</span>
+    </a>
+    <ul class="nav">
+      <li><a href="index.html">Ana Sayfa</a></li>
+      <li><a href="gallery.html">Araçlar</a></li>
+      <li><a href="about.html">Hizmetler</a></li>
+      <li><a href="about.html">Hakkımızda</a></li>
+      <li><a href="contact.html">İletişim</a></li>
+    </ul>
+    <div class="hdr-right">
+      <a class="hdr-phone" href="tel:" id="hdrPhone">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+        <span id="hdrPhoneText">Hemen Ara</span>
+      </a>
+      <a class="btn btn-blue btn-sm" href="contact.html">Randevu Al</a>
+      <button class="burger" id="burger" aria-label="Menü">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <a class="logo" href="index.html"><span class="lmark">MS<b>E</b></span><span class="lsub">AUTO</span></a>
+    <button class="x" id="drawerClose">×</button>
+  </div>
+  <nav>
+    <a href="index.html">Ana Sayfa</a>
+    <a href="gallery.html">Araçlar</a>
+    <a href="about.html">Hizmetler</a>
+    <a href="about.html">Hakkımızda</a>
+    <a href="contact.html">İletişim</a>
+  </nav>
+  <div class="drawer-cta">
+    <a class="btn btn-blue" href="contact.html">Randevu Al</a>
+    <a class="btn btn-outline" href="gallery.html">Araçlara Bak</a>
+  </div>
+</div>
+
+<!-- PAGE HERO -->
+<div class="cmp-hero">
+  <div class="wrap">
+    <nav class="breadcrumb">
+      <a href="index.html">Ana Sayfa</a>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      <a href="gallery.html">Araçlar</a>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+      <span>Karşılaştırma</span>
+    </nav>
+    <h1>Araç Karşılaştırma</h1>
+    <p>Seçtiğiniz araçları yan yana karşılaştırın. İhtiyacınıza en uygun aracı kolayca belirleyin.</p>
+  </div>
+</div>
+
+<!-- MAIN -->
+<section class="sec" style="padding-top:0;">
+  <div class="wrap">
+
+    <!-- Car slots -->
+    <div class="slots-row" id="slotsRow"></div>
+
+    <!-- Empty state -->
+    <div class="cmp-empty" id="cmpEmpty" style="display:none;">
+      <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+      <h3>Karşılaştırmak için araç seçin</h3>
+      <p>Yukarıdan araç ekleyerek özelliklerini yan yana karşılaştırabilirsiniz.</p>
+    </div>
+
+    <!-- Comparison area (hidden until 2+ cars) -->
+    <div id="cmpArea" style="display:none;">
+
+      <!-- Tabs -->
+      <div class="cmp-tabs" id="cmpTabs">
+        <button class="ctab active" data-tab="specs" onclick="switchTab('specs')">Temel Özellikler</button>
+        <button class="ctab" data-tab="tech" onclick="switchTab('tech')">Teknik</button>
+        <button class="ctab" data-tab="features" onclick="switchTab('features')">Donanım</button>
+      </div>
+
+      <!-- Table area -->
+      <div id="tabSpecs" class="tab-pane">
+        <div class="cmp-table-wrap">
+          <table class="cmp-table" id="specsTable"></table>
+        </div>
+      </div>
+      <div id="tabTech" class="tab-pane" style="display:none;">
+        <div class="cmp-table-wrap">
+          <table class="cmp-table" id="techTable"></table>
+        </div>
+      </div>
+      <div id="tabFeatures" class="tab-pane" style="display:none;">
+        <div class="feat-compare" id="featCompare"></div>
+      </div>
+
+      <!-- Actions -->
+      <div class="cmp-actions">
+        <button class="btn btn-outline" onclick="clearAll()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+          Karşılaştırmayı Temizle
+        </button>
+        <a class="btn btn-blue" href="contact.html" style="border-radius:999px;">
+          Test Sürüşü Planla
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="flogo">MS<b>E</b><span style="font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:.22em;margin-left:8px;">AUTO</span></div>
+        <p data-c="footer.about">Güvenilir 2. el araç alım &amp; satım.</p>
+        <div class="foot-soc">
+          <a href="#" aria-label="Instagram" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg></a>
+          <a href="https://wa.me/" aria-label="WhatsApp" target="_blank"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h5>Keşfet</h5>
+        <ul>
+          <li><a href="gallery.html">Satılık Araçlar</a></li>
+          <li><a href="compare.html">Karşılaştır</a></li>
+          <li><a href="about.html">Hakkımızda</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Bilgi</h5>
+        <ul>
+          <li><a href="contact.html">İletişim</a></li>
+          <li><a href="#">Gizlilik Politikası</a></li>
+          <li><a href="#">KVKK</a></li>
+        </ul>
+      </div>
+      <div class="foot-contact">
+        <h5>İletişim</h5>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg><span id="footPhone">Panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="footAddr">Adres panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="footHours">Çalışma saatleri panelden</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span>&copy; <span id="footYear">2025</span> MSE Auto. Tüm hakları saklıdır.</span>
+      <span>Güvenilir 2. el araç alım satım</span>
+    </div>
+  </div>
+</footer>
+
+<!-- MOBILE BAR -->
+<nav class="mobile-bar">
+  <a href="index.html" class="mb-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>Ana Sayfa</span>
+  </a>
+  <a href="gallery.html" class="mb-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="9" height="9"/><rect x="13" y="3" width="9" height="9"/><rect x="2" y="14" width="9" height="9"/><rect x="13" y="14" width="9" height="9"/></svg>
+    <span>Araçlar</span>
+  </a>
+  <a href="sell.html" class="mb-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    <span>Sat</span>
+  </a>
+  <a href="contact.html" class="mb-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+    <span>İletişim</span>
+  </a>
+</nav>
+
+<!-- CAR PICKER PANEL -->
+<div class="picker-overlay" id="pickerOverlay" onclick="closePicker()"></div>
+<div class="picker-panel" id="pickerPanel">
+  <div class="picker-head">
+    <h3>Araç Seç</h3>
+    <button onclick="closePicker()">×</button>
+  </div>
+  <div class="picker-search">
+    <input type="text" id="pickerSearch" placeholder="Marka veya model ara…" oninput="filterPicker(this.value)" />
+  </div>
+  <div class="picker-list" id="pickerList"></div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="api-config.js"></script>
+<script src="db.js"></script>
+<script src="site-content.js"></script>
+<script src="shared-init.js"></script>
+<script src="site.js"></script>
+<script>
+(function () {
+  /* ── Boilerplate init ── */
+  document.getElementById("footYear").textContent = new Date().getFullYear();
+  var S = window.MSE_SETTINGS || {};
+  var set = function (id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; };
+  set("footPhone", S.phone); set("footAddr", S.address); set("footHours", S.hours);
+  var hdrPhone = document.getElementById("hdrPhone");
+  var hdrPhoneText = document.getElementById("hdrPhoneText");
+  if (S.phone && hdrPhone) { hdrPhone.href = "tel:" + S.phone.replace(/\s/g, ""); if (hdrPhoneText) hdrPhoneText.textContent = S.phone; }
+  var hdr = document.getElementById("hdr");
+  window.addEventListener("scroll", function () { hdr.classList.toggle("scrolled", window.scrollY > 20); }, { passive: true });
+  document.getElementById("burger").addEventListener("click", function () { document.getElementById("drawer").classList.add("open"); });
+  document.getElementById("drawerClose").addEventListener("click", function () { document.getElementById("drawer").classList.remove("open"); });
+
+  /* ── Helpers ── */
+  var FALLBACK = ["1503376780353-7e6692767b70","1555215695-3004980ad54e","1583121274602-3e2820c69888","1606664515524-ed2f786a0bd6","1494976388531-d1058494cdd8","1568605117036-5fe5e7bab0b7"];
+  function thumb(c, i) {
+    if (c.images && c.images.length) return c.images[0];
+    if (c.image) return c.image;
+    return "https://images.unsplash.com/photo-" + FALLBACK[(i || 0) % FALLBACK.length] + "?auto=format&fit=crop&w=400&q=70";
+  }
+  function getAllCars() {
+    if (window.MSE_DB && typeof window.MSE_DB.getCars === "function") return window.MSE_DB.getCars();
+    return window.MSE_CARS || [];
+  }
+
+  /* ── State ── */
+  var MAX_CARS = 3;
+  var selectedIds = [];
+  var targetSlot = 0;
+  var activeTab = "specs";
+
+  /* ── URL params: ?ids=id1,id2,id3 ── */
+  var urlIds = new URLSearchParams(window.location.search).get("ids");
+  if (urlIds) {
+    selectedIds = urlIds.split(",").map(function (x) { return x.trim(); }).filter(Boolean).slice(0, MAX_CARS);
+  }
+
+  /* ── Slot rendering ── */
+  function renderSlots() {
+    var cars = getAllCars();
+    var row = document.getElementById("slotsRow");
+    var html = "";
+    for (var i = 0; i < MAX_CARS; i++) {
+      var id = selectedIds[i];
+      if (id) {
+        var c = cars.find(function (x) { return String(x.id) === String(id); });
+        if (c) {
+          html += slotFilled(c, i);
+          continue;
+        }
+      }
+      html += slotEmpty(i);
+    }
+    row.innerHTML = html;
+    renderComparison();
+  }
+
+  function slotEmpty(i) {
+    return '<div class="slot" onclick="openPicker(' + i + ')">' +
+      '<div class="slot-add-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>' +
+      '<span class="slot-add-lbl">Araç Ekle</span>' +
+      '</div>';
+  }
+
+  function slotFilled(c, i) {
+    var img = thumb(c, i);
+    var price = c.price ? c.price : "Fiyat Sorunuz";
+    return '<div class="slot filled">' +
+      '<button class="slot-remove" onclick="removeSlot(' + i + ')">×</button>' +
+      '<img class="slot-img" src="' + img + '" alt="' + (c.title || "") + '" loading="lazy" />' +
+      '<div class="slot-body">' +
+      '<div class="slot-brand">' + (c.brand || "MSE Auto") + '</div>' +
+      '<div class="slot-title">' + (c.title || (c.brand || "") + " " + (c.model || "")) + '</div>' +
+      '<div class="slot-price">' + price + '</div>' +
+      '</div>' +
+      '<a class="slot-detail-link" href="car-detail.html?id=' + c.id + '">' +
+      'Detayları İncele <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>' +
+      '</a>' +
+      '</div>';
+  }
+
+  window.removeSlot = function (i) {
+    selectedIds.splice(i, 1);
+    updateUrl();
+    renderSlots();
+  };
+
+  window.clearAll = function () {
+    selectedIds = [];
+    updateUrl();
+    renderSlots();
+  };
+
+  function updateUrl() {
+    var url = new URL(window.location.href);
+    if (selectedIds.length) url.searchParams.set("ids", selectedIds.join(","));
+    else url.searchParams.delete("ids");
+    history.replaceState(null, "", url.toString());
+  }
+
+  /* ── Comparison table ── */
+  function renderComparison() {
+    var hasEnough = selectedIds.length >= 2;
+    document.getElementById("cmpArea").style.display = hasEnough ? "" : "none";
+    document.getElementById("cmpEmpty").style.display = hasEnough ? "none" : "";
+    if (!hasEnough) return;
+
+    var cars = getAllCars();
+    var sel = selectedIds.map(function (id) {
+      return cars.find(function (c) { return String(c.id) === String(id); }) || null;
+    }).filter(Boolean);
+
+    buildSpecsTable(sel);
+    buildTechTable(sel);
+    buildFeaturesPanel(sel);
+  }
+
+  function thRow(cars) {
+    var html = '<thead><tr><th></th>';
+    cars.forEach(function (c) {
+      html += '<th>' + (c.title || (c.brand || "") + " " + (c.model || "")) + '</th>';
+    });
+    html += '</tr></thead>';
+    return html;
+  }
+
+  function buildSpecsTable(cars) {
+    var rows = [
+      { label: "Marka",    key: "brand" },
+      { label: "Model",    key: "model" },
+      { label: "Yıl",      key: "year" },
+      { label: "Kilometre", key: "km" },
+      { label: "Yakıt",    key: "fuel" },
+      { label: "Vites",    key: "transmission" },
+    ];
+    var html = thRow(cars) + "<tbody>";
+    rows.forEach(function (r) {
+      html += "<tr><td>" + r.label + "</td>";
+      cars.forEach(function (c) {
+        var v = c[r.key] || "—";
+        html += "<td><b>" + v + "</b></td>";
+      });
+      html += "</tr>";
+    });
+    /* Price row */
+    html += '<tr class="cmp-price-row"><td>Fiyat</td>';
+    cars.forEach(function (c) {
+      html += "<td>" + (c.price || "—") + "</td>";
+    });
+    html += "</tr></tbody>";
+    document.getElementById("specsTable").innerHTML = html;
+  }
+
+  function buildTechTable(cars) {
+    var rows = [
+      { label: "Motor",    getter: function (c) { return (c.specs && c.specs.motor) || (c.motor) || "—"; } },
+      { label: "Güç (HP)", getter: function (c) { return (c.specs && c.specs.power) || (c.power) || "—"; } },
+      { label: "Yakıt Tipi", getter: function (c) { return c.fuel || "—"; } },
+      { label: "Şanzıman", getter: function (c) { return c.transmission || "—"; } },
+      { label: "0–100 km/s", getter: function (c) { return (c.specs && c.specs.acceleration) || (c.acceleration) || "—"; } },
+      { label: "Çekiş",    getter: function (c) { return (c.specs && c.specs.drive) || (c.drive) || "—"; } },
+    ];
+    var html = thRow(cars) + "<tbody>";
+    rows.forEach(function (r) {
+      html += "<tr><td>" + r.label + "</td>";
+      cars.forEach(function (c) {
+        html += "<td><b>" + r.getter(c) + "</b></td>";
+      });
+      html += "</tr>";
+    });
+    html += "</tbody>";
+    document.getElementById("techTable").innerHTML = html;
+  }
+
+  function buildFeaturesPanel(cars) {
+    var html = "";
+    cars.forEach(function (c) {
+      var features = [];
+      if (Array.isArray(c.features)) features = c.features;
+      else if (typeof c.features === "string" && c.features.trim()) features = c.features.split(/[,\n]+/).map(function (f) { return f.trim(); }).filter(Boolean);
+
+      html += '<div class="feat-col">';
+      html += '<h4>' + (c.title || (c.brand || "") + " " + (c.model || "")) + '</h4>';
+      if (features.length) {
+        html += '<ul>';
+        features.forEach(function (f) { html += "<li>" + f + "</li>"; });
+        html += "</ul>";
+      } else {
+        html += '<span class="feat-empty">Donanım bilgisi mevcut değil.</span>';
+      }
+      html += "</div>";
+    });
+    document.getElementById("featCompare").innerHTML = html;
+  }
+
+  /* ── Tabs ── */
+  window.switchTab = function (tab) {
+    activeTab = tab;
+    document.querySelectorAll(".ctab").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === tab); });
+    document.getElementById("tabSpecs").style.display   = tab === "specs"    ? "" : "none";
+    document.getElementById("tabTech").style.display    = tab === "tech"     ? "" : "none";
+    document.getElementById("tabFeatures").style.display = tab === "features" ? "" : "none";
+  };
+
+  /* ── Car picker ── */
+  var pickerAllCars = [];
+
+  window.openPicker = function (slotIdx) {
+    targetSlot = slotIdx;
+    pickerAllCars = getAllCars().filter(function (c) { return c.status === "active"; });
+    document.getElementById("pickerSearch").value = "";
+    renderPickerList(pickerAllCars);
+    document.getElementById("pickerOverlay").classList.add("open");
+    document.getElementById("pickerPanel").classList.add("open");
+    document.body.style.overflow = "hidden";
+    setTimeout(function () { document.getElementById("pickerSearch").focus(); }, 350);
+  };
+
+  window.closePicker = function () {
+    document.getElementById("pickerOverlay").classList.remove("open");
+    document.getElementById("pickerPanel").classList.remove("open");
+    document.body.style.overflow = "";
+  };
+
+  window.filterPicker = function (q) {
+    var lower = q.toLowerCase();
+    var filtered = pickerAllCars.filter(function (c) {
+      return !lower ||
+        (c.brand || "").toLowerCase().includes(lower) ||
+        (c.model || "").toLowerCase().includes(lower) ||
+        (c.title || "").toLowerCase().includes(lower);
+    });
+    renderPickerList(filtered);
+  };
+
+  function renderPickerList(cars) {
+    var list = document.getElementById("pickerList");
+    if (!cars.length) { list.innerHTML = '<p style="padding:20px;text-align:center;color:var(--ink-3);font-size:13px;">Sonuç bulunamadı.</p>'; return; }
+    var html = "";
+    cars.forEach(function (c, i) {
+      var already = selectedIds.indexOf(String(c.id)) !== -1;
+      html += '<div class="picker-item' + (already ? " selected" : "") + '" onclick="selectCar(\'' + c.id + '\')">' +
+        '<img src="' + thumb(c, i) + '" alt="" loading="lazy" />' +
+        '<div class="pi-info">' +
+        '<div class="pi-brand">' + (c.brand || "MSE Auto") + '</div>' +
+        '<div class="pi-title">' + (c.title || (c.brand || "") + " " + (c.model || "")) + '</div>' +
+        '<div class="pi-sub">' + (c.year || "") + (c.year && c.km ? " · " : "") + (c.km || "") + '</div>' +
+        '</div>' +
+        '<div class="pi-chk">' + (already ? "✓" : "") + '</div>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  window.selectCar = function (id) {
+    var strId = String(id);
+    /* If already selected, remove from any slot */
+    var existIdx = selectedIds.indexOf(strId);
+    if (existIdx !== -1) {
+      selectedIds.splice(existIdx, 1);
+      closePicker();
+      updateUrl();
+      renderSlots();
+      return;
+    }
+    /* Max cars check */
+    if (selectedIds.length >= MAX_CARS) {
+      selectedIds[targetSlot] = strId;
+    } else if (targetSlot < selectedIds.length) {
+      selectedIds[targetSlot] = strId;
+    } else {
+      selectedIds.push(strId);
+    }
+    closePicker();
+    updateUrl();
+    renderSlots();
+  };
+
+  /* ── Initial render ── */
+  renderSlots();
+
+  /* ── Re-render when DB loads ── */
+  if (window.MSE_DB && typeof window.MSE_DB.onReady === "function") {
+    window.MSE_DB.onReady(renderSlots);
+  }
+  document.addEventListener("mse-db-ready", renderSlots);
+})();
+</script>
+</body>
+</html>
