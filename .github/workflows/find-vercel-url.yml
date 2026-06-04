@@ -15,20 +15,22 @@ jobs:
           GH_PAT:       ${{ secrets.GH_PAT }}
         run: |
           npm install -g vercel@latest -q
-          # List recent deployments
-          DEPLOYMENTS=$(vercel ls --token="$VERCEL_TOKEN" --yes 2>&1 || true)
-          echo "=== vercel ls output ==="
-          echo "$DEPLOYMENTS"
 
-          # Get production URL
-          PROD_URL=$(vercel --prod --token="$VERCEL_TOKEN" --yes inspect 2>&1 | grep -oE 'https://[^ ]+\.vercel\.app' | head -1 || true)
-          echo "=== inspect url: $PROD_URL ==="
+          # Test token via REST API first
+          echo "=== Testing token via Vercel REST API ==="
+          API_RESP=$(curl -s "https://api.vercel.com/v2/user" \
+            -H "Authorization: Bearer $VERCEL_TOKEN")
+          echo "API response: $API_RESP"
 
-          # Also try env
-          vercel env ls --token="$VERCEL_TOKEN" 2>&1| head -20 || true
+          # Try deploy with VERCEL_TOKEN env var (not --token flag)
+          echo "=== Trying deploy ==="
+          OUTPUT=$(vercel --prod --yes 2>&1 || true)
+          echo "$OUTPUT"
 
-          # Save whatever we find to the repo
-          echo "$DEPLOYMENTS" > /tmp/vercel_info.txt
+          # Save to repo
+          echo "$API_RESP" > /tmp/vercel_info.txt
+          echo "---" >> /tmp/vercel_info.txt
+          echo "$OUTPUT" >> /tmp/vercel_info.txt
           CONTENT=$(base64 -w0 /tmp/vercel_info.txt)
           SHA=$(curl -s "https://api.github.com/repos/mehmetdem2005/mse-auto/contents/VERCEL_INFO.txt" \
             -H "Authorization: Bearer $GH_PAT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('sha',''))" 2>/dev/null || echo "")
