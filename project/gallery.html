@@ -69,36 +69,49 @@
     flex-direction:row !important;
     border-radius:var(--r);
     min-height:0;
+    position:relative;
+  }
+  .gallery-grid .car::after {
+    content:'›';
+    position:absolute; right:12px; top:50%;
+    transform:translateY(-50%);
+    font-size:22px; font-weight:700; color:var(--blue);
+    pointer-events:none;
   }
   .gallery-grid .car .cimg {
-    width:120px; flex:0 0 120px;
-    aspect-ratio:unset !important; height:100px;
+    width:110px; flex:0 0 110px;
+    aspect-ratio:unset !important; height:90px;
     border-radius:0;
   }
   .gallery-grid .car .cimg::after {
     background:linear-gradient(90deg,transparent 50%,rgba(7,9,15,0.55));
   }
   .gallery-grid .car .cbody {
-    padding:10px 12px; flex:1; min-width:0;
+    padding:10px 12px 10px 12px; flex:1; min-width:0;
+    padding-right:32px;
     display:flex; flex-direction:column; justify-content:space-between;
   }
   .gallery-grid .car .cbody h3 {
-    font-size:13.5px; margin-bottom:6px;
+    font-size:13px; margin-bottom:4px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
   .gallery-grid .car .spec-row {
-    flex-wrap:wrap; margin-bottom:6px; border:none; border-radius:0;
+    display:flex; flex-direction:row; gap:12px;
+    margin-bottom:4px; border:none; border-radius:0; flex-wrap:nowrap;
   }
   .gallery-grid .car .spec-cell {
-    flex:0 0 50%; border-right:none; border-bottom:1px solid var(--border); padding:5px 0;
+    flex:0 0 auto; border:none; padding:2px 0;
+    display:flex; flex-direction:row; align-items:center; gap:4px;
   }
-  .gallery-grid .car .spec-cell:nth-child(odd) { padding-right:6px; }
-  .gallery-grid .car .spec-cell b { font-size:11px; }
-  .gallery-grid .car .spec-cell span { font-size:8.5px; }
-  .gallery-grid .car .crow { padding-top:6px; }
-  .gallery-grid .car .cprice { font-size:15px; }
+  /* Show only year + km on mobile */
+  .gallery-grid .car .spec-cell:nth-child(3),
+  .gallery-grid .car .spec-cell:nth-child(4) { display:none !important; }
+  .gallery-grid .car .spec-cell b { font-size:11.5px; }
+  .gallery-grid .car .spec-cell span { font-size:10px; color:var(--ink-2); }
+  .gallery-grid .car .spec-cell span::before { content:'· '; }
+  .gallery-grid .car .crow { padding-top:4px; }
+  .gallery-grid .car .cprice { font-size:14px; }
   .gallery-grid .car .clink { display:none !important; }
-  /* Hide the "Detayları İncele" wrapper div */
   .gallery-grid .car .cbody > div:last-child:not(.crow):not(.spec-row) { display:none !important; }
 }
 </style>

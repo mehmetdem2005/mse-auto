@@ -350,6 +350,7 @@ input,textarea,select { font-family: inherit; }
 }
 @media (max-width:820px) {
   .nav,.hdr-phone { display:none; }
+  .hdr-right .btn { display:none; }
   .burger { display:flex; }
   .hero { padding-top:calc(var(--hdr) + 24px); }
   .hero h1 { font-size:36px; }
@@ -377,21 +378,15 @@ input,textarea,select { font-family: inherit; }
   .hero h1 { font-size:28px; }
   .sell-l h2 { font-size:26px; }
   .stat-item .sv { font-size:28px; }
-  /* Page hero smaller on mobile */
   .page-hero { height:220px !important; }
-  /* Hero CTA full width */
-  .hero-actions .btn { width:100%; justify-content:center; }
-  /* Sell band full-width buttons */
-  .sell-band .btn { width:100%; justify-content:center; }
-  /* CTA band actions full-width */
-  .ctaband-actions .btn { flex:1; justify-content:center; min-width:0; }
-  /* Better kicker spacing */
+  /* Pill-shaped CTAs on mobile */
+  .hero-actions .btn { width:100%; justify-content:center; border-radius:999px; }
+  .sell-band .btn { width:100%; justify-content:center; border-radius:999px; }
+  .ctaband-actions .btn { flex:1; justify-content:center; min-width:0; border-radius:999px; }
+  .mobile-bar .mb-item span { font-size:10px; }
   .kicker { margin-bottom:8px; }
-  /* Searchbar compact */
   .sb-field { padding:10px 12px; }
-  /* Stats: keep 2x2 */
   .stats-row { grid-template-columns:repeat(2,1fr) !important; }
-  /* Sec heading */
   .sec-head { flex-direction:column; align-items:flex-start; gap:12px; margin-bottom:28px; }
   .sec-head h2 { font-size:22px; }
 }

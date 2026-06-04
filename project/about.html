@@ -42,6 +42,9 @@
 .feat-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:32px 28px; transition:border-color 0.3s,transform 0.3s var(--ease); }
 .feat-card:hover { border-color:var(--border-b); transform:translateY(-4px); }
 .feat-ic { width:52px; height:52px; border-radius:14px; background:rgba(59,128,255,0.12); border:1px solid var(--border-b); display:flex; align-items:center; justify-content:center; color:var(--blue); margin-bottom:20px; }
+.feat-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.feat-card-top .feat-ic { margin-bottom:0; }
+.feat-num { font-size:28px; font-weight:800; color:rgba(59,128,255,0.18); letter-spacing:-1px; line-height:1; }
 .feat-card h3 { font-size:16px; font-weight:700; margin-bottom:10px; }
 .feat-card p { font-size:14px; color:var(--ink-2); line-height:1.72; }
 
@@ -108,7 +111,9 @@
     padding:20px 18px; transform:none !important;
   }
   .features-grid .feat-card:hover { transform:none !important; }
-  .features-grid .feat-ic { margin-bottom:0; flex:0 0 44px; width:44px; height:44px; }
+  .features-grid .feat-card-top { flex:0 0 44px; flex-direction:column; justify-content:flex-start; gap:8px; margin-bottom:0; }
+  .features-grid .feat-ic { margin-bottom:0; width:44px; height:44px; }
+  .features-grid .feat-num { font-size:16px; }
   .features-grid .feat-card h3 { font-size:15px; margin-bottom:6px; }
   .features-grid .feat-card p { font-size:13px; }
 
@@ -286,22 +291,31 @@
     </div>
     <div class="features-grid">
       <div class="feat-card reveal">
-        <div class="feat-ic">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div class="feat-card-top">
+          <div class="feat-ic">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <span class="feat-num">01</span>
         </div>
         <h3 data-c="features.0.title">Kapsamlı Ekspertiz</h3>
         <p data-c="features.0.desc">Satın almadan önce aracınız uzman ekibimiz tarafından detaylı incelenir. Şeffaf raporla bilinçli karar alın.</p>
       </div>
       <div class="feat-card reveal d1">
-        <div class="feat-ic">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        <div class="feat-card-top">
+          <div class="feat-ic">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+          <span class="feat-num">02</span>
         </div>
         <h3 data-c="features.1.title">Takas Desteği</h3>
         <p data-c="features.1.desc">Mevcut aracınızı takas ederek yeni aracınıza kolayca geçiş yapın. Değer kaybı olmadan hızlı ve güvenli takas.</p>
       </div>
       <div class="feat-card reveal d2">
-        <div class="feat-ic">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div class="feat-card-top">
+          <div class="feat-ic">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <span class="feat-num">03</span>
         </div>
         <h3 data-c="features.2.title">7/24 Destek</h3>
         <p data-c="features.2.desc">Sorularınız için her zaman yanınızdayız. WhatsApp veya telefon ile dilediğiniz zaman bize ulaşabilirsiniz.</p>
