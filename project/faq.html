@@ -3,37 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SSS — MSE Auto</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<title>Sık Sorulan Sorular — MSE Auto</title>
 <link rel="stylesheet" href="site.css" />
 <style>
-.faq-list { max-width:800px; margin:0 auto; }
-.faq-item { border:1px solid var(--border); border-radius:var(--r-lg); margin-bottom:10px; overflow:hidden; transition:border-color .2s; }
-.faq-item.open { border-color:var(--border-b); }
-.faq-q { display:flex; align-items:center; justify-content:space-between; padding:18px 22px; cursor:pointer; font-size:15px; font-weight:600; color:var(--ink); user-select:none; gap:14px; }
-.faq-q:hover { background:rgba(59,128,255,.04); }
-.faq-q svg { flex:0 0 20px; color:var(--ink-3); transition:transform .3s; }
-.faq-item.open .faq-q svg { transform:rotate(90deg); color:var(--blue); }
-.faq-a { max-height:0; overflow:hidden; transition:max-height .35s ease,padding .35s; }
-.faq-a-inner { padding:0 22px 18px; font-size:14px; color:var(--ink-2); line-height:1.7; border-top:1px solid var(--border); padding-top:16px; }
-.faq-a-inner a { color:var(--blue); text-decoration:underline; text-underline-offset:3px; }
-.faq-item.open .faq-a { max-height:400px; }
-.cat-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:32px; }
-.cat-tab { padding:8px 18px; border-radius:999px; font-size:13px; font-weight:600; border:1px solid var(--border-2); background:transparent; color:var(--ink-2); cursor:pointer; transition:.2s; font-family:"Inter",sans-serif; }
-.cat-tab.active,.cat-tab:hover { background:rgba(59,128,255,.12); border-color:var(--border-b); color:var(--blue); }
-.faq-group-label { font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); margin-bottom:16px; margin-top:40px; padding-left:2px; display:flex; align-items:center; gap:10px; }
-.faq-group-label:first-child { margin-top:0; }
-.faq-group-label::after { content:""; flex:1; height:1px; background:var(--border); }
-.faq-group[data-hidden] { display:none; }
-.faq-cta-band { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-xl); padding:56px 60px; display:flex; align-items:center; justify-content:space-between; gap:40px; margin:56px 0 0; max-width:800px; position:relative; overflow:hidden; }
-.faq-cta-band::before { content:""; position:absolute; width:360px; height:360px; right:-80px; top:-160px; border-radius:50%; background:radial-gradient(circle, rgba(59,128,255,.1), transparent 65%); pointer-events:none; }
-.faq-cta-text { position:relative; z-index:1; }
-.faq-cta-text h2 { font-size:26px; font-weight:800; margin-bottom:10px; }
-.faq-cta-text p { font-size:14.5px; color:var(--ink-2); line-height:1.68; margin:0; max-width:360px; }
-.faq-cta-actions { position:relative; z-index:1; display:flex; gap:12px; flex-wrap:wrap; align-items:center; flex-shrink:0; }
-@media(max-width:700px){.faq-cta-band{flex-direction:column;padding:36px 24px;}.faq-cta-text p{max-width:100%;}}
-@media(max-width:600px){.faq-q{padding:14px 16px;font-size:14px;}.faq-a-inner{padding:0 16px 16px;padding-top:14px;}}
+/* ── FAQ accordion ── */
+.faq-wrap { max-width: 800px; margin: 0 auto; }
+.faq-item { background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--r-lg); margin-bottom: 8px; overflow: hidden; transition: border-color 0.2s; }
+.faq-item.open { border-color: var(--border-b); }
+.faq-q { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; cursor: pointer; user-select: none; }
+.faq-q-text { font-size: 15px; font-weight: 700; color: var(--ink); line-height: 1.38; flex: 1; }
+.faq-item.open .faq-q-text { color: var(--blue-bright); }
+.faq-chevron { width: 28px; height: 28px; flex: 0 0 28px; border-radius: 50%; border: 1px solid var(--border-2); background: var(--bg-3); display: flex; align-items: center; justify-content: center; color: var(--ink-3); transition: transform 0.3s var(--ease), background 0.2s, border-color 0.2s; }
+.faq-item.open .faq-chevron { transform: rotate(180deg); background: rgba(59,128,255,.12); border-color: var(--border-b); color: var(--blue); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.36s var(--ease); }
+.faq-a-inner { padding: 0 24px 20px; font-size: 14.5px; color: var(--ink-2); line-height: 1.7; }
+.faq-a-inner a { color: var(--blue); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ── Responsive ── */
+@media(max-width: 600px) { .faq-q { padding: 16px 18px; } .faq-a-inner { padding: 0 18px 16px; } }
 </style>
 </head>
 <body>
@@ -63,8 +50,6 @@
     </div>
   </div>
 </header>
-
-<!-- DRAWER -->
 <div class="drawer" id="drawer">
   <div class="drawer-top">
     <a class="logo" href="index.html"><span class="lmark">MS<b>E</b></span><span class="lsub">AUTO</span></a>
@@ -84,9 +69,9 @@
 </div>
 
 <!-- PAGE HERO -->
-<div class="page-hero" style="height:250px;">
+<div class="page-hero">
   <div class="page-hero-bg">
-    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1400&q=80" alt="SSS" style="filter:brightness(0.18) saturate(0.5);" />
+    <img src="https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=1400&q=80" alt="SSS" />
   </div>
   <div class="page-hero-content wrap">
     <nav class="breadcrumb">
@@ -94,223 +79,105 @@
       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
       <span>SSS</span>
     </nav>
-    <span class="kicker" data-c="faq_page.kicker">Destek</span>
     <h1 data-c="faq_page.title">Sık Sorulan Sorular</h1>
-    <p style="font-size:15px;color:var(--ink-2);margin-top:10px;font-weight:400;" data-c="faq_page.subtitle">Aklınıza takılan her şey</p>
+    <p data-c="faq_page.sub">Aklınıza takılan soruların yanıtları bir arada</p>
   </div>
 </div>
 
 <!-- FAQ SECTION -->
 <section class="sec">
   <div class="wrap">
-    <div class="faq-list">
+    <div class="faq-wrap">
 
-      <!-- Category tabs -->
-      <div class="cat-tabs" id="catTabs">
-        <button class="cat-tab active" data-filter="all">Tümü</button>
-        <button class="cat-tab" data-filter="satin-alma">Satın Alma</button>
-        <button class="cat-tab" data-filter="arac-satma">Araç Satma</button>
-        <button class="cat-tab" data-filter="takas">Takas</button>
-        <button class="cat-tab" data-filter="hizmet">Hizmet</button>
+      <!-- Q1 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q1">Araç satın alma süreci nasıl işliyor?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
+        </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a1">Galerimizi ziyaret edin veya online listemizdeki araçları inceleyin. Beğendiğiniz araç için randevu alın, yetkili uzmanımız eşliğinde test sürüşü yapın. Anlaşma sağlandığında gerekli evraklar tamamlanır ve araç teslim edilir.</div>
+        </div>
       </div>
 
-      <!-- GROUP: Satın Alma -->
-      <div class="faq-group reveal" data-cat="satin-alma">
-        <div class="faq-group-label">Satın Alma</div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Araçları nerede inceleyebilirim?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Araçlarımızı galerimizde bizzat inceleyebilirsiniz.<br>
-              Adres: <strong id="faqAddr">Admin panelinden güncellenir.</strong><br>
-              Çalışma saatlerimiz: <strong id="faqHours1">Admin panelinden güncellenir.</strong><br><br>
-              Ziyaret öncesinde randevu almak için <a href="contact.html">bize ulaşın</a>.
-            </div>
-          </div>
+      <!-- Q2 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q2">Araçlarınızda ekspertiz raporu var mı?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Araçlarınızda ekspertiz var mı?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Tüm araçlarımız satış öncesi kapsamlı ekspertizden geçirilir. Ekspertiz raporu araç detay sayfasında görüntülenebilir. Şeffaf ve güvenilir alışveriş deneyimi için hiçbir bilgiyi gizlemeyiz.
-            </div>
-          </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a2">Tüm araçlarımız satışa sunulmadan önce kapsamlı bir ekspertiz sürecinden geçirilir. Ekspertiz raporunu araç detay sayfasından inceleyebilirsiniz. Şeffaflık bizim için önceliktir; sürprizle karşılaşmamanız için her detayı açıkça paylaşırız.</div>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Fiyat pazarlık konusu mu?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Fiyatlarımız güncel piyasa araştırmasına dayalı, şeffaf ve gerçekçi biçimde belirlenir. Listelenen fiyat piyasa araştırmamızı yansıtır. Detaylı bilgi ve görüşme için <a href="contact.html">bize ulaşın</a>.
-            </div>
-          </div>
-        </div>
-
       </div>
-      <!-- /satin-alma -->
 
-      <!-- GROUP: Araç Satma -->
-      <div class="faq-group reveal" data-cat="arac-satma">
-        <div class="faq-group-label">Araç Satma</div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Aracımı nasıl satabilirim?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              <a href="sell.html">Değerleme formunu doldurun</a> veya bizi arayın. Uzmanımız bilgileri inceleyerek anında teklif sunar. Anlaşma sağlandığında ödeme yerinde gerçekleştirilir.
-            </div>
-          </div>
+      <!-- Q3 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q3">Takas yapıyor musunuz?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Hasarlı araçlar alıyor musunuz?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Hasar durumuna ve kapsamına göre değerlendiriyoruz. Daha net bir teklif için aracın fotoğraflarını ve mevcut ekspertiz belgelerini paylaşmanız yeterlidir. <a href="contact.html">Bizimle iletişime geçin</a>.
-            </div>
-          </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a3">Evet, takas yapıyoruz. Mevcut aracınızın marka, model, yıl, km ve hasar bilgilerini paylaşın; değerleme yaparak fiyat farkını görüşelim. Takas işlemleri hızlı ve sorunsuz tamamlanır.</div>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Değerleme ücretsiz mi?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Evet, değerleme hizmetimiz tamamen ücretsizdir. Herhangi bir ücret ya da yükümlülük söz konusu değildir. Teklifi reddedebilir, hiçbir koşul olmaksızın süreci sonlandırabilirsiniz.
-            </div>
-          </div>
-        </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Belgelerim eksik, yine de satabilir miyim?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Belge eksiklikleri için de çözüm üretebiliyoruz. Her durum kendine özgü değerlendirme gerektirir. Önce bizimle iletişime geçin; eksik belge ya da işlemlerin nasıl tamamlanabileceği konusunda yönlendirme yapalım.
-            </div>
-          </div>
-        </div>
-
       </div>
-      <!-- /arac-satma -->
 
-      <!-- GROUP: Takas -->
-      <div class="faq-group reveal" data-cat="takas">
-        <div class="faq-group-label">Takas</div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Takas yapıyor musunuz?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Evet, takas yapıyoruz. Mevcut aracınızın bilgilerini (marka, model, yıl, km, durum) paylaşın; değerleme yaparak fiyat farkını birlikte görüşelim. Takas işlemleri hızlı ve sorunsuz tamamlanır.
-            </div>
-          </div>
+      <!-- Q4 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q4">Aracımı nasıl satabilirim?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Takas fiyatı nasıl belirlenir?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Takas fiyatı güncel piyasa araştırması ve uzman ekspertiz sonucuna göre belirlenir. Şeffaf bir süreç yürütür; aracınızın gerçek değerini esas alırız.
-            </div>
-          </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a4"><a href="sell.html">Değerleme formunu doldurun</a> ya da bizi arayın. Yetkili uzmanımız yerinde inceleme yapar ve anında teklif sunar. Anlaşma sağlandığında ödeme aynı gün yerinde gerçekleştirilir.</div>
         </div>
-
       </div>
-      <!-- /takas -->
 
-      <!-- GROUP: Hizmet -->
-      <div class="faq-group reveal" data-cat="hizmet">
-        <div class="faq-group-label">Hizmet</div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Çalışma saatleriniz nedir?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Çalışma saatlerimiz: <strong id="faqHours2">Admin panelinden güncellenir.</strong><br>
-              Randevu alarak mesai saatleri dışında da görüşme ayarlayabilirsiniz. <a href="contact.html">Bize ulaşın</a>.
-            </div>
-          </div>
+      <!-- Q5 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q5">Fiyat pazarlık konusu mu?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>7/24 ulaşabilir miyim?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              WhatsApp üzerinden her zaman mesaj bırakabilirsiniz. Ekibimiz en kısa sürede yanıt verir. Acil durumlar için iletişim sayfamızdaki numarayı arayabilirsiniz.
-            </div>
-          </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a5">Fiyatlarımız güncel piyasa araştırmasına dayalı, şeffaf ve gerçekçi biçimde belirlenir. Listedeki fiyat araştırmamızın sonucunu yansıtır. Detaylar için bizi aramaktan çekinmeyin; her durumu değerlendiririz.</div>
         </div>
-
-        <div class="faq-item">
-          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
-            <span>Adrese geliyor musunuz?</span>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-          <div class="faq-a">
-            <div class="faq-a-inner">
-              Belirli mesafeler için yerinde inceleme yapabiliyoruz. Koşullar konuma göre değişebilir. Detaylı bilgi için <a href="contact.html">iletişime geçin</a>.
-            </div>
-          </div>
-        </div>
-
       </div>
-      <!-- /hizmet -->
 
-      <!-- BOTTOM CTA BAND -->
-      <div class="faq-cta-band reveal">
-        <div class="faq-cta-text">
-          <span class="kicker" data-c="faq_cta.kicker">Daha Fazlası</span>
-          <h2 data-c="faq_cta.title">Sorunuzu bulamadınız mı?</h2>
-          <p data-c="faq_cta.sub">Aklınızdaki soruyu doğrudan bize iletebilirsiniz. Uzman ekibimiz en kısa sürede yanıt verir.</p>
+      <!-- Q6 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q6">Ödeme yöntemleri nelerdir?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
         </div>
-        <div class="faq-cta-actions">
-          <a class="btn btn-blue" href="contact.html">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            Bize Yazın
-          </a>
-          <a class="btn btn-outline" href="tel:" id="ctaCallBtn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-            Hemen Arayın
-          </a>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a6">Nakit ve banka havalesi/EFT ile ödeme kabul ediyoruz. Satış işlemlerinde ödeme güvenli bir şekilde noter veya galeri bünyesinde tamamlanır.</div>
+        </div>
+      </div>
+
+      <!-- Q7 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q7">Satış için hangi belgeler gerekli?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
+        </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a7">Araç ruhsatı, nüfus cüzdanı ve aracın muayene belgesi temel belgelerdir. Belge eksikliği durumunda ekibimiz sizi yönlendirir; eksik işlemlerin nasıl tamamlanabileceği konusunda destek sağlarız.</div>
+        </div>
+      </div>
+
+      <!-- Q8 -->
+      <div class="faq-item reveal">
+        <div class="faq-q">
+          <span class="faq-q-text" data-c="faq.q8">Randevu nasıl alabilirim?</span>
+          <span class="faq-chevron"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg></span>
+        </div>
+        <div class="faq-a">
+          <div class="faq-a-inner" data-c="faq.a8"><a href="contact.html">İletişim sayfamızdaki formu</a> doldurabilir, telefon ile arayabilir ya da WhatsApp üzerinden mesaj gönderebilirsiniz. Talebinizi aldıktan sonra size uygun bir zaman diliminde randevunuzu ayarlarız.</div>
         </div>
       </div>
 
     </div>
-    <!-- /faq-list -->
   </div>
 </section>
 
@@ -347,18 +214,9 @@
       <div class="foot-contact">
         <h5>İletişim</h5>
         <ul>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg>
-            <span id="footPhone">Panelden ayarlanır</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            <span id="footAddr">Adres panelden ayarlanır</span>
-          </li>
-          <li>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span id="footHours">Çalışma saatleri panelden</span>
-          </li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.01 1.22 2 2 0 012 .01h3a2 2 0 012 1.72 12.8 12.8 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.8 12.8 0 002.81.7A2 2 0 0122 14.92z"/></svg><span id="footPhone">Panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="footAddr">Adres panelden ayarlanır</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="footHours">Çalışma saatleri panelden</span></li>
         </ul>
       </div>
     </div>
@@ -371,22 +229,10 @@
 
 <!-- MOBILE BAR -->
 <nav class="mobile-bar">
-  <a href="index.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    Ana Sayfa
-  </a>
-  <a href="gallery.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l2-5a3 3 0 013-2h4a3 3 0 013 2l2 5M3 13h18v5H3v-5z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>
-    Araçlar
-  </a>
-  <a href="sell.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-    Sat
-  </a>
-  <a href="contact.html">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-    İletişim
-  </a>
+  <a href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Ana Sayfa</a>
+  <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 13l2-5a3 3 0 013-2h4a3 3 0 013 2l2 5M3 13h18v5H3v-5z"/><circle cx="7" cy="18" r="1.5"/><circle cx="17" cy="18" r="1.5"/></svg>Araçlar</a>
+  <a href="sell.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>Sat</a>
+  <a href="contact.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>İletişim</a>
 </nav>
 
 <!-- AI ASSISTANT -->
@@ -423,104 +269,42 @@
 <script src="site.js"></script>
 <script>
 (function(){
-  /* Settings */
-  var S = {};
-  try {
-    S = (window.MSE_DB && typeof window.MSE_DB.getSettings === "function")
-      ? (window.MSE_DB.getSettings() || {})
-      : (window.MSE_SETTINGS || {});
-  } catch(e){ S = window.MSE_SETTINGS || {}; }
-
-  function setText(id, val){ var el = document.getElementById(id); if(el && val) el.textContent = val; }
-
-  /* Populate dynamic fields */
-  setText("faqAddr",   S.address);
-  setText("faqHours1", S.hours);
-  setText("faqHours2", S.hours);
-  setText("footPhone", S.phone);
-  setText("footAddr",  S.address);
-  setText("footHours", S.hours);
-
-  /* Phone links */
-  var phoneClean = S.phone ? S.phone.replace(/\D/g,"") : "";
-  if(phoneClean){
-    ["hdrPhone","ctaCallBtn"].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el) el.href = "tel:+" + phoneClean;
-    });
-    var ht = document.getElementById("hdrPhoneText");
-    if(ht) ht.textContent = S.phone;
-  }
-
-  /* Footer year */
   document.getElementById("footYear").textContent = new Date().getFullYear();
-
-  /* Header scroll */
+  var s = window.MSE_SETTINGS || {};
+  var hp = document.getElementById("hdrPhone");
+  var ht = document.getElementById("hdrPhoneText");
+  if(s.phone){ if(hp) hp.href="tel:"+s.phone.replace(/\s/g,""); if(ht) ht.textContent=s.phone; }
   var hdr = document.getElementById("hdr");
-  window.addEventListener("scroll", function(){ hdr.classList.toggle("scrolled", window.scrollY > 20); }, {passive:true});
-
-  /* Drawer */
-  document.getElementById("burger").addEventListener("click", function(){ document.getElementById("drawer").classList.add("open"); });
-  document.getElementById("drawerClose").addEventListener("click", function(){ document.getElementById("drawer").classList.remove("open"); });
-
-  /* Reveal */
-  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:0.08});
+  window.addEventListener("scroll",function(){ hdr.classList.toggle("scrolled",window.scrollY>20); },{passive:true});
+  document.getElementById("burger").addEventListener("click",function(){ document.getElementById("drawer").classList.add("open"); });
+  document.getElementById("drawerClose").addEventListener("click",function(){ document.getElementById("drawer").classList.remove("open"); });
+  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } }); },{threshold:0.1});
   document.querySelectorAll(".reveal").forEach(function(el){ io.observe(el); });
 
-  /* ── Accordion ── */
-  var items = document.querySelectorAll(".faq-item");
+  if(s.phone && document.getElementById("footPhone")) document.getElementById("footPhone").textContent = s.phone;
+  if(s.address && document.getElementById("footAddr")) document.getElementById("footAddr").textContent = s.address;
+  if(s.hours && document.getElementById("footHours")) document.getElementById("footHours").textContent = s.hours;
 
-  function closeItem(item){
-    item.classList.remove("open");
-    var btn = item.querySelector(".faq-q");
-    var panel = item.querySelector(".faq-a");
-    if(btn) btn.setAttribute("aria-expanded","false");
-    if(panel) panel.style.maxHeight = "0";
-  }
-
-  function openItem(item){
-    item.classList.add("open");
-    var btn = item.querySelector(".faq-q");
-    var panel = item.querySelector(".faq-a");
+  /* FAQ accordion */
+  document.querySelectorAll(".faq-item").forEach(function(item){
+    var q = item.querySelector(".faq-q");
+    var a = item.querySelector(".faq-a");
     var inner = item.querySelector(".faq-a-inner");
-    if(btn) btn.setAttribute("aria-expanded","true");
-    if(panel && inner) panel.style.maxHeight = (inner.offsetHeight + 8) + "px";
-  }
-
-  items.forEach(function(item){
-    var btn = item.querySelector(".faq-q");
-    if(!btn) return;
-    btn.addEventListener("click", function(){
-      item.classList.contains("open") ? closeItem(item) : openItem(item);
-    });
-    btn.addEventListener("keydown", function(e){
-      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); btn.click(); }
-    });
-  });
-
-  /* ── Category filter ── */
-  var tabs = document.querySelectorAll(".cat-tab");
-
-  tabs.forEach(function(tab){
-    tab.addEventListener("click", function(){
-      var filter = tab.dataset.filter;
-      tabs.forEach(function(t){ t.classList.remove("active"); });
-      tab.classList.add("active");
-
-      var groups = document.querySelectorAll(".faq-group");
-      groups.forEach(function(g){
-        if(filter === "all" || g.dataset.cat === filter){
-          g.removeAttribute("data-hidden");
-          g.style.display = "";
-        } else {
-          g.setAttribute("data-hidden","1");
-          g.style.display = "none";
-          g.querySelectorAll(".faq-item.open").forEach(closeItem);
-        }
+    if(!q || !a || !inner) return;
+    q.addEventListener("click", function(){
+      var isOpen = item.classList.contains("open");
+      /* Close all */
+      document.querySelectorAll(".faq-item.open").forEach(function(openItem){
+        openItem.classList.remove("open");
+        openItem.querySelector(".faq-a").style.maxHeight = "0";
       });
+      /* Open clicked if it was closed */
+      if(!isOpen){
+        item.classList.add("open");
+        a.style.maxHeight = (inner.offsetHeight + 4) + "px";
+      }
     });
   });
-
 })();
 </script>
 </body>
