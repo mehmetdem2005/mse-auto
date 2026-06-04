@@ -337,6 +337,9 @@ input,textarea,select { font-family: inherit; }
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */
+@media (max-width:1200px) {
+  .features-grid[style*="repeat(5"] { grid-template-columns:repeat(3,1fr) !important; }
+}
 @media (max-width:1100px) {
   .wrap,.hdr-inner { padding-left:28px; padding-right:28px; }
   .hero h1 { font-size:48px; }
@@ -357,7 +360,7 @@ input,textarea,select { font-family: inherit; }
   .sec { padding:56px 0; }
   .sec-head h2 { font-size:26px; }
   .cars-grid { grid-template-columns:1fr; }
-  .features-grid { grid-template-columns:1fr; }
+  .features-grid { grid-template-columns:1fr !important; }
   .sell-band { grid-template-columns:1fr; gap:28px; padding:34px 26px; }
   .ctaband-text { padding:36px 26px; }
   .ctaband-text h2 { font-size:26px; }

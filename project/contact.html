@@ -37,7 +37,27 @@
 .btn-wa:hover { background:linear-gradient(135deg,#1ebe5a,#179645); transform:translateY(-2px); box-shadow:0 12px 28px -8px rgba(37,211,102,0.55); }
 
 /* ── Contact main layout ── */
-.contact-main { display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:start; padding-bottom:0; }
+.contact-main { display:grid; grid-template-columns:1fr 1fr 1fr; gap:28px; align-items:start; padding-bottom:0; }
+
+/* ── Test drive card ── */
+.testdrive-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:32px 28px; }
+.testdrive-card h2 { font-size:20px; font-weight:800; margin-bottom:6px; }
+.testdrive-card .form-sub { font-size:13px; color:var(--ink-2); margin-bottom:22px; display:block; }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:16px; }
+.cal-day-name { font-size:9.5px; font-weight:700; color:var(--ink-3); text-align:center; padding:4px 0; letter-spacing:0.08em; text-transform:uppercase; }
+.cal-day { height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12.5px; font-weight:600; color:var(--ink-2); cursor:pointer; border:1px solid transparent; transition:0.2s; }
+.cal-day:hover:not(.cal-empty):not(.cal-past) { background:rgba(59,128,255,0.12); color:var(--blue); border-color:var(--border-b); }
+.cal-day.cal-today { background:rgba(59,128,255,0.12); color:var(--blue); border-color:var(--border-b); }
+.cal-day.cal-selected { background:var(--blue-grad); color:#fff; border-color:transparent; }
+.cal-day.cal-empty,.cal-day.cal-past { opacity:0.3; cursor:default; }
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.cal-nav button { background:var(--bg-3); border:1px solid var(--border-2); width:32px; height:32px; border-radius:8px; color:var(--ink-2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:16px; transition:0.2s; font-family:inherit; }
+.cal-nav button:hover { border-color:var(--blue); color:var(--blue); }
+.cal-nav span { font-size:13.5px; font-weight:700; color:var(--ink); }
+.time-slots { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; margin-bottom:16px; }
+.tslot { padding:9px 6px; border-radius:8px; border:1px solid var(--border-2); background:transparent; color:var(--ink-2); font-size:12px; font-weight:600; cursor:pointer; text-align:center; transition:0.2s; font-family:inherit; }
+.tslot:hover { background:rgba(59,128,255,0.1); border-color:var(--border-b); color:var(--blue); }
+.tslot.selected { background:var(--blue-grad); color:#fff; border-color:transparent; }
 
 /* ── Form card ── */
 .contact-form-card { background:var(--bg-2); border:1px solid var(--border); border-radius:var(--r-lg); padding:36px 32px; }
@@ -98,8 +118,11 @@
 
 /* ── Responsive ── */
 @media(max-width:1100px) { .info-cards-row { grid-template-columns:1fr 1fr; } }
+@media(max-width:1000px) {
+  .contact-main { grid-template-columns:1fr 1fr; }
+  .contact-info-col { grid-column:1/-1; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+}
 @media(max-width:900px) {
-  .contact-main { grid-template-columns:1fr; }
   .wa-band { flex-direction:column; padding:36px 28px; text-align:center; }
   .wa-band-text p { max-width:100%; }
   .wa-band-text h2 { font-size:22px; }
@@ -109,7 +132,11 @@
   .page-hero-content h1 { font-size:32px; }
   .info-cards-row { grid-template-columns:1fr; }
   .contact-form-card { padding:24px 20px; }
+  .testdrive-card { padding:22px 18px; }
   .wa-band { padding:28px 20px; }
+  .contact-main { grid-template-columns:1fr; }
+  .contact-info-col { grid-column:auto; display:flex; flex-direction:column; }
+  .time-slots { grid-template-columns:repeat(3,1fr); }
 }
 </style>
 </head>
@@ -220,7 +247,7 @@
 
   </div>
 
-  <!-- FORM + INFO 2-COL -->
+  <!-- FORM + TEST DRIVE + MAP/INFO 3-COL -->
   <div class="contact-main" style="margin-bottom:0;">
 
     <!-- FORM COL -->
@@ -255,8 +282,50 @@
       </div>
     </div>
 
-    <!-- INFO COL -->
-    <div class="contact-info-col reveal d1">
+    <!-- TEST DRIVE COL -->
+    <div class="reveal d1">
+      <div class="testdrive-card">
+        <h2>Test Sürüşü</h2>
+        <span class="form-sub">Tarih ve saat seçerek randevu oluşturun.</span>
+        <div class="cal-nav">
+          <button id="calPrev" aria-label="Önceki ay">&#8249;</button>
+          <span id="calTitle"></span>
+          <button id="calNext" aria-label="Sonraki ay">&#8250;</button>
+        </div>
+        <div class="cal-grid" id="calGrid">
+          <div class="cal-day-name">Pt</div><div class="cal-day-name">Sa</div>
+          <div class="cal-day-name">Ça</div><div class="cal-day-name">Pe</div>
+          <div class="cal-day-name">Cu</div><div class="cal-day-name">Ct</div>
+          <div class="cal-day-name">Pz</div>
+        </div>
+        <div class="fld-group" style="margin-bottom:12px;">
+          <label>Saat Seçin</label>
+          <div class="time-slots" id="timeSlots">
+            <button class="tslot" data-time="09:00">09:00</button>
+            <button class="tslot" data-time="10:00">10:00</button>
+            <button class="tslot" data-time="11:00">11:00</button>
+            <button class="tslot" data-time="13:00">13:00</button>
+            <button class="tslot" data-time="14:00">14:00</button>
+            <button class="tslot" data-time="15:00">15:00</button>
+            <button class="tslot" data-time="16:00">16:00</button>
+            <button class="tslot" data-time="17:00">17:00</button>
+            <button class="tslot" data-time="18:00">18:00</button>
+          </div>
+        </div>
+        <div class="fld-group" style="margin-bottom:12px;">
+          <label for="tdPhone">Telefon</label>
+          <input type="tel" id="tdPhone" name="tdPhone" placeholder="0 (5XX) XXX XX XX" />
+        </div>
+        <button class="btn btn-blue" id="tdSubmit" style="width:100%;justify-content:center;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          Randevu Onayla
+        </button>
+        <p id="tdMsg" style="margin-top:10px;font-size:12.5px;color:var(--blue);text-align:center;display:none;"></p>
+      </div>
+    </div>
+
+    <!-- INFO + MAP COL -->
+    <div class="contact-info-col reveal d2">
 
       <div class="ci-card">
         <div class="ci-icon">
@@ -309,7 +378,7 @@
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
           </div>
           <b>MSE Auto Galerisi</b>
-          <p data-c="contact.mapNote">Konum haritası — admin panelinden Google Maps embed kodu eklenebilir</p>
+          <p data-c="contact.mapNote">Admin panelinden Google Maps embed kodu eklenebilir</p>
           <span class="map-tag">Harita Yakında Aktif</span>
         </div>
       </div>
@@ -506,6 +575,87 @@
     t.classList.add("show");
     setTimeout(function(){ t.classList.remove("show"); },4500);
   }
+
+  /* ── Calendar ── */
+  (function(){
+    var TR_MONTHS = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+    var today = new Date();
+    var viewYear = today.getFullYear();
+    var viewMonth = today.getMonth();
+    var selDay = null;
+    var selTime = null;
+
+    function renderCal(){
+      var title = document.getElementById("calTitle");
+      if(title) title.textContent = TR_MONTHS[viewMonth] + " " + viewYear;
+      var grid = document.getElementById("calGrid");
+      if(!grid) return;
+      var headers = grid.querySelectorAll(".cal-day-name");
+      var days = Array.from(grid.querySelectorAll(".cal-day"));
+      days.forEach(function(d){ d.remove(); });
+
+      var firstDay = new Date(viewYear, viewMonth, 1).getDay();
+      var offset = (firstDay === 0) ? 6 : firstDay - 1;
+      var daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+      for(var i=0; i < offset; i++){
+        var blank = document.createElement("div");
+        blank.className = "cal-day cal-empty";
+        grid.appendChild(blank);
+      }
+      for(var d=1; d<=daysInMonth; d++){
+        var cell = document.createElement("div");
+        cell.className = "cal-day";
+        cell.textContent = d;
+        var cellDate = new Date(viewYear, viewMonth, d);
+        var isSun = cellDate.getDay() === 0;
+        var isPast = cellDate < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        if(isPast || isSun){ cell.classList.add("cal-past"); }
+        else {
+          var isToday = (d===today.getDate() && viewMonth===today.getMonth() && viewYear===today.getFullYear());
+          if(isToday) cell.classList.add("cal-today");
+          if(selDay===d && viewMonth===selDay._m && viewYear===selDay._y) cell.classList.add("cal-selected");
+          (function(day,year,month){ cell.addEventListener("click", function(){
+            selDay = {d:day, _m:month, _y:year};
+            renderCal();
+          }); })(d, viewYear, viewMonth);
+        }
+        grid.appendChild(cell);
+      }
+    }
+
+    var prev = document.getElementById("calPrev");
+    var next = document.getElementById("calNext");
+    if(prev) prev.addEventListener("click", function(){
+      viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; } renderCal();
+    });
+    if(next) next.addEventListener("click", function(){
+      viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; } renderCal();
+    });
+
+    document.querySelectorAll(".tslot").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        selTime = btn.dataset.time;
+        document.querySelectorAll(".tslot").forEach(function(b){ b.classList.remove("selected"); });
+        btn.classList.add("selected");
+      });
+    });
+
+    var tdSubmit = document.getElementById("tdSubmit");
+    if(tdSubmit) tdSubmit.addEventListener("click", function(){
+      if(!selDay){ alert("Lütfen bir tarih seçin."); return; }
+      if(!selTime){ alert("Lütfen bir saat seçin."); return; }
+      var phone = (document.getElementById("tdPhone")||{}).value||"";
+      var msg = document.getElementById("tdMsg");
+      if(msg){
+        msg.style.display="block";
+        msg.textContent = "Randevu talebiniz alındı: " + selDay._y + "/" + (selDay._m+1) + "/" + selDay.d + " saat " + selTime;
+        setTimeout(function(){ msg.style.display="none"; selDay=null; selTime=null; document.querySelectorAll(".tslot").forEach(function(b){ b.classList.remove("selected"); }); renderCal(); },4000);
+      }
+    });
+
+    renderCal();
+  })();
 })();
 </script>
 </body>
