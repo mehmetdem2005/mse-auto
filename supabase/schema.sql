@@ -62,18 +62,23 @@ create table if not exists ai_config (
 
 -- RLS politikaları (public okuma)
 alter table cars enable row level security;
+drop policy if exists "Cars public read" on cars;
 create policy "Cars public read" on cars for select using (status = 'active');
 
 alter table valuation_requests enable row level security;
+drop policy if exists "Insert valuation" on valuation_requests;
 create policy "Insert valuation" on valuation_requests for insert with check (true);
 
 alter table contact_messages enable row level security;
+drop policy if exists "Insert message" on contact_messages;
 create policy "Insert message" on contact_messages for insert with check (true);
 
 alter table site_content enable row level security;
+drop policy if exists "Content public read" on site_content;
 create policy "Content public read" on site_content for select using (true);
 
 alter table ai_config enable row level security;
+drop policy if exists "AI config public read" on ai_config;
 create policy "AI config public read" on ai_config for select using (true);
 
 -- ── Gemini RAG: Araç Embeddings ──────────────────────────────────────────
@@ -112,6 +117,9 @@ $$;
 
 -- RLS
 alter table car_embeddings enable row level security;
+drop policy if exists "Embeddings public read" on car_embeddings;
+drop policy if exists "Embeddings insert" on car_embeddings;
+drop policy if exists "Embeddings upsert" on car_embeddings;
 create policy "Embeddings public read" on car_embeddings for select using (true);
 create policy "Embeddings insert" on car_embeddings for insert with check (true);
 create policy "Embeddings upsert" on car_embeddings for update using (true);

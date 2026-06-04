@@ -119,7 +119,7 @@ if [ -z "$SERVICE_ID" ]; then
   [ -z "$OWNER_ID" ] && die "Render owner alınamadı: $(echo "$OWNERS_RAW" | head -c 200)"
   log "Owner: $OWNER_ID"
 
-  SVC_RESP=$(curl -sf -X POST "https://api.render.com/v1/services" \
+  SVC_RESP=$(curl -s -X POST "https://api.render.com/v1/services" \
     -H "Authorization: Bearer $RENDER_KEY" \
     -H "Content-Type: application/json" \
     -d "{
@@ -129,15 +129,19 @@ if [ -z "$SERVICE_ID" ]; then
       \"repo\": \"https://github.com/$REPO\",
       \"branch\": \"main\",
       \"rootDir\": \"api\",
+      \"autoDeploy\": \"yes\",
       \"serviceDetails\": {
-        \"buildCommand\": \"npm install\",
-        \"startCommand\": \"npm start\",
+        \"env\": \"node\",
         \"plan\": \"free\",
-        \"runtime\": \"node\"
+        \"envSpecificDetails\": {
+          \"buildCommand\": \"npm install\",
+          \"startCommand\": \"npm start\"
+        }
       }
-    }") || die "Render servis oluşturulamadı"
+    }")
+  log "Render servis yanıtı: $(echo "$SVC_RESP" | head -c 200)"
   SERVICE_ID=$(echo "$SVC_RESP" | json "print(d['service']['id'])" 2>/dev/null || echo "")
-  [ -z "$SERVICE_ID" ] && die "Render service ID alınamadı: $(echo "$SVC_RESP" | head -c 200)"
+  [ -z "$SERVICE_ID" ] && die "Render service ID alınamadı: $(echo "$SVC_RESP" | head -c 300)"
   log "Servis oluşturuldu: $SERVICE_ID"
 else
   log "Servis bulundu: $SERVICE_ID"
