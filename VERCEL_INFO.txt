@@ -1,0 +1,6 @@
+Vercel CLI 54.9.1 (Node.js 22.22.3)
+> NOTE: The Vercel CLI now collects telemetry regarding usage of the CLI.
+> This information is used to shape the CLI roadmap and prioritize features.
+> You can learn more, including how to opt-out if you'd not like to participate in this program, by visiting the following URL:
+> https://vercel.com/docs/cli/about-telemetry
+Error: The token provided via `--token` argument is not valid. Please provide a valid token.
