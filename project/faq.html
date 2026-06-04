@@ -9,128 +9,228 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="site.css" />
 <style>
-.page-hero {
-  padding: 120px 0 52px;
-  background: linear-gradient(180deg, rgba(231,223,208,0.5), transparent);
+
+/* ================================================================
+   FAQ HERO — soft 280px
+   ================================================================ */
+.faq-hero {
+  position: relative;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-top: 78px;
+  background: linear-gradient(135deg, #efeadf 0%, #e6ddd0 100%);
+}
+.faq-hero::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(60% 70% at 90% 10%, rgba(199,159,64,0.18), transparent 60%),
+    radial-gradient(40% 50% at 10% 90%, rgba(199,159,64,0.10), transparent 60%);
+}
+.faq-hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  mix-blend-mode: multiply;
+}
+.faq-hero-content {
+  position: relative; z-index: 2;
+  padding: 60px 0;
+  text-align: center;
+  width: 100%;
+}
+.faq-hero-content .kicker { margin-bottom: 16px; }
+.faq-hero-content h1 {
+  font-size: 48px; font-weight: 700;
+  letter-spacing: -0.025em; line-height: 1.06;
+  margin: 0 0 14px; color: var(--espresso);
+}
+.faq-hero-content .hero-sub {
+  font-size: 17px; font-weight: 300;
+  color: var(--ink-2); margin: 0;
+}
+
+/* ================================================================
+   CATEGORY TABS
+   ================================================================ */
+.faq-tabs-wrap {
+  padding: 36px 0 0;
+  position: sticky;
+  top: 70px;
+  background: var(--canvas);
+  z-index: 10;
   border-bottom: 1px solid var(--line);
 }
-.page-hero .breadcrumb {
-  font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--muted); font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
-}
-.page-hero .breadcrumb a { color: var(--gold); }
-.page-hero h1 { font-size: 52px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 14px; }
-.page-hero p { font-size: 17px; font-weight: 300; color: var(--ink-2); margin: 0; max-width: 560px; line-height: 1.6; }
-
-/* ---- Category tabs ---- */
 .faq-tabs {
-  display: flex; gap: 0; padding: 32px 0 0; border-bottom: 1px solid var(--line);
-  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  display: flex; gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
 }
 .faq-tab {
-  padding: 13px 20px; background: transparent; border: none; font-family: inherit;
-  font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
-  color: var(--muted); cursor: pointer; white-space: nowrap;
-  border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color 0.2s, border-color 0.2s;
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--paper);
+  font-size: 13px; font-weight: 700;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink-2); cursor: pointer;
+  transition: all 0.22s var(--ease);
+  font-family: "Archivo", sans-serif;
 }
-.faq-tab:hover { color: var(--ink); }
-.faq-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+.faq-tab:hover { border-color: var(--gold); color: var(--gold); background: rgba(199,159,64,0.06); }
+.faq-tab.active {
+  background: var(--gold-grad);
+  border-color: transparent;
+  color: #2a1e05;
+  box-shadow: var(--sh-gold);
+}
 
-/* ---- FAQ layout ---- */
-.faq-layout {
-  display: grid; grid-template-columns: 1fr 340px; gap: 48px;
-  padding: 52px 0 80px; align-items: start;
+/* ================================================================
+   FAQ ACCORDION
+   ================================================================ */
+.faq-section {
+  padding: 48px 0 0;
+}
+.faq-category-label {
+  font-size: 11.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+  padding-left: 2px;
+  display: flex; align-items: center; gap: 10px;
+}
+.faq-category-label::after {
+  content: ""; flex: 1;
+  height: 1px; background: var(--line-2);
 }
 
-/* ---- Accordion ---- */
-.accordion { display: flex; flex-direction: column; gap: 12px; }
-.acc-item {
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
-  overflow: hidden; box-shadow: var(--sh-sm); transition: border-color 0.25s, box-shadow 0.25s;
+.faq-list {
+  display: flex; flex-direction: column;
+  border-radius: var(--r);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-sm);
+  margin-bottom: 36px;
 }
-.acc-item.open { border-color: var(--gold-2); box-shadow: var(--sh); }
-.acc-trigger {
-  width: 100%; background: transparent; border: none; padding: 22px 24px;
+.faq-item {
+  background: var(--paper);
+  border-bottom: 1px solid var(--line);
+  overflow: hidden;
+  border-left: 3px solid transparent;
+  transition: border-color 0.22s, background 0.22s;
+}
+.faq-item:last-child { border-bottom: none; }
+.faq-item.open {
+  border-left-color: var(--gold);
+}
+
+.faq-q {
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
-  cursor: pointer; text-align: left; font-family: inherit; transition: background 0.2s;
+  padding: 20px 24px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
 }
-.acc-trigger:hover { background: var(--canvas); }
-.acc-trigger .q-text {
-  font-size: 16px; font-weight: 700; color: var(--ink); line-height: 1.35;
+.faq-q:hover { background: rgba(199,159,64,0.04); }
+.faq-q .q-text {
+  font-size: 15.5px; font-weight: 700;
+  color: var(--ink); line-height: 1.38;
+  flex: 1;
 }
-.acc-trigger .acc-icon {
-  width: 32px; height: 32px; border-radius: 10px; background: var(--surface); flex: 0 0 32px;
-  display: flex; align-items: center; justify-content: center; color: var(--gold);
-  transition: background 0.25s, transform 0.35s var(--ease);
+.faq-item.open .faq-q .q-text { color: var(--gold); }
+.faq-q .q-arrow {
+  width: 30px; height: 30px; flex: 0 0 30px;
+  border-radius: 50%;
+  border: 1px solid var(--line-2);
+  background: var(--canvas);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+  transition: transform 0.32s var(--ease), background 0.22s, border-color 0.22s, color 0.22s;
 }
-.acc-item.open .acc-trigger .acc-icon { background: var(--gold-grad-soft); transform: rotate(45deg); }
-.acc-body {
-  max-height: 0; overflow: hidden; transition: max-height 0.45s var(--ease), padding 0.35s;
-}
-.acc-body-inner {
-  padding: 0 24px 22px; font-size: 14.5px; font-weight: 300; color: var(--ink-2);
-  line-height: 1.72; border-top: 1px solid var(--line);
-}
-.acc-body-inner p { margin: 14px 0 0; }
-.acc-body-inner p:first-child { margin-top: 14px; }
-.acc-body-inner a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
-.acc-body-inner strong { font-weight: 700; color: var(--ink); }
-
-/* Cat label on item */
-.acc-cat {
-  display: inline-flex; align-items: center; margin-bottom: 3px;
-  font-size: 10.5px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--gold); background: rgba(168,127,29,0.1); padding: 3px 9px; border-radius: 6px;
+.faq-item.open .faq-q .q-arrow {
+  transform: rotate(90deg);
+  background: var(--gold-grad-soft);
+  border-color: transparent;
+  color: #4a3608;
 }
 
-/* ---- Sidebar ---- */
-.faq-sidebar { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 20px; }
-.faq-cta-card {
+.faq-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.38s var(--ease);
+}
+.faq-a-inner {
+  padding: 0 24px 22px 24px;
+  font-size: 14.5px; font-weight: 300;
+  color: var(--ink-2); line-height: 1.68;
+}
+.faq-a-inner a {
+  color: var(--gold); text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.faq-a-inner a:hover { color: var(--gold-2); }
+.faq-a-inner code {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 5px; padding: 1px 6px;
+  font-size: 13px; color: var(--ink);
+}
+
+/* hidden state for category filter */
+.faq-group[data-cat-hidden] { display: none; }
+
+/* ================================================================
+   CTA BOTTOM BAND
+   ================================================================ */
+.faq-cta {
   background: linear-gradient(135deg, var(--espresso-2), var(--espresso));
-  border-radius: var(--r); padding: 28px; box-shadow: var(--sh);
+  border-radius: var(--r-lg);
+  padding: 56px 60px;
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 40px;
+  margin: 48px 0 80px;
+  box-shadow: var(--sh-lg);
+  position: relative; overflow: hidden;
 }
-.faq-cta-card .kicker { margin-bottom: 14px; display: block; }
-.faq-cta-card h3 { font-size: 20px; color: #fff; margin-bottom: 10px; }
-.faq-cta-card p { font-size: 13.5px; font-weight: 300; color: rgba(255,255,255,0.7); margin: 0 0 20px; line-height: 1.55; }
-.faq-contact-card {
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 24px; box-shadow: var(--sh-sm);
+.faq-cta::before {
+  content: "";
+  position: absolute; width: 440px; height: 440px;
+  right: -100px; top: -180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(199,159,64,0.24), transparent 65%);
 }
-.faq-contact-card h4 { font-size: 16px; margin-bottom: 16px; }
-.faq-ci { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
-.faq-ci:last-child { border-bottom: none; padding-bottom: 0; }
-.faq-ci .ci-ic { width: 34px; height: 34px; border-radius: 10px; background: var(--gold-grad-soft); display: flex; align-items: center; justify-content: center; color: #4a3608; flex: 0 0 34px; font-size: 14px; }
-.faq-ci span { font-weight: 300; color: var(--ink-2); }
+.faq-cta::after {
+  content: ""; position: absolute; inset: 0; opacity: 0.3;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.faq-cta-text { position: relative; z-index: 2; }
+.faq-cta-text .kicker { margin-bottom: 14px; display: block; }
+.faq-cta-text h2 { font-size: 34px; color: #fff; margin-bottom: 12px; }
+.faq-cta-text p { font-size: 15px; font-weight: 300; color: rgba(255,255,255,0.68); margin: 0; max-width: 420px; line-height: 1.6; }
+.faq-cta-actions { position: relative; z-index: 2; display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.faq-cta-actions .btn-line {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+}
+.faq-cta-actions .btn-line:hover { border-color: #fff; color: #fff; }
 
-/* Not-found state */
-.faq-not-found {
-  background: var(--paper); border: 1px solid var(--line); border-radius: var(--r);
-  padding: 40px; text-align: center; color: var(--muted); font-size: 14px;
-}
-
-/* ---- Search bar ---- */
-.faq-search {
-  display: flex; align-items: center; gap: 0; background: var(--paper);
-  border: 1px solid var(--line-2); border-radius: var(--r-sm);
-  padding: 0 14px; margin-bottom: 28px; box-shadow: var(--sh-sm);
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-.faq-search:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(168,127,29,0.12); }
-.faq-search input {
-  flex: 1; border: none; background: transparent; padding: 13px 10px;
-  font-size: 14.5px; font-family: inherit; outline: none; color: var(--ink);
-}
-.faq-search svg { color: var(--muted); flex: 0 0 18px; }
-
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
 @media (max-width: 980px) {
-  .page-hero h1 { font-size: 36px; }
-  .faq-layout { grid-template-columns: 1fr; }
-  .faq-sidebar { position: static; }
+  .faq-hero-content h1 { font-size: 34px; }
+  .faq-tabs-wrap { top: 64px; }
+  .faq-cta { flex-direction: column; padding: 38px 28px; }
+  .faq-cta-text h2 { font-size: 26px; }
 }
-@media (max-width: 520px) {
-  .page-hero h1 { font-size: 28px; }
-  .acc-trigger .q-text { font-size: 14.5px; }
+@media (max-width: 600px) {
+  .faq-hero-content h1 { font-size: 28px; }
+  .faq-hero-content .hero-sub { font-size: 15px; }
+  .faq-q { padding: 16px 18px; }
+  .faq-a-inner { padding: 0 18px 18px; }
+  .faq-tab { font-size: 11.5px; padding: 8px 14px; }
+  .faq-hero { min-height: 240px; }
 }
 </style>
 </head>
@@ -148,76 +248,270 @@
       <li><a href="contact.html">İletişim</a></li>
     </ul>
     <div class="hdr-cta">
-      <a class="hdr-phone" href="tel:+90"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg> Hemen Ara</a>
+      <a class="hdr-phone" id="hdrPhone" href="tel:+90">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg>
+        Hemen Ara
+      </a>
       <a class="btn btn-gold" href="sell.html"><span>Ücretsiz Değerleme</span></a>
       <button class="burger" id="burger" aria-label="Menü"><span></span></button>
     </div>
   </div>
 </header>
 
-<!-- ============ PAGE HERO ============ -->
-<section class="page-hero">
-  <div class="wrap">
-    <div class="breadcrumb">
-      <a href="index.html">Anasayfa</a>
-      <span>›</span>
-      <span>SSS</span>
+<!-- ============ FAQ HERO ============ -->
+<section class="faq-hero">
+  <div class="wrap" style="width:100%">
+    <div class="faq-hero-content reveal">
+      <span class="kicker">Destek</span>
+      <h1>Sık Sorulan Sorular</h1>
+      <p class="hero-sub">Aklınıza takılan her şey</p>
     </div>
-    <h1 class="reveal">Sık Sorulan Sorular</h1>
-    <p class="reveal d1">Aklınıza takılanları bulamadıysanız MSE Asistan'a ya da bize doğrudan ulaşın.</p>
   </div>
 </section>
 
-<!-- ============ FAQ TABS ============ -->
+<!-- ============ CATEGORY TABS ============ -->
 <div class="wrap">
-  <div class="faq-tabs" id="faqTabs">
-    <button class="faq-tab active" data-cat="all">Tümü</button>
-    <button class="faq-tab" data-cat="satin-alma">Satın Alma</button>
-    <button class="faq-tab" data-cat="satis">Araç Satma</button>
-    <button class="faq-tab" data-cat="finansman">Finansman</button>
-    <button class="faq-tab" data-cat="hizmet">Hizmet</button>
+  <div class="faq-tabs-wrap">
+    <div class="faq-tabs" role="tablist" aria-label="Soru kategorileri">
+      <button class="faq-tab active" data-filter="all" role="tab" aria-selected="true">Tümü</button>
+      <button class="faq-tab" data-filter="satin-alma" role="tab" aria-selected="false">Satın Alma</button>
+      <button class="faq-tab" data-filter="arac-satma" role="tab" aria-selected="false">Araç Satma</button>
+      <button class="faq-tab" data-filter="finansman" role="tab" aria-selected="false">Finansman</button>
+      <button class="faq-tab" data-filter="hizmet" role="tab" aria-selected="false">Hizmet</button>
+    </div>
   </div>
 </div>
 
-<!-- ============ FAQ LAYOUT ============ -->
-<div class="wrap faq-layout">
+<!-- ============ FAQ ACCORDION ============ -->
+<div class="faq-section">
+  <div class="wrap">
 
-  <!-- Accordion column -->
-  <div>
-    <!-- Search -->
-    <div class="faq-search">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2"/></svg>
-      <input type="text" id="faqSearch" placeholder="Soru ara…" oninput="filterFaq()" />
-    </div>
-    <div class="accordion" id="accordion"></div>
-  </div>
+    <!-- ---- Satın Alma ---- -->
+    <div class="faq-group reveal" data-cat="satin-alma">
+      <p class="faq-category-label">Satın Alma</p>
+      <div class="faq-list">
 
-  <!-- Sidebar -->
-  <div class="faq-sidebar">
-    <div class="faq-cta-card reveal">
-      <span class="kicker">Cevap Bulamadınız mı?</span>
-      <h3>Bize Doğrudan Sorun</h3>
-      <p>MSE Asistan'a yazın ya da iletişim formunu kullanın. En kısa sürede yanıt vereceğiz.</p>
-      <a class="btn btn-gold" href="contact.html" style="justify-content:center;display:flex"><span>İletişime Geç</span></a>
-    </div>
-    <div class="faq-contact-card reveal d1">
-      <h4>Hızlı İletişim</h4>
-      <div class="faq-ci">
-        <div class="ci-ic">📞</div>
-        <div><strong>Telefon</strong><br><span id="faqPhone">—</span></div>
-      </div>
-      <div class="faq-ci">
-        <div class="ci-ic">📍</div>
-        <div><strong>Adres</strong><br><span id="faqAddr">—</span></div>
-      </div>
-      <div class="faq-ci">
-        <div class="ci-ic">🕒</div>
-        <div><strong>Saat</strong><br><span id="faqHours">—</span></div>
-      </div>
-    </div>
-  </div>
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Araçları nerede inceleyebilirim?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Araçlarımızı galerimizde bizzat inceleyebilirsiniz.
+              <br>Adres: <span id="faqAddr">Admin panelinden güncellenir.</span>
+              <br>Çalışma saatlerimiz: <span id="faqHours1">Admin panelinden güncellenir.</span>
+              <br><br>
+              <a href="https://maps.google.com" target="_blank" rel="noopener">Google Maps üzerinden yol tarifi alın →</a>
+            </div>
+          </div>
+        </div>
 
-</div>
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Araçlarınızda ekspertiz raporu var mı?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Tüm araçlarımız satış öncesi kapsamlı ekspertiz sürecinden geçirilir. Ekspertiz raporu araç detay sayfasında indirilebilir şekilde sunulmaktadır. Hiçbir sürprizle karşılaşmamanız için şeffaflık bizim için önceliktir.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Fiyat pazarlık konusu mu?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Fiyatlarımız güncel piyasa araştırmasına dayalı, şeffaf ve gerçekçi biçimde belirlenir. Listedeki fiyat, araştırmamızın sonucunu yansıtır. Detaylar için bizi aramaktan çekinmeyin.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">3D görünüm nasıl çalışır?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Araç detay sayfasındaki "3D" sekmesinden aracı 360° döndürerek tüm açılardan inceleyebilirsiniz. Modeller <code>.glb</code> formatında yüklenmektedir ve <strong>model-viewer</strong> teknolojisiyle çalışmaktadır. Herhangi bir uygulama veya eklenti gerektirmez; destekleyen tüm modern tarayıcılarda sorunsuz çalışır.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /satın-alma -->
+
+    <!-- ---- Araç Satma ---- -->
+    <div class="faq-group reveal" data-cat="arac-satma">
+      <p class="faq-category-label">Araç Satma</p>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Aracımı nasıl satabilirim?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              <a href="sell.html">Değerleme formunu doldurun</a> veya bizi arayın. Yetkili uzmanımız yerinde inceleme yapar; inceleme sonrasında anında teklif sunulur. Anlaşma sağlandığında ödeme aynı gün yerinde gerçekleştirilir.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Hasarlı araçlar alıyor musunuz?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Hasar durumuna ve kapsamına göre değerlendirme yapıyoruz. Daha doğru bir teklif alabilmek için aracın fotoğraflarını ve mevcut ekspertiz ya da hasar tespit belgelerini paylaşmanız yeterlidir. Detaylı bilgi için bize ulaşın.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Değerleme ücretsiz mi?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Evet, değerleme hizmetimiz tamamen ücretsizdir. Herhangi bir ücret ya da yükümlülük söz konusu değildir. Teklifi reddedebilir, hiçbir şart olmaksızın süreci sonlandırabilirsiniz.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Araç belgelerim eksiksiz değil, yine de satabilir miyim?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Belge eksiklikleri için de çözüm üretebiliyoruz. Her durum kendine özgü değerlendirme gerektirir. Önce bizimle iletişime geçin; eksik belge ya da işlemlerin nasıl tamamlanabileceği konusunda yönlendirme yapalım.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /arac-satma -->
+
+    <!-- ---- Finansman ---- -->
+    <div class="faq-group reveal" data-cat="finansman">
+      <p class="faq-category-label">Finansman</p>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Kredi veya taksit imkânı var mı?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Anlaşmalı bankalarımız aracılığıyla rekabetçi faiz oranlı kredi seçenekleri sunuyoruz. Farklı vade ve ödeme planları hakkında detaylı bilgi almak için <a href="contact.html">bize ulaşın</a> ya da galeri ziyaretinizde danışın.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Takas yapıyor musunuz?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Evet, takas yapıyoruz. Mevcut aracınızın bilgilerini (marka, model, yıl, km, hasar durumu) paylaşın; değerleme yaparak fiyat farkını görüşelim. Takas işlemleri hızlı ve sorunsuz tamamlanır.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /finansman -->
+
+    <!-- ---- Hizmet ---- -->
+    <div class="faq-group reveal" data-cat="hizmet">
+      <p class="faq-category-label">Hizmet</p>
+      <div class="faq-list">
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Çalışma saatleriniz nedir?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Çalışma saatlerimiz: <strong id="cHours">Admin panelinden güncellenir.</strong>
+              <br>Randevu alarak mesai saatleri dışında da görüşme ayarlayabiliriz. Bunun için <a href="contact.html">bize ulaşın</a>.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q" role="button" tabindex="0" aria-expanded="false">
+            <span class="q-text">Adrese teslimat yapıyor musunuz?</span>
+            <span class="q-arrow" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2"/></svg>
+            </span>
+          </div>
+          <div class="faq-a" role="region">
+            <div class="faq-a-inner">
+              Belirli mesafeler için ücretsiz adrese teslimat imkânımız bulunmaktadır. Aracın bulunduğu konum ile teslimat adresine göre koşullar değişebilir. Detaylı bilgi için <a href="contact.html">iletişime geçin</a>.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /hizmet -->
+
+    <!-- ============ BOTTOM CTA BAND ============ -->
+    <div class="faq-cta reveal">
+      <div class="faq-cta-text">
+        <span class="kicker">Daha Fazlası</span>
+        <h2>Sorunuzu bulamadınız mı?</h2>
+        <p>Aklınızdaki soruyu doğrudan bize iletebilirsiniz. Uzman ekibimiz en kısa sürede yanıt verir.</p>
+      </div>
+      <div class="faq-cta-actions">
+        <a class="btn btn-gold" href="contact.html">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>
+          <span>Bize Yazın</span>
+        </a>
+        <a class="btn btn-line" id="ctaCallBtn" href="tel:+90">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg>
+          <span>Hemen Arayın</span>
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /wrap -->
+</div><!-- /faq-section -->
 
 <!-- ============ FOOTER ============ -->
 <footer class="foot">
@@ -225,11 +519,11 @@
     <div class="foot-top">
       <div class="fabout">
         <a class="flogo" href="index.html"><span class="m">MSE<b>.</b> AUTO</span></a>
-        <p data-c="footer.about">Güvenilir 2. el araç alım & satım.</p>
+        <p data-c="footer.about">Güvenilir 2. el araç alım &amp; satım.</p>
         <div class="foot-soc">
           <a href="#" aria-label="Instagram"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
-          <a href="#" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
-          <a href="tel:+90" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="#" id="footSocWa" aria-label="WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg></a>
+          <a href="tel:+90" id="footSocPhone" aria-label="Telefon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M21 16.5v3a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 011.1 3.8 2 2 0 013 1.6h3a2 2 0 012 1.7c.1 1 .4 1.9.7 2.8a2 2 0 01-.5 2.1L7.1 9.4a16 16 0 006 6l1.2-1.2a2 2 0 012.1-.4c.9.3 1.8.6 2.8.7a2 2 0 011.8 2z" stroke="currentColor" stroke-width="2"/></svg></a>
         </div>
       </div>
       <div id="footCols" style="display:contents"></div>
@@ -272,7 +566,7 @@
 <nav class="mobile-bar">
   <a href="gallery.html"><svg viewBox="0 0 24 24" fill="none"><path d="M3 13l2-5a3 3 0 013-2h8a3 3 0 013 2l2 5M5 13h14v5H5v-5z" stroke="currentColor" stroke-width="2"/><circle cx="7.5" cy="17.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="17.5" r="1.5" fill="currentColor"/></svg>Araçlar</a>
   <a href="sell.html" class="prime"><svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="2"/></svg>Aracını Sat</a>
-  <a href="https://wa.me/" target="_blank"><svg viewBox="0 0 24 24" fill="none"><path d="M3 21l1.6-4.7A8.4 8.4 0 1112 20a8.5 8.5 0 01-4.2-1.1L3 21z" stroke="currentColor" stroke-width="2"/></svg>WhatsApp</a>
+  <a href="contact.html"><svg viewBox="0 0 24 24" fill="none"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/><polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2"/></svg>İletişim</a>
 </nav>
 
 <!-- ============ AI ASSISTANT ============ -->
@@ -303,152 +597,129 @@
 <script src="site.js"></script>
 <script>
 (function () {
-  var S = window.MSE_SETTINGS || {};
-  var set = function (id, v) { var el = document.getElementById(id); if (el && v) el.textContent = v; };
-  set("footPhone", S.phone); set("footAddr", S.address); set("footHours", S.hours);
-  set("faqPhone", S.phone); set("faqAddr", S.address); set("faqHours", S.hours);
+  'use strict';
 
-  var addr = S.address || "Şube adresi admin panelinden ayarlanır";
-  var phone = S.phone || "Telefon panelden ayarlanır";
-  var hours = S.hours || "Çalışma saatleri panelden ayarlanır";
+  /* ---- API base ---- */
+  window.MSE_API_BASE = window.MSE_API_BASE || '';
 
-  // Default FAQ data
-  var DEFAULT_FAQS = [
-    {
-      cat: "satin-alma",
-      q: "Araçları nereden görebilir ve inceleyebilirim?",
-      a: "Araçlarımızı galerimizde bizzat inceleyebilirsiniz. <strong>Adresimiz:</strong> " + addr + ". <strong>Çalışma saatlerimiz:</strong> " + hours + ". Ayrıca randevu alarak test sürüşü yapabilirsiniz."
-    },
-    {
-      cat: "satin-alma",
-      q: "Araç satın almak için randevu almam gerekiyor mu?",
-      a: "Randevu olmadan da gelebilirsiniz. Ancak randevu alırsanız ilgilenilmenizi garantileyebiliriz. Randevu için <a href='contact.html'>iletişim formumuzu</a> kullanabilir ya da bizi arayabilirsiniz: " + phone + "."
-    },
-    {
-      cat: "satis",
-      q: "Aracımı satmak istiyorum, nasıl başlayabilirim?",
-      a: "<a href='sell.html'>Araç Sat</a> sayfamızdaki formu doldurmanız yeterli. Marka, model, yıl, km ve birkaç fotoğraf paylaşın; ekibimiz değerleme yaparak en kısa sürede sizinle iletişime geçsin. Dilerseniz galeriye bizzat da gelebilirsiniz."
-    },
-    {
-      cat: "satis",
-      q: "Nasıl takas yapabilirim?",
-      a: "Elinizdeki aracı galeriye getirin ya da değerleme formuyla bilgi gönderin. Ekibimiz aracınızı yerinde inceleyip takas değerini belirler. Fark ücret nakit veya kredi ile ödenebilir. Takas süreci oldukça hızlıdır."
-    },
-    {
-      cat: "finansman",
-      q: "Finansman / kredi imkânı var mı?",
-      a: "Evet, anlaşmalı banka ve finansal kuruluşlar aracılığıyla uygun faiz seçenekleri sunabiliyoruz. Peşinat miktarınızı ve tercih ettiğiniz vadeyi bildirmeniz yeterli; danışmanlarımız size en uygun seçenekleri sunsun."
-    },
-    {
-      cat: "finansman",
-      q: "Kredi başvurusu galeride yapılabiliyor mu?",
-      a: "Evet. Nüfus cüzdanı ve gelir belgesiyle galerimize gelin; kredi başvurusunu yerinde tamamlayabilirsiniz. Onay süresi anlaşmalı bankalarımızda oldukça kısadır."
-    },
-    {
-      cat: "hizmet",
-      q: "3D görünüm nasıl çalışır?",
-      a: "3D görünüm özelliği sayesinde seçili araçları 360° perspektiften inceleyebilirsiniz. Araç detay sayfasında <strong>'3D Görünüm'</strong> sekmesine tıklayın. 3D model mevcut araçlarda aktif, diğerlerinde admin tarafından .glb dosyası yüklendikten sonra aktif olur."
-    },
-    {
-      cat: "hizmet",
-      q: "Ekspertiz raporu mevcut mu?",
-      a: "Galerimizde satışa sunulan tüm araçlar için bağımsız ekspertiz raporu talep edilebilir. Araç detay sayfasındaki Belgeler bölümünden mevcut raporlara ulaşabilirsiniz. Ek ekspertiz için talebinizi iletebilirsiniz."
-    },
-    {
-      cat: "hizmet",
-      q: "İkinci el araçlarda garanti var mı?",
-      a: "Bazı araçlarda sıfır km ek garantisi devam ediyor olabilir. Bunun dışında galerimiz, araç tesliminden sonraki 7 gün içinde tespit edilecek gizli hasarlar için destek sağlar. Detaylı bilgi için danışmanlarımıza ulaşabilirsiniz."
-    },
-  ];
-
-  // Use site-content.js FAQs if available, otherwise defaults
-  var FAQs = (window.MSE_CONTENT && window.MSE_CONTENT.faqs) ? window.MSE_CONTENT.faqs : DEFAULT_FAQS;
-  // Also check DB
-  if (window.MSE_DB && typeof window.MSE_DB.getFAQs === "function") {
-    var dbFaqs = window.MSE_DB.getFAQs();
-    if (dbFaqs && dbFaqs.length) FAQs = dbFaqs;
+  /* ---- Resolve settings ---- */
+  var S = {};
+  try {
+    if (window.MSE_DB && typeof window.MSE_DB.getSettings === 'function') {
+      S = window.MSE_DB.getSettings() || {};
+    } else {
+      S = window.MSE_SETTINGS || {};
+    }
+  } catch (e) {
+    S = window.MSE_SETTINGS || {};
   }
 
-  var activeCat = "all";
-  var searchQuery = "";
-  var openIdx = -1;
+  /* ---- Helper ---- */
+  function setText(id, val) {
+    var el = document.getElementById(id);
+    if (el && val) el.textContent = val;
+  }
 
-  function render() {
-    var filtered = FAQs.filter(function (f) {
-      var catMatch = activeCat === "all" || f.cat === activeCat;
-      var qMatch = !searchQuery || f.q.toLowerCase().includes(searchQuery) || f.a.toLowerCase().includes(searchQuery);
-      return catMatch && qMatch;
-    });
+  /* ---- Populate dynamic fields ---- */
+  setText('cHours',    S.hours);
+  setText('faqHours1', S.hours);
+  setText('faqAddr',   S.address);
+  setText('footPhone', S.phone);
+  setText('footAddr',  S.address);
+  setText('footHours', S.hours);
 
-    var acc = document.getElementById("accordion");
-    if (!filtered.length) {
-      acc.innerHTML = '<div class="faq-not-found"><p>Bu kritere uygun soru bulunamadı.<br>Asistana sormayı deneyebilirsiniz.</p></div>';
-      return;
-    }
-
-    var CAT_LABELS = { "satin-alma": "Satın Alma", "satis": "Araç Satma", "finansman": "Finansman", "hizmet": "Hizmet" };
-
-    acc.innerHTML = filtered.map(function (f, i) {
-      return '<div class="acc-item reveal' + (i ? ' d' + Math.min(i % 4, 3) : '') + '" id="acc-' + i + '">' +
-        '<button class="acc-trigger" onclick="toggleAcc(' + i + ')">' +
-        '<div>' +
-        (f.cat ? '<span class="acc-cat">' + (CAT_LABELS[f.cat] || f.cat) + '</span><br>' : '') +
-        '<span class="q-text">' + f.q + '</span>' +
-        '</div>' +
-        '<span class="acc-icon">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5"/></svg>' +
-        '</span>' +
-        '</button>' +
-        '<div class="acc-body" id="body-' + i + '">' +
-        '<div class="acc-body-inner"><p>' + f.a + '</p></div>' +
-        '</div>' +
-        '</div>';
-    }).join("");
-
-    // Re-trigger reveal
-    document.querySelectorAll(".reveal:not(.in)").forEach(function (el) {
-      var io2 = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io2.unobserve(e.target); } }); }, { threshold: 0.1 });
-      io2.observe(el);
+  /* ---- Phone links ---- */
+  var phoneClean = S.phone ? S.phone.replace(/\D/g, '') : '';
+  if (phoneClean) {
+    ['hdrPhone', 'ctaCallBtn', 'footSocPhone'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.href = 'tel:' + phoneClean;
     });
   }
 
-  window.toggleAcc = function (i) {
-    var item = document.getElementById("acc-" + i);
-    var body = document.getElementById("body-" + i);
-    if (!item || !body) return;
-    var isOpen = item.classList.contains("open");
+  /* ---- WhatsApp footer icon ---- */
+  var waPhone = (S.whatsapp || S.phone || '').replace(/\D/g, '');
+  var waUrl = waPhone
+    ? 'https://wa.me/' + waPhone + '?text=' + encodeURIComponent('Merhaba, bilgi almak istiyorum.')
+    : '#';
+  var footSocWa = document.getElementById('footSocWa');
+  if (footSocWa) footSocWa.href = waUrl;
 
-    // Close all
-    document.querySelectorAll(".acc-item.open").forEach(function (el) {
-      el.classList.remove("open");
-      var b = el.querySelector(".acc-body");
-      if (b) b.style.maxHeight = "0";
+  /* ================================================================
+     ACCORDION
+     ================================================================ */
+  var items = document.querySelectorAll('.faq-item');
+
+  function closeItem(item) {
+    item.classList.remove('open');
+    var btn = item.querySelector('.faq-q');
+    var panel = item.querySelector('.faq-a');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    if (panel) panel.style.maxHeight = '0';
+  }
+
+  function openItem(item) {
+    item.classList.add('open');
+    var btn = item.querySelector('.faq-q');
+    var panel = item.querySelector('.faq-a');
+    var inner = item.querySelector('.faq-a-inner');
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    if (panel && inner) panel.style.maxHeight = (inner.offsetHeight + 6) + 'px';
+  }
+
+  items.forEach(function (item) {
+    var btn = item.querySelector('.faq-q');
+    if (!btn) return;
+
+    btn.addEventListener('click', function () {
+      if (item.classList.contains('open')) {
+        closeItem(item);
+      } else {
+        openItem(item);
+      }
     });
 
-    if (!isOpen) {
-      item.classList.add("open");
-      body.style.maxHeight = body.scrollHeight + 40 + "px";
-    }
-  };
-
-  window.filterFaq = function () {
-    searchQuery = document.getElementById("faqSearch").value.toLowerCase().trim();
-    render();
-  };
-
-  // Tab switching
-  document.getElementById("faqTabs").addEventListener("click", function (e) {
-    var tab = e.target.closest(".faq-tab");
-    if (!tab) return;
-    document.querySelectorAll(".faq-tab").forEach(function (t) { t.classList.remove("active"); });
-    tab.classList.add("active");
-    activeCat = tab.dataset.cat || "all";
-    render();
+    btn.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        btn.click();
+      }
+    });
   });
 
-  // Open first item on load
-  render();
-  setTimeout(function () { window.toggleAcc(0); }, 400);
+  /* ================================================================
+     CATEGORY FILTER
+     ================================================================ */
+  var tabs = document.querySelectorAll('.faq-tab');
+
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var filter = tab.getAttribute('data-filter');
+
+      /* Update active state */
+      tabs.forEach(function (t) {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+
+      /* Show/hide groups */
+      var groups = document.querySelectorAll('.faq-group');
+      groups.forEach(function (g) {
+        if (filter === 'all' || g.getAttribute('data-cat') === filter) {
+          g.removeAttribute('data-cat-hidden');
+          g.style.display = '';
+        } else {
+          g.setAttribute('data-cat-hidden', '1');
+          g.style.display = 'none';
+          /* Collapse open items in hidden groups */
+          g.querySelectorAll('.faq-item.open').forEach(closeItem);
+        }
+      });
+    });
+  });
+
 })();
 </script>
 </body>
