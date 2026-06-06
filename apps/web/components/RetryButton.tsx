@@ -7,6 +7,6 @@ export default function RetryButton({ id }: { id: string }) {
       setBusy(true);
       await fetch(`/api/jobs/${id}/retry`, { method: "POST" });
       location.reload();
-    }}>↻ Requeue</button>
+    }}>↻ Tekrar kuyruğa al</button>
   );
 }

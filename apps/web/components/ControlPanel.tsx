@@ -10,20 +10,20 @@ export default function ControlPanel({ paused, mode }: { paused: boolean; mode: 
   }
   return (
     <div className="card" style={{ marginTop: 16 }}>
-      <div className="eyebrow" style={{ marginBottom: 12 }}>Control plane</div>
+      <div className="eyebrow" style={{ marginBottom: 12 }}>Kontrol düzlemi</div>
       <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
         {paused ? (
-          <button className="btn primary" disabled={busy} onClick={() => call({ action: "resume" })}>▶ Resume</button>
+          <button className="btn primary" disabled={busy} onClick={() => call({ action: "resume" })}>▶ Devam et</button>
         ) : (
-          <button className="btn" disabled={busy} onClick={() => call({ action: "pause", reason: "manual" })}>⏸ Pause (kill switch)</button>
+          <button className="btn" disabled={busy} onClick={() => call({ action: "pause", reason: "manual" })}>⏸ Duraklat (acil durdur)</button>
         )}
-        <span className="tag" style={{ alignSelf: "center" }}>mode:</span>
+        <span className="tag" style={{ alignSelf: "center" }}>mod:</span>
         {["run", "draft_only", "dry_run"].map((md) => (
           <button key={md} className={`btn ${mode === md ? "primary" : "ghost"}`} disabled={busy} onClick={() => call({ action: "mode", mode: md })}>{md}</button>
         ))}
       </div>
       <div className="tag" style={{ marginTop: 10 }}>
-        Pause halts all production/upload instantly — nothing is lost, jobs wait. draft_only = research+draft but never auto-publish. dry_run = no new work.
+        Duraklat tüm üretimi/yüklemeyi anında durdurur — hiçbir şey kaybolmaz, işler bekler. draft_only = araştır+taslak ama asla otomatik yayınlama. dry_run = yeni iş alma.
       </div>
     </div>
   );

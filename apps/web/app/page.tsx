@@ -20,27 +20,27 @@ export default async function Dashboard() {
 
   return (
     <>
-      <div className="eyebrow">Overview</div>
-      <h1>Dashboard</h1>
-      <p className="sub">Autonomous pipeline status. You approve, it does the rest.</p>
+      <div className="eyebrow">Genel bakış</div>
+      <h1>Panel</h1>
+      <p className="sub">Otonom pipeline durumu. Sen onaylarsın, gerisini sistem yapar.</p>
 
       <div className="notice">
-        <b>Survival mode is on.</b> YouTube terminated thousands of fully-automated AI channels in Jan 2026.
-        This studio keeps a human approval step, varies every video, discloses AI use, and posts a low daily
-        volume — that is what keeps the channel alive.
+        <b>Hayatta kalma modu açık.</b> YouTube, Ocak 2026'da tamamen otomatik binlerce yapay zekâ
+        kanalını kapattı. Bu stüdyo bir insan onay adımı tutar, her videoyu çeşitlendirir, yapay zekâ
+        kullanımını açıklar ve günde az sayıda paylaşır — kanalı hayatta tutan tam olarak budur.
       </div>
 
       <div className="grid cards">
-        <Stat n={c.needs_review} l="Needs review" />
-        <Stat n={c.approved + c.rendering} l="In production" />
-        <Stat n={c.scheduled} l="Scheduled" />
-        <Stat n={c.published} l="Published" />
-        <Stat n={c.failed} l="Failed" />
+        <Stat n={c.needs_review} l="İnceleme bekliyor" />
+        <Stat n={c.approved + c.rendering} l="Üretimde" />
+        <Stat n={c.scheduled} l="Planlandı" />
+        <Stat n={c.published} l="Yayınlandı" />
+        <Stat n={c.failed} l="Başarısız" />
       </div>
 
-      <h2 style={{ marginTop: 34, fontWeight: 500 }}>Upcoming slots</h2>
+      <h2 style={{ marginTop: 34, fontWeight: 500 }}>Yaklaşan yayın slotları</h2>
       <table>
-        <thead><tr><th>When</th><th>Topic</th><th>Stage</th></tr></thead>
+        <thead><tr><th>Ne zaman</th><th>Konu</th><th>Aşama</th></tr></thead>
         <tbody>
           {(upcoming ?? []).map((u: any, i: number) => (
             <tr key={i}>
@@ -49,7 +49,7 @@ export default async function Dashboard() {
               <td><span className="badge">{u.stage}</span></td>
             </tr>
           ))}
-          {!upcoming?.length && <tr><td colSpan={3} style={{ color: "var(--muted)" }}>Nothing scheduled yet.</td></tr>}
+          {!upcoming?.length && <tr><td colSpan={3} style={{ color: "var(--muted)" }}>Henüz planlanmış bir şey yok.</td></tr>}
         </tbody>
       </table>
     </>

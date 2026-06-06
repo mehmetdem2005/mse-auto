@@ -9,13 +9,13 @@ export default async function Memory() {
 
   return (
     <>
-      <div className="eyebrow">What the system knows</div>
-      <h1>Memory</h1>
+      <div className="eyebrow">Sistemin bildikleri</div>
+      <h1>Hafıza</h1>
       <p className="sub">
-        Preferences you set, performance insights learned from analytics, and the ledger of already-used
-        topics (so a story is never repeated). Semantic recall via pgvector.
+        Senin belirlediğin tercihler, analitikten öğrenilen performans içgörüleri ve daha önce kullanılan
+        konuların kaydı (böylece bir hikâye asla tekrarlanmaz). pgvector ile anlamsal hatırlama.
       </p>
-      {Object.keys(groups).length === 0 && <div className="card" style={{ color: "var(--muted)" }}>No memories yet.</div>}
+      {Object.keys(groups).length === 0 && <div className="card" style={{ color: "var(--muted)" }}>Henüz hafıza kaydı yok.</div>}
       {Object.entries(groups).map(([kind, items]) => (
         <div key={kind} style={{ marginBottom: 22 }}>
           <div className="eyebrow" style={{ marginBottom: 8 }}>{kind.replace("_", " ")}</div>

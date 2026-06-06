@@ -4,14 +4,15 @@ import type { ReactNode } from "react";
 export const metadata = { title: "ShortsPilot", description: "Autonomous Shorts pipeline — control panel" };
 
 const NAV = [
-  { href: "/", label: "Dashboard", k: "01" },
-  { href: "/queue", label: "Queue / Approval", k: "02" },
-  { href: "/knowledge", label: "Knowledge (RAG)", k: "03" },
-  { href: "/memory", label: "Memory", k: "04" },
-  { href: "/analytics", label: "Analytics", k: "05" },
-  { href: "/observability", label: "Observability", k: "06" },
-  { href: "/lab", label: "Autonomy Lab", k: "07" },
-  { href: "/settings", label: "Settings", k: "08" },
+  { href: "/", label: "Panel", k: "01" },
+  { href: "/queue", label: "Kuyruk / Onay", k: "02" },
+  { href: "/agents", label: "Ajanlar", k: "03" },
+  { href: "/knowledge", label: "Bilgi (RAG)", k: "04" },
+  { href: "/memory", label: "Hafıza", k: "05" },
+  { href: "/analytics", label: "Analitik", k: "06" },
+  { href: "/observability", label: "İzleme", k: "07" },
+  { href: "/lab", label: "Otonomi Lab", k: "08" },
+  { href: "/settings", label: "Ayarlar", k: "09" },
 ];
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -32,8 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </nav>
             <div style={{ position: "absolute", bottom: 20, left: 16, right: 16 }}>
               <div className="tag" style={{ lineHeight: 1.6 }}>
-                Human-in-the-loop: <b style={{ color: "var(--accent)" }}>ON</b><br />
-                Quality &gt; volume
+                İnsan onayı: <b style={{ color: "var(--accent)" }}>AÇIK</b><br />
+                Kalite &gt; nicelik
               </div>
             </div>
           </aside>

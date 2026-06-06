@@ -14,24 +14,24 @@ export default async function Observability() {
 
   return (
     <>
-      <div className="eyebrow">Operations</div>
-      <h1>Observability</h1>
-      <p className="sub">Live health, spend, and a replayable trail of everything the pipeline did. This is the "izlenebilir / yönetilebilir" layer.</p>
+      <div className="eyebrow">Operasyon</div>
+      <h1>İzleme</h1>
+      <p className="sub">Canlı sağlık, harcama ve pipeline'ın yaptığı her şeyin tekrar oynatılabilir kaydı. Bu, "izlenebilir / yönetilebilir" katmandır.</p>
 
       <div className="grid cards">
-        <div className="card stat"><div className="n" style={{ color: `var(--${health})` }}>{m.paused ? "PAUSED" : "LIVE"}</div><div className="l">State · {m.mode}</div></div>
-        <div className="card stat"><div className="n">{(m.errorRate24h * 100).toFixed(0)}%</div><div className="l">Error rate 24h</div></div>
-        <div className="card stat"><div className="n">${m.usdToday.toFixed(2)}</div><div className="l">Spend today</div></div>
-        <div className="card stat"><div className="n">{m.youtubeUnitsToday}</div><div className="l">YT quota today</div></div>
-        <div className="card stat"><div className="n">{m.deadLetter}</div><div className="l">Dead-letter</div></div>
+        <div className="card stat"><div className="n" style={{ color: `var(--${health})` }}>{m.paused ? "DURDU" : "CANLI"}</div><div className="l">Durum · {m.mode}</div></div>
+        <div className="card stat"><div className="n">{(m.errorRate24h * 100).toFixed(0)}%</div><div className="l">24s hata oranı</div></div>
+        <div className="card stat"><div className="n">${m.usdToday.toFixed(2)}</div><div className="l">Bugünkü harcama</div></div>
+        <div className="card stat"><div className="n">{m.youtubeUnitsToday}</div><div className="l">Bugünkü YT kotası</div></div>
+        <div className="card stat"><div className="n">{m.deadLetter}</div><div className="l">Ölü mektup</div></div>
       </div>
 
       <ControlPanel paused={m.paused} mode={m.mode} reason={null} />
 
       <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 16 }}>
         <div className="card">
-          <div className="eyebrow" style={{ marginBottom: 10 }}>Avg stage duration</div>
-          {Object.keys(m.avgStageMs).length === 0 && <div className="tag">No timing data yet.</div>}
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Ortalama aşama süresi</div>
+          {Object.keys(m.avgStageMs).length === 0 && <div className="tag">Henüz zamanlama verisi yok.</div>}
           {Object.entries(m.avgStageMs).map(([s, ms]) => (
             <div className="row" key={s} style={{ justifyContent: "space-between", padding: "4px 0" }}>
               <span className="mono" style={{ fontSize: 13 }}>{s}</span><span className="mono" style={{ color: "var(--muted)" }}>{(ms / 1000).toFixed(1)}s</span>
@@ -39,7 +39,7 @@ export default async function Observability() {
           ))}
         </div>
         <div className="card">
-          <div className="eyebrow" style={{ marginBottom: 10 }}>Pipeline counts</div>
+          <div className="eyebrow" style={{ marginBottom: 10 }}>Pipeline sayıları</div>
           {Object.entries(m.stageCounts).map(([s, n]) => (
             <div className="row" key={s} style={{ justifyContent: "space-between", padding: "3px 0" }}>
               <span className="mono" style={{ fontSize: 13 }}>{s}</span><span className="mono">{n}</span>
@@ -50,11 +50,11 @@ export default async function Observability() {
 
       {!!dead?.length && (
         <>
-          <h2 style={{ marginTop: 30, fontWeight: 500 }}>Dead-letter / failed</h2>
+          <h2 style={{ marginTop: 30, fontWeight: 500 }}>Ölü mektup / başarısız</h2>
           {dead.map((d: any) => (
             <div className="job" key={d.id} style={{ padding: 14 }}>
               <div className="row" style={{ justifyContent: "space-between" }}>
-                <span>{d.topic} <span className="badge bad">{d.stage}</span> <span className="tag">attempts {d.attempts}</span></span>
+                <span>{d.topic} <span className="badge bad">{d.stage}</span> <span className="tag">deneme {d.attempts}</span></span>
                 <RetryButton id={d.id} />
               </div>
               {d.last_error && <div className="tag" style={{ color: "var(--warn)", marginTop: 6 }}>⚠ {d.last_error}</div>}
@@ -63,9 +63,9 @@ export default async function Observability() {
         </>
       )}
 
-      <h2 style={{ marginTop: 30, fontWeight: 500 }}>Event trail</h2>
+      <h2 style={{ marginTop: 30, fontWeight: 500 }}>Olay kaydı</h2>
       <table>
-        <thead><tr><th>Time</th><th>Type</th><th>Stage</th><th>Detail</th></tr></thead>
+        <thead><tr><th>Zaman</th><th>Tür</th><th>Aşama</th><th>Detay</th></tr></thead>
         <tbody>
           {(events ?? []).map((ev: any) => (
             <tr key={ev.id}>

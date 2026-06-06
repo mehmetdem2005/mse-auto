@@ -16,8 +16,8 @@ export default async function Lab() {
 
   return (
     <>
-      <div className="eyebrow">Autonomy</div>
-      <h1>Autonomy Lab</h1>
+      <div className="eyebrow">Otonomi</div>
+      <h1>Otonomi Lab</h1>
       <p className="sub">
         Kendi kendini iyileştiren katman: geniş sinyaller → fırsatlar → <strong>PR tabanlı</strong> kod önerileri (CI zorunlu kapı,
         düşük-risk + opt-in otomatik-merge), ve ajanın yazdığı <strong>dinamik tablolar</strong>. Birleştirilen PR'ları ara ara gözden geçir.

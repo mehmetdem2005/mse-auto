@@ -161,3 +161,8 @@ export async function runEditorialPipeline(opts: { topic: string; language?: str
 }
 
 export const REVIEWER_IDS = REVIEWERS.map((r) => r.id);
+
+/** Public metadata for the UI (no behavior) — the review board roster. */
+export const REVIEWERS_META = REVIEWERS.map((r) => ({
+  id: r.id, title: r.title, critical: r.critical, description: r.system,
+}));

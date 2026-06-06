@@ -14,24 +14,24 @@ export default async function Analytics() {
 
   return (
     <>
-      <div className="eyebrow">Performance</div>
-      <h1>Analytics</h1>
-      <p className="sub">Pulled from the YouTube Data API for your published videos.</p>
+      <div className="eyebrow">Performans</div>
+      <h1>Analitik</h1>
+      <p className="sub">Yayınlanan videoların için YouTube Data API'den çekilir.</p>
 
       <div className="grid cards">
-        <div className="card stat"><div className="n">{totals.views.toLocaleString()}</div><div className="l">Total views</div></div>
-        <div className="card stat"><div className="n">{totals.likes.toLocaleString()}</div><div className="l">Likes</div></div>
-        <div className="card stat"><div className="n">{totals.comments.toLocaleString()}</div><div className="l">Comments</div></div>
-        <div className="card stat"><div className="n">{rows.length}</div><div className="l">Videos</div></div>
+        <div className="card stat"><div className="n">{totals.views.toLocaleString()}</div><div className="l">Toplam izlenme</div></div>
+        <div className="card stat"><div className="n">{totals.likes.toLocaleString()}</div><div className="l">Beğeni</div></div>
+        <div className="card stat"><div className="n">{totals.comments.toLocaleString()}</div><div className="l">Yorum</div></div>
+        <div className="card stat"><div className="n">{rows.length}</div><div className="l">Video</div></div>
       </div>
 
       <div className="card" style={{ marginTop: 16 }}>
-        <div className="eyebrow" style={{ marginBottom: 12 }}>Views by video</div>
+        <div className="eyebrow" style={{ marginBottom: 12 }}>Videoya göre izlenme</div>
         <ViewsChart data={chart} />
       </div>
 
       <table style={{ marginTop: 20 }}>
-        <thead><tr><th>Title</th><th>Views</th><th>Likes</th><th>Comments</th></tr></thead>
+        <thead><tr><th>Başlık</th><th>İzlenme</th><th>Beğeni</th><th>Yorum</th></tr></thead>
         <tbody>
           {rows.map((r: any) => (
             <tr key={r.video_id}>
@@ -41,7 +41,7 @@ export default async function Analytics() {
               <td className="mono">{r.comments}</td>
             </tr>
           ))}
-          {!rows.length && <tr><td colSpan={4} style={{ color: "var(--muted)" }}>No data yet — publish a few videos first.</td></tr>}
+          {!rows.length && <tr><td colSpan={4} style={{ color: "var(--muted)" }}>Henüz veri yok — önce birkaç video yayınla.</td></tr>}
         </tbody>
       </table>
     </>

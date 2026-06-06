@@ -169,7 +169,7 @@ export async function synthesize(topic: string, blackboard: Blackboard, language
 export async function produceViaCrew(
   opts: { topic: string; language?: string; styleId: string; jobId?: string },
   deps: { llmTurn?: LlmTurnFn; tools?: Tool[]; gen?: GenFn; getPrompt?: (name: string, fb: string) => Promise<string>; review?: (s: ShortScript, t: string) => Promise<{ script: ShortScript; report: ReviewReport }> } = {},
-): Promise<{ script: ShortScript; report: ReviewReport & { plan?: any[]; mode: string }; usage: GenUsage }> {
+): Promise<{ script: ShortScript; report: ReviewReport & { plan?: any[]; crew?: any[]; mode: string }; usage: GenUsage }> {
   const language = opts.language || "tr";
   const getPrompt = deps.getPrompt || getActivePrompt;
   const llmTurn = deps.llmTurn || defaultGemTurn;
@@ -178,6 +178,7 @@ export async function produceViaCrew(
   const blackboard = new Blackboard(); blackboard.set("topic", opts.topic);
   const tasks = crew.managerPlan(opts.topic);
   const budget: StepBudget = { used: 0, max: STEP_BUDGET };
+  const crewLog: any[] = [];   // per-role transcript for the Agents panel
   for (const t of tasks) {
     const role = crew.roleById(t.role); if (!role) continue;
     const system = await getPrompt(`role:${role.id}`, role.system);             // auto-improved prompt swap
@@ -185,11 +186,15 @@ export async function produceViaCrew(
     try {
       const res = await runAgent({ role: role.id, system, goal: t.goal, tools, llm: llmTurn, blackboard, budget, jobId: opts.jobId, maxSteps: 6 });
       blackboard.set(`task:${t.id}`, res.result);
-    } catch (e: any) { log.warn("crew role failed", { role: role.id, err: String(e?.message || e) }); }
+      crewLog.push({ role: role.id, title: role.title, goal: t.goal, ok: true, steps: res.steps, tools: res.trace.map((x) => x.tool), output: typeof res.result === "string" ? res.result.slice(0, 4000) : res.result });
+    } catch (e: any) {
+      log.warn("crew role failed", { role: role.id, err: String(e?.message || e) });
+      crewLog.push({ role: role.id, title: role.title, goal: t.goal, ok: false, error: String(e?.message || e) });
+    }
   }
   const { script, usage } = await synthesize(opts.topic, blackboard, language, opts.styleId, deps.gen);
   const { script: reviewed, report } = await review(script, opts.topic);
-  return { script: reviewed, report: { ...report, plan: tasks, mode: "crew" }, usage };
+  return { script: reviewed, report: { ...report, plan: tasks, crew: crewLog, mode: "crew" }, usage };
 }
 
 /** Single entrypoint. guardrail → (resume) → plan → swarm → replan? → synth → board; falls back to board. */

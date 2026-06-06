@@ -14,27 +14,26 @@ export default async function Queue() {
 
   return (
     <>
-      <div className="eyebrow">Editorial gate</div>
-      <h1>Queue / Approval</h1>
+      <div className="eyebrow">Editöryel kapı</div>
+      <h1>Kuyruk / Onay</h1>
       <p className="sub">
-        The pipeline drafts, fact-checks and styles each Short, then stops here for your call.
-        This editorial step is the single most important thing keeping the channel out of YouTube's
-        inauthentic-content sweep.
+        Pipeline her Short'u yazar, olgularını doğrular ve biçimlendirir; sonra senin kararın için burada
+        durur. Bu editöryel adım, kanalı YouTube'un sahte/yığın içerik taramasından uzak tutan en önemli şeydir.
       </p>
 
       {(jobs ?? []).map((j: any) => <ApprovalCard key={j.id} job={j} />)}
-      {!jobs?.length && <div className="card" style={{ color: "var(--muted)" }}>Nothing awaiting review. The worker will draft the next one.</div>}
+      {!jobs?.length && <div className="card" style={{ color: "var(--muted)" }}>İnceleme bekleyen yok. Worker bir sonrakini hazırlayacak.</div>}
 
-      <h2 style={{ marginTop: 36, fontWeight: 500 }}>Recent pipeline</h2>
+      <h2 style={{ marginTop: 36, fontWeight: 500 }}>Son pipeline</h2>
       <table>
-        <thead><tr><th>Topic</th><th>Stage</th><th>When</th><th>Video</th></tr></thead>
+        <thead><tr><th>Konu</th><th>Aşama</th><th>Ne zaman</th><th>Video</th></tr></thead>
         <tbody>
           {(rest ?? []).map((r: any) => (
             <tr key={r.id}>
               <td>{r.topic}</td>
               <td><span className={`badge ${r.stage === "published" ? "good" : r.stage === "failed" ? "bad" : ""}`}>{r.stage}</span></td>
               <td className="mono">{r.scheduled_for ? new Date(r.scheduled_for).toLocaleString() : "—"}</td>
-              <td className="mono">{r.youtube_video_id ? <a href={`https://youtube.com/watch?v=${r.youtube_video_id}`} style={{ color: "var(--accent)" }}>open ↗</a> : "—"}</td>
+              <td className="mono">{r.youtube_video_id ? <a href={`https://youtube.com/watch?v=${r.youtube_video_id}`} style={{ color: "var(--accent)" }}>aç ↗</a> : "—"}</td>
             </tr>
           ))}
         </tbody>

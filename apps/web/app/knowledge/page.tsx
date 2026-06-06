@@ -7,25 +7,31 @@ export default async function Knowledge() {
   const { data } = await db.from("knowledge").select("id,topic,source_title,verified").order("created_at", { ascending: false }).limit(100);
   return (
     <>
-      <div className="eyebrow">Grounding source</div>
-      <h1>Knowledge (RAG)</h1>
+      <div className="eyebrow">Dayanak kaynağı</div>
+      <h1>Bilgi (RAG)</h1>
       <p className="sub">
-        Every script is grounded in these verified facts (embedded with gemini-embedding-001, stored in
-        Supabase pgvector, retrieved by cosine similarity). Only <b>verified</b> chunks are ever used —
-        that is the anti-misinformation guard.
+        Her senaryo bu doğrulanmış olgulara dayandırılır (gemini-embedding-001 ile gömülür, Supabase
+        pgvector'da saklanır, kosinüs benzerliğiyle getirilir). Yalnızca <b>doğrulanmış</b> parçalar
+        kullanılır — yanlış bilgiye karşı koruma budur.
       </p>
+      <div className="notice" style={{ marginBottom: 18 }}>
+        <b>Elle girmek zorunda değilsin.</b> Üretim ekibindeki <b>araştırmacı</b> ve <b>trend avcısı</b> ajanlar
+        her turda konuları kendileri bulur ve web araştırmasıyla olguları toplar; "Rakip Analisti" rakip
+        kanallardan içgörü çıkarır. Aşağıdaki form sadece <i>opsiyonel</i> — kendi doğruladığın bir kaynağı
+        elle eklemek istersen kullan.
+      </div>
       <AddKnowledge />
       <table style={{ marginTop: 20 }}>
-        <thead><tr><th>Topic</th><th>Source</th><th>Verified</th></tr></thead>
+        <thead><tr><th>Konu</th><th>Kaynak</th><th>Doğrulama</th></tr></thead>
         <tbody>
           {(data ?? []).map((k: any) => (
             <tr key={k.id}>
               <td>{k.topic}</td>
               <td className="mono" style={{ color: "var(--muted)" }}>{k.source_title}</td>
-              <td><span className={`badge ${k.verified ? "good" : "bad"}`}>{k.verified ? "verified" : "unverified"}</span></td>
+              <td><span className={`badge ${k.verified ? "good" : "bad"}`}>{k.verified ? "doğrulandı" : "doğrulanmadı"}</span></td>
             </tr>
           ))}
-          {!data?.length && <tr><td colSpan={3} style={{ color: "var(--muted)" }}>Empty. Run the seed script or add chunks above.</td></tr>}
+          {!data?.length && <tr><td colSpan={3} style={{ color: "var(--muted)" }}>Boş. Tohumlama betiğini çalıştır ya da yukarıdan parça ekle.</td></tr>}
         </tbody>
       </table>
     </>
