@@ -10,7 +10,8 @@ import { log } from "./logger.js";
 export type EventType =
   | "created" | "stage_enter" | "stage_ok" | "retry" | "error" | "dead_letter"
   | "approved" | "rejected" | "uploaded" | "budget_pause" | "control_pause" | "control_resume"
-  | "lock_acquired" | "lock_expired" | "usage";
+  | "lock_acquired" | "lock_expired" | "usage"
+  | "rate_limited_resume" | "self_improvement";
 
 export async function logEvent(args: {
   jobId?: string;

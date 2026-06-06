@@ -43,7 +43,7 @@ export interface KnowledgeChunk {
 
 export interface MemoryEntry {
   id: string;
-  kind: "preference" | "fact" | "performance_insight" | "used_topic" | "strategy_note";
+  kind: "preference" | "fact" | "performance_insight" | "used_topic" | "strategy_note" | "competitor_insight";
   content: string;
   created_at: string;
   embedding?: number[];

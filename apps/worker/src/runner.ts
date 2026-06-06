@@ -126,7 +126,11 @@ async function upload(job: any) {
   return { next: "published", patch: { youtube_video_id: id }, uploaded: true };
 }
 
-function dispatch(job: any, cfg: ChannelConfig) {
+// Common shape returned by every stage handler (the stage branches differ in their patch
+// fields, so type the union loosely to keep dispatch's inferred return type consistent).
+type StageResult = { next: string; patch?: Record<string, any>; uploaded?: boolean };
+
+function dispatch(job: any, cfg: ChannelConfig): Promise<StageResult> {
   switch (job.stage) {
     case "queued": return reliability.withTimeout(() => draft(job, cfg), TIMEOUTS.draft, "draft");
     case "approved": return reliability.withTimeout(() => render(job, cfg), TIMEOUTS.render, "render");
@@ -135,7 +139,7 @@ function dispatch(job: any, cfg: ChannelConfig) {
   }
 }
 
-async function process(job: any, cfg: ChannelConfig) {
+async function processJob(job: any, cfg: ChannelConfig) {
   const traceId = job.trace_id || newTraceId();
   const stage = job.stage;
   try {
@@ -335,7 +339,7 @@ export async function tick() {
     const job = await reliability.claimNextJob();
     if (!job) break;
     await events.logEvent({ jobId: job.id, traceId: job.trace_id, stage: job.stage, type: "lock_acquired", data: { worker: WORKER } });
-    await process(job, cfg);
+    await processJob(job, cfg);
   }
 
   await refreshAnalytics().catch((e) => log.error("analytics failed", { err: String(e?.message || e) }));
