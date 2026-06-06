@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 
-export const metadata = { title: "Auto-Shorts Studio", description: "Private autonomous Shorts pipeline" };
+export const metadata = { title: "ShortsPilot", description: "Autonomous Shorts pipeline — control panel" };
 
 const NAV = [
   { href: "/", label: "Dashboard", k: "01" },
@@ -20,8 +20,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <div className="shell">
           <aside className="side">
-            <div className="brand">AUTO·<b>SHORTS</b></div>
-            <div className="tag">PRIVATE PIPELINE</div>
+            <div className="brand">SHORTS·<b>PILOT</b></div>
+            <div className="tag">CONTROL PANEL</div>
             <nav className="nav">
               {NAV.map((n) => (
                 <a key={n.href} href={n.href}>
