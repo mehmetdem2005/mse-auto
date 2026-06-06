@@ -79,16 +79,24 @@ const Env = z.object({
 
 // Validate lazily so importing the lib in a context missing some keys (e.g. the web's
 // read-only pages) doesn't crash; call assertEnv() in entrypoints (worker, route handlers).
+// Relaxed schema: the two "required" fields fall back to "" so read paths (and `next build`
+// page-data collection) never crash. Downstream Gemini/Supabase calls surface their own
+// errors at runtime if the values are actually missing. Use assertEnv() to fail fast.
+const RelaxedEnv = Env.extend({
+  GEMINI_API_KEY: z.string().default(""),
+  SUPABASE_URL: z.string().default(""),
+});
+
 let cached: z.infer<typeof Env> | null = null;
 export function env() {
   if (cached) return cached;
   const parsed = Env.safeParse(process.env);
-  if (!parsed.success) {
-    // partial defaults still usable for read paths; log the problems.
-    console.warn("[env] validation issues:", parsed.error.flatten().fieldErrors);
-    cached = Env.parse({ ...process.env }); // throws only on truly required missing
-  } else {
+  if (parsed.success) {
     cached = parsed.data;
+  } else {
+    // partial defaults still usable for read paths; log the problems and never throw.
+    console.warn("[env] validation issues:", parsed.error.flatten().fieldErrors);
+    cached = RelaxedEnv.parse(process.env) as z.infer<typeof Env>;
   }
   return cached!;
 }

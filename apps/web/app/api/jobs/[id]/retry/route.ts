@@ -2,8 +2,9 @@ import { db } from "@/lib/supabaseServer";
 import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const { data: job } = await db.from("video_jobs").select("*").eq("id", params.id).single();
+export async function POST(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { data: job } = await db.from("video_jobs").select("*").eq("id", id).single();
   if (!job) return NextResponse.json({ error: "not found" }, { status: 404 });
   // Resume from the furthest completed point.
   let stage = "queued";
@@ -13,6 +14,6 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     stage, attempts: 0, locked_by: null, locked_until: null,
     next_run_at: new Date().toISOString(), last_error: null,
     scheduled_for: stage === "scheduled" ? new Date().toISOString() : job.scheduled_for,
-  }).eq("id", params.id);
+  }).eq("id", id);
   return NextResponse.json({ ok: true, stage });
 }
