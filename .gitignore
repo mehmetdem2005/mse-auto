@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+.npm/
+
+# env / secrets — NEVER commit real keys
+.env
+.env.*
+!.env.example
+
+# build output
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# worker scratch / media
+/tmp/shorts/
+remotion/out/
+
+# vercel / platform
+.vercel/
+.render/
+
+# logs & os
+*.log
+.DS_Store

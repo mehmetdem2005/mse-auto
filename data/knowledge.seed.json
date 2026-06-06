@@ -1,0 +1,58 @@
+[
+  {
+    "id": "k_salad_oil",
+    "topic": "The Great Salad Oil Swindle (1963)",
+    "text": "Tino De Angelis, a Bronx ex-butcher, ran Allied Crude Vegetable Oil and borrowed from banks against soybean-oil inventory. His tanks were mostly seawater with a thin oil layer floating on top, so inspectors saw 'full' tanks. He also forged American Express warehouse receipts, pledging ~1.8 billion pounds of oil when actual stock was ~110 million pounds. When soybean prices crashed in Nov 1963 the scheme collapsed; losses ~175-180M USD hit American Express, Bank of America and others. AmEx stock dropped and a young Warren Buffett bought ~5%. De Angelis got 7 years.",
+    "source_title": "Wikipedia: Salad oil scandal / MoneyWeek / Crossing Wall Street",
+    "source_url": "https://en.wikipedia.org/wiki/Salad_oil_scandal",
+    "verified": true
+  },
+  {
+    "id": "k_portuguese_notes",
+    "topic": "Portuguese Bank Note Crisis (1925)",
+    "text": "Artur Alves dos Reis forged contracts and signatures purporting to authorize new 500-escudo notes for colonial Angola, then convinced Waterlow & Sons in London — the firm that printed Portugal's real currency — to print 200,000 genuine notes using the official plates, total face value 100 million escudos (~0.88% of Portugal's GDP). They were real notes, not counterfeits. He planned to buy a controlling stake in the Bank of Portugal to legitimize it. Exposed by chance when investigators noticed duplicate serial numbers. Reis sentenced to 20 years; the Bank of Portugal sued Waterlow and won.",
+    "source_title": "Wikipedia / PMG / Portugal.com",
+    "source_url": "https://en.wikipedia.org/wiki/Portuguese_Bank_Note_Crisis",
+    "verified": true
+  },
+  {
+    "id": "k_ada_blackjack",
+    "topic": "Ada Blackjack, sole survivor of Wrangel Island (1921-1923)",
+    "text": "Ada Blackjack, a 25-year-old Inupiat seamstress with no survival experience, joined Stefansson's 1921 expedition to claim Arctic Wrangel Island for Britain: four men, Ada, and a cat named Vic. Game ran out and the relief ship couldn't break through the ice. Three men left to find help in Jan 1923 and were never seen again; the remaining man died of scurvy in June 1923. Ada survived alone, teaching herself to shoot and trap and defending camp from polar bears, until rescue in Aug 1923. Dubbed 'the female Robinson Crusoe.' She was never paid in full and didn't profit from the books written about her.",
+    "source_title": "History.com / US National Park Service / Anchorage Museum",
+    "source_url": "https://www.history.com/articles/ada-blackjack-inuit-wrangel-island",
+    "verified": true
+  },
+  {
+    "id": "k_pig_war",
+    "topic": "The Pig War (1859)",
+    "text": "On San Juan Island (disputed by the US and Britain under an ambiguous 1846 treaty), American farmer Lyman Cutlar shot a pig owned by the Hudson's Bay Company that was eating his potatoes on 15 June 1859. The dispute escalated into a 13-year standoff with US troops under George Pickett and British warships, hundreds of soldiers — but not a single shot was fired. It was finally settled by arbitration by Kaiser Wilhelm I of Germany in 1872, awarding the island to the US. The only casualty was the pig.",
+    "source_title": "HistoryLink / Canadian Encyclopedia / NPS",
+    "source_url": "https://www.thecanadianencyclopedia.ca/en/article/pig-war",
+    "verified": true
+  },
+  {
+    "id": "k_acoustic_kitty",
+    "topic": "CIA Project Acoustic Kitty (1960s)",
+    "text": "During the Cold War the CIA's Directorate of Science and Technology surgically implanted a microphone in a cat's ear canal, a transmitter at the base of its skull and an antenna woven into its fur, to eavesdrop on Soviet officials. Reported cost ~10-20M USD. It failed because cats wander off (they even did extra surgery to suppress the hunger drive). A widely-told (but disputed) anecdote says the first test cat was killed by a taxi near a Soviet compound; a former CIA officer says the cat survived and the program simply proved impractical. Cancelled 1967, declassified 2001.",
+    "source_title": "Declassified CIA documents (2001) / National Security Archive",
+    "source_url": "https://en.wikipedia.org/wiki/Acoustic_Kitty",
+    "verified": true
+  },
+  {
+    "id": "k_demon_core",
+    "topic": "The Demon Core (1945-1946)",
+    "text": "A 6.2 kg plutonium core at Los Alamos, intended for a third atomic bomb but unused after Japan surrendered, killed two scientists in separate criticality accidents. On 21 Aug 1945 Harry Daghlian dropped a tungsten-carbide neutron-reflector brick onto it; it went supercritical with a blue flash and he died ~25 days later. On 21 May 1946 Louis Slotin was holding two beryllium hemispheres apart with a screwdriver ('tickling the dragon's tail') when it slipped; the core went supercritical, and although Slotin pulled the halves apart and saved the other seven people in the room, he received a lethal dose and died 9 days later. The core was nicknamed the 'Demon Core' and later melted down.",
+    "source_title": "Wikipedia / American Physical Society / Atomic Heritage",
+    "source_url": "https://en.wikipedia.org/wiki/Demon_core",
+    "verified": true
+  },
+  {
+    "id": "k_yamaguchi",
+    "topic": "Tsutomu Yamaguchi, survivor of both atomic bombs",
+    "text": "Tsutomu Yamaguchi was in Hiroshima on business on 6 Aug 1945 and survived the bomb, then returned home to Nagasaki and survived the second bomb on 9 Aug 1945. He is the only person officially recognized by Japan as a survivor of both atomic bombings (a nijuu hibakusha). He lived to 93.",
+    "source_title": "Wikipedia / BBC",
+    "source_url": "https://en.wikipedia.org/wiki/Tsutomu_Yamaguchi",
+    "verified": true
+  }
+]

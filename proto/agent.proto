@@ -1,0 +1,13 @@
+// Protobuf IDL for inter-agent messaging (gRPC transport for distributed deploy).  [v1.2]
+syntax = "proto3";
+package studio;
+
+message Part { string type = 1; string text = 2; }
+message AgentMessage { string task_id = 1; string role = 2; repeated Part parts = 3; }
+message AgentTask { string id = 1; string skill = 2; AgentMessage input = 3; }
+message Bid { string worker = 1; double cost = 2; double confidence = 3; }
+
+service AgentService {
+  rpc Send (AgentTask) returns (AgentMessage);
+  rpc Bid  (AgentTask) returns (Bid);
+}
