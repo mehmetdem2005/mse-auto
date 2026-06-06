@@ -50,6 +50,12 @@ export async function generate(opts: {
   if (opts.search) tools.push({ googleSearch: {} });
   if (opts.functions?.length) tools.push({ functionDeclarations: opts.functions });
 
+  // Gemini 2.5 rejects structured output (JSON mime / responseSchema) when tools
+  // (google_search grounding or function calling) are present. Prefer the tools and
+  // let callers parse JSON from text (they all have a {...} regex fallback). The system
+  // prompts already instruct "SADECE JSON".
+  const wantStructured = Boolean(opts.json || opts.responseSchema) && tools.length === 0;
+
   const model = opts.model || MODELS.text;
   const resource = model === MODELS.reasoning ? "gemini-reasoning" : "gemini-text";
   await limiter.acquire(resource, { tokens: Math.ceil((opts.prompt.length + (opts.system?.length ?? 0)) / 4) });
@@ -60,8 +66,8 @@ export async function generate(opts: {
     config: {
       systemInstruction: opts.system,
       tools: tools.length ? tools : undefined,
-      responseMimeType: opts.json || opts.responseSchema ? "application/json" : undefined,
-      responseSchema: opts.responseSchema as any,
+      responseMimeType: wantStructured ? "application/json" : undefined,
+      responseSchema: wantStructured ? (opts.responseSchema as any) : undefined,
       thinkingConfig: opts.thinkingLevel ? ({ thinkingLevel: opts.thinkingLevel.toUpperCase() } as any) : undefined,
     },
   });
