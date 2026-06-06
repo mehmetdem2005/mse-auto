@@ -117,9 +117,10 @@ export const COST = {
 };
 
 // Stage timeouts (ms) — a hung external call must not freeze the pipeline.
+// Configurable: free-tier Gemini is rate-limited, so the multi-agent draft can be slow.
 export const TIMEOUTS = {
-  draft: 120_000,
-  render: 300_000,
-  upload: 600_000,
+  draft: Number(process.env.DRAFT_TIMEOUT_MS || 300_000),
+  render: Number(process.env.RENDER_TIMEOUT_MS || 300_000),
+  upload: Number(process.env.UPLOAD_TIMEOUT_MS || 600_000),
   analytics: 60_000,
 };

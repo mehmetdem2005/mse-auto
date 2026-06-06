@@ -1,4 +1,5 @@
 import { db } from "@/lib/supabaseServer";
+import RunNow from "@/components/RunNow";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,8 @@ export default async function Dashboard() {
       <div className="eyebrow">Genel bakış</div>
       <h1>Panel</h1>
       <p className="sub">Otonom pipeline durumu. Sen onaylarsın, gerisini sistem yapar.</p>
+
+      <RunNow initialReview={c.needs_review} />
 
       <div className="notice">
         <b>Hayatta kalma modu açık.</b> YouTube, Ocak 2026'da tamamen otomatik binlerce yapay zekâ
