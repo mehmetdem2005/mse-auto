@@ -78,7 +78,7 @@ function artifactBlock(s: ShortScript): string {
 
 async function reviewerCall(r: Reviewer, script: ShortScript): Promise<Verdict> {
   try {
-    const res = await generate({ model: REVIEW_MODEL, system: r.system, prompt: artifactBlock(script), responseSchema: VERDICT_SCHEMA, search: r.useSearch });
+    const res = await generate({ model: REVIEW_MODEL, system: r.system, prompt: artifactBlock(script), responseSchema: VERDICT_SCHEMA, search: r.useSearch && process.env.REVIEW_NO_SEARCH !== "on" });
     await recordUsage("text", res.usage.totalTokens || 1);
     let v: any;
     try { v = JSON.parse(res.text); } catch { const m = res.text.match(/\{[\s\S]*\}/); v = m ? JSON.parse(m[0]) : {}; }
@@ -94,9 +94,16 @@ async function reviewerCall(r: Reviewer, script: ShortScript): Promise<Verdict> 
   }
 }
 
-/** Run the full board in parallel (the rate limiter paces the underlying calls). */
+// Free-tier lean mode: BOARD_REVIEWERS (csv of ids) limits which auditors run, cutting
+// Gemini calls per draft. Default = full 6-member board.
+const ACTIVE_REVIEWERS = process.env.BOARD_REVIEWERS
+  ? REVIEWERS.filter((r) => process.env.BOARD_REVIEWERS!.split(",").map((s) => s.trim()).includes(r.id))
+  : REVIEWERS;
+
+/** Run the board in parallel (the rate limiter paces the underlying calls). */
 export async function reviewBoard(script: ShortScript): Promise<Verdict[]> {
-  return Promise.all(REVIEWERS.map((r) => reviewerCall(r, script)));
+  const board = ACTIVE_REVIEWERS.length ? ACTIVE_REVIEWERS : REVIEWERS;
+  return Promise.all(board.map((r) => reviewerCall(r, script)));
 }
 
 /** Chief Editor consolidation — PURE & testable. Critical reviewers can veto. */
@@ -142,14 +149,16 @@ export async function reviewLoop(script: ShortScript, topic: string): Promise<{ 
   for (let round = 1; round <= MAX_ROUNDS + 1; round++) {
     rounds = round;
     verdicts = await reviewBoard(script);
-    decision = consolidate(verdicts);
+    decision = consolidate(verdicts, Math.min(QUORUM, verdicts.length || 1));
     log.info("review round", { round, verdict: decision.verdict, score: decision.score, passCount: decision.passCount, blockers: decision.blockers });
     if (decision.verdict === "approve" || decision.verdict === "blocked") break;
     if (round > MAX_ROUNDS) break;                 // revise budget exhausted → escalate to human
     script = await revise(script, decision.fixes);  // delegate fixes DOWN, then re-review
   }
-  const note = await editorNote(topic, decision, verdicts);
-  return { script, report: { rounds, reviewerCount: REVIEWERS.length, quorum: QUORUM, decision, verdicts, editor_note: note } };
+  const note = process.env.SKIP_EDITOR_NOTE === "on"
+    ? `Karar: ${decision.verdict} · skor ${decision.score} · ${decision.passCount}/${verdicts.length} onay`
+    : await editorNote(topic, decision, verdicts);
+  return { script, report: { rounds, reviewerCount: verdicts.length, quorum: Math.min(QUORUM, verdicts.length || 1), decision, verdicts, editor_note: note } };
 }
 
 /** Orchestrate produce → review board → consolidate → (revise loop) → report. */
