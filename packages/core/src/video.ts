@@ -30,29 +30,42 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   const dir = join(WORK, jobId);
   await mkdir(dir, { recursive: true });
 
+  const audioSec = script.estDurationSec || 50;
+
   // 1) Narration (Gemini TTS) – style steered per the chosen styleId.
+  //    Free-tier fallback: if TTS is unavailable, render a silent track so the video still builds.
   const voiceStyle = script.styleId.includes("narrator")
     ? script.styleId
     : "warm documentary narrator, unhurried";
-  const audio = await tts({ text: script.narrationText, styleInstruction: voiceStyle });
   const audioPath = join(dir, "narration.wav");
-  await writeFile(audioPath, audio);
+  try {
+    const audio = await tts({ text: script.narrationText, styleInstruction: voiceStyle });
+    await writeFile(audioPath, audio);
+  } catch {
+    await run("ffmpeg", ["-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", "-t", String(audioSec), audioPath]);
+  }
 
   // 2) One original image per beat.
+  //    Free-tier fallback: if image generation is quota-blocked, use an ffmpeg gradient background.
+  const PALETTE = [["0x10243f", "0x2a1840"], ["0x1c1c2e", "0x3a2a10"], ["0x0e2a2a", "0x2a0e1e"], ["0x24201a", "0x10202c"], ["0x281020", "0x102820"]];
   const imgPaths: string[] = [];
   const prompts = script.visualPrompts.length ? script.visualPrompts : script.beats;
   for (let i = 0; i < prompts.length; i++) {
-    const b64 = await generateImage(
-      `${prompts[i]} — vertical 9:16 composition, cinematic, original illustration, no text, no real logos or real people`,
-    );
     const p = join(dir, `img${i}.png`);
-    await writeFile(p, Buffer.from(b64, "base64"));
+    try {
+      const b64 = await generateImage(
+        `${prompts[i]} — vertical 9:16 composition, cinematic, original illustration, no text, no real logos or real people`,
+      );
+      await writeFile(p, Buffer.from(b64, "base64"));
+    } catch {
+      const [c0, c1] = PALETTE[i % PALETTE.length];
+      await run("ffmpeg", ["-y", "-f", "lavfi", "-i", `gradients=s=1080x1920:c0=${c0}:c1=${c1}:x0=0:y0=0:x1=1080:y1=1920:duration=1`, "-frames:v", "1", p]);
+    }
     imgPaths.push(p);
   }
 
   // 3) Determine per-image duration from narration length (approx) and build ffmpeg inputs.
   //    For exact timing, measure audio duration with ffprobe; here we split evenly.
-  const audioSec = script.estDurationSec || 50;
   const per = Math.max(2, audioSec / imgPaths.length);
 
   // Build a concat of Ken-Burns clips, then overlay captions, then mux audio.
@@ -73,8 +86,9 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   // Caption: show the hook for the first ~2.5s, then on-screen lines. Simplest robust
   // approach = a drawtext for the hook; full per-beat subtitling lives in the Remotion path.
   const safeHook = script.hook.replace(/[:\\']/g, " ").slice(0, 60);
+  const FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
   const caption =
-    `[vid]drawtext=text='${safeHook}':fontcolor=white:fontsize=64:box=1:boxcolor=black@0.5:` +
+    `[vid]drawtext=fontfile=${FONT}:text='${safeHook}':fontcolor=white:fontsize=64:box=1:boxcolor=black@0.5:` +
     `boxborderw=20:x=(w-text_w)/2:y=h*0.12:enable='lt(t,2.5)'[out]`;
 
   const videoPath = join(dir, "short.mp4");
