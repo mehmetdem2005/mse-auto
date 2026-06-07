@@ -85,11 +85,12 @@ export async function vertexImage(prompt: string, refB64?: string): Promise<stri
   const generationConfig = { responseModalities: ["TEXT", "IMAGE"] };
 
   if (PROXY_URL) {
-    const r = await fetch(`${PROXY_URL}/image`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Proxy-Secret": PROXY_SECRET },
-      body: JSON.stringify({ location: LOCATION, model: IMAGE_MODEL, contents, generationConfig }),
-    });
+    const body = JSON.stringify({ location: LOCATION, model: IMAGE_MODEL, contents, generationConfig });
+    const headers = { "Content-Type": "application/json", "X-Proxy-Secret": PROXY_SECRET };
+    // Prefer /image (this repo's proxy). Fall back to the proxy root "/" so an older image-only
+    // proxy (which serves generateContent at "/") keeps working without a redeploy.
+    let r = await fetch(`${PROXY_URL}/image`, { method: "POST", headers, body });
+    if (r.status === 404) r = await fetch(`${PROXY_URL}/`, { method: "POST", headers, body });
     if (!r.ok) throw new Error(`Vertex proxy image ${r.status}: ${(await r.text()).slice(0, 220)}`);
     return imgFromVertexJson(await r.json());
   }
