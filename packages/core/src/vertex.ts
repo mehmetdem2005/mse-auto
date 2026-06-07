@@ -30,7 +30,7 @@ const LOCATION = process.env.VERTEX_LOCATION || "us-central1";
 // Some models (e.g. Nano Banana Pro / gemini-3-pro-image-preview) are only served from "global".
 // global → regionless host; otherwise the regional host. (Matches the proven Cloud Run proxy.)
 const AIPLATFORM_HOST = LOCATION === "global" ? "aiplatform.googleapis.com" : `${LOCATION}-aiplatform.googleapis.com`;
-const IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || "gemini-2.5-flash-image-preview";
+const IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || "gemini-2.5-flash-image";
 const TTS_LANG = process.env.GCP_TTS_LANG || "tr-TR";
 // Chirp 3 HD voices are named after stars. Charon = grounded, confident male (documentary tone).
 const TTS_VOICE = process.env.GCP_TTS_VOICE || "tr-TR-Chirp3-HD-Charon";
