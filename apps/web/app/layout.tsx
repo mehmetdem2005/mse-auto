@@ -4,16 +4,15 @@ import type { ReactNode } from "react";
 export const metadata = { title: "ShortsPilot", description: "Autonomous Shorts pipeline — control panel" };
 
 const NAV = [
-  { href: "/", label: "Panel", k: "01" },
-  { href: "/asistan", label: "Asistan", k: "02" },
+  { href: "/agents", label: "Komuta Merkezi", k: "01" },
+  { href: "/", label: "Panel", k: "02" },
   { href: "/queue", label: "Kuyruk / Onay", k: "03" },
-  { href: "/agents", label: "Ajanlar", k: "04" },
-  { href: "/knowledge", label: "Bilgi (RAG)", k: "05" },
-  { href: "/memory", label: "Hafıza", k: "06" },
-  { href: "/analytics", label: "Analitik", k: "07" },
-  { href: "/observability", label: "İzleme", k: "08" },
-  { href: "/lab", label: "Otonomi Lab", k: "09" },
-  { href: "/settings", label: "Ayarlar", k: "10" },
+  { href: "/knowledge", label: "Bilgi (RAG)", k: "04" },
+  { href: "/memory", label: "Hafıza", k: "05" },
+  { href: "/analytics", label: "Analitik", k: "06" },
+  { href: "/observability", label: "İzleme", k: "07" },
+  { href: "/lab", label: "Otonomi Lab", k: "08" },
+  { href: "/settings", label: "Ayarlar", k: "09" },
 ];
 
 export default function RootLayout({ children }: { children: ReactNode }) {

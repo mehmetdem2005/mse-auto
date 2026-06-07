@@ -1,20 +1,9 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
-type Roster = { id: string; title: string; description: string; critical?: boolean };
-type Feed = {
-  roster: { crew: Roster[]; board: Roster[] };
-  status: Record<string, { status: string; task: string; updated_at: string }>;
-  job: { topic: string; stage: string; updated_at: string } | null;
-  review: any;
-  trace: any[];
-  resources: any;
-};
+// ── single-page command center: orbiting agents on top, chat (with inline panels) below,
+//    always-on voice via OpenAI Whisper (STT) + OpenAI onyx (TTS). No Google speech. ──
 
-const LABEL: Record<string, string> = { run: "çalışıyor", pass: "geçti", fail: "kaldı / veto", ran: "çalıştı", idle: "beklemede" };
-// per-agent line icons (24x24, stroked) — matches the design references' node glyphs
 const ICON: Record<string, string> = {
   manager: "M12 2l9 5v10l-9 5-9-5V7z", trend_scout: "M3 17l6-6 4 4 8-8M21 7v4h-4",
   competitor_analyst: "M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z", hook_writer: "M13 2L3 14h7l-1 8 10-12h-7z",
@@ -27,268 +16,207 @@ const ICON: Record<string, string> = {
   language: "M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2c3 4 3 16 0 20M12 2c-3 4-3 16 0 20",
 };
 const ic = (id: string) => ICON[id] || "M12 2l9 5v10l-9 5-9-5V7z";
-const lineColor = (s: string) => s === "run" ? "rgba(34,211,238,.95)" : s === "pass" ? "rgba(70,211,154,.6)" : s === "fail" ? "rgba(255,93,93,.6)" : s === "ran" ? "rgba(255,176,46,.55)" : "rgba(34,211,238,.22)";
+const lineColor = (s: string) => s === "run" ? "rgba(0,217,255,.95)" : s === "pass" ? "rgba(0,240,168,.6)" : s === "fail" ? "rgba(255,59,69,.6)" : s === "ran" ? "rgba(255,138,28,.55)" : "rgba(0,217,255,.22)";
 const place = (i: number, n: number, r: number) => { const a = (-90 + (i * 360) / n) * (Math.PI / 180); return { x: 50 + r * Math.cos(a), y: 50 + r * Math.sin(a) }; };
 const fresh = (t: string) => Date.now() - new Date(t).getTime() < 10 * 60_000;
 const liveCls = (s: string) => (s === "running" || s === "planning" || s === "waiting" || s === "needs_user_approval") ? "run" : s === "completed" ? "ran" : (s === "failed" || s === "blocked") ? "fail" : "idle";
 
+type Msg = { role: "user" | "assistant"; content: string } | { role: "panel"; panel: { type: string; data: any } };
+
 export default function AgentBoard() {
-  const [d, setD] = useState<Feed | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
-  const [err, setErr] = useState(false);
-  const [tab, setTab] = useState<"core" | "sys" | "active" | "log">("core");
-  const router = useRouter();
+  const [feed, setFeed] = useState<any>(null);
+  const [msgs, setMsgs] = useState<Msg[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [sugs, setSugs] = useState<string[]>([]);
+  const [input, setInput] = useState("");
   const [vState, setVState] = useState<"off" | "listening" | "thinking" | "speaking">("off");
   const [heard, setHeard] = useState("");
-  const [said, setSaid] = useState("");
-  const recRef = useRef<any>(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const onRef = useRef(false);
   const speakingRef = useRef(false);
+  const mediaRef = useRef<{ stream: MediaStream; rec: MediaRecorder; ctx: AudioContext } | null>(null);
 
-  useEffect(() => () => { onRef.current = false; try { recRef.current?.stop(); } catch {} try { audioRef.current?.pause(); } catch {} }, []);
+  // poll live agent states for the holo
+  useEffect(() => {
+    let on = true;
+    const t = async () => { try { const r = await fetch("/api/agents", { cache: "no-store" }); if (on) setFeed(await r.json()); } catch {} };
+    t(); const iv = setInterval(t, 4000); return () => { on = false; clearInterval(iv); };
+  }, []);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+  useEffect(() => { greet(); return () => stopVoice(); }, []); // eslint-disable-line
 
+  const crew = feed?.roster?.crew ?? [];
+  const board = feed?.roster?.board ?? [];
+  const status = feed?.status ?? {};
+  const review = feed?.review;
+  const res = feed?.resources ?? {};
+  const live = !!res.live;
+
+  const statusOf = (id: string, group: string) => {
+    const l = status[id];
+    if (l && fresh(l.updated_at)) return liveCls(l.status);
+    if (group === "board") { const v = (review?.verdicts ?? []).find((x: any) => x.role === id); if (v) return v.pass ? "pass" : "fail"; }
+    else { const lg = (review?.crew ?? []).find((x: any) => x.role === id); if (lg) return lg.ok === false ? "fail" : "ran"; }
+    return "idle";
+  };
+  const crewPos = crew.map((a: any, i: number) => ({ a, cls: statusOf(a.id, "crew"), ...place(i, crew.length || 1, 31) }));
+  const boardPos = board.map((a: any, i: number) => ({ a, cls: statusOf(a.id, "board"), ...place(i, board.length || 1, 47) }));
+  const all = [...crewPos, ...boardPos];
+  const ticks = useMemo(() => { const out: any[] = []; for (let k = 0; k < 72; k++) { const a = (k * 5) * Math.PI / 180, big = k % 6 === 0, r1 = big ? 46.5 : 47.6; out.push({ x1: 50 + r1 * Math.cos(a), y1: 50 + r1 * Math.sin(a), x2: 50 + 49 * Math.cos(a), y2: 50 + 49 * Math.sin(a), o: big ? 0.5 : 0.22 }); } return out; }, []);
+
+  // ── voice (Whisper STT + onyx TTS), always-on once started ──
   function speak(text: string): Promise<void> {
     return new Promise(async (resolve) => {
       try {
         const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
         if (!r.ok) return resolve();
         const a = new Audio(URL.createObjectURL(await r.blob())); audioRef.current = a;
-        a.onended = () => resolve(); a.onerror = () => resolve();
-        a.play().catch(() => resolve());
+        a.onended = () => resolve(); a.onerror = () => resolve(); a.play().catch(() => resolve());
       } catch { resolve(); }
     });
   }
-  async function handleUtterance(text: string) {
-    if (!text.trim()) return;
-    try { recRef.current?.stop(); } catch {}
-    setVState("thinking"); setHeard(text);
-    let reply = "", action: any = null;
-    try {
-      const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
-      const j = await r.json(); reply = j.reply || "…"; action = j.action;
-    } catch { reply = "Bağlantı hatası."; }
-    setSaid(reply);
-    if (action?.type === "navigate" && action.to) setTimeout(() => router.push(action.to), 1000);
-    if (action?.type === "run") fetch("/api/run", { method: "POST" }).catch(() => {});
-    setVState("speaking"); speakingRef.current = true;
-    await speak(reply);
-    speakingRef.current = false;
-    if (onRef.current) { setVState("listening"); try { recRef.current?.start(); } catch {} } else setVState("off");
+  async function transcribe(blob: Blob) {
+    if (blob.size < 1200) return;                       // ignore tiny/noise clips
+    setVState("thinking");
+    const fd = new FormData(); fd.append("file", blob, "a.webm");
+    try { const r = await fetch("/api/stt", { method: "POST", body: fd }); const j = await r.json(); if (j.text) await handleUtterance(j.text); else if (onRef.current) setVState("listening"); }
+    catch { if (onRef.current) setVState("listening"); }
   }
   function startVoice() {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert("Tarayıcın sürekli sesli dinlemeyi desteklemiyor — Chrome öner."); return; }
-    const rec = new SR(); recRef.current = rec;
-    rec.lang = "tr-TR"; rec.continuous = true; rec.interimResults = true;
-    rec.onresult = (e: any) => {
-      let interim = "", final = "";
-      for (let i = e.resultIndex; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) final += t; else interim += t; }
-      if (interim) setHeard(interim);
-      if (final.trim() && !speakingRef.current) handleUtterance(final.trim());
-    };
-    rec.onend = () => { if (onRef.current && !speakingRef.current) { try { rec.start(); } catch {} } };
-    rec.onerror = () => {};
-    onRef.current = true; setVState("listening"); setSaid("Dinliyorum, konuş…");
-    try { rec.start(); } catch {}
+    if (vState !== "off") return;
+    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const src = ctx.createMediaStreamSource(stream); const an = ctx.createAnalyser(); an.fftSize = 512; src.connect(an);
+      const buf = new Uint8Array(an.fftSize);
+      let rec: MediaRecorder, chunks: Blob[] = [], hadSpeech = false, silence = 0;
+      const newRec = () => {
+        rec = new MediaRecorder(stream, { mimeType: "audio/webm" }); chunks = []; hadSpeech = false; silence = 0;
+        rec.ondataavailable = (e) => chunks.push(e.data);
+        rec.onstop = () => { const had = hadSpeech; const blob = new Blob(chunks, { type: "audio/webm" }); if (had) transcribe(blob); if (onRef.current && !speakingRef.current) newRec(); };
+        rec.start(); mediaRef.current = { stream, rec, ctx };
+      };
+      const loop = () => {
+        if (!onRef.current) return;
+        if (speakingRef.current) { requestAnimationFrame(loop); return; }   // don't record our own TTS
+        an.getByteTimeDomainData(buf); let sum = 0; for (const v of buf) { const x = (v - 128) / 128; sum += x * x; }
+        const rms = Math.sqrt(sum / buf.length);
+        if (rms > 0.045) { hadSpeech = true; silence = 0; }
+        else if (hadSpeech) { silence += 1; if (silence > 45 && rec && rec.state === "recording") rec.stop(); } // ~0.75s silence → end utterance
+        requestAnimationFrame(loop);
+      };
+      onRef.current = true; setVState("listening"); newRec(); loop();
+    }).catch(() => alert("Mikrofon izni gerekli."));
   }
-  function stopVoice() { onRef.current = false; try { recRef.current?.stop(); } catch {} try { audioRef.current?.pause(); } catch {} setVState("off"); }
-
-  useEffect(() => {
-    let on = true;
-    const tick = async () => {
-      try { const r = await fetch("/api/agents", { cache: "no-store" }); const j = await r.json(); if (on) { setD(j); setErr(false); } }
-      catch { if (on) setErr(true); }
-    };
-    tick(); const iv = setInterval(tick, 4000);
-    return () => { on = false; clearInterval(iv); };
-  }, []);
-
-  const crew = d?.roster.crew ?? [];
-  const board = d?.roster.board ?? [];
-  const review = d?.review;
-  const verdicts: any[] = review?.verdicts ?? [];
-  const crewLog: any[] = review?.crew ?? [];
-  const decision = review?.decision ?? null;
-  const res = d?.resources ?? {};
-
-  // resolve each agent's display status: live agent_status first, else last-run review, else idle
-  const statusOf = (id: string, group: "crew" | "board") => {
-    const live = d?.status?.[id];
-    if (live && fresh(live.updated_at)) return { cls: liveCls(live.status), task: live.task, live: true };
-    if (group === "board") { const v = verdicts.find((x) => x.role === id); if (v) return { cls: v.pass ? "pass" : "fail", task: `puan ${v.score}`, live: false }; }
-    else { const l = crewLog.find((x) => x.role === id); if (l) return { cls: l.ok === false ? "fail" : "ran", task: l.goal || "", live: false }; }
-    return { cls: "idle", task: "", live: false };
-  };
-
-  const crewPos = crew.map((a, i) => ({ a, kind: "crew" as const, s: statusOf(a.id, "crew"), ...place(i, crew.length || 1, 31) }));
-  const boardPos = board.map((a, i) => ({ a, kind: "board" as const, s: statusOf(a.id, "board"), ...place(i, board.length || 1, 47) }));
-  const all = [...crewPos, ...boardPos];
-
-  const autoFocus = useMemo(() => {
-    const run = all.find((p) => p.s.cls === "run"); if (run) return run.a.id;
-    const fail = all.find((p) => p.s.cls === "fail"); if (fail) return fail.a.id;
-    return all.find((p) => p.s.cls === "ran" || p.s.cls === "pass")?.a.id ?? null;
-  }, [d]);
-  const sel = open ?? autoFocus;
-  const selNode = all.find((p) => p.a.id === sel);
-  const count = (c: string) => all.filter((p) => p.s.cls === c).length;
-  const live = !!res.live;
-  const health = Math.max(0, Math.round((1 - (res.errorRate24h ?? 0)) * 100));
-  const GC = 2 * Math.PI * 36; const goff = GC * (1 - health / 100);
-
-  let ticks: any[] = [];
-  for (let k = 0; k < 72; k++) { const a = (k * 5) * Math.PI / 180; const big = k % 6 === 0; ticks.push({ x1: 50 + (big ? 46.5 : 47.6) * Math.cos(a), y1: 50 + (big ? 46.5 : 47.6) * Math.sin(a), x2: 50 + 49 * Math.cos(a), y2: 50 + 49 * Math.sin(a), o: big ? 0.5 : 0.22 }); }
-
-  function detail(node: NonNullable<typeof selNode>) {
-    const { a, kind, s } = node;
-    const v = kind === "board" ? verdicts.find((x) => x.role === a.id) : null;
-    const log = kind === "crew" ? crewLog.find((x) => x.role === a.id) : null;
-    const cls = s.cls === "pass" ? "good" : s.cls === "fail" ? "bad" : s.cls === "run" ? "review" : "";
-    return (
-      <>
-        <div className="row" style={{ justifyContent: "space-between", marginBottom: 6 }}>
-          <span className="mono" style={{ fontSize: 14, fontWeight: 600 }}>{a.title}</span>
-          <span className={`badge ${cls}`}>{LABEL[s.cls]}</span>
-        </div>
-        <div className="arole" style={{ marginBottom: 8 }}>{a.id}{a.critical ? " · VETO" : ""}</div>
-        {s.task && <div className="tag" style={{ marginBottom: 8 }}>▸ {s.task}</div>}
-        <p className="desc" style={{ fontSize: 13 }}>{a.description}</p>
-        {v && (
-          <div className="convo"><span className="who">{a.title}:</span>{"\n"}
-            {(v.issues?.length ? v.issues : ["— sorun bildirmedi —"]).map((x: string) => `• ${x}`).join("\n")}
-            {v.required_fixes?.length ? `\n\nİstenen düzeltmeler:\n${v.required_fixes.map((x: string) => `→ ${x}`).join("\n")}` : ""}
-          </div>
-        )}
-        {log && <div className="convo"><span className="who">{a.title}:</span>{"\n"}{log.error ? `⚠ ${log.error}` : (typeof log.output === "string" ? log.output : JSON.stringify(log.output, null, 2)) || "— çıktı yok —"}</div>}
-        {!v && !log && <div className="tag" style={{ marginTop: 8 }}>Bu ajan henüz veri üretmedi; bir tur dönünce burada görünür.</div>}
-      </>
-    );
+  function stopVoice() {
+    onRef.current = false; speakingRef.current = false;
+    try { mediaRef.current?.rec.state === "recording" && mediaRef.current?.rec.stop(); } catch {}
+    try { mediaRef.current?.stream.getTracks().forEach((t) => t.stop()); mediaRef.current?.ctx.close(); } catch {}
+    try { audioRef.current?.pause(); } catch {}
+    mediaRef.current = null; setVState("off");
   }
 
-  const Bar = ({ k, v, pct, c }: { k: string; v: string; pct: number; c?: string }) => (
-    <div style={{ marginBottom: 9 }}>
-      <div className="row" style={{ justifyContent: "space-between" }}><span className="k" style={{ fontFamily: "var(--mono)", fontSize: 10, color: "#6e93a6", letterSpacing: ".06em", textTransform: "uppercase" }}>{k}</span><span className="mono" style={{ fontSize: 12, color: "#a7ecf7" }}>{v}</span></div>
-      <div style={{ height: 5, background: "#0c2230", borderRadius: 3, marginTop: 3, overflow: "hidden" }}><div style={{ width: `${Math.min(100, pct)}%`, height: "100%", background: c || "var(--cy)", boxShadow: `0 0 8px ${c || "var(--cy)"}` }} /></div>
-    </div>
-  );
+  async function greet() { await converse("", true); }
+  async function converse(text: string, init = false) {
+    if (busy && !init) return;
+    const history = init ? [] : [...msgs.filter((m): m is Extract<Msg, { role: "user" | "assistant" }> => m.role !== "panel"), { role: "user" as const, content: text }];
+    if (!init && text) setMsgs((m) => [...m, { role: "user", content: text }]);
+    setBusy(true); setSugs([]); setHeard("");
+    try {
+      const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history }) });
+      const d = await r.json();
+      setMsgs((m) => [...m, { role: "assistant", content: d.reply || "…" }]);
+      if (d.panel?.type) setMsgs((m) => [...m, { role: "panel", panel: d.panel }]);
+      setSugs(d.suggestions || []);
+      if (d.action?.type === "run") fetch("/api/run", { method: "POST" }).catch(() => {});
+      // speak
+      if (vState !== "off" || onRef.current) { setVState("speaking"); speakingRef.current = true; await speak(d.reply); speakingRef.current = false; if (onRef.current) setVState("listening"); else setVState("off"); }
+    } catch { setMsgs((m) => [...m, { role: "assistant", content: "Bağlantı hatası." }]); }
+    finally { setBusy(false); }
+  }
+  async function handleUtterance(text: string) { setHeard(text); await converse(text); }
 
   return (
     <>
       <div className="console-bar">
-        <span className="cb-l">◆ AI PIPELINE MANAGER</span>
-        <span className="cb-c">Ajan Kontrol Merkezi</span>
+        <span className="cb-l">◆ JARVIS</span>
+        <span className="cb-c">Komuta Merkezi</span>
         <span className="row" style={{ gap: 10 }}>
           <button className={`chip voice-btn v-${vState}`} onClick={() => (vState === "off" ? startVoice() : stopVoice())}>
-            {vState === "off" ? "🎙 Sesli Asistan" : vState === "listening" ? "● Dinliyor…" : vState === "thinking" ? "… Düşünüyor" : "🔊 Konuşuyor"}
+            {vState === "off" ? "🎙 Sesi Aç" : vState === "listening" ? "● Dinliyor" : vState === "thinking" ? "… Düşünüyor" : "🔊 Konuşuyor"}
           </button>
-          <span className="cb-r" style={{ color: live ? "var(--cy)" : "#5fd0e6" }}>{live ? "● AKTİF" : err ? "● YOK" : "○ BEKLE"}</span>
+          <span className="cb-r" style={{ color: res.pending ?? feed?.resources?.pending ? "var(--amber)" : "var(--cy)" }}>{live ? "● AKTİF" : "○ HAZIR"}</span>
         </span>
       </div>
 
-      <div className="holo-tabs">
-        {([["core", "Çekirdek"], ["sys", "Sistem"], ["active", "Aktif Ajan"], ["log", "Canlı Log"]] as const).map(([t, l]) => (
-          <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{l}</button>
-        ))}
-      </div>
-
-      <div className="holo-root" data-tab={tab}>
-      <div className="holo-stage">
-        {/* SOL — sistem + kaynak monitörü */}
-        <div className="holo-panel tabpane tp-sys">
-          <div className="eyebrow">Sistem Durumu</div>
-          <div className="gauge-wrap">
-            <svg className="gauge" viewBox="0 0 84 84">
-              <circle cx="42" cy="42" r="36" fill="none" stroke="#0c2230" strokeWidth="7" />
-              <circle cx="42" cy="42" r="36" fill="none" stroke={health > 70 ? "var(--cy)" : health > 40 ? "var(--accent)" : "var(--bad)"} strokeWidth="7" strokeLinecap="round" strokeDasharray={GC.toFixed(1)} strokeDashoffset={goff.toFixed(1)} transform="rotate(-90 42 42)" style={{ filter: "drop-shadow(0 0 4px var(--cy))" }} />
-              <text className="gv" x="42" y="47" textAnchor="middle">{health}%</text>
-            </svg>
-            <div><div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "#bdeffb" }}>Pipeline Sağlığı</div><div className="tag" style={{ marginTop: 4 }}>{live ? "üretim aktif" : "sistem nominal"}</div></div>
-          </div>
-          <div className="holo-stat"><span className="k">Durum</span><span className="v" style={{ color: live ? "var(--cy)" : "#a7ecf7" }}>{live ? "● CANLI" : "○ HAZIR"}</span></div>
-          <div className="holo-stat"><span className="k">Toplam ajan</span><span className="v">{crew.length + board.length}</span></div>
-          <div className="holo-stat"><span className="k">Çalışan</span><span className="v">{count("run")}</span></div>
-          <div className="holo-stat"><span className="k">Tamam / geçti</span><span className="v">{count("ran") + count("pass")}</span></div>
-          <div className="holo-stat"><span className="k">Hata / veto</span><span className="v">{count("fail")}</span></div>
-          <div className="holo-stat"><span className="k">Son aşama</span><span className="v">{d?.job?.stage ?? "—"}</span></div>
-          <div className="holo-stat"><span className="k">Kurul</span><span className="v">{decision ? `${decision.verdict} ${decision.passCount}/${review.reviewerCount}` : "—"}</span></div>
-          <div className="eyebrow" style={{ margin: "16px 0 10px" }}>Kaynak Monitörü</div>
-          <Bar k="Bütçe (gün)" v={`$${(res.usdToday ?? 0).toFixed(2)} / $${res.usdCap ?? 5}`} pct={((res.usdToday ?? 0) / (res.usdCap || 5)) * 100} />
-          <Bar k="Hata oranı 24s" v={`${Math.round((res.errorRate24h ?? 0) * 100)}%`} pct={(res.errorRate24h ?? 0) * 100} c="var(--bad)" />
-          <Bar k="Kuyruk" v={`${res.queue ?? 0}`} pct={(res.queue ?? 0) * 20} c="var(--accent)" />
-          <Bar k="YouTube kotası" v={`${res.youtubeUnitsToday ?? 0}`} pct={((res.youtubeUnitsToday ?? 0) / 8000) * 100} c="var(--good)" />
-        </div>
-
-        {/* ORTA — hologram */}
-        <div className="holo tabpane tp-core">
+      {/* orbiting agents */}
+      <div className="cc-holo">
+        <div className="holo">
           <span className="corner tl" /><span className="corner tr" /><span className="corner bl" /><span className="corner br" />
           <div className="holo-ring r2" /><div className="holo-ring r3" /><div className="holo-ring r1" /><div className="holo-sweep" />
           <svg className="holo-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs><filter id="g" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="0.7" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter></defs>
             <g filter="url(#g)">
-              <circle cx="50" cy="50" r="31" fill="none" stroke="rgba(34,211,238,.5)" strokeWidth="0.45" />
-              <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(34,211,238,.16)" strokeWidth="0.3" />
-              {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={`rgba(34,211,238,${t.o})`} strokeWidth="0.3" />)}
-              {all.map((p) => <line key={p.a.id} x1="50" y1="50" x2={p.x} y2={p.y} stroke={lineColor(p.s.cls)} strokeWidth={sel === p.a.id ? 0.8 : 0.45} className={p.s.cls === "run" || sel === p.a.id ? "holo-flow" : ""} />)}
-              {all.filter((p) => p.s.cls === "run" || sel === p.a.id).map((p) => <circle key={"e" + p.a.id} className="energy" cx={50 + (p.x - 50) * 0.6} cy={50 + (p.y - 50) * 0.6} r={0.7} />)}
+              <circle cx="50" cy="50" r="31" fill="none" stroke="rgba(0,217,255,.5)" strokeWidth="0.45" />
+              <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(0,217,255,.16)" strokeWidth="0.3" />
+              {ticks.map((t, i) => <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} stroke={`rgba(0,217,255,${t.o})`} strokeWidth="0.3" />)}
+              {all.map((p: any) => <line key={p.a.id} x1="50" y1="50" x2={p.x} y2={p.y} stroke={lineColor(p.cls)} strokeWidth={0.45} className={p.cls === "run" ? "holo-flow" : ""} />)}
+              {all.filter((p: any) => p.cls === "run").map((p: any) => <circle key={"e" + p.a.id} className="energy" cx={50 + (p.x - 50) * 0.6} cy={50 + (p.y - 50) * 0.6} r={0.7} />)}
             </g>
           </svg>
           <div className={`holo-core ${live || vState !== "off" ? "alive" : ""} v-${vState}`}>
             <span className="hc-state">AI CORE</span>
             <span className="hc-sub">{vState === "listening" ? "● DİNLİYOR" : vState === "thinking" ? "… DÜŞÜNÜYOR" : vState === "speaking" ? "🔊 KONUŞUYOR" : live ? "● ÇALIŞIYOR" : "● ONLINE"}</span>
           </div>
-          {vState !== "off" && (heard || said) && (
-            <div className="holo-sub">
-              {heard && <div className="hs-user">“{heard}”</div>}
-              {said && <div className="hs-ai">{said}</div>}
-            </div>
-          )}
-          {all.map((p) => (
-            <button key={p.a.id} type="button" className={`holo-node ag-${p.s.cls} ${sel === p.a.id ? "sel" : ""}`}
-              style={{ left: `${p.x}%`, top: `${p.y}%` }} onClick={() => setOpen(sel === p.a.id ? null : p.a.id)} title={`${p.a.title} — ${LABEL[p.s.cls]}`}>
+          {all.map((p: any) => (
+            <div key={p.a.id} className={`holo-node ag-${p.cls}`} style={{ left: `${p.x}%`, top: `${p.y}%`, cursor: "default" }} title={p.a.title}>
               <span className="orb"><svg viewBox="0 0 24 24"><path d={ic(p.a.id)} /></svg></span>
               <span className="nlabel">{p.a.title}</span>
-            </button>
+            </div>
           ))}
-        </div>
-
-        {/* SAĞ — aktif ajan */}
-        <div className="holo-panel tabpane tp-active">
-          <div className="eyebrow">Aktif Ajan</div>
-          <AnimatePresence mode="wait">
-            <motion.div key={sel || "none"} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.22 }}>
-              {selNode ? detail(selNode) : <div className="tag">{d ? "Bir ajana dokun → görevi ve logu açılır." : "Yükleniyor…"}</div>}
-            </motion.div>
-          </AnimatePresence>
+          {heard && <div className="holo-sub"><div className="hs-user">“{heard}”</div></div>}
         </div>
       </div>
 
-      <div className="legend tabpane tp-core" style={{ justifyContent: "center" }}>
-        <span><i style={{ background: "var(--cy)" }} />çalışıyor</span><span><i style={{ background: "var(--good)" }} />geçti</span>
-        <span><i style={{ background: "var(--bad)" }} />kaldı / veto</span><span><i style={{ background: "var(--accent)" }} />çalıştı</span>
-        <span><i style={{ background: "#3a3f49" }} />beklemede</span>
+      {/* conversation (panels open inline here) */}
+      <div className="cc-chat">
+        {msgs.map((m, i) => m.role === "panel" ? <InlinePanel key={i} panel={(m as any).panel} /> : <div key={i} className={`bubble ${m.role}`}>{(m as any).content}</div>)}
+        {busy && <div className="bubble assistant typing"><span /><span /><span /></div>}
+        <div ref={endRef} />
       </div>
 
-      {/* Execution trace — canlı log akışı */}
-      <div className="tabpane tp-log">
-        <h2 style={{ marginTop: 26 }}>Yürütme İzi (canlı)</h2>
-        <div className="holo-panel" style={{ maxHeight: 300, overflow: "auto", padding: 0 }}>
-          <table style={{ border: "none", background: "none" }}>
-            <tbody>
-              {(d?.trace ?? []).map((ev, i) => (
-                <tr key={i}>
-                  <td className="mono" style={{ color: "#5a7c8c", fontSize: 11, whiteSpace: "nowrap" }}>{new Date(ev.created_at).toLocaleTimeString()}</td>
-                  <td><span className="badge">{ev.type}</span></td>
-                  <td className="mono" style={{ fontSize: 11, color: "#7fa8ba" }}>{ev.stage ?? "—"}</td>
-                  <td className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>{ev.data?.message || ev.data?.reason || ev.data?.topic || ""}</td>
-                </tr>
-              ))}
-              {!d?.trace?.length && <tr><td className="tag" style={{ padding: 14 }}>Henüz olay yok — bir tur dönünce loglar buraya akacak.</td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      </div>
+      {!!sugs.length && <div className="chips">{sugs.map((s, i) => <button key={i} className="chip" onClick={() => converse(s)}>{s}</button>)}</div>}
+
+      <form className="chat-input" onSubmit={(e) => { e.preventDefault(); if (input.trim()) { const t = input.trim(); setInput(""); converse(t); } }}>
+        <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Yaz ya da 🎙 ile konuş: 'kuyruğu göster', 'analizi aç', 'yeni taslak üret'…" autoFocus />
+        <button className="btn primary" disabled={busy || !input.trim()} type="submit">Gönder</button>
+      </form>
     </>
+  );
+}
+
+function InlinePanel({ panel }: { panel: { type: string; data: any } }) {
+  const { type, data } = panel;
+  const title: Record<string, string> = { queue: "Kuyruk / Onay", analytics: "Analitik", status: "Durum", knowledge: "Bilgi Tabanı", memory: "Hafıza", agents: "Ajan Durumları" };
+  return (
+    <div className="cc-panel">
+      <div className="eyebrow" style={{ marginBottom: 10 }}>▣ {title[type] || type}</div>
+      {type === "status" && data && (
+        <div className="grid cards" style={{ gridTemplateColumns: "repeat(4,1fr)" }}>
+          {Object.entries(data).map(([k, v]: any) => <div className="card stat" key={k} style={{ padding: 12 }}><div className="n" style={{ fontSize: 22 }}>{v}</div><div className="l">{k}</div></div>)}
+        </div>
+      )}
+      {type === "queue" && (Array.isArray(data) && data.length ? data.map((j: any) => (
+        <div className="card" key={j.id} style={{ marginBottom: 8 }}>
+          <div style={{ fontWeight: 600 }}>{j.script?.title || j.topic}</div>
+          {j.script?.hook && <div className="hook" style={{ fontSize: 14, marginTop: 4 }}>{j.script.hook}</div>}
+          <div className="tag" style={{ marginTop: 6 }}>{j.review?.decision ? `kurul: ${j.review.decision.verdict}` : j.stage} · <a href="/queue" style={{ color: "var(--accent)" }}>tam sayfada onayla →</a></div>
+        </div>
+      )) : <div className="tag">Onay bekleyen yok.</div>)}
+      {type === "agents" && (Array.isArray(data) && data.length ? <div className="grid" style={{ gap: 6 }}>{data.map((a: any, i: number) => <div className="row" key={i} style={{ justifyContent: "space-between" }}><span className="mono" style={{ fontSize: 13 }}>{a.agent_id}</span><span className={`badge ${a.status === "completed" ? "good" : a.status === "failed" ? "bad" : a.status === "running" ? "review" : ""}`}>{a.status}</span></div>)}</div> : <div className="tag">Ajan durumu yok.</div>)}
+      {type === "knowledge" && (Array.isArray(data) && data.length ? <table><tbody>{data.map((k: any, i: number) => <tr key={i}><td>{k.topic}</td><td className="mono" style={{ color: "var(--muted)" }}>{k.source_title}</td><td><span className={`badge ${k.verified ? "good" : "bad"}`}>{k.verified ? "✓" : "?"}</span></td></tr>)}</tbody></table> : <div className="tag">Boş.</div>)}
+      {type === "memory" && (Array.isArray(data) && data.length ? data.slice(0, 12).map((m: any, i: number) => <div className="card" key={i} style={{ padding: "8px 12px", marginBottom: 6 }}><span className="tag">{m.kind}</span> {m.content}</div>) : <div className="tag">Hafıza boş.</div>)}
+      {type === "analytics" && (Array.isArray(data) && data.length ? <table><thead><tr><th>Başlık</th><th>İzlenme</th><th>Beğeni</th></tr></thead><tbody>{data.map((r: any, i: number) => <tr key={i}><td>{r.title || r.video_id}</td><td className="mono">{r.views}</td><td className="mono">{r.likes}</td></tr>)}</tbody></table> : <div className="tag">Henüz veri yok — video yayınlayınca dolacak.</div>)}
+    </div>
   );
 }

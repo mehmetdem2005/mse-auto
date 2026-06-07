@@ -196,8 +196,15 @@ tbody tr:last-child td{border-bottom:none}
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .chip{font-family:var(--mono);font-size:12px;padding:8px 13px;border-radius:999px;border:1px solid var(--cy-line);background:var(--panel);color:var(--accent);cursor:pointer;transition:border-color .15s,background .15s}
 .chip:hover{border-color:var(--accent);background:var(--panel-2)}
-.chat-input{display:flex;gap:8px}
+.chat-input{display:flex;gap:8px;max-width:820px;margin:0 auto;width:100%}
 .chat-input input{flex:1}
+/* command center single-page layout */
+.cc-holo{display:flex;justify-content:center;margin:2px 0 14px}
+.cc-holo .holo{max-width:520px}
+.cc-chat{display:flex;flex-direction:column;gap:10px;max-width:820px;margin:0 auto 12px;width:100%}
+.cc-chat:empty{display:none}
+.cc-panel{align-self:stretch;background:linear-gradient(180deg,rgba(10,28,48,.55),rgba(7,20,38,.55));border:1px solid var(--cy-line);border-radius:12px;padding:14px;box-shadow:0 0 22px -14px var(--cy)}
+.chips{max-width:820px;margin:0 auto 10px}
 .btn.mic{flex:0 0 auto;min-width:46px}
 .btn.mic.on{border-color:var(--bad);color:var(--bad);box-shadow:0 0 14px -4px var(--bad);animation:micpulse 1s infinite}
 @keyframes micpulse{50%{box-shadow:0 0 18px 0 var(--bad)}}

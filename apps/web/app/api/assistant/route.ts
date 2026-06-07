@@ -24,6 +24,23 @@ async function snapshot() {
   };
 }
 
+async function panelData(type: string): Promise<any> {
+  try {
+    if (type === "queue") return (await db.from("video_jobs").select("id,topic,stage,review,script").eq("stage", "needs_review").limit(8)).data ?? [];
+    if (type === "analytics") return (await db.from("analytics").select("title,video_id,views,likes,comments").order("views", { ascending: false }).limit(12)).data ?? [];
+    if (type === "knowledge") return (await db.from("knowledge").select("topic,source_title,verified").order("created_at", { ascending: false }).limit(20)).data ?? [];
+    if (type === "memory") return (await db.from("memory").select("kind,content,created_at").order("created_at", { ascending: false }).limit(20)).data ?? [];
+    if (type === "agents") return (await db.from("agent_status").select("agent_id,status,current_task,updated_at").order("updated_at", { ascending: false }).limit(20)).data ?? [];
+    if (type === "status") {
+      const stages = ["queued", "needs_review", "approved", "rendering", "scheduled", "published", "failed", "dead_letter"];
+      const out: Record<string, number> = {};
+      for (const st of stages) { const { count } = await db.from("video_jobs").select("id", { count: "exact", head: true }).eq("stage", st); out[st] = count ?? 0; }
+      return out;
+    }
+  } catch { /* ignore */ }
+  return null;
+}
+
 export async function POST(req: Request) {
   const { messages = [] } = await req.json().catch(() => ({ messages: [] }));
   const s = await snapshot();
@@ -37,10 +54,11 @@ CANLI DURUM:
 - Çalışan ajanlar: ${s.running.join(", ") || "yok"} | Hata/veto: ${s.failed.join(", ") || "yok"}
 - Son olaylar: ${s.recent.join(" · ") || "yok"}
 Sayfalar: / (panel), /queue (onay), /agents (ajan kontrol merkezi), /knowledge, /memory, /analytics, /observability (izleme), /lab, /settings.
-SADECE şu JSON şemasıyla yanıt ver: {"reply": "...", "action": {"type":"none|navigate|run", "to":"/queue"}, "suggestions": ["kısa öneri", ...]}
-- action.type="navigate" + to=<sayfa> → o paneli aç. "run" → yeni taslak üretimini başlat. "none" → sadece konuş.
-- suggestions: kullanıcının tek tıkla seçebileceği 2-3 kısa eylem önerisi (örn. "Kuyruğu aç", "Analizi göster", "Yeni taslak üret").
-- Onay bekleyen iş varsa MUTLAKA belirt ve /queue öner.`;
+SADECE şu JSON şemasıyla yanıt ver: {"reply":"...","action":{"type":"none|panel|run","panel":"queue|analytics|status|knowledge|memory|agents"},"suggestions":["kısa öneri", ...]}
+- action.type="panel" → ilgili paneli SOHBETİN İÇİNDE açar (sayfa değiştirmeden). Kullanıcı "kuyruğu aç/göster", "analizi göster", "durum", "bilgi tabanı", "hafıza", "ajanlar" gibi şeyler derse uygun panel'i seç.
+- action.type="run" → yeni taslak üretimini başlat. "none" → sadece konuş.
+- suggestions: tek tıkla seçilebilecek 2-3 kısa eylem (örn. "Kuyruğu göster", "Analizi göster", "Yeni taslak üret").
+- Onay bekleyen iş varsa MUTLAKA belirt ve panel:"queue" öner.`;
 
   const init = messages.length === 0;
   const chat = init
@@ -57,9 +75,12 @@ SADECE şu JSON şemasıyla yanıt ver: {"reply": "...", "action": {"type":"none
     const d = await r.json();
     let out: any = {};
     try { out = JSON.parse(d.choices?.[0]?.message?.content ?? "{}"); } catch { out = { reply: d.choices?.[0]?.message?.content ?? "" }; }
+    let panel: any = null;
+    if (out.action?.type === "panel" && out.action.panel) panel = { type: out.action.panel, data: await panelData(out.action.panel) };
     return NextResponse.json({
       reply: out.reply || "…",
       action: out.action || { type: "none" },
+      panel,
       suggestions: Array.isArray(out.suggestions) ? out.suggestions.slice(0, 4) : [],
       pending: s.pendingApprovals,
     });
