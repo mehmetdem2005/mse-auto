@@ -21,7 +21,7 @@ const place = (i: number, n: number, r: number) => { const a = (-90 + (i * 360) 
 const fresh = (t: string) => Date.now() - new Date(t).getTime() < 10 * 60_000;
 const liveCls = (s: string) => (s === "running" || s === "planning" || s === "waiting" || s === "needs_user_approval") ? "run" : s === "completed" ? "ran" : (s === "failed" || s === "blocked") ? "fail" : "idle";
 
-type Msg = { role: "user" | "assistant"; content: string } | { role: "panel"; panel: { type: string; data: any } };
+type Msg = { role: "user" | "assistant"; content: string; reasoning?: string } | { role: "panel"; panel: { type: string; data: any } };
 
 export default function AgentBoard() {
   const [feed, setFeed] = useState<any>(null);
@@ -44,7 +44,12 @@ export default function AgentBoard() {
     t(); const iv = setInterval(t, 4000); return () => { on = false; clearInterval(iv); };
   }, []);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
-  useEffect(() => { greet(); return () => stopVoice(); }, []); // eslint-disable-line
+  // persist chat across navigation
+  useEffect(() => {
+    try { const saved = localStorage.getItem("cc_chat"); if (saved) { const arr = JSON.parse(saved); if (Array.isArray(arr) && arr.length) { setMsgs(arr); return () => stopVoice(); } } } catch {}
+    greet(); return () => stopVoice();
+  }, []); // eslint-disable-line
+  useEffect(() => { try { if (msgs.length) localStorage.setItem("cc_chat", JSON.stringify(msgs.slice(-40))); } catch {} }, [msgs]);
 
   const crew = feed?.roster?.crew ?? [];
   const board = feed?.roster?.board ?? [];
@@ -125,7 +130,7 @@ export default function AgentBoard() {
     try {
       const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history }) });
       const d = await r.json();
-      setMsgs((m) => [...m, { role: "assistant", content: d.reply || "…" }]);
+      setMsgs((m) => [...m, { role: "assistant", content: d.reply || "…", reasoning: d.reasoning || "" }]);
       if (d.panel?.type) setMsgs((m) => [...m, { role: "panel", panel: d.panel }]);
       setSugs(d.suggestions || []);
       if (d.action?.type === "run") fetch("/api/run", { method: "POST" }).catch(() => {});
@@ -145,7 +150,8 @@ export default function AgentBoard() {
           <button className={`chip voice-btn v-${vState}`} onClick={() => (vState === "off" ? startVoice() : stopVoice())}>
             {vState === "off" ? "🎙 Sesi Aç" : vState === "listening" ? "● Dinliyor" : vState === "thinking" ? "… Düşünüyor" : "🔊 Konuşuyor"}
           </button>
-          <span className="cb-r" style={{ color: res.pending ?? feed?.resources?.pending ? "var(--amber)" : "var(--cy)" }}>{live ? "● AKTİF" : "○ HAZIR"}</span>
+          <button className="chip" style={{ padding: "5px 10px" }} title="Sohbeti temizle" onClick={() => { setMsgs([]); try { localStorage.removeItem("cc_chat"); } catch {}; greet(); }}>🗑</button>
+          <span className="cb-r" style={{ color: live ? "var(--cy)" : "#5fd0e6" }}>{live ? "● AKTİF" : "○ HAZIR"}</span>
         </span>
       </div>
 
@@ -180,7 +186,12 @@ export default function AgentBoard() {
 
       {/* conversation (panels open inline here) */}
       <div className="cc-chat">
-        {msgs.map((m, i) => m.role === "panel" ? <InlinePanel key={i} panel={(m as any).panel} /> : <div key={i} className={`bubble ${m.role}`}>{(m as any).content}</div>)}
+        {msgs.map((m, i) => m.role === "panel" ? <InlinePanel key={i} panel={(m as any).panel} /> : (
+          <div key={i} className={`bubble ${m.role}`}>
+            {(m as any).reasoning ? <details className="reasoning"><summary>🧠 Düşünce süreci</summary>{(m as any).reasoning}</details> : null}
+            {(m as any).content}
+          </div>
+        ))}
         {busy && <div className="bubble assistant typing"><span /><span /><span /></div>}
         <div ref={endRef} />
       </div>

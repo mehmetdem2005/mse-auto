@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/supabaseServer";
 export const runtime = "nodejs";
 
-const GROQ = process.env.GROQ_API_KEY;
-const MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+const DS = process.env.DEEPSEEK_API_KEY;
+const MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-pro";
+const DS_URL = "https://api.deepseek.com/chat/completions";
 
 // Live snapshot the assistant reasons over (so it isn't a hollow chatbot).
 async function snapshot() {
@@ -44,7 +45,7 @@ async function panelData(type: string): Promise<any> {
 export async function POST(req: Request) {
   const { messages = [] } = await req.json().catch(() => ({ messages: [] }));
   const s = await snapshot();
-  if (!GROQ) return NextResponse.json({ reply: "Asistan LLM anahtarı (GROQ_API_KEY) ayarlı değil.", action: { type: "none" } });
+  if (!DS) return NextResponse.json({ reply: "Asistan LLM anahtarı (DEEPSEEK_API_KEY) ayarlı değil.", action: { type: "none" } });
 
   const system = `Sen "ShortsPilot" otonom YouTube Shorts pipeline'ının AI asistanısın — JARVIS gibi, kısa ve net Türkçe konuş.
 Görevin: kullanıcıya yardım et, öner, arka plan durumunu özetle, onay gerekiyorsa söyle, ve gerektiğinde panelleri aç.
@@ -66,19 +67,22 @@ SADECE şu JSON şemasıyla yanıt ver: {"reply":"...","action":{"type":"none|pa
     : messages.slice(-10);
 
   try {
-    const r = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    const r = await fetch(DS_URL, {
       method: "POST",
-      headers: { Authorization: `Bearer ${GROQ}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: MODEL, temperature: 0.5, max_tokens: 700, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, ...chat] }),
+      headers: { Authorization: `Bearer ${DS}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: MODEL, temperature: 0.5, max_tokens: 1400, response_format: { type: "json_object" }, messages: [{ role: "system", content: system }, ...chat] }),
     });
-    if (!r.ok) throw new Error(`Groq ${r.status}: ${(await r.text()).slice(0, 160)}`);
+    if (!r.ok) throw new Error(`DeepSeek ${r.status}: ${(await r.text()).slice(0, 160)}`);
     const d = await r.json();
+    const msg = d.choices?.[0]?.message ?? {};
+    const reasoning = msg.reasoning_content || "";   // v4-pro thinking process
     let out: any = {};
-    try { out = JSON.parse(d.choices?.[0]?.message?.content ?? "{}"); } catch { out = { reply: d.choices?.[0]?.message?.content ?? "" }; }
+    try { out = JSON.parse(msg.content ?? "{}"); } catch { const m = (msg.content ?? "").match(/\{[\s\S]*\}/); out = m ? JSON.parse(m[0]) : { reply: msg.content ?? "" }; }
     let panel: any = null;
     if (out.action?.type === "panel" && out.action.panel) panel = { type: out.action.panel, data: await panelData(out.action.panel) };
     return NextResponse.json({
       reply: out.reply || "…",
+      reasoning,
       action: out.action || { type: "none" },
       panel,
       suggestions: Array.isArray(out.suggestions) ? out.suggestions.slice(0, 4) : [],

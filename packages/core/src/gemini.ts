@@ -35,13 +35,21 @@ export class SafetyBlockedError extends Error {}
 export interface GenUsage { promptTokens: number; outputTokens: number; totalTokens: number; }
 export interface GenResult { text: string; functionCalls: any[]; grounding: any[]; usage: GenUsage; raw: any; }
 
-// ── Groq backend (OpenAI-compatible) ────────────────────────────────────────
-// Gemini's free tier is brutal (gemini-2.5-flash = 20 requests/DAY). Groq's free tier is
-// ~50x larger (llama-3.3-70b: 30 RPM / 1000 RPD / 100k TPD). When GROQ_API_KEY is set we
-// route text generation to Groq. Embeddings/image/TTS stay on Gemini (Groq has no equivalent).
+// ── Text LLM backend (OpenAI-compatible: DeepSeek / Groq) ───────────────────
+// Gemini's free tier is brutal (20 req/DAY). We route text generation to a chat provider.
+// DeepSeek v4-pro (dynamic-concurrency, reasoning_content) is preferred; Groq is the fallback.
+// Embeddings via OpenAI, image/TTS stay on Gemini.
 const GROQ_KEY = process.env.GROQ_API_KEY;
 const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
-const USE_GROQ = !!GROQ_KEY && process.env.LLM_PROVIDER !== "gemini";
+const DEEPSEEK_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL || "deepseek-v4-pro";
+const PROVIDER = process.env.LLM_PROVIDER || (DEEPSEEK_KEY ? "deepseek" : GROQ_KEY ? "groq" : "gemini");
+const CHAT = PROVIDER === "deepseek" && DEEPSEEK_KEY
+  ? { url: "https://api.deepseek.com/chat/completions", key: DEEPSEEK_KEY, model: DEEPSEEK_MODEL, name: "DeepSeek" }
+  : PROVIDER === "groq" && GROQ_KEY
+  ? { url: "https://api.groq.com/openai/v1/chat/completions", key: GROQ_KEY, model: GROQ_MODEL, name: "Groq" }
+  : null;
+const USE_CHAT = !!CHAT;
 
 // Embeddings via OpenAI (only embeddings) — text-embedding-3-small supports a `dimensions`
 // param so we get 768-dim vectors that match the pgvector(768) schema. Avoids Gemini's
@@ -64,22 +72,22 @@ async function openaiEmbed(texts: string[], dim: number): Promise<number[][]> {
   return (d.data ?? []).sort((a: any, b: any) => a.index - b.index).map((x: any) => x.embedding as number[]);
 }
 
-async function groqGenerate(opts: { model?: string; system?: string; prompt: string; json?: boolean; responseSchema?: Record<string, unknown>; }): Promise<GenResult> {
+async function chatGenerate(opts: { model?: string; system?: string; prompt: string; json?: boolean; responseSchema?: Record<string, unknown>; }): Promise<GenResult> {
   const wantJson = Boolean(opts.json || opts.responseSchema);
   const resource = opts.model === MODELS.reasoning ? "gemini-reasoning" : "gemini-text";
   await limiter.acquire(resource, { tokens: Math.ceil((opts.prompt.length + (opts.system?.length ?? 0)) / 4) });
   const messages: any[] = [];
   if (opts.system) messages.push({ role: "system", content: opts.system + (wantJson ? "\n\nYANIT SADECE tek ve geçerli bir JSON nesnesi olmalı; başka metin yazma." : "") });
   messages.push({ role: "user", content: opts.prompt });
-  const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  const resp = await fetch(CHAT!.url, {
     method: "POST",
-    headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ model: GROQ_MODEL, messages, temperature: 0.7, max_tokens: 4096, ...(wantJson ? { response_format: { type: "json_object" } } : {}) }),
+    headers: { Authorization: `Bearer ${CHAT!.key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: CHAT!.model, messages, temperature: 0.7, max_tokens: 4096, ...(wantJson ? { response_format: { type: "json_object" } } : {}) }),
   });
   if (!resp.ok) {
     const body = await resp.text();
-    const err: any = new Error(`Groq ${resp.status}: ${body.slice(0, 300)}`);
-    err.status = resp.status;                                  // so reliability.isRateLimit() detects 429
+    const err: any = new Error(`${CHAT!.name} ${resp.status}: ${body.slice(0, 300)}`);
+    err.status = resp.status;                                  // so reliability.isRateLimit() detects 429 → backoff
     const ra = resp.headers.get("retry-after"); if (ra) err.retryAfter = ra;
     throw err;
   }
@@ -104,7 +112,7 @@ export async function generate(opts: {
   responseSchema?: Record<string, unknown>;
   thinkingLevel?: "minimal" | "low" | "medium" | "high";
 }): Promise<GenResult> {
-  if (USE_GROQ) return groqGenerate(opts);   // route text generation to Groq's larger free tier
+  if (USE_CHAT) return chatGenerate(opts);   // route text generation to DeepSeek/Groq
   const tools: any[] = [];
   if (opts.search) tools.push({ googleSearch: {} });
   if (opts.functions?.length) tools.push({ functionDeclarations: opts.functions });
