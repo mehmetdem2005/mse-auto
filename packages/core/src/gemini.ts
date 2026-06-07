@@ -194,6 +194,7 @@ async function openaiImage(prompt: string): Promise<string> {
       model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
       prompt: prompt.slice(0, 900),
       size: process.env.OPENAI_IMAGE_SIZE || "1024x1536", // portrait → ffmpeg crops to 9:16
+      quality: process.env.OPENAI_IMAGE_QUALITY || "medium", // ~$0.06/img vs ~$0.24 at high; plenty for Shorts
       n: 1,
     }),
   });
