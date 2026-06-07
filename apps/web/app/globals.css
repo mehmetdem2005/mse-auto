@@ -300,6 +300,17 @@ tbody tr:last-child td{border-bottom:none}
 .holo-node .orb-i{font-family:var(--mono);font-size:12.5px;font-weight:600;color:#dff6ff;text-shadow:0 0 6px rgba(34,211,238,.5);z-index:1}
 .holo-node .nlabel{font-family:var(--mono);font-size:9px;color:#9fc4d4;max-width:84px;overflow:hidden;text-overflow:ellipsis;
   text-align:center;background:rgba(5,12,22,.78);padding:1px 6px;border-radius:5px;border:1px solid rgba(34,211,238,.12)}
+.holo-node .ntask{position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:8.5px;
+  color:#eafdff;background:rgba(0,217,255,.14);border:1px solid var(--cy);border-radius:5px;padding:1px 6px;white-space:nowrap;max-width:140px;
+  overflow:hidden;text-overflow:ellipsis;box-shadow:0 0 14px -4px var(--cy);z-index:7;animation:taskpop .35s ease-out}
+@keyframes taskpop{from{opacity:0;transform:translateX(-50%) scale(.8)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+/* live-work callout under the holo — shows whichever agent is actually running + its task */
+.active-work{max-width:520px;margin:-4px auto 14px;display:flex;flex-direction:column;gap:6px}
+.active-work .aw-row{display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,rgba(0,217,255,.12),rgba(0,217,255,.03));
+  border:1px solid var(--cy-line);border-left:3px solid var(--cy);border-radius:9px;padding:7px 12px;box-shadow:0 0 20px -12px var(--cy);animation:taskpop .35s ease-out}
+.active-work .aw-dot{width:8px;height:8px;border-radius:50%;background:var(--cy);box-shadow:0 0 10px var(--cy);animation:nodepulse 1s infinite;flex:0 0 auto}
+.active-work .aw-name{font-family:var(--mono);font-size:11px;color:#eafdff;letter-spacing:.04em;flex:0 0 auto}
+.active-work .aw-task{font-family:var(--mono);font-size:11px;color:#9fc4d4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .holo-node:hover .orb{transform:scale(1.08)}
 .holo-node.sel .orb{transform:scale(1.22);border-color:#eafdff;box-shadow:0 0 18px 2px var(--cy),inset 0 1px 0 rgba(255,255,255,.15)}
 .holo-node.sel .nlabel{color:#eafdff;border-color:rgba(34,211,238,.5)}

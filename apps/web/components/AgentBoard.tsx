@@ -81,14 +81,23 @@ export default function AgentBoard() {
   const statusOf = (id: string, group: string) => {
     const l = status[id];
     if (l && fresh(l.updated_at)) return liveCls(l.status);
-    if (group === "board") { const v = (review?.verdicts ?? []).find((x: any) => x.role === id); if (v) return v.pass ? "pass" : "fail"; }
-    else { const lg = (review?.crew ?? []).find((x: any) => x.role === id); if (lg) return lg.ok === false ? "fail" : "ran"; }
+    // Only reflect the review board's verdicts while a run is actually live (recent activity).
+    // Otherwise an old failed/passed run would stay "stuck" lit forever — nodes rest at idle.
+    if (live) {
+      if (group === "board") { const v = (review?.verdicts ?? []).find((x: any) => x.role === id); if (v) return v.pass ? "pass" : "fail"; }
+      else { const lg = (review?.crew ?? []).find((x: any) => x.role === id); if (lg) return lg.ok === false ? "fail" : "ran"; }
+    }
     return "idle";
   };
 
   const crewPos = crew.map((a: any, i: number) => ({ a, cls: statusOf(a.id, "crew"), ...place(i, crew.length || 1, 31) }));
   const boardPos = board.map((a: any, i: number) => ({ a, cls: statusOf(a.id, "board"), ...place(i, board.length || 1, 47) }));
   const all = [...crewPos, ...boardPos];
+  // Live-running agents + their current task → surfaced ("popped") so you can watch work happen.
+  const activeAgents = [...crew, ...board]
+    .map((a: any) => ({ a, l: status[a.id] }))
+    .filter(({ l }: any) => l && fresh(l.updated_at) && (l.status === "running" || l.status === "planning" || l.status === "waiting"))
+    .map(({ a, l }: any) => ({ id: a.id, title: a.title, task: l.task || "çalışıyor…" }));
   const ticks = useMemo(() => {
     const out: any[] = [];
     for (let k = 0; k < 72; k++) {
@@ -285,16 +294,33 @@ export default function AgentBoard() {
               {busy ? "⚙ ÇALIŞIYOR" : vState === "listening" ? "● DİNLİYOR" : vState === "thinking" ? "… DÜŞÜNÜYOR" : vState === "speaking" ? "🔊 KONUŞUYOR" : live ? "● ÇALIŞIYOR" : "● ONLINE"}
             </span>
           </div>
-          {all.map((p: any) => (
-            <div key={p.a.id} className={`holo-node ag-${p.cls}`} style={{ left: `${p.x}%`, top: `${p.y}%` }} title={p.a.title}>
-              <span className="orb"><svg viewBox="0 0 24 24"><path d={ic(p.a.id)} /></svg></span>
-              <span className="nlabel">{p.a.title}</span>
-            </div>
-          ))}
+          {all.map((p: any) => {
+            const t = p.cls === "run" ? (status[p.a.id]?.task || "") : "";
+            return (
+              <div key={p.a.id} className={`holo-node ag-${p.cls}`} style={{ left: `${p.x}%`, top: `${p.y}%` }} title={p.a.title}>
+                <span className="orb"><svg viewBox="0 0 24 24"><path d={ic(p.a.id)} /></svg></span>
+                <span className="nlabel">{p.a.title}</span>
+                {t && <span className="ntask">{t}</span>}
+              </div>
+            );
+          })}
           {heard && <div className="holo-sub"><div className="hs-user">"{heard}"</div></div>}
           {streamingTool && <div className="holo-sub"><div className="hs-tool">⚙ {streamingTool}…</div></div>}
         </div>
       </div>
+
+      {/* live work — whichever agent is running, its current task "pops" here */}
+      {activeAgents.length > 0 && (
+        <div className="active-work">
+          {activeAgents.map((a) => (
+            <div key={a.id} className="aw-row">
+              <span className="aw-dot" />
+              <span className="aw-name">{a.title}</span>
+              <span className="aw-task">{a.task}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* conversation */}
       <div className="cc-chat">
