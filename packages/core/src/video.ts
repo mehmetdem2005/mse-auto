@@ -78,14 +78,20 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   const LOWMEM = ["-preset", "ultrafast", "-threads", "1", "-x264-params", "ref=1:bframes=0:rc-lookahead=10"];
 
   // 3a) One short Ken-Burns clip per image.
+  // IMPORTANT: feed zoompan a SINGLE input frame (-loop 1, no input -t) and cap the OUTPUT
+  // with -frames:v. Using "-loop 1 -t per" feeds per*25 input frames and zoompan emits `d`
+  // frames *per input frame* → a frame-count explosion (one clip ballooned to >1h of video,
+  // blowing the 300s render timeout). With one input frame, zoompan's d=frames produces the
+  // whole smooth zoom and -frames:v stops output at exactly `frames` (= `per` seconds).
   const clipPaths: string[] = [];
   for (let i = 0; i < imgPaths.length; i++) {
     const clip = join(dir, `clip${i}.mp4`);
     await run("ffmpeg", [
-      "-y", "-loop", "1", "-t", String(per), "-i", imgPaths[i],
+      "-y", "-loop", "1", "-i", imgPaths[i],
       "-vf",
       `scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,` +
         `zoompan=z='min(zoom+0.0008,1.12)':d=${frames}:s=1080x1920:fps=${FPS},setsar=1,format=yuv420p`,
+      "-frames:v", String(frames),
       "-c:v", "libx264", ...LOWMEM, "-r", String(FPS),
       clip,
     ]);
