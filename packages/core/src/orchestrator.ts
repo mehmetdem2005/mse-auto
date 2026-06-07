@@ -25,6 +25,7 @@ import { ToolRegistry } from "./toolregistry.js";
 import { getActivePrompt } from "./promptlab.js";
 import * as crew from "./crew.js";
 import * as goap from "./goap.js";
+import * as agentbus from "./agentbus.js";
 import type { ShortScript } from "./types.js";
 
 const MODE = process.env.AGENT_MODE || "crew";
@@ -179,19 +180,24 @@ export async function produceViaCrew(
   const tasks = crew.managerPlan(opts.topic);
   const budget: StepBudget = { used: 0, max: STEP_BUDGET };
   const crewLog: any[] = [];   // per-role transcript for the Agents panel
+  await agentbus.setAgent("manager", "running", { task: `Plan: ${opts.topic}`, displayName: "Yapımcı/Yönetici", jobId: opts.jobId });
   for (const t of tasks) {
     const role = crew.roleById(t.role); if (!role) continue;
     const system = await getPrompt(`role:${role.id}`, role.system);             // auto-improved prompt swap
     const tools = role.tools.includes("*") ? registry.list() : registry.for([...role.tools, "finish"]);
+    await agentbus.setAgent(role.id, "running", { task: t.goal, displayName: role.title, jobId: opts.jobId });
     try {
       const res = await runAgent({ role: role.id, system, goal: t.goal, tools, llm: llmTurn, blackboard, budget, jobId: opts.jobId, maxSteps: 6 });
       blackboard.set(`task:${t.id}`, res.result);
       crewLog.push({ role: role.id, title: role.title, goal: t.goal, ok: true, steps: res.steps, tools: res.trace.map((x) => x.tool), output: typeof res.result === "string" ? res.result.slice(0, 4000) : res.result });
+      await agentbus.setAgent(role.id, "completed", { task: t.goal, displayName: role.title, jobId: opts.jobId });
     } catch (e: any) {
       log.warn("crew role failed", { role: role.id, err: String(e?.message || e) });
       crewLog.push({ role: role.id, title: role.title, goal: t.goal, ok: false, error: String(e?.message || e) });
+      await agentbus.setAgent(role.id, "failed", { task: String(e?.message || e).slice(0, 120), displayName: role.title, jobId: opts.jobId });
     }
   }
+  await agentbus.setAgent("manager", "completed", { task: "Sentez + kurul", displayName: "Yapımcı/Yönetici", jobId: opts.jobId });
   const { script, usage } = await synthesize(opts.topic, blackboard, language, opts.styleId, deps.gen);
   const { script: reviewed, report } = await review(script, opts.topic);
   return { script: reviewed, report: { ...report, plan: tasks, crew: crewLog, mode: "crew" }, usage };

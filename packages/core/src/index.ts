@@ -56,3 +56,4 @@ export * as spatial from "./spatial.js";
 export * as leader from "./leader.js";
 export * as ontology from "./ontology.js";
 export * as contract from "./contract.js";
+export * as agentbus from "./agentbus.js";

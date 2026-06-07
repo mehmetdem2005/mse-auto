@@ -21,6 +21,7 @@ import { generate, SHORT_SCRIPT_SCHEMA, MODELS, type GenUsage } from "./gemini.j
 import { writeScript } from "./scriptwriter.js";
 import { recordUsage } from "./budget.js";
 import { log } from "./logger.js";
+import * as agentbus from "./agentbus.js";
 import type { ShortScript } from "./types.js";
 
 const REVIEW_MODEL = process.env.REVIEW_MODEL || MODELS.text;       // cheap/fast model for auditors
@@ -77,17 +78,20 @@ function artifactBlock(s: ShortScript): string {
 }
 
 async function reviewerCall(r: Reviewer, script: ShortScript): Promise<Verdict> {
+  await agentbus.setAgent(r.id, "running", { task: "Senaryoyu denetliyor", displayName: r.title });
   try {
     const res = await generate({ model: REVIEW_MODEL, system: r.system, prompt: artifactBlock(script), responseSchema: VERDICT_SCHEMA, search: r.useSearch && process.env.REVIEW_NO_SEARCH !== "on" });
     await recordUsage("text", res.usage.totalTokens || 1);
     let v: any;
     try { v = JSON.parse(res.text); } catch { const m = res.text.match(/\{[\s\S]*\}/); v = m ? JSON.parse(m[0]) : {}; }
+    await agentbus.setAgent(r.id, v.pass ? "completed" : "failed", { task: `puan ${Number(v.score ?? 0)}`, displayName: r.title });
     return {
       role: r.id, title: r.title, critical: r.critical,
       pass: !!v.pass, score: Number(v.score ?? 0), severity: (v.severity ?? "major") as Severity,
       issues: Array.isArray(v.issues) ? v.issues : [], required_fixes: Array.isArray(v.required_fixes) ? v.required_fixes : [],
     };
   } catch (e: any) {
+    await agentbus.setAgent(r.id, "failed", { task: String(e?.message || e).slice(0, 100), displayName: r.title });
     // A reviewer that errors (safety/parse/timeout) counts as a non-pass needing attention.
     log.warn("reviewer failed", { role: r.id, err: String(e?.message || e) });
     return { role: r.id, title: r.title, critical: r.critical, pass: false, score: 0, severity: r.critical ? "critical" : "major", issues: [`Denetçi çalışmadı: ${String(e?.message || e)}`], required_fixes: [] };
