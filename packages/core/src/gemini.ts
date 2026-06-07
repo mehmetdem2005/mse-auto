@@ -40,8 +40,29 @@ export interface GenResult { text: string; functionCalls: any[]; grounding: any[
 // ~50x larger (llama-3.3-70b: 30 RPM / 1000 RPD / 100k TPD). When GROQ_API_KEY is set we
 // route text generation to Groq. Embeddings/image/TTS stay on Gemini (Groq has no equivalent).
 const GROQ_KEY = process.env.GROQ_API_KEY;
-const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 const USE_GROQ = !!GROQ_KEY && process.env.LLM_PROVIDER !== "gemini";
+
+// Embeddings via OpenAI (only embeddings) — text-embedding-3-small supports a `dimensions`
+// param so we get 768-dim vectors that match the pgvector(768) schema. Avoids Gemini's
+// tiny embedding free-tier quota. Used when OPENAI_API_KEY is set.
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_EMBED_MODEL = process.env.OPENAI_EMBED_MODEL || "text-embedding-3-small";
+async function openaiEmbed(texts: string[], dim: number): Promise<number[][]> {
+  const resp = await fetch("https://api.openai.com/v1/embeddings", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: OPENAI_EMBED_MODEL, input: texts, dimensions: dim }),
+  });
+  if (!resp.ok) {
+    const body = await resp.text();
+    const err: any = new Error(`OpenAI embed ${resp.status}: ${body.slice(0, 200)}`);
+    err.status = resp.status;
+    throw err;
+  }
+  const d: any = await resp.json();
+  return (d.data ?? []).sort((a: any, b: any) => a.index - b.index).map((x: any) => x.embedding as number[]);
+}
 
 async function groqGenerate(opts: { model?: string; system?: string; prompt: string; json?: boolean; responseSchema?: Record<string, unknown>; }): Promise<GenResult> {
   const wantJson = Boolean(opts.json || opts.responseSchema);
@@ -135,6 +156,7 @@ export async function generate(opts: {
 export async function embed(texts: string[], outputDim = env().EMBED_DIM): Promise<number[][]> {
   await limiter.acquire("gemini-embed", { tokens: Math.ceil(texts.join(" ").length / 4) });
   try {
+    if (OPENAI_KEY) return await openaiEmbed(texts, outputDim);
     const res = await ai.models.embedContent({
       model: MODELS.embedding,
       contents: texts,
