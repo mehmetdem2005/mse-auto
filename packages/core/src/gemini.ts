@@ -183,8 +183,32 @@ export async function embed(texts: string[], outputDim = env().EMBED_DIM): Promi
   }
 }
 
-/** Original, license-safe image for a beat. Returns base64 PNG (SynthID-watermarked). */
+/** Original, license-safe image for a beat. Returns base64 PNG.
+ *  Prefers OpenAI gpt-image-1 — Gemini's free tier can't generate images, so every render fell
+ *  back to flat gradients (imageless videos). Falls back to Gemini, then the caller's gradient. */
+async function openaiImage(prompt: string): Promise<string> {
+  const r = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: process.env.OPENAI_IMAGE_MODEL || "gpt-image-1",
+      prompt: prompt.slice(0, 900),
+      size: process.env.OPENAI_IMAGE_SIZE || "1024x1536", // portrait → ffmpeg crops to 9:16
+      n: 1,
+    }),
+  });
+  if (!r.ok) throw new Error(`OpenAI image ${r.status}: ${(await r.text()).slice(0, 160)}`);
+  const d: any = await r.json();
+  const b64 = d.data?.[0]?.b64_json;
+  if (!b64) throw new Error("OpenAI: no image data");
+  return b64 as string;
+}
+
 export async function generateImage(prompt: string): Promise<string> {
+  if (OPENAI_KEY) {
+    try { return await openaiImage(prompt); }
+    catch (e) { console.warn("[image] OpenAI failed, Gemini fallback:", String((e as any)?.message || e).slice(0, 140)); }
+  }
   await limiter.acquire("gemini-image", { images: 1 });
   const res = await ai.models.generateContent({ model: MODELS.image, contents: prompt });
   const parts = (res as any).candidates?.[0]?.content?.parts ?? [];

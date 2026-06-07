@@ -16,7 +16,7 @@ const ICON: Record<string, string> = {
   language: "M12 2a10 10 0 100 20 10 10 0 000-20zM2 12h20M12 2c3 4 3 16 0 20M12 2c-3 4-3 16 0 20",
 };
 const ic = (id: string) => ICON[id] || "M12 2l9 5v10l-9 5-9-5V7z";
-const lineColor = (s: string) => s === "run" ? "rgba(0,217,255,.95)" : s === "pass" ? "rgba(0,240,168,.6)" : s === "fail" ? "rgba(255,59,69,.6)" : s === "ran" ? "rgba(255,138,28,.55)" : "rgba(0,217,255,.22)";
+const lineColor = (s: string) => s === "run" ? "rgba(43,255,158,.95)" : s === "pass" ? "rgba(0,240,168,.6)" : s === "fail" ? "rgba(255,59,69,.6)" : s === "ran" ? "rgba(255,138,28,.55)" : "rgba(0,217,255,.22)";
 const place = (i: number, n: number, r: number) => { const a = (-90 + (i * 360) / n) * (Math.PI / 180); return { x: 50 + r * Math.cos(a), y: 50 + r * Math.sin(a) }; };
 const fresh = (t: string) => Date.now() - new Date(t).getTime() < 10 * 60_000;
 const liveCls = (s: string) => (s === "running" || s === "planning" || s === "waiting") ? "run" : s === "completed" ? "ran" : (s === "failed" || s === "blocked") ? "fail" : "idle";
@@ -64,7 +64,10 @@ export default function AgentBoard() {
       const saved = localStorage.getItem("cc_chat");
       if (saved) {
         const arr = JSON.parse(saved);
-        if (Array.isArray(arr) && arr.length) { setMsgs(arr.map((m: any) => ({ ...m, streaming: false }))); return () => stopVoice(); }
+        // Drop stale error bubbles (e.g. the old DeepSeek tools[5] 400) so they don't linger.
+        const clean = (Array.isArray(arr) ? arr : []).filter((m: any) =>
+          !(m?.role === "assistant" && typeof m.content === "string" && /DeepSeek 400|tools\[\d+\]|^Hata:/.test(m.content)));
+        if (clean.length) { setMsgs(clean.map((m: any) => ({ ...m, streaming: false }))); return () => stopVoice(); }
       }
     } catch {}
     greet(); return () => stopVoice();
