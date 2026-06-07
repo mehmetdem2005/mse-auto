@@ -15,6 +15,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { env } from "./env.js";
 import { limiter } from "./ratelimit.js";
+import { gcpConfigured, vertexImage, vertexTTS } from "./vertex.js";
 
 const API_KEY = process.env.GEMINI_API_KEY!;
 if (!API_KEY) console.warn("[gemini] GEMINI_API_KEY is not set");
@@ -205,7 +206,13 @@ async function openaiImage(prompt: string): Promise<string> {
   return b64 as string;
 }
 
-export async function generateImage(prompt: string): Promise<string> {
+/** Generate one original image. `refB64` (previous beat's image) keeps the visual story consistent.
+ *  Priority: Vertex AI (user's GCP credit, reference-aware) → OpenAI → Gemini → caller's gradient. */
+export async function generateImage(prompt: string, refB64?: string): Promise<string> {
+  if (gcpConfigured()) {
+    try { return await vertexImage(prompt, refB64); }
+    catch (e) { console.warn("[image] Vertex failed, falling back:", String((e as any)?.message || e).slice(0, 160)); }
+  }
   if (OPENAI_KEY) {
     try { return await openaiImage(prompt); }
     catch (e) { console.warn("[image] OpenAI failed, Gemini fallback:", String((e as any)?.message || e).slice(0, 140)); }
@@ -231,6 +238,7 @@ async function openaiTTS(text: string): Promise<Buffer> {
 
 /** TTS narration. Prefers OpenAI premium voice when configured; falls back to Gemini. */
 export async function tts(opts: { text: string; voice?: string; styleInstruction?: string }): Promise<Buffer> {
+  if (gcpConfigured()) { try { return await vertexTTS(opts.text); } catch (e) { console.warn("[tts] Vertex/Cloud-TTS failed, falling back:", String((e as any)?.message || e).slice(0, 120)); } }
   if (OPENAI_KEY) { try { return await openaiTTS(opts.text); } catch (e) { console.warn("[tts] OpenAI failed, Gemini fallback:", String((e as any)?.message || e).slice(0, 100)); } }
   const voice = opts.voice || env().TTS_VOICE;
   await limiter.acquire("gemini-tts");

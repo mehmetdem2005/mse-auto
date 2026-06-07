@@ -1,13 +1,10 @@
 /**
  * Video assembly (default path: ffmpeg — light enough for Render's cheap tiers).
  *
- * Pipeline: ShortScript -> Gemini images (one per beat) -> Gemini TTS narration ->
- * ffmpeg: vertical 1080x1920, Ken-Burns zoom on each image, burned-in captions synced
- * roughly to beats, optional royalty-free background music bed -> output.mp4.
- *
- * Higher-quality alternative: Remotion (React-based, frame-perfect captions/animation).
- * See /remotion and PLAN.md §5 — swap renderVideo() for the Remotion renderer if you want
- * studio-grade motion. ffmpeg is the robust default so the worker runs anywhere.
+ * Pipeline: ShortScript -> per-beat images (Vertex AI, each beat referencing the previous
+ * image for a consistent visual story) -> Cloud TTS narration -> ffmpeg: vertical 1080x1920,
+ * Ken-Burns zoom per image, burned-in TITLE (top banner) + word-wrapped SUBTITLES (bottom,
+ * timed to the real narration length so nothing runs off-screen) -> output.mp4.
  *
  * Visuals are AI-generated/original or your own assets only — no scraping copyrighted media.
  */
@@ -26,37 +23,114 @@ function run(cmd: string, args: string[]): Promise<void> {
   });
 }
 
+/** Measure media duration in seconds with ffprobe (so captions sync to the real audio). */
+function probeDuration(path: string): Promise<number> {
+  return new Promise((res) => {
+    let out = "";
+    const p = spawn("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "default=nw=1:nk=1", path]);
+    p.stdout.on("data", (d) => (out += d.toString()));
+    p.on("close", () => res(parseFloat(out.trim()) || 0));
+    p.on("error", () => res(0));
+  });
+}
+
+// ── Subtitles (ASS): word-wrapped, boxed, timed to narration ──────────────────
+function assTime(s: number): string {
+  s = Math.max(0, s);
+  const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
+  return `${h}:${String(m).padStart(2, "0")}:${sec.toFixed(2).padStart(5, "0")}`;
+}
+const assEsc = (t: string) => t.replace(/\r?\n/g, " ").replace(/\{/g, "(").replace(/\}/g, ")").trim();
+
+/** Split narration into short, screen-safe caption cues, weighted by length over the real duration. */
+function buildCues(text: string, dur: number): { start: number; end: number; text: string }[] {
+  const sentences = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?…])\s+/).filter(Boolean);
+  const MAX = 84; // ~2 lines at fontsize 60 on a 1080-wide frame
+  const chunks: string[] = [];
+  for (const s of sentences) {
+    if (s.length <= MAX) { chunks.push(s); continue; }
+    let cur = "";
+    for (const w of s.split(" ")) {
+      if ((cur + " " + w).trim().length > MAX) { if (cur) chunks.push(cur.trim()); cur = w; }
+      else cur += " " + w;
+    }
+    if (cur.trim()) chunks.push(cur.trim());
+  }
+  if (!chunks.length) return [];
+  const totalChars = chunks.reduce((a, c) => a + c.length, 0) || 1;
+  const cues: { start: number; end: number; text: string }[] = [];
+  let t = 0;
+  for (const c of chunks) {
+    const d = Math.max(1.0, (dur * c.length) / totalChars);
+    cues.push({ start: t, end: Math.min(dur, t + d), text: c });
+    t += d;
+  }
+  cues[cues.length - 1].end = dur;
+  return cues;
+}
+
+/** Build an ASS subtitle file: persistent top title banner + bottom word-wrapped captions.
+ *  Colours are &HAABBGGRR. BorderStyle 3 = opaque box (BackColour) so text never gets lost. */
+function buildAss(title: string, cues: { start: number; end: number; text: string }[], total: number): string {
+  const header =
+`[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Title,DejaVu Sans,56,&H00FFFFFF,&H000000FF,&H00000000,&HA0000000,1,0,0,0,100,100,0,0,3,4,0,8,70,70,110,1
+Style: Sub,DejaVu Sans,62,&H0000FFFF,&H000000FF,&H00000000,&HB4000000,1,0,0,0,100,100,0,0,3,6,2,2,90,90,300,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`;
+  const lines: string[] = [];
+  if (title) lines.push(`Dialogue: 0,${assTime(0)},${assTime(total)},Title,,0,0,0,,${assEsc(title)}`);
+  for (const c of cues) lines.push(`Dialogue: 0,${assTime(c.start)},${assTime(c.end)},Sub,,0,0,0,,${assEsc(c.text)}`);
+  return header + lines.join("\n") + "\n";
+}
+
 export async function renderVideo(jobId: string, script: ShortScript): Promise<{ videoPath: string; audioPath: string }> {
   const dir = join(WORK, jobId);
   await mkdir(dir, { recursive: true });
 
-  const audioSec = script.estDurationSec || 50;
+  const estSec = script.estDurationSec || 50;
 
-  // 1) Narration (Gemini TTS) – style steered per the chosen styleId.
+  // 1) Narration (Cloud TTS Chirp 3 HD via Vertex; OpenAI/Gemini fallback).
   //    Free-tier fallback: if TTS is unavailable, render a silent track so the video still builds.
-  const voiceStyle = script.styleId.includes("narrator")
-    ? script.styleId
-    : "warm documentary narrator, unhurried";
-  const audioPath = join(dir, "narration.wav");
+  const voiceStyle = script.styleId.includes("narrator") ? script.styleId : "warm documentary narrator, unhurried";
+  let audioPath = join(dir, "narration.mp3");
   try {
     const audio = await tts({ text: script.narrationText, styleInstruction: voiceStyle });
     await writeFile(audioPath, audio);
   } catch {
-    await run("ffmpeg", ["-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", "-t", String(audioSec), audioPath]);
+    audioPath = join(dir, "silent.wav");
+    await run("ffmpeg", ["-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", "-t", String(estSec), audioPath]);
   }
 
-  // 2) One original image per beat.
-  //    Free-tier fallback: if image generation is quota-blocked, use an ffmpeg gradient background.
+  // Real narration length drives both per-image timing and caption sync.
+  const audioSec = (await probeDuration(audioPath)) || estSec;
+
+  // 2) One original image per beat. Each call is independent (no context limit), but we pass the
+  //    PREVIOUS image back in as a reference so characters / style / palette / world stay consistent
+  //    and the story visually continues beat-to-beat.
   const PALETTE = [["0x10243f", "0x2a1840"], ["0x1c1c2e", "0x3a2a10"], ["0x0e2a2a", "0x2a0e1e"], ["0x24201a", "0x10202c"], ["0x281020", "0x102820"]];
   const imgPaths: string[] = [];
   const prompts = script.visualPrompts.length ? script.visualPrompts : script.beats;
+  let prevB64: string | undefined;
   for (let i = 0; i < prompts.length; i++) {
     const p = join(dir, `img${i}.png`);
+    const prompt = i === 0
+      ? `Establish the visual world for a vertical 9:16 short video. Scene: ${prompts[i]}. Cinematic, original illustration, rich consistent color palette and lighting. No text, no captions, no watermark, no real logos or real people.`
+      : `Continue the SAME visual story — keep the exact same characters, art style, color palette, lighting and world as the reference image. Next moment in the narrative: ${prompts[i]}. Vertical 9:16, cinematic. No text, no captions, no watermark.`;
     try {
-      const b64 = await generateImage(
-        `${prompts[i]} — vertical 9:16 composition, cinematic, original illustration, no text, no real logos or real people`,
-      );
+      const b64 = await generateImage(prompt, prevB64);
       await writeFile(p, Buffer.from(b64, "base64"));
+      prevB64 = b64; // carry the look forward to the next beat
     } catch {
       const [c0, c1] = PALETTE[i % PALETTE.length];
       await run("ffmpeg", ["-y", "-f", "lavfi", "-i", `gradients=s=1080x1920:c0=${c0}:c1=${c1}:x0=0:y0=0:x1=1080:y1=1920:duration=1`, "-frames:v", "1", p]);
@@ -64,25 +138,16 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
     imgPaths.push(p);
   }
 
-  // 3) Determine per-image duration from narration length (approx) and build ffmpeg inputs.
-  //    For exact timing, measure audio duration with ffprobe; here we split evenly.
+  // 3) Per-image duration from the real narration length.
   const per = Math.max(2, audioSec / imgPaths.length);
-  const FPS = 24;                                   // 24 (vs 30) → ~20% fewer frames to encode
+  const FPS = 24;
   const frames = Math.round(per * FPS);
 
-  // Memory-bounded assembly (critical on 512MB tiers like Render starter): instead of one
-  // giant filtergraph that holds every beat + zoompan + libx264 (default preset, all threads)
-  // in RAM at once — which OOM-kills the whole worker mid-render — we render each Ken-Burns
-  // clip on its own (peak memory = one 1080x1920 frame), stream-copy concat them (~0 memory),
-  // then do a single light caption+audio pass. All passes use ultrafast + 1 thread.
+  // Memory-bounded assembly (critical on 512MB tiers): render each Ken-Burns clip alone, stream-copy
+  // concat them, then a single light caption+audio pass. All passes use ultrafast + 1 thread.
   const LOWMEM = ["-preset", "ultrafast", "-threads", "1", "-x264-params", "ref=1:bframes=0:rc-lookahead=10"];
 
-  // 3a) One short Ken-Burns clip per image.
-  // IMPORTANT: feed zoompan a SINGLE input frame (-loop 1, no input -t) and cap the OUTPUT
-  // with -frames:v. Using "-loop 1 -t per" feeds per*25 input frames and zoompan emits `d`
-  // frames *per input frame* → a frame-count explosion (one clip ballooned to >1h of video,
-  // blowing the 300s render timeout). With one input frame, zoompan's d=frames produces the
-  // whole smooth zoom and -frames:v stops output at exactly `frames` (= `per` seconds).
+  // 3a) One short Ken-Burns clip per image (single input frame + -frames:v to avoid frame explosion).
   const clipPaths: string[] = [];
   for (let i = 0; i < imgPaths.length; i++) {
     const clip = join(dir, `clip${i}.mp4`);
@@ -98,21 +163,21 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
     clipPaths.push(clip);
   }
 
-  // 3b) Concatenate clips with the concat demuxer (stream copy — negligible memory).
+  // 3b) Concatenate clips (stream copy — negligible memory).
   const listPath = join(dir, "clips.txt");
   await writeFile(listPath, clipPaths.map((p) => `file '${p}'`).join("\n"));
   const joined = join(dir, "joined.mp4");
   await run("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", joined]);
 
-  // 3c) Burn the hook caption (first ~2.5s) and mux narration — single, light pass.
-  const safeHook = script.hook.replace(/[:\\']/g, " ").slice(0, 60);
-  const FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
+  // 3c) Burn TITLE + SUBTITLES (ASS, word-wrapped & boxed so nothing overflows) and mux narration.
+  const cues = buildCues(script.narrationText || script.beats.join(". "), audioSec);
+  const title = (script.title || script.hook || "").slice(0, 90);
+  const assPath = join(dir, "subs.ass");
+  await writeFile(assPath, buildAss(title, cues, audioSec));
   const videoPath = join(dir, "short.mp4");
   await run("ffmpeg", [
     "-y", "-i", joined, "-i", audioPath,
-    "-vf",
-    `drawtext=fontfile=${FONT}:text='${safeHook}':fontcolor=white:fontsize=64:box=1:boxcolor=black@0.5:` +
-      `boxborderw=20:x=(w-text_w)/2:y=h*0.12:enable='lt(t,2.5)'`,
+    "-vf", `ass=${assPath}`,
     "-c:v", "libx264", ...LOWMEM, "-pix_fmt", "yuv420p", "-r", String(FPS),
     "-c:a", "aac", "-b:a", "192k",
     "-shortest",
