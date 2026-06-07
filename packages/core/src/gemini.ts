@@ -35,6 +35,43 @@ export class SafetyBlockedError extends Error {}
 export interface GenUsage { promptTokens: number; outputTokens: number; totalTokens: number; }
 export interface GenResult { text: string; functionCalls: any[]; grounding: any[]; usage: GenUsage; raw: any; }
 
+// ── Groq backend (OpenAI-compatible) ────────────────────────────────────────
+// Gemini's free tier is brutal (gemini-2.5-flash = 20 requests/DAY). Groq's free tier is
+// ~50x larger (llama-3.3-70b: 30 RPM / 1000 RPD / 100k TPD). When GROQ_API_KEY is set we
+// route text generation to Groq. Embeddings/image/TTS stay on Gemini (Groq has no equivalent).
+const GROQ_KEY = process.env.GROQ_API_KEY;
+const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+const USE_GROQ = !!GROQ_KEY && process.env.LLM_PROVIDER !== "gemini";
+
+async function groqGenerate(opts: { model?: string; system?: string; prompt: string; json?: boolean; responseSchema?: Record<string, unknown>; }): Promise<GenResult> {
+  const wantJson = Boolean(opts.json || opts.responseSchema);
+  const resource = opts.model === MODELS.reasoning ? "gemini-reasoning" : "gemini-text";
+  await limiter.acquire(resource, { tokens: Math.ceil((opts.prompt.length + (opts.system?.length ?? 0)) / 4) });
+  const messages: any[] = [];
+  if (opts.system) messages.push({ role: "system", content: opts.system + (wantJson ? "\n\nYANIT SADECE tek ve geçerli bir JSON nesnesi olmalı; başka metin yazma." : "") });
+  messages.push({ role: "user", content: opts.prompt });
+  const resp = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: GROQ_MODEL, messages, temperature: 0.7, max_tokens: 4096, ...(wantJson ? { response_format: { type: "json_object" } } : {}) }),
+  });
+  if (!resp.ok) {
+    const body = await resp.text();
+    const err: any = new Error(`Groq ${resp.status}: ${body.slice(0, 300)}`);
+    err.status = resp.status;                                  // so reliability.isRateLimit() detects 429
+    const ra = resp.headers.get("retry-after"); if (ra) err.retryAfter = ra;
+    throw err;
+  }
+  const d: any = await resp.json();
+  const text = d.choices?.[0]?.message?.content ?? "";
+  const u = d.usage ?? {};
+  return {
+    text, functionCalls: [], grounding: [],
+    usage: { promptTokens: u.prompt_tokens ?? 0, outputTokens: u.completion_tokens ?? 0, totalTokens: u.total_tokens ?? Math.ceil(text.length / 4) },
+    raw: d,
+  };
+}
+
 export async function generate(opts: {
   model?: string;
   system?: string;
@@ -46,6 +83,7 @@ export async function generate(opts: {
   responseSchema?: Record<string, unknown>;
   thinkingLevel?: "minimal" | "low" | "medium" | "high";
 }): Promise<GenResult> {
+  if (USE_GROQ) return groqGenerate(opts);   // route text generation to Groq's larger free tier
   const tools: any[] = [];
   if (opts.search) tools.push({ googleSearch: {} });
   if (opts.functions?.length) tools.push({ functionDeclarations: opts.functions });
@@ -68,7 +106,7 @@ export async function generate(opts: {
       tools: tools.length ? tools : undefined,
       responseMimeType: wantStructured ? "application/json" : undefined,
       responseSchema: wantStructured ? (opts.responseSchema as any) : undefined,
-      thinkingConfig: opts.thinkingLevel ? ({ thinkingLevel: opts.thinkingLevel.toUpperCase() } as any) : undefined,
+      thinkingConfig: (opts.thinkingLevel && process.env.GEMINI_THINKING === "on") ? ({ thinkingLevel: opts.thinkingLevel.toUpperCase() } as any) : undefined,
     },
   });
 
@@ -96,12 +134,23 @@ export async function generate(opts: {
 
 export async function embed(texts: string[], outputDim = env().EMBED_DIM): Promise<number[][]> {
   await limiter.acquire("gemini-embed", { tokens: Math.ceil(texts.join(" ").length / 4) });
-  const res = await ai.models.embedContent({
-    model: MODELS.embedding,
-    contents: texts,
-    config: { outputDimensionality: outputDim },
-  });
-  return (res.embeddings ?? []).map((e: any) => e.values as number[]);
+  try {
+    const res = await ai.models.embedContent({
+      model: MODELS.embedding,
+      contents: texts,
+      config: { outputDimensionality: outputDim },
+    });
+    return (res.embeddings ?? []).map((e: any) => e.values as number[]);
+  } catch (e) {
+    // Runtime resilience: Gemini embeddings have their own (small) free-tier quota. When EMBED_FALLBACK
+    // is on, degrade to zero-vectors so a Groq-generated draft still completes instead of dead-lettering.
+    // (Seeding runs WITHOUT this flag so it fails loudly and stores only real vectors.)
+    if (process.env.EMBED_FALLBACK === "on") {
+      console.warn("[gemini] embed failed — zero-vector fallback:", String((e as any)?.message || e).slice(0, 120));
+      return texts.map(() => new Array(outputDim).fill(0));
+    }
+    throw e;
+  }
 }
 
 /** Original, license-safe image for a beat. Returns base64 PNG (SynthID-watermarked). */
@@ -179,7 +228,7 @@ export async function generateTurn(opts: {
     config: {
       systemInstruction: opts.system,
       tools: opts.functions?.length ? [{ functionDeclarations: opts.functions }] : undefined,
-      thinkingConfig: opts.thinkingLevel ? ({ thinkingLevel: opts.thinkingLevel.toUpperCase() } as any) : undefined,
+      thinkingConfig: (opts.thinkingLevel && process.env.GEMINI_THINKING === "on") ? ({ thinkingLevel: opts.thinkingLevel.toUpperCase() } as any) : undefined,
     },
   });
 
