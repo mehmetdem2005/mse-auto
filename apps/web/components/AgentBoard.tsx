@@ -22,6 +22,7 @@ export default function AgentBoard() {
   const [d, setD] = useState<Feed | null>(null);
   const [open, setOpen] = useState<string | null>(null);
   const [err, setErr] = useState(false);
+  const [tab, setTab] = useState<"core" | "sys" | "active" | "log">("core");
 
   useEffect(() => {
     let on = true;
@@ -108,9 +109,16 @@ export default function AgentBoard() {
         <span className="cb-r" style={{ color: live ? "var(--cy)" : "#5fd0e6" }}>{live ? "● PIPELINE AKTİF" : err ? "● BAĞLANTI YOK" : "○ BEKLEMEDE"}</span>
       </div>
 
+      <div className="holo-tabs">
+        {([["core", "Çekirdek"], ["sys", "Sistem"], ["active", "Aktif Ajan"], ["log", "Canlı Log"]] as const).map(([t, l]) => (
+          <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{l}</button>
+        ))}
+      </div>
+
+      <div className="holo-root" data-tab={tab}>
       <div className="holo-stage">
         {/* SOL — sistem + kaynak monitörü */}
-        <div className="holo-panel">
+        <div className="holo-panel tabpane tp-sys">
           <div className="eyebrow">Sistem Durumu</div>
           <div className="holo-stat"><span className="k">Durum</span><span className="v" style={{ color: live ? "var(--cy)" : "#a7ecf7" }}>{live ? "● CANLI" : "○ HAZIR"}</span></div>
           <div className="holo-stat"><span className="k">Toplam ajan</span><span className="v">{crew.length + board.length}</span></div>
@@ -127,7 +135,7 @@ export default function AgentBoard() {
         </div>
 
         {/* ORTA — hologram */}
-        <div className="holo">
+        <div className="holo tabpane tp-core">
           <span className="corner tl" /><span className="corner tr" /><span className="corner bl" /><span className="corner br" />
           <div className="holo-ring r2" /><div className="holo-ring r3" /><div className="holo-ring r1" /><div className="holo-sweep" />
           <svg className="holo-lines" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -152,34 +160,37 @@ export default function AgentBoard() {
         </div>
 
         {/* SAĞ — aktif ajan */}
-        <div className="holo-panel">
+        <div className="holo-panel tabpane tp-active">
           <div className="eyebrow">Aktif Ajan</div>
           {selNode ? detail(selNode) : <div className="tag">{d ? "Bir ajana dokun → görevi ve logu açılır." : "Yükleniyor…"}</div>}
         </div>
       </div>
 
-      <div className="legend" style={{ justifyContent: "center" }}>
+      <div className="legend tabpane tp-core" style={{ justifyContent: "center" }}>
         <span><i style={{ background: "var(--cy)" }} />çalışıyor</span><span><i style={{ background: "var(--good)" }} />geçti</span>
         <span><i style={{ background: "var(--bad)" }} />kaldı / veto</span><span><i style={{ background: "var(--accent)" }} />çalıştı</span>
         <span><i style={{ background: "#3a3f49" }} />beklemede</span>
       </div>
 
       {/* Execution trace — canlı log akışı */}
-      <h2 style={{ marginTop: 26 }}>Yürütme İzi (canlı)</h2>
-      <div className="holo-panel" style={{ maxHeight: 300, overflow: "auto", padding: 0 }}>
-        <table style={{ border: "none", background: "none" }}>
-          <tbody>
-            {(d?.trace ?? []).map((ev, i) => (
-              <tr key={i}>
-                <td className="mono" style={{ color: "#5a7c8c", fontSize: 11, whiteSpace: "nowrap" }}>{new Date(ev.created_at).toLocaleTimeString()}</td>
-                <td><span className="badge">{ev.type}</span></td>
-                <td className="mono" style={{ fontSize: 11, color: "#7fa8ba" }}>{ev.stage ?? "—"}</td>
-                <td className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>{ev.data?.message || ev.data?.reason || ev.data?.topic || ""}</td>
-              </tr>
-            ))}
-            {!d?.trace?.length && <tr><td className="tag" style={{ padding: 14 }}>Henüz olay yok — bir tur dönünce loglar buraya akacak.</td></tr>}
-          </tbody>
-        </table>
+      <div className="tabpane tp-log">
+        <h2 style={{ marginTop: 26 }}>Yürütme İzi (canlı)</h2>
+        <div className="holo-panel" style={{ maxHeight: 300, overflow: "auto", padding: 0 }}>
+          <table style={{ border: "none", background: "none" }}>
+            <tbody>
+              {(d?.trace ?? []).map((ev, i) => (
+                <tr key={i}>
+                  <td className="mono" style={{ color: "#5a7c8c", fontSize: 11, whiteSpace: "nowrap" }}>{new Date(ev.created_at).toLocaleTimeString()}</td>
+                  <td><span className="badge">{ev.type}</span></td>
+                  <td className="mono" style={{ fontSize: 11, color: "#7fa8ba" }}>{ev.stage ?? "—"}</td>
+                  <td className="mono" style={{ color: "var(--muted)", fontSize: 11 }}>{ev.data?.message || ev.data?.reason || ev.data?.topic || ""}</td>
+                </tr>
+              ))}
+              {!d?.trace?.length && <tr><td className="tag" style={{ padding: 14 }}>Henüz olay yok — bir tur dönünce loglar buraya akacak.</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
       </div>
     </>
   );
