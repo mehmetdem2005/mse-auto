@@ -113,8 +113,17 @@ async function render(job: any, cfg: ChannelConfig) {
 
 async function upload(job: any) {
   const s = job.script;
+  // If YouTube is not connected, hold here (do NOT consume attempts → no dead-letter).
+  // The video is already rendered and stored. User connects YouTube → it uploads next tick.
+  const connected = await youtube.isConnected();
+  if (!connected) {
+    const nextRun = new Date(Date.now() + 6 * 3600 * 1000).toISOString(); // retry in 6h
+    return {
+      next: "scheduled",
+      patch: { last_error: "YouTube bağlı değil — /settings sayfasından OAuth bağlayın", next_run_at: nextRun, attempts: 0 },
+    };
+  }
   // Idempotency: on a retry, the previous attempt may have uploaded before crashing.
-  // Check the channel for a video tagged with this job's key before re-uploading.
   if ((job.attempts ?? 0) > 0 && job.idempotency_key) {
     const existing = await youtube.findUploadedByKey(job.idempotency_key).catch(() => null);
     if (existing) return { next: "published", patch: { youtube_video_id: existing }, uploaded: true };
@@ -124,7 +133,7 @@ async function upload(job: any) {
       filePath: job.video_path, title: s.title, description: s.description, tags: s.tags,
       madeWithAI: true, idempotencyKey: job.idempotency_key,
     }), { attempts: 2, label: "upload" }));
-  await budget.recordUsage("youtube_units", 100, job.id); // videos.insert ≈ 100 units
+  await budget.recordUsage("youtube_units", 100, job.id);
   return { next: "published", patch: { youtube_video_id: id }, uploaded: true };
 }
 
@@ -322,10 +331,13 @@ async function runAutonomy() {
 export async function autoHeal(): Promise<number> {
   const { data: stuck } = await supabase
     .from("video_jobs")
-    .select("id,topic,script,video_path,youtube_video_id,heal_count")
+    .select("id,topic,script,video_path,youtube_video_id,heal_count,last_error")
     .in("stage", ["dead_letter", "failed"]).lt("heal_count", 2).limit(5);
   let n = 0;
   for (const j of stuck ?? []) {
+    // Don't reset jobs that are stuck because YouTube is not connected — they'll
+    // auto-advance once credentials are added. Only reset real pipeline errors.
+    if (String(j.last_error || "").includes("YouTube bağlı değil")) continue;
     let stage = "queued";
     if (j.script) stage = "approved";
     if (j.video_path && !j.youtube_video_id) stage = "scheduled";
