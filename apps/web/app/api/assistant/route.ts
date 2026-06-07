@@ -73,7 +73,7 @@ const TOOLS = [
   { type: "function", function: { name: "pipeline_calistir", description: "Yeni bir Short taslağı üretimini başlatır (worker tick).", parameters: { type: "object", properties: {} } } },
   { type: "function", function: { name: "panel_ac", description: "Bir paneli sohbette açar.", parameters: { type: "object", properties: { panel: { type: "string", enum: ["queue", "analytics", "status", "knowledge", "memory", "agents"] } }, required: ["panel"] } } },
   { type: "function", function: { name: "konu_ekle", description: "Bilgi tabanına yeni bir konu ekler ve pipeline'ı tetikler. Bilgi tabanı boş olduğunda veya kullanıcı özel konu istediğinde kullan.", parameters: { type: "object", properties: { konu: { type: "string", description: "Eklenecek konu (Türkçe, 5-60 karakter)" } }, required: ["konu"] } } },
-  { type: "function", function: { name: "ajanları_sıfırla", description: "Kırmızı/hatalı ajan durumlarını temizler, ajan görselini sıfırlar.", parameters: { type: "object", properties: {} } } },
+  { type: "function", function: { name: "ajanlari_sifirla", description: "Kırmızı/hatalı ajan durumlarını temizler, ajan görselini sıfırlar.", parameters: { type: "object", properties: {} } } },
 ];
 
 async function execTool(name: string, args: any): Promise<{ summary: string; panel?: any }> {
@@ -110,7 +110,7 @@ async function execTool(name: string, args: any): Promise<{ summary: string; pan
     const r = await addTopic(konu);
     return { summary: r.message };
   }
-  if (name === "ajanları_sıfırla") {
+  if (name === "ajanlari_sifirla") {
     await clearFailedAgents();
     return { summary: "Hatalı/kırmızı ajan durumları temizlendi. Ajan görseli şimdi daha temiz görünmeli." };
   }
@@ -128,7 +128,7 @@ function createStream(messages: any[], s: Awaited<ReturnType<typeof snapshot>>) 
     async start(controller) {
       try {
         const system = `Sen "ShortsPilot" otonom YouTube Shorts pipeline'ının AI asistanısın — JARVIS gibi, kısa net Türkçe.
-SADECE konuşma; istenen işi ARAÇLARLA GERÇEKTEN YAP. Kullanıcı "sorunları çöz" derse sorunlari_coz çağır; "yeni taslak/üret/konu ekle" derse pipeline_calistir veya konu_ekle; "X göster/aç" derse panel_ac; durum sorulursa durum_oku; ajanlar kırmızıysa ajanları_sıfırla. Birden fazla adım gerekiyorsa sırayla araç çağır. İş bittiğinde NE YAPTIĞINI 1-2 cümleyle özetle ("✓ ... tamamlandı").
+SADECE konuşma; istenen işi ARAÇLARLA GERÇEKTEN YAP. Kullanıcı "sorunları çöz" derse sorunlari_coz çağır; "yeni taslak/üret/konu ekle" derse pipeline_calistir veya konu_ekle; "X göster/aç" derse panel_ac; durum sorulursa durum_oku; ajanlar kırmızıysa ajanlari_sifirla. Birden fazla adım gerekiyorsa sırayla araç çağır. İş bittiğinde NE YAPTIĞINI 1-2 cümleyle özetle ("✓ ... tamamlandı").
 CANLI DURUM: onay bekleyen ${s.pendingApprovals}, son iş ${s.lastJob ? s.lastJob.topic + "/" + s.lastJob.stage : "yok"}, çalışan ajanlar ${s.running.join(",") || "yok"}, hatalı ${s.failed.join(",") || "yok"}.`;
 
         const init = messages.length === 0;

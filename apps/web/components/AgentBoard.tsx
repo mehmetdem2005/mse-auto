@@ -29,7 +29,7 @@ type Msg =
 
 const TOOL_LABEL: Record<string, string> = {
   durum_oku: "Durum okundu", sorunlari_coz: "Sorunlar çözüldü", pipeline_calistir: "Üretim tetiklendi",
-  panel_ac: "Panel açıldı", konu_ekle: "Konu eklendi", "ajanları_sıfırla": "Ajanlar sıfırlandı",
+  panel_ac: "Panel açıldı", konu_ekle: "Konu eklendi", ajanlari_sifirla: "Ajanlar sıfırlandı",
 };
 
 export default function AgentBoard() {
