@@ -82,7 +82,7 @@ export default function AgentBoard() {
     });
   }
   async function transcribe(blob: Blob) {
-    if (blob.size < 1200) return;                       // ignore tiny/noise clips
+    if (blob.size < 4000) return;                       // ignore tiny/silent clips (avoids hallucinations)
     setVState("thinking");
     const fd = new FormData(); fd.append("file", blob, "a.webm");
     try { const r = await fetch("/api/stt", { method: "POST", body: fd }); const j = await r.json(); if (j.text) await handleUtterance(j.text); else if (onRef.current) setVState("listening"); }
@@ -94,9 +94,9 @@ export default function AgentBoard() {
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
       const src = ctx.createMediaStreamSource(stream); const an = ctx.createAnalyser(); an.fftSize = 512; src.connect(an);
       const buf = new Uint8Array(an.fftSize);
-      let rec: MediaRecorder, chunks: Blob[] = [], hadSpeech = false, silence = 0;
+      let rec: MediaRecorder, chunks: Blob[] = [], hadSpeech = false, silence = 0, speechFrames = 0;
       const newRec = () => {
-        rec = new MediaRecorder(stream, { mimeType: "audio/webm" }); chunks = []; hadSpeech = false; silence = 0;
+        rec = new MediaRecorder(stream, { mimeType: "audio/webm" }); chunks = []; hadSpeech = false; silence = 0; speechFrames = 0;
         rec.ondataavailable = (e) => chunks.push(e.data);
         rec.onstop = () => { const had = hadSpeech; const blob = new Blob(chunks, { type: "audio/webm" }); if (had) transcribe(blob); if (onRef.current && !speakingRef.current) newRec(); };
         rec.start(); mediaRef.current = { stream, rec, ctx };
@@ -106,8 +106,8 @@ export default function AgentBoard() {
         if (speakingRef.current) { requestAnimationFrame(loop); return; }   // don't record our own TTS
         an.getByteTimeDomainData(buf); let sum = 0; for (const v of buf) { const x = (v - 128) / 128; sum += x * x; }
         const rms = Math.sqrt(sum / buf.length);
-        if (rms > 0.045) { hadSpeech = true; silence = 0; }
-        else if (hadSpeech) { silence += 1; if (silence > 45 && rec && rec.state === "recording") rec.stop(); } // ~0.75s silence → end utterance
+        if (rms > 0.05) { speechFrames++; if (speechFrames > 6) hadSpeech = true; silence = 0; }   // need sustained speech
+        else if (hadSpeech) { silence += 1; if (silence > 55 && rec && rec.state === "recording") rec.stop(); } // ~0.9s silence → end utterance
         requestAnimationFrame(loop);
       };
       onRef.current = true; setVState("listening"); newRec(); loop();

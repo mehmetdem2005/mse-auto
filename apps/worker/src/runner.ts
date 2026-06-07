@@ -317,6 +317,30 @@ async function runAutonomy() {
   } catch (err: any) { log.error("autonomy failed", { err: String(err?.message || err) }); }
 }
 
+/** Self-recovery: automatically re-drive failed / dead-letter jobs (bounded) instead of just
+ *  surfacing the error to the user. Resumes from the furthest completed point. */
+export async function autoHeal(): Promise<number> {
+  const { data: stuck } = await supabase
+    .from("video_jobs")
+    .select("id,topic,script,video_path,youtube_video_id,heal_count")
+    .in("stage", ["dead_letter", "failed"]).lt("heal_count", 2).limit(5);
+  let n = 0;
+  for (const j of stuck ?? []) {
+    let stage = "queued";
+    if (j.script) stage = "approved";
+    if (j.video_path && !j.youtube_video_id) stage = "scheduled";
+    const hc = (j.heal_count ?? 0) + 1;
+    await supabase.from("video_jobs").update({
+      stage, attempts: 0, locked_by: null, locked_until: null,
+      next_run_at: new Date().toISOString(), heal_count: hc,
+      last_error: `auto-heal #${hc}: sistem sorunu kendi çözmeye çalışıyor (${stage}'dan yeniden)`,
+    }).eq("id", j.id);
+    await events.logEvent({ jobId: j.id, stage, type: "retry", data: { reason: "auto-heal", attempt: hc } }).catch(() => {});
+    n++;
+  }
+  return n;
+}
+
 export async function tick() {
   try { await control.assertRunning(); }
   catch (e) { log.warn("paused — idling", { reason: String((e as any).message) }); return; }
@@ -333,6 +357,9 @@ export async function tick() {
   const cfg = await getConfig();
   const reclaimed = await reliability.reclaimStaleLocks();
   if (reclaimed) log.info("reclaimed stale locks", { reclaimed });
+
+  const healed = await autoHeal();          // self-recover failed/dead-letter jobs (don't just show errors)
+  if (healed) log.info("auto-heal: recovered jobs", { healed });
 
   await topUp(cfg);
 
