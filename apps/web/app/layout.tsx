@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </a>
               ))}
             </nav>
-            <div style={{ position: "absolute", bottom: 20, left: 16, right: 16 }}>
+            <div style={{ marginTop: "auto", paddingTop: 20 }}>
               <div className="tag" style={{ lineHeight: 1.6 }}>
                 İnsan onayı: <b style={{ color: "var(--accent)" }}>AÇIK</b><br />
                 Kalite &gt; nicelik
