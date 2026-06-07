@@ -67,38 +67,47 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   // 3) Determine per-image duration from narration length (approx) and build ffmpeg inputs.
   //    For exact timing, measure audio duration with ffprobe; here we split evenly.
   const per = Math.max(2, audioSec / imgPaths.length);
+  const FPS = 24;                                   // 24 (vs 30) → ~20% fewer frames to encode
+  const frames = Math.round(per * FPS);
 
-  // Build a concat of Ken-Burns clips, then overlay captions, then mux audio.
-  // (Kept as a single filtergraph for portability; tune in PLAN.md §5.)
-  const inputs: string[] = [];
-  imgPaths.forEach((p) => inputs.push("-loop", "1", "-t", String(per), "-i", p));
-  inputs.push("-i", audioPath);
+  // Memory-bounded assembly (critical on 512MB tiers like Render starter): instead of one
+  // giant filtergraph that holds every beat + zoompan + libx264 (default preset, all threads)
+  // in RAM at once — which OOM-kills the whole worker mid-render — we render each Ken-Burns
+  // clip on its own (peak memory = one 1080x1920 frame), stream-copy concat them (~0 memory),
+  // then do a single light caption+audio pass. All passes use ultrafast + 1 thread.
+  const LOWMEM = ["-preset", "ultrafast", "-threads", "1", "-x264-params", "ref=1:bframes=0:rc-lookahead=10"];
 
-  const segments = imgPaths
-    .map(
-      (_, i) =>
-        `[${i}:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,` +
-        `zoompan=z='min(zoom+0.0008,1.12)':d=${Math.round(per * 25)}:s=1080x1920,setsar=1[v${i}]`,
-    )
-    .join(";");
-  const concat = imgPaths.map((_, i) => `[v${i}]`).join("") + `concat=n=${imgPaths.length}:v=1:a=0[vid]`;
+  // 3a) One short Ken-Burns clip per image.
+  const clipPaths: string[] = [];
+  for (let i = 0; i < imgPaths.length; i++) {
+    const clip = join(dir, `clip${i}.mp4`);
+    await run("ffmpeg", [
+      "-y", "-loop", "1", "-t", String(per), "-i", imgPaths[i],
+      "-vf",
+      `scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,` +
+        `zoompan=z='min(zoom+0.0008,1.12)':d=${frames}:s=1080x1920:fps=${FPS},setsar=1,format=yuv420p`,
+      "-c:v", "libx264", ...LOWMEM, "-r", String(FPS),
+      clip,
+    ]);
+    clipPaths.push(clip);
+  }
 
-  // Caption: show the hook for the first ~2.5s, then on-screen lines. Simplest robust
-  // approach = a drawtext for the hook; full per-beat subtitling lives in the Remotion path.
+  // 3b) Concatenate clips with the concat demuxer (stream copy — negligible memory).
+  const listPath = join(dir, "clips.txt");
+  await writeFile(listPath, clipPaths.map((p) => `file '${p}'`).join("\n"));
+  const joined = join(dir, "joined.mp4");
+  await run("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", joined]);
+
+  // 3c) Burn the hook caption (first ~2.5s) and mux narration — single, light pass.
   const safeHook = script.hook.replace(/[:\\']/g, " ").slice(0, 60);
   const FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf";
-  const caption =
-    `[vid]drawtext=fontfile=${FONT}:text='${safeHook}':fontcolor=white:fontsize=64:box=1:boxcolor=black@0.5:` +
-    `boxborderw=20:x=(w-text_w)/2:y=h*0.12:enable='lt(t,2.5)'[out]`;
-
   const videoPath = join(dir, "short.mp4");
   await run("ffmpeg", [
-    "-y",
-    ...inputs,
-    "-filter_complex", `${segments};${concat};${caption}`,
-    "-map", "[out]",
-    "-map", `${imgPaths.length}:a`,
-    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30",
+    "-y", "-i", joined, "-i", audioPath,
+    "-vf",
+    `drawtext=fontfile=${FONT}:text='${safeHook}':fontcolor=white:fontsize=64:box=1:boxcolor=black@0.5:` +
+      `boxborderw=20:x=(w-text_w)/2:y=h*0.12:enable='lt(t,2.5)'`,
+    "-c:v", "libx264", ...LOWMEM, "-pix_fmt", "yuv420p", "-r", String(FPS),
     "-c:a", "aac", "-b:a", "192k",
     "-shortest",
     videoPath,
