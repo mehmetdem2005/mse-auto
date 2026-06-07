@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 type Roster = { id: string; title: string; description: string; critical?: boolean };
 type Feed = {
@@ -36,6 +37,62 @@ export default function AgentBoard() {
   const [open, setOpen] = useState<string | null>(null);
   const [err, setErr] = useState(false);
   const [tab, setTab] = useState<"core" | "sys" | "active" | "log">("core");
+  const router = useRouter();
+  const [vState, setVState] = useState<"off" | "listening" | "thinking" | "speaking">("off");
+  const [heard, setHeard] = useState("");
+  const [said, setSaid] = useState("");
+  const recRef = useRef<any>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const onRef = useRef(false);
+  const speakingRef = useRef(false);
+
+  useEffect(() => () => { onRef.current = false; try { recRef.current?.stop(); } catch {} try { audioRef.current?.pause(); } catch {} }, []);
+
+  function speak(text: string): Promise<void> {
+    return new Promise(async (resolve) => {
+      try {
+        const r = await fetch("/api/tts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+        if (!r.ok) return resolve();
+        const a = new Audio(URL.createObjectURL(await r.blob())); audioRef.current = a;
+        a.onended = () => resolve(); a.onerror = () => resolve();
+        a.play().catch(() => resolve());
+      } catch { resolve(); }
+    });
+  }
+  async function handleUtterance(text: string) {
+    if (!text.trim()) return;
+    try { recRef.current?.stop(); } catch {}
+    setVState("thinking"); setHeard(text);
+    let reply = "", action: any = null;
+    try {
+      const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: [{ role: "user", content: text }] }) });
+      const j = await r.json(); reply = j.reply || "…"; action = j.action;
+    } catch { reply = "Bağlantı hatası."; }
+    setSaid(reply);
+    if (action?.type === "navigate" && action.to) setTimeout(() => router.push(action.to), 1000);
+    if (action?.type === "run") fetch("/api/run", { method: "POST" }).catch(() => {});
+    setVState("speaking"); speakingRef.current = true;
+    await speak(reply);
+    speakingRef.current = false;
+    if (onRef.current) { setVState("listening"); try { recRef.current?.start(); } catch {} } else setVState("off");
+  }
+  function startVoice() {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { alert("Tarayıcın sürekli sesli dinlemeyi desteklemiyor — Chrome öner."); return; }
+    const rec = new SR(); recRef.current = rec;
+    rec.lang = "tr-TR"; rec.continuous = true; rec.interimResults = true;
+    rec.onresult = (e: any) => {
+      let interim = "", final = "";
+      for (let i = e.resultIndex; i < e.results.length; i++) { const t = e.results[i][0].transcript; if (e.results[i].isFinal) final += t; else interim += t; }
+      if (interim) setHeard(interim);
+      if (final.trim() && !speakingRef.current) handleUtterance(final.trim());
+    };
+    rec.onend = () => { if (onRef.current && !speakingRef.current) { try { rec.start(); } catch {} } };
+    rec.onerror = () => {};
+    onRef.current = true; setVState("listening"); setSaid("Dinliyorum, konuş…");
+    try { rec.start(); } catch {}
+  }
+  function stopVoice() { onRef.current = false; try { recRef.current?.stop(); } catch {} try { audioRef.current?.pause(); } catch {} setVState("off"); }
 
   useEffect(() => {
     let on = true;
@@ -121,7 +178,12 @@ export default function AgentBoard() {
       <div className="console-bar">
         <span className="cb-l">◆ AI PIPELINE MANAGER</span>
         <span className="cb-c">Ajan Kontrol Merkezi</span>
-        <span className="cb-r" style={{ color: live ? "var(--cy)" : "#5fd0e6" }}>{live ? "● PIPELINE AKTİF" : err ? "● BAĞLANTI YOK" : "○ BEKLEMEDE"}</span>
+        <span className="row" style={{ gap: 10 }}>
+          <button className={`chip voice-btn v-${vState}`} onClick={() => (vState === "off" ? startVoice() : stopVoice())}>
+            {vState === "off" ? "🎙 Sesli Asistan" : vState === "listening" ? "● Dinliyor…" : vState === "thinking" ? "… Düşünüyor" : "🔊 Konuşuyor"}
+          </button>
+          <span className="cb-r" style={{ color: live ? "var(--cy)" : "#5fd0e6" }}>{live ? "● AKTİF" : err ? "● YOK" : "○ BEKLE"}</span>
+        </span>
       </div>
 
       <div className="holo-tabs">
@@ -171,9 +233,16 @@ export default function AgentBoard() {
               {all.filter((p) => p.s.cls === "run" || sel === p.a.id).map((p) => <circle key={"e" + p.a.id} className="energy" cx={50 + (p.x - 50) * 0.6} cy={50 + (p.y - 50) * 0.6} r={0.7} />)}
             </g>
           </svg>
-          <div className={`holo-core ${live ? "alive" : ""}`}>
-            <span className="hc-state">AI CORE</span><span className="hc-sub">{live ? "● ÇALIŞIYOR" : "● ONLINE"}</span>
+          <div className={`holo-core ${live || vState !== "off" ? "alive" : ""} v-${vState}`}>
+            <span className="hc-state">AI CORE</span>
+            <span className="hc-sub">{vState === "listening" ? "● DİNLİYOR" : vState === "thinking" ? "… DÜŞÜNÜYOR" : vState === "speaking" ? "🔊 KONUŞUYOR" : live ? "● ÇALIŞIYOR" : "● ONLINE"}</span>
           </div>
+          {vState !== "off" && (heard || said) && (
+            <div className="holo-sub">
+              {heard && <div className="hs-user">“{heard}”</div>}
+              {said && <div className="hs-ai">{said}</div>}
+            </div>
+          )}
           {all.map((p) => (
             <button key={p.a.id} type="button" className={`holo-node ag-${p.s.cls} ${sel === p.a.id ? "sel" : ""}`}
               style={{ left: `${p.x}%`, top: `${p.y}%` }} onClick={() => setOpen(sel === p.a.id ? null : p.a.id)} title={`${p.a.title} — ${LABEL[p.s.cls]}`}>

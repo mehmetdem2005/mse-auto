@@ -201,6 +201,15 @@ tbody tr:last-child td{border-bottom:none}
 .btn.mic{flex:0 0 auto;min-width:46px}
 .btn.mic.on{border-color:var(--bad);color:var(--bad);box-shadow:0 0 14px -4px var(--bad);animation:micpulse 1s infinite}
 @keyframes micpulse{50%{box-shadow:0 0 18px 0 var(--bad)}}
+/* voice assistant on the AI CORE page */
+.voice-btn.v-listening{border-color:var(--bad);color:var(--bad);box-shadow:0 0 14px -4px var(--bad);animation:micpulse 1s infinite}
+.voice-btn.v-thinking{border-color:var(--amber);color:var(--amber)}
+.voice-btn.v-speaking{border-color:var(--cy);color:var(--cy);box-shadow:0 0 14px -4px var(--cy)}
+.holo-core.v-listening{box-shadow:0 0 46px 2px var(--bad),inset 0 0 26px rgba(255,59,69,.35)!important}
+.holo-core.v-speaking{animation:corepulse .8s ease-in-out infinite!important}
+.holo-sub{position:absolute;left:5%;right:5%;bottom:4%;z-index:6;text-align:center;pointer-events:none}
+.holo-sub .hs-user{font-family:var(--mono);font-size:12px;color:#9fc4d4;margin-bottom:5px;text-shadow:0 0 8px #000}
+.holo-sub .hs-ai{font-family:var(--serif);font-size:14px;line-height:1.4;color:#eafdff;background:rgba(2,8,20,.78);border:1px solid var(--cy-line);border-radius:12px;padding:8px 13px;display:inline-block;max-width:92%;box-shadow:0 0 22px -10px var(--cy)}
 .holo-tabs{display:none}
 @media(max-width:820px){
   .holo-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;-webkit-overflow-scrolling:touch}
