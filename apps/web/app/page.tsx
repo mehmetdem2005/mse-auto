@@ -4,7 +4,7 @@ import RunNow from "@/components/RunNow";
 export const dynamic = "force-dynamic";
 
 async function counts() {
-  const stages = ["needs_review", "approved", "rendering", "scheduled", "published", "failed"];
+  const stages = ["needs_review", "approved", "rendering", "scheduled", "ready", "published", "failed"];
   const out: Record<string, number> = {};
   for (const s of stages) {
     const { count } = await db.from("video_jobs").select("id", { count: "exact", head: true }).eq("stage", s);
@@ -36,6 +36,7 @@ export default async function Dashboard() {
       <div className="grid cards">
         <Stat n={c.needs_review} l="İnceleme bekliyor" />
         <Stat n={c.approved + c.rendering} l="Üretimde" />
+        <Stat n={c.ready} l="Hazır (Supabase)" />
         <Stat n={c.scheduled} l="Planlandı" />
         <Stat n={c.published} l="Yayınlandı" />
         <Stat n={c.failed} l="Başarısız" />

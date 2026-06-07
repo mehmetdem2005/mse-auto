@@ -33,7 +33,7 @@ async function panelData(type: string): Promise<any> {
     if (type === "memory") return (await db.from("memory").select("kind,content,created_at").order("created_at", { ascending: false }).limit(20)).data ?? [];
     if (type === "agents") return (await db.from("agent_status").select("agent_id,status,current_task,updated_at").order("updated_at", { ascending: false }).limit(20)).data ?? [];
     if (type === "status") {
-      const s = ["queued", "needs_review", "approved", "rendering", "scheduled", "published", "failed", "dead_letter"];
+      const s = ["queued", "needs_review", "approved", "rendering", "scheduled", "ready", "published", "failed", "dead_letter"];
       const o: any = {};
       for (const st of s) { const { count } = await db.from("video_jobs").select("id", { count: "exact", head: true }).eq("stage", st); o[st] = count ?? 0; }
       return o;

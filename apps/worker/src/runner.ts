@@ -119,7 +119,14 @@ async function render(job: any, cfg: ChannelConfig) {
   const slot = slots.find((iso) => !used.has(iso)) ?? slots[0];
   // Persist the rendered MP4 to Supabase Storage (worker disk is ephemeral) → durable URL.
   const videoUrl = await storage.uploadRenderedVideo(job.id, videoPath).catch(() => null);
-  return { next: "scheduled", patch: { video_path: videoPath, video_url: videoUrl, audio_path: audioPath, scheduled_for: slot, next_run_at: slot } };
+  // If YouTube isn't connected, don't park in 'scheduled' (which the queue counts as in-flight and
+  // which would later fail to upload). Go to terminal 'ready': video is produced & stored in Supabase,
+  // doesn't block topUp, so production keeps flowing. When YouTube is connected, move ready→scheduled.
+  const youtubeOff = !process.env.YOUTUBE_REFRESH_TOKEN;
+  return {
+    next: youtubeOff ? "ready" : "scheduled",
+    patch: { video_path: videoPath, video_url: videoUrl, audio_path: audioPath, scheduled_for: slot, next_run_at: slot, last_error: youtubeOff ? "video hazır — YouTube bağlanınca yüklenecek" : null },
+  };
 }
 
 async function upload(job: any) {
