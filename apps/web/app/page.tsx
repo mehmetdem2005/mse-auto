@@ -23,14 +23,14 @@ export default async function Dashboard() {
     <>
       <div className="eyebrow">Genel bakış</div>
       <h1>Panel</h1>
-      <p className="sub">Otonom pipeline durumu. Sen onaylarsın, gerisini sistem yapar.</p>
+      <p className="sub">Tam otonom pipeline. İnsan onayı yok — sistem üretir, kurar, yayınlar.</p>
 
       <RunNow initialReview={c.needs_review} />
 
       <div className="notice">
-        <b>Hayatta kalma modu açık.</b> YouTube, Ocak 2026'da tamamen otomatik binlerce yapay zekâ
-        kanalını kapattı. Bu stüdyo bir insan onay adımı tutar, her videoyu çeşitlendirir, yapay zekâ
-        kullanımını açıklar ve günde az sayıda paylaşır — kanalı hayatta tutan tam olarak budur.
+        <b>Tam otonom mod açık.</b> İnsan onay adımı yok: ajanlar araştırır, yazar, kurul değerlendirir,
+        görsel + video üretir ve yayına hazırlar. YouTube'un 2026 politikalarına karşı her videoyu
+        çeşitlendirir, özgün yorum ekler ve yapay zekâ kullanımını açıkça belirtir.
       </div>
 
       <div className="grid cards">

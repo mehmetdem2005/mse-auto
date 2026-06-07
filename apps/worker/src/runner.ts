@@ -13,7 +13,7 @@
  */
 import {
   supabase, compliance, scheduler, video as vid, youtube, memory, gemini,
-  env as Env, log, newTraceId, events, reliability, budget, control, alerts, agents, orchestrator, checkpoint, github, selfimprove, monitor, supervisor, panels, announce, competitor, audit, anomaly, otel, promptlab, canary, metrics, standards, leader, storage,
+  env as Env, log, newTraceId, events, reliability, budget, control, alerts, agents, orchestrator, checkpoint, github, selfimprove, monitor, supervisor, panels, announce, competitor, audit, anomaly, otel, promptlab, canary, metrics, standards, leader, storage, agentbus,
 } from "@studio/core";
 import type { ChannelConfig } from "@studio/core";
 
@@ -63,7 +63,9 @@ async function draft(job: any, cfg: ChannelConfig) {
   try {
     out = await reliability.breakers.gemini.run(() =>
       reliability.withRetry(() =>
-        orchestrator.produceShort({ topic: job.topic, language: cfg.language, styleId, jobId: job.id, checkpointer: new checkpoint.SupabaseCheckpointer() }),
+        agentbus.track("scriptwriter", `Senaryo yazılıyor: ${job.topic}`,
+          () => orchestrator.produceShort({ topic: job.topic, language: cfg.language, styleId, jobId: job.id, checkpointer: new checkpoint.SupabaseCheckpointer() }),
+          { jobId: job.id }),
         { attempts: 2, label: "editorial" }));
   } catch (err: any) {
     if (err instanceof gemini.SafetyBlockedError) {
@@ -85,19 +87,28 @@ async function draft(job: any, cfg: ChannelConfig) {
   const base = { script, narration_embedding: nemb, review: report, review_score: report.decision.score };
   const boardOk = report.decision.verdict === "approve";
 
+  const fullAuto = (e as any).AUTONOMY_FULL === "on";
+
   if (boardOk && check.ok)
-    return { next: (cfg.requireHumanApproval && (e as any).AUTONOMY_FULL !== "on") ? "needs_review" : "approved", patch: { ...base, last_error: null } };
+    return { next: (cfg.requireHumanApproval && !fullAuto) ? "needs_review" : "approved", patch: { ...base, last_error: null } };
 
   const why = [
     boardOk ? null : `Kurul: ${report.decision.verdict} (${report.decision.passCount}/${report.reviewerCount} onay)${report.decision.blockers.length ? ` · veto: ${report.decision.blockers.join(", ")}` : ""}`,
     check.ok ? null : `Otomatik: ${check.reasons.join(" | ")}`,
   ].filter(Boolean).join(" • ");
+
+  // FULL AUTONOMY: never park a draft waiting for a human that will never come. The board's
+  // concerns are recorded for transparency, but the job proceeds to render. (Without full
+  // autonomy it parks in needs_review for a human to approve.)
+  if (fullAuto) return { next: "approved", patch: { ...base, last_error: `otomatik onaylandı (otonom) • ${why}` } };
   return { next: "needs_review", patch: { ...base, last_error: why } };
 }
 
 async function render(job: any, cfg: ChannelConfig) {
-  const { videoPath, audioPath } = await reliability.breakers.gemini.run(() =>
-    reliability.withRetry(() => vid.renderVideo(job.id, job.script), { attempts: 2, label: "render" }));
+  const { videoPath, audioPath } = await agentbus.track("packaging", "Görseller üretiliyor & video kurgulanıyor",
+    () => reliability.breakers.gemini.run(() =>
+      reliability.withRetry(() => vid.renderVideo(job.id, job.script), { attempts: 2, label: "render" })),
+    { jobId: job.id });
   const imgs = (job.script.visualPrompts?.length || job.script.beats?.length || 3);
   await budget.recordUsage("image", imgs, job.id);
   await budget.recordUsage("tts", estTokens(job.script.narrationText), job.id);
@@ -128,11 +139,13 @@ async function upload(job: any) {
     const existing = await youtube.findUploadedByKey(job.idempotency_key).catch(() => null);
     if (existing) return { next: "published", patch: { youtube_video_id: existing }, uploaded: true };
   }
-  const id = await reliability.breakers.youtube.run(() =>
-    reliability.withRetry(() => youtube.uploadVideo({
-      filePath: job.video_path, title: s.title, description: s.description, tags: s.tags,
-      madeWithAI: true, idempotencyKey: job.idempotency_key,
-    }), { attempts: 2, label: "upload" }));
+  const id = await agentbus.track("manager", `YouTube'a yükleniyor: ${s.title}`,
+    () => reliability.breakers.youtube.run(() =>
+      reliability.withRetry(() => youtube.uploadVideo({
+        filePath: job.video_path, title: s.title, description: s.description, tags: s.tags,
+        madeWithAI: true, idempotencyKey: job.idempotency_key,
+      }), { attempts: 2, label: "upload" })),
+    { jobId: job.id });
   await budget.recordUsage("youtube_units", 100, job.id);
   return { next: "published", patch: { youtube_video_id: id }, uploaded: true };
 }
@@ -326,6 +339,20 @@ async function runAutonomy() {
   } catch (err: any) { log.error("autonomy failed", { err: String(err?.message || err) }); }
 }
 
+/** Full-autonomy catch-all: any draft parked in needs_review (e.g. a board quality rejection, or
+ *  jobs created before full-autonomy) is auto-approved so nothing waits for a human that won't come. */
+async function autoApprove(): Promise<number> {
+  if ((e as any).AUTONOMY_FULL !== "on") return 0;
+  const { data } = await supabase.from("video_jobs").select("id").eq("stage", "needs_review").limit(10);
+  let n = 0;
+  for (const j of data ?? []) {
+    await patch(j.id, { stage: "approved", ...unlock, next_run_at: new Date().toISOString(), last_error: "otomatik onaylandı (otonom)" });
+    await events.logEvent({ jobId: j.id, stage: "approved", type: "stage_enter", data: { reason: "auto-approve (autonomy)" } }).catch(() => {});
+    n++;
+  }
+  return n;
+}
+
 /** Self-recovery: automatically re-drive failed / dead-letter jobs (bounded) instead of just
  *  surfacing the error to the user. Resumes from the furthest completed point. */
 export async function autoHeal(): Promise<number> {
@@ -372,6 +399,9 @@ export async function tick() {
 
   const healed = await autoHeal();          // self-recover failed/dead-letter jobs (don't just show errors)
   if (healed) log.info("auto-heal: recovered jobs", { healed });
+
+  const approved = await autoApprove();     // full-autonomy: never leave drafts waiting for a human
+  if (approved) log.info("auto-approve: released needs_review jobs", { approved });
 
   await topUp(cfg);
 
