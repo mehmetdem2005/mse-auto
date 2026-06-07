@@ -13,7 +13,7 @@
  */
 import {
   supabase, compliance, scheduler, video as vid, youtube, memory, gemini,
-  env as Env, log, newTraceId, events, reliability, budget, control, alerts, agents, orchestrator, checkpoint, github, selfimprove, monitor, supervisor, panels, announce, competitor, audit, anomaly, otel, promptlab, canary, metrics, standards, leader,
+  env as Env, log, newTraceId, events, reliability, budget, control, alerts, agents, orchestrator, checkpoint, github, selfimprove, monitor, supervisor, panels, announce, competitor, audit, anomaly, otel, promptlab, canary, metrics, standards, leader, storage,
 } from "@studio/core";
 import type { ChannelConfig } from "@studio/core";
 
@@ -106,7 +106,9 @@ async function render(job: any, cfg: ChannelConfig) {
   const { data: taken } = await supabase.from("video_jobs").select("scheduled_for").not("scheduled_for", "is", null);
   const used = new Set((taken ?? []).map((t: any) => t.scheduled_for));
   const slot = slots.find((iso) => !used.has(iso)) ?? slots[0];
-  return { next: "scheduled", patch: { video_path: videoPath, audio_path: audioPath, scheduled_for: slot, next_run_at: slot } };
+  // Persist the rendered MP4 to Supabase Storage (worker disk is ephemeral) → durable URL.
+  const videoUrl = await storage.uploadRenderedVideo(job.id, videoPath).catch(() => null);
+  return { next: "scheduled", patch: { video_path: videoPath, video_url: videoUrl, audio_path: audioPath, scheduled_for: slot, next_run_at: slot } };
 }
 
 async function upload(job: any) {

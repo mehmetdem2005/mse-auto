@@ -9,7 +9,7 @@ export default async function Queue() {
     .in("stage", ["needs_review"]).order("created_at", { ascending: false });
 
   const { data: rest } = await db
-    .from("video_jobs").select("id,topic,stage,scheduled_for,youtube_video_id")
+    .from("video_jobs").select("id,topic,stage,scheduled_for,youtube_video_id,video_url")
     .not("stage", "in", "(needs_review)").order("created_at", { ascending: false }).limit(15);
 
   return (
@@ -33,7 +33,7 @@ export default async function Queue() {
               <td>{r.topic}</td>
               <td><span className={`badge ${r.stage === "published" ? "good" : r.stage === "failed" ? "bad" : ""}`}>{r.stage}</span></td>
               <td className="mono">{r.scheduled_for ? new Date(r.scheduled_for).toLocaleString() : "—"}</td>
-              <td className="mono">{r.youtube_video_id ? <a href={`https://youtube.com/watch?v=${r.youtube_video_id}`} style={{ color: "var(--accent)" }}>aç ↗</a> : "—"}</td>
+              <td className="mono">{r.youtube_video_id ? <a href={`https://youtube.com/watch?v=${r.youtube_video_id}`} style={{ color: "var(--accent)" }}>YouTube ↗</a> : r.video_url ? <a href={r.video_url} style={{ color: "var(--cy)" }}>izle ↗</a> : "—"}</td>
             </tr>
           ))}
         </tbody>
