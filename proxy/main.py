@@ -74,11 +74,16 @@ def image():
     host = "aiplatform.googleapis.com" if location == "global" else ("%s-aiplatform.googleapis.com" % location)
     url = ("https://%s/v1/projects/%s/locations/%s/publishers/google/models/%s:generateContent"
            % (host, project, location, model))
+    fwd = {"contents": contents, "generationConfig": gen_cfg}
+    # Pass through optional fields when present (system instruction, tools/grounding, safety).
+    for k in ("systemInstruction", "system_instruction", "tools", "toolConfig", "safetySettings"):
+        if body.get(k) is not None:
+            fwd[k] = body[k]
     try:
         r = requests.post(
             url,
             headers={"Authorization": "Bearer %s" % _token(), "Content-Type": "application/json"},
-            json={"contents": contents, "generationConfig": gen_cfg},
+            json=fwd,
             timeout=180,
         )
     except Exception as e:  # noqa: BLE001

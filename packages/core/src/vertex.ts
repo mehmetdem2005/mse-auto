@@ -31,6 +31,8 @@ const LOCATION = process.env.VERTEX_LOCATION || "us-central1";
 // global → regionless host; otherwise the regional host. (Matches the proven Cloud Run proxy.)
 const AIPLATFORM_HOST = LOCATION === "global" ? "aiplatform.googleapis.com" : `${LOCATION}-aiplatform.googleapis.com`;
 const IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || "gemini-2.5-flash-image";
+// Text/reasoning — the most capable model available on the project (Gemini 2.5 Pro).
+const TEXT_MODEL = process.env.VERTEX_TEXT_MODEL || "gemini-2.5-pro";
 const TTS_LANG = process.env.GCP_TTS_LANG || "tr-TR";
 // Chirp 3 HD voices are named after stars. Charon = grounded, confident male (documentary tone).
 const TTS_VOICE = process.env.GCP_TTS_VOICE || "tr-TR-Chirp3-HD-Charon";
@@ -75,34 +77,64 @@ function imgFromVertexJson(d: any): string {
   return data as string;
 }
 
+/**
+ * Generic Vertex `generateContent` call (used for both images and text). Routes through the
+ * Cloud Run proxy when configured, else calls Vertex directly with a minted token.
+ * NOTE: the proxy forwards only `contents` + `generationConfig`, so callers must fold any
+ * system instruction into `contents` (don't rely on a separate systemInstruction field).
+ */
+async function generateContent(model: string, body: { contents: any[]; generationConfig?: any }): Promise<any> {
+  if (PROXY_URL) {
+    const payload = JSON.stringify({ location: LOCATION, model, ...body });
+    const headers = { "Content-Type": "application/json", "X-Proxy-Secret": PROXY_SECRET };
+    // Prefer /image; fall back to root "/" so an older image-only proxy keeps working.
+    let r = await fetch(`${PROXY_URL}/image`, { method: "POST", headers, body: payload });
+    if (r.status === 404) r = await fetch(`${PROXY_URL}/`, { method: "POST", headers, body: payload });
+    if (!r.ok) throw new Error(`Vertex proxy ${r.status}: ${(await r.text()).slice(0, 220)}`);
+    return r.json();
+  }
+  const url = `https://${AIPLATFORM_HOST}/v1/projects/${gcpProject()}/locations/${LOCATION}/publishers/google/models/${model}:generateContent`;
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${await token()}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!r.ok) throw new Error(`Vertex ${r.status}: ${(await r.text()).slice(0, 220)}`);
+  return r.json();
+}
+
 // ── Images (with previous-image reference for visual continuity) ──────────────
 /** Generate one image, optionally conditioned on a previous image. Returns base64. */
 export async function vertexImage(prompt: string, refB64?: string): Promise<string> {
   const parts: any[] = [];
   if (refB64) parts.push({ inlineData: { mimeType: "image/png", data: refB64 } });
   parts.push({ text: prompt });
-  const contents = [{ role: "user", parts }];
-  const generationConfig = { responseModalities: ["TEXT", "IMAGE"] };
-
-  if (PROXY_URL) {
-    const body = JSON.stringify({ location: LOCATION, model: IMAGE_MODEL, contents, generationConfig });
-    const headers = { "Content-Type": "application/json", "X-Proxy-Secret": PROXY_SECRET };
-    // Prefer /image (this repo's proxy). Fall back to the proxy root "/" so an older image-only
-    // proxy (which serves generateContent at "/") keeps working without a redeploy.
-    let r = await fetch(`${PROXY_URL}/image`, { method: "POST", headers, body });
-    if (r.status === 404) r = await fetch(`${PROXY_URL}/`, { method: "POST", headers, body });
-    if (!r.ok) throw new Error(`Vertex proxy image ${r.status}: ${(await r.text()).slice(0, 220)}`);
-    return imgFromVertexJson(await r.json());
-  }
-
-  const url = `https://${AIPLATFORM_HOST}/v1/projects/${gcpProject()}/locations/${LOCATION}/publishers/google/models/${IMAGE_MODEL}:generateContent`;
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${await token()}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ contents, generationConfig }),
+  const d = await generateContent(IMAGE_MODEL, {
+    contents: [{ role: "user", parts }],
+    generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
   });
-  if (!r.ok) throw new Error(`Vertex image ${r.status}: ${(await r.text()).slice(0, 220)}`);
-  return imgFromVertexJson(await r.json());
+  return imgFromVertexJson(d);
+}
+
+// ── Text / reasoning (Gemini 2.5 Pro on Vertex) ──────────────────────────────
+export interface VertexGen { text: string; promptTokens: number; outputTokens: number; totalTokens: number; }
+
+/** Generate text via the most capable Vertex model. System instruction is folded into the
+ *  prompt (proxy-safe). `json` forces a JSON-object response via responseMimeType. */
+export async function vertexText(opts: { model?: string; system?: string; prompt: string; json?: boolean }): Promise<VertexGen> {
+  const model = opts.model || TEXT_MODEL;
+  const sys = opts.system ? opts.system + (opts.json ? "\n\nYANIT SADECE tek ve geçerli bir JSON nesnesi olmalı; başka metin yazma." : "") : "";
+  const prompt = sys ? `${sys}\n\n---\n\n${opts.prompt}` : opts.prompt;
+  const generationConfig: any = { maxOutputTokens: 8192, temperature: 0.7 };
+  if (opts.json) generationConfig.responseMimeType = "application/json";
+  const d = await generateContent(model, { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig });
+  if (d?.promptFeedback?.blockReason) throw new Error(`Vertex prompt blocked: ${d.promptFeedback.blockReason}`);
+  const c = d?.candidates?.[0] ?? {};
+  if (c.finishReason && !["STOP", "MAX_TOKENS"].includes(c.finishReason)) throw new Error(`Vertex stopped: ${c.finishReason}`);
+  const text = (c.content?.parts ?? []).map((p: any) => p.text || "").join("");
+  if (!text.trim()) throw new Error("Vertex: empty text response");
+  const um = d?.usageMetadata ?? {};
+  return { text, promptTokens: um.promptTokenCount || 0, outputTokens: um.candidatesTokenCount || 0, totalTokens: um.totalTokenCount || 0 };
 }
 
 // ── Voice (Cloud TTS Chirp 3 HD) ─────────────────────────────────────────────

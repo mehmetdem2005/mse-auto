@@ -15,7 +15,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { env } from "./env.js";
 import { limiter } from "./ratelimit.js";
-import { gcpConfigured, vertexImage, vertexTTS } from "./vertex.js";
+import { gcpConfigured, vertexImage, vertexTTS, vertexText } from "./vertex.js";
 
 const API_KEY = process.env.GEMINI_API_KEY!;
 if (!API_KEY) console.warn("[gemini] GEMINI_API_KEY is not set");
@@ -113,6 +113,17 @@ export async function generate(opts: {
   responseSchema?: Record<string, unknown>;
   thinkingLevel?: "minimal" | "low" | "medium" | "high";
 }): Promise<GenResult> {
+  // Prefer Vertex AI's most-capable text model (Gemini 2.5 Pro) when GCP is configured.
+  // System instruction is folded into the prompt (proxy-safe). Grounding/function-calling
+  // aren't proxied, so those fall through to the chat/Gemini paths below.
+  if (gcpConfigured() && !opts.search && !opts.functions?.length) {
+    try {
+      const v = await vertexText({ system: opts.system, prompt: opts.prompt, json: Boolean(opts.json || opts.responseSchema) });
+      return { text: v.text, functionCalls: [], grounding: [], usage: { promptTokens: v.promptTokens, outputTokens: v.outputTokens, totalTokens: v.totalTokens }, raw: v };
+    } catch (e) {
+      console.warn("[text] Vertex failed, falling back:", String((e as any)?.message || e).slice(0, 160));
+    }
+  }
   if (USE_CHAT) return chatGenerate(opts);   // route text generation to DeepSeek/Groq
   const tools: any[] = [];
   if (opts.search) tools.push({ googleSearch: {} });
