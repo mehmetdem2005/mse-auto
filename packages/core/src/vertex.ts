@@ -26,13 +26,14 @@ export function gcpConfigured(): boolean {
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────
-const LOCATION = process.env.VERTEX_LOCATION || "us-central1";
-// Some models (e.g. Nano Banana Pro / gemini-3-pro-image-preview) are only served from "global".
+// Newest Gemini 3.x + Nano Banana Pro are served from "global" (preview/GA global endpoint).
+const LOCATION = process.env.VERTEX_LOCATION || "global";
 // global → regionless host; otherwise the regional host. (Matches the proven Cloud Run proxy.)
 const AIPLATFORM_HOST = LOCATION === "global" ? "aiplatform.googleapis.com" : `${LOCATION}-aiplatform.googleapis.com`;
-const IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || "gemini-2.5-flash-image";
-// Text/reasoning — the most capable model available on the project (Gemini 2.5 Pro).
-const TEXT_MODEL = process.env.VERTEX_TEXT_MODEL || "gemini-2.5-pro";
+// Most advanced image model: Nano Banana Pro (Gemini 3 Pro Image, 4K-capable, multi-reference).
+const IMAGE_MODEL = process.env.VERTEX_IMAGE_MODEL || "gemini-3-pro-image-preview";
+// Most advanced text/reasoning model available: Gemini 3.1 Pro (gemini-3-pro-preview is retired).
+const TEXT_MODEL = process.env.VERTEX_TEXT_MODEL || "gemini-3.1-pro-preview";
 const TTS_LANG = process.env.GCP_TTS_LANG || "tr-TR";
 // Chirp 3 HD voices are named after stars. Charon = grounded, confident male (documentary tone).
 const TTS_VOICE = process.env.GCP_TTS_VOICE || "tr-TR-Chirp3-HD-Charon";
@@ -104,6 +105,9 @@ async function generateContent(model: string, body: { contents: any[]; generatio
 }
 
 // ── Images (with previous-image reference for visual continuity) ──────────────
+const IMAGE_SIZE = process.env.VERTEX_IMAGE_SIZE || "2K";       // Nano Banana Pro: 1K / 2K / 4K
+const IMAGE_ASPECT = process.env.VERTEX_IMAGE_ASPECT || "9:16"; // native vertical → no crop distortion
+
 /** Generate one image, optionally conditioned on a previous image. Returns base64. */
 export async function vertexImage(prompt: string, refB64?: string): Promise<string> {
   const parts: any[] = [];
@@ -111,7 +115,8 @@ export async function vertexImage(prompt: string, refB64?: string): Promise<stri
   parts.push({ text: prompt });
   const d = await generateContent(IMAGE_MODEL, {
     contents: [{ role: "user", parts }],
-    generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+    // imageConfig is honoured by Nano Banana Pro (gemini-3-pro-image); ignored by older image models.
+    generationConfig: { responseModalities: ["TEXT", "IMAGE"], imageConfig: { aspectRatio: IMAGE_ASPECT, imageSize: IMAGE_SIZE } },
   });
   return imgFromVertexJson(d);
 }
