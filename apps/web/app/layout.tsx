@@ -33,8 +33,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </nav>
             <div style={{ marginTop: "auto", paddingTop: 20 }}>
               <div className="tag" style={{ lineHeight: 1.6 }}>
-                İnsan onayı: <b style={{ color: "var(--accent)" }}>AÇIK</b><br />
-                Kalite &gt; nicelik
+                Tam Otonom: <b style={{ color: "var(--accent)" }}>AÇIK</b><br />
+                Onaysız üretim
               </div>
             </div>
           </aside>

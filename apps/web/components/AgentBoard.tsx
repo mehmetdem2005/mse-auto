@@ -21,7 +21,8 @@ const place = (i: number, n: number, r: number) => { const a = (-90 + (i * 360) 
 const fresh = (t: string) => Date.now() - new Date(t).getTime() < 10 * 60_000;
 const liveCls = (s: string) => (s === "running" || s === "planning" || s === "waiting" || s === "needs_user_approval") ? "run" : s === "completed" ? "ran" : (s === "failed" || s === "blocked") ? "fail" : "idle";
 
-type Msg = { role: "user" | "assistant"; content: string; reasoning?: string } | { role: "panel"; panel: { type: string; data: any } };
+type Msg = { role: "user" | "assistant"; content: string; reasoning?: string; steps?: { tool: string; result: string }[] } | { role: "panel"; panel: { type: string; data: any } };
+const TOOL_LABEL: Record<string, string> = { durum_oku: "Durum okundu", sorunlari_coz: "Sorunlar çözüldü", pipeline_calistir: "Üretim tetiklendi", panel_ac: "Panel açıldı" };
 
 export default function AgentBoard() {
   const [feed, setFeed] = useState<any>(null);
@@ -130,7 +131,7 @@ export default function AgentBoard() {
     try {
       const r = await fetch("/api/assistant", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history }) });
       const d = await r.json();
-      setMsgs((m) => [...m, { role: "assistant", content: d.reply || "…", reasoning: d.reasoning || "" }]);
+      setMsgs((m) => [...m, { role: "assistant", content: d.reply || "…", reasoning: d.reasoning || "", steps: d.steps || [] }]);
       if (d.panel?.type) setMsgs((m) => [...m, { role: "panel", panel: d.panel }]);
       setSugs(d.suggestions || []);
       if (d.action?.type === "run") fetch("/api/run", { method: "POST" }).catch(() => {});
@@ -189,6 +190,7 @@ export default function AgentBoard() {
         {msgs.map((m, i) => m.role === "panel" ? <InlinePanel key={i} panel={(m as any).panel} /> : (
           <div key={i} className={`bubble ${m.role}`}>
             {(m as any).reasoning ? <details className="reasoning"><summary>🧠 Düşünce süreci</summary>{(m as any).reasoning}</details> : null}
+            {(m as any).steps?.length ? <div className="steps">{(m as any).steps.map((st: any, j: number) => <div key={j} className="step">✓ {TOOL_LABEL[st.tool] || st.tool} — {st.result}</div>)}</div> : null}
             {(m as any).content}
           </div>
         ))}
