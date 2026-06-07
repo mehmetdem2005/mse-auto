@@ -161,3 +161,60 @@ tbody tr:last-child td{border-bottom:none}
   .agent-grid{grid-template-columns:1fr}
   .main{padding:16px 12px 64px}
 }
+
+/* ── AI CORE — holographic control center (JARVIS style) ─────────────── */
+:root{--cy:#22d3ee; --cy2:#38bdf8; --cy-dim:#0e2b3a; --cy-line:#16455e; --navy:#07101c;}
+.holo-stage{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin:6px 0 18px}
+@media(min-width:1000px){.holo-stage{grid-template-columns:248px minmax(0,1fr) 312px;align-items:stretch}}
+.holo-panel{background:linear-gradient(180deg,rgba(10,22,36,.94),rgba(7,13,22,.94));border:1px solid var(--cy-line);
+  border-radius:14px;padding:16px;box-shadow:inset 0 0 34px rgba(34,211,238,.06),0 0 24px -14px var(--cy)}
+.holo-panel .eyebrow{color:#5fd0e6;margin-bottom:10px}
+.holo-stat{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px dashed var(--cy-dim)}
+.holo-stat:last-child{border-bottom:none}
+.holo-stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:#6e93a6}
+.holo-stat .v{font-family:var(--mono);font-size:15px;color:#a7ecf7;text-align:right}
+
+.holo{position:relative;width:100%;max-width:560px;aspect-ratio:1/1;margin:0 auto;border-radius:18px;overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(34,211,238,.12), rgba(7,16,28,0) 58%),
+    linear-gradient(rgba(34,211,238,.05) 1px, transparent 1px) 0 0/30px 30px,
+    linear-gradient(90deg, rgba(34,211,238,.05) 1px, transparent 1px) 0 0/30px 30px,
+    var(--navy);
+  border:1px solid var(--cy-line)}
+.holo-ring{position:absolute;left:50%;top:50%;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.holo-ring.r1{width:60%;height:60%;border:1px dashed rgba(34,211,238,.35);animation:spin 44s linear infinite}
+.holo-ring.r2{width:90%;height:90%;border:1px dotted rgba(56,189,248,.28);animation:spin 70s linear infinite reverse}
+.holo-ring.r3{width:75%;height:75%;border:1px solid rgba(34,211,238,.12)}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.holo-scan{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(34,211,238,.06),transparent);
+  height:30%;animation:scan 5s ease-in-out infinite}
+@keyframes scan{0%{transform:translateY(-40%)}50%{transform:translateY(330%)}100%{transform:translateY(-40%)}}
+.holo-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+
+.holo-core{position:absolute;left:50%;top:50%;width:30%;height:30%;transform:translate(-50%,-50%);border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;z-index:2;
+  background:radial-gradient(circle at 50% 40%, rgba(34,211,238,.55), rgba(8,30,46,.92) 70%);
+  border:1px solid rgba(34,211,238,.6);box-shadow:0 0 40px -6px var(--cy),inset 0 0 28px rgba(34,211,238,.4)}
+.holo-core.alive{animation:corepulse 2.2s ease-in-out infinite}
+@keyframes corepulse{0%,100%{box-shadow:0 0 40px -6px var(--cy),inset 0 0 28px rgba(34,211,238,.35)}50%{box-shadow:0 0 60px 0 var(--cy),inset 0 0 38px rgba(34,211,238,.6)}}
+.holo-core .hc-state{font-family:var(--mono);font-size:13px;font-weight:600;color:#eafdff;letter-spacing:.06em;text-shadow:0 0 8px var(--cy)}
+.holo-core .hc-sub{font-family:var(--mono);font-size:9.5px;color:#a7ecf7;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+
+.holo-node{position:absolute;transform:translate(-50%,-50%);z-index:3;display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:none;border:none;cursor:pointer;padding:0;width:0;white-space:nowrap}
+.holo-node .orb{display:grid;place-items:center;width:clamp(40px,11vw,58px);height:clamp(40px,11vw,58px);border-radius:50%;
+  background:radial-gradient(circle at 50% 35%, #123246, #0a1a28);border:1.5px solid #2b4a5e;
+  transition:transform .18s ease,box-shadow .25s ease,border-color .25s ease}
+.holo-node .orb-i{font-family:var(--mono);font-size:12px;font-weight:600;color:#cfeefb}
+.holo-node .nlabel{font-family:var(--mono);font-size:9.5px;color:#80a3b5;max-width:92px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.holo-node:hover .orb{transform:scale(1.08)}
+.holo-node.sel .orb{transform:scale(1.2);border-color:#eafdff}
+.holo-node.sel .nlabel{color:#eafdff}
+/* status glows */
+.holo-node.ag-run .orb{border-color:var(--cy);box-shadow:0 0 14px 1px var(--cy),inset 0 0 12px rgba(34,211,238,.5);animation:nodepulse 1.2s infinite}
+.holo-node.ag-pass .orb{border-color:var(--good);box-shadow:0 0 13px 0 var(--good),inset 0 0 10px rgba(70,211,154,.4)}
+.holo-node.ag-fail .orb{border-color:var(--bad);box-shadow:0 0 13px 0 var(--bad),inset 0 0 10px rgba(255,93,93,.4)}
+.holo-node.ag-ran .orb{border-color:var(--accent);box-shadow:0 0 12px 0 var(--accent)}
+.holo-node.ag-idle .orb{opacity:.55}
+@keyframes nodepulse{0%,100%{box-shadow:0 0 14px 1px var(--cy),inset 0 0 12px rgba(34,211,238,.5)}50%{box-shadow:0 0 24px 4px var(--cy),inset 0 0 16px rgba(34,211,238,.7)}}
+
