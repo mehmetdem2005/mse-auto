@@ -198,6 +198,9 @@ tbody tr:last-child td{border-bottom:none}
 .chip:hover{border-color:var(--accent);background:var(--panel-2)}
 .chat-input{display:flex;gap:8px}
 .chat-input input{flex:1}
+.btn.mic{flex:0 0 auto;min-width:46px}
+.btn.mic.on{border-color:var(--bad);color:var(--bad);box-shadow:0 0 14px -4px var(--bad);animation:micpulse 1s infinite}
+@keyframes micpulse{50%{box-shadow:0 0 18px 0 var(--bad)}}
 .holo-tabs{display:none}
 @media(max-width:820px){
   .holo-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;-webkit-overflow-scrolling:touch}

@@ -185,8 +185,20 @@ export async function generateImage(prompt: string): Promise<string> {
   return img.inlineData.data as string;
 }
 
-/** TTS narration via the Interactions API (verified payload). Returns base64-decoded WAV. */
+/** Premium narration via OpenAI TTS (tts-1-hd) — avoids the robotic Google voice. Returns MP3. */
+async function openaiTTS(text: string): Promise<Buffer> {
+  const r = await fetch("https://api.openai.com/v1/audio/speech", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${OPENAI_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ model: process.env.OPENAI_TTS_MODEL || "tts-1-hd", voice: process.env.NARRATION_VOICE || "onyx", input: text.slice(0, 4000), response_format: "mp3" }),
+  });
+  if (!r.ok) throw new Error(`OpenAI TTS ${r.status}: ${(await r.text()).slice(0, 160)}`);
+  return Buffer.from(await r.arrayBuffer());
+}
+
+/** TTS narration. Prefers OpenAI premium voice when configured; falls back to Gemini. */
 export async function tts(opts: { text: string; voice?: string; styleInstruction?: string }): Promise<Buffer> {
+  if (OPENAI_KEY) { try { return await openaiTTS(opts.text); } catch (e) { console.warn("[tts] OpenAI failed, Gemini fallback:", String((e as any)?.message || e).slice(0, 100)); } }
   const voice = opts.voice || env().TTS_VOICE;
   await limiter.acquire("gemini-tts");
   const input = `${opts.styleInstruction ? `[style: ${opts.styleInstruction}]\n` : ""}Read the following narration exactly, in a natural voice:\n\n${opts.text}`;
