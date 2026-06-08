@@ -43,14 +43,14 @@ interface Cue { start: number; end: number; text: string }
  *  irrelevant visuals. Falls back to the raw sentences if generation fails. */
 async function planVisuals(topic: string, sentences: string[]): Promise<string[]> {
   const numbered = sentences.map((s, i) => `${i + 1}. ${s}`).join("\n");
-  const system = `You are the art director for a fast-paced vertical (9:16) short video. You convert a narration into concrete, filmable image prompts for an AI image model.`;
+  const system = `You are an award-winning CINEMATOGRAPHER and art director for a viral vertical (9:16) short film. You turn narration into striking, filmable image prompts for a state-of-the-art image model. Think in shots: subject, action, setting, lighting, mood, lens and composition.`;
   const prompt = `TOPIC: ${topic}
-NARRATION, one image per numbered line, in order:
+NARRATION, one cinematic shot per numbered line, in order:
 ${numbered}
 
-For EACH line write ONE image prompt (English) that LITERALLY and SPECIFICALLY depicts THAT line — concrete subject, setting, action and era-accurate, on-topic details. Never abstract or generic.
-Keep ONE consistent cinematic art style, color grade and the SAME recurring main subject/characters across all images so it reads as one continuous story — but every image MUST be a DISTINCT scene (different moment, angle and composition), never a near-duplicate of another.
-Each prompt ends with: "vertical 9:16, cinematic, no text, no watermark, no real logos or real public figures".
+For EACH line, write ONE vivid image prompt (English) that LITERALLY and SPECIFICALLY depicts THAT line's moment — concrete subject, action, period-accurate setting and props, plus art direction: dramatic lighting (golden hour / hard rim light / candle glow / cold fog…), atmosphere, depth and a deliberate camera angle/shot type (wide establishing, low-angle hero, tense close-up, over-the-shoulder…). Make it emotionally gripping and beautiful. Never abstract, generic or text-like.
+Hold ONE consistent look across ALL shots — same cinematic art style, color grade and the SAME recurring main character(s)/world — so it reads as one film. But every shot MUST be a DISTINCT scene (new moment, framing and composition), never a zoom or near-duplicate of another.
+End each prompt with: "vertical 9:16, cinematic film still, highly detailed, dramatic lighting, no text, no watermark, no real logos or real public figures".
 Return ONLY JSON: {"prompts":[ ... ]} with EXACTLY ${sentences.length} strings, index-aligned to the lines.`;
   try {
     const r = await generate({ system, prompt, json: true });
