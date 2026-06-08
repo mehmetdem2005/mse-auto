@@ -1,0 +1,12 @@
+# Git hooks (ADR-007). Kurulum: `pnpm lefthook install` (git init sonrası)
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "*.{ts,tsx,js,jsx,json}"
+      run: pnpm biome check --no-errors-on-unmatched {staged_files}
+    # secret-scan (gitleaks) → Faz 3'te eklenecek
+pre-push:
+  commands:
+    typecheck:
+      run: pnpm turbo run typecheck

@@ -1,0 +1,68 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { WatchRepository } from "../../domain/ports";
+import type { Watch } from "../../domain/watch";
+import type { Database } from "./database.types";
+
+type WatchRow = Database["public"]["Tables"]["watches"]["Row"];
+
+function toDomain(row: WatchRow): Watch {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    rawIntent: row.raw_intent,
+    canonicalTopicId: row.canonical_topic_id,
+    archetype: row.archetype,
+    frequencyMinutes: row.frequency_minutes,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
+export class SupabaseWatchRepository implements WatchRepository {
+  constructor(private readonly db: SupabaseClient<Database>) {}
+
+  async create(input: Omit<Watch, "id">): Promise<Watch> {
+    const { data, error } = await this.db
+      .from("watches")
+      .insert({
+        user_id: input.userId,
+        raw_intent: input.rawIntent,
+        canonical_topic_id: input.canonicalTopicId,
+        archetype: input.archetype,
+        frequency_minutes: input.frequencyMinutes,
+        status: input.status,
+        created_at: input.createdAt,
+      })
+      .select("*")
+      .single();
+    if (error || !data) throw new Error(`watches insert: ${error?.message ?? "boş"}`);
+    return toDomain(data);
+  }
+
+  async listByUser(userId: string): Promise<Watch[]> {
+    const { data, error } = await this.db
+      .from("watches")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(`watches list: ${error.message}`);
+    return (data ?? []).map(toDomain);
+  }
+
+  async update(
+    watchId: string,
+    patch: Partial<Pick<Watch, "frequencyMinutes" | "status">>,
+  ): Promise<Watch> {
+    const row: Database["public"]["Tables"]["watches"]["Update"] = {};
+    if (patch.frequencyMinutes !== undefined) row.frequency_minutes = patch.frequencyMinutes;
+    if (patch.status !== undefined) row.status = patch.status;
+    const { data, error } = await this.db
+      .from("watches")
+      .update(row)
+      .eq("id", watchId)
+      .select("*")
+      .single();
+    if (error || !data) throw new Error(`watches update: ${error?.message ?? "boş"}`);
+    return toDomain(data);
+  }
+}

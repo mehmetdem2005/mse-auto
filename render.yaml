@@ -1,0 +1,53 @@
+# Watcher — Render Blueprint (web + worker). Scheduler tick worker içinde (setInterval 60sn).
+# Gizli değerleri Render panosunda "watcher-secrets" env grubuna gir (sync:false).
+envVarGroups:
+  - name: watcher-secrets
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SERPER_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: DEEPSEEK_API_KEY
+        sync: false
+      - key: FCM_PROJECT_ID
+        sync: false
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: ADMIN_USER_IDS
+        sync: false
+
+services:
+  - type: web
+    name: watcher-backend
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    buildCommand: "corepack enable && pnpm install --frozen-lockfile --filter @watcher/backend..."
+    startCommand: "pnpm --filter @watcher/backend start"
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: watcher-secrets
+
+  - type: worker
+    name: watcher-worker
+    runtime: node
+    plan: starter
+    region: frankfurt
+    rootDir: .
+    buildCommand: "corepack enable && pnpm install --frozen-lockfile --filter @watcher/backend..."
+    startCommand: "pnpm --filter @watcher/backend worker:start"
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: watcher-secrets
