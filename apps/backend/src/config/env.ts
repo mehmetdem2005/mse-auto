@@ -32,7 +32,10 @@ export type Env = z.infer<typeof EnvSchema>;
 
 /** 12-factor: env tek noktada, fail-fast doğrulanır. */
 export function loadEnv(): Env {
-  const parsed = EnvSchema.safeParse(process.env);
+  // Boş string ("") değerleri "tanımsız" say: Render env-group placeholder'ları
+  // (örn. FCM_PROJECT_ID="") optional .min(1) alanlarını boşuna patlatmasın.
+  const cleaned = Object.fromEntries(Object.entries(process.env).filter(([, v]) => v !== ""));
+  const parsed = EnvSchema.safeParse(cleaned);
   if (!parsed.success) {
     console.error("❌ Geçersiz ortam değişkenleri:", z.flattenError(parsed.error).fieldErrors);
     process.exit(1);
