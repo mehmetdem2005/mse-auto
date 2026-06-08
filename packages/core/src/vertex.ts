@@ -105,7 +105,7 @@ async function generateContent(model: string, body: { contents: any[]; generatio
 }
 
 // ── Images (with previous-image reference for visual continuity) ──────────────
-const IMAGE_SIZE = process.env.VERTEX_IMAGE_SIZE || "2K";       // Nano Banana Pro: 1K / 2K / 4K
+const IMAGE_SIZE = process.env.VERTEX_IMAGE_SIZE || "1K";       // Nano Banana Pro: 1K/2K/4K. 1K keeps memory low for 512MB tiers; plenty for 1080-wide Shorts.
 const IMAGE_ASPECT = process.env.VERTEX_IMAGE_ASPECT || "9:16"; // native vertical → no crop distortion
 
 /** Generate one image, optionally conditioned on a previous image. Returns base64. */
