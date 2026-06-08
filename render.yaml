@@ -1,4 +1,7 @@
-# Watcher — Render Blueprint (web + worker). Scheduler tick worker içinde (setInterval 60sn).
+# Watcher — Render Blueprint (ÜCRETSİZ tek servis, $0).
+# HTTP + scheduler + monitoring/delivery worker'ları TEK web process'inde döner (start:combined).
+# Render free web servisi 15 dk hareketsizlikten sonra uyur; .github/workflows/keepalive.yml
+# her ~10 dk /health'e ping atarak uyanık tutar (scheduler tick'i çalışsın diye).
 # Gizli değerleri Render panosunda "watcher-secrets" env grubuna gir (sync:false).
 envVarGroups:
   - name: watcher-secrets
@@ -26,26 +29,12 @@ services:
   - type: web
     name: watcher-backend
     runtime: node
-    plan: starter
+    plan: free
     region: frankfurt
     rootDir: .
     buildCommand: "corepack enable && pnpm install --frozen-lockfile --filter @watcher/backend..."
-    startCommand: "pnpm --filter @watcher/backend start"
+    startCommand: "pnpm --filter @watcher/backend start:combined"
     healthCheckPath: /health
-    autoDeploy: true
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - fromGroup: watcher-secrets
-
-  - type: worker
-    name: watcher-worker
-    runtime: node
-    plan: starter
-    region: frankfurt
-    rootDir: .
-    buildCommand: "corepack enable && pnpm install --frozen-lockfile --filter @watcher/backend..."
-    startCommand: "pnpm --filter @watcher/backend worker:start"
     autoDeploy: true
     envVars:
       - key: NODE_ENV
