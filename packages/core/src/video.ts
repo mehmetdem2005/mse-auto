@@ -12,7 +12,7 @@
 import { spawn } from "node:child_process";
 import { writeFile, mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { generateImage, tts } from "./gemini.js";
+import { generate, generateImage, tts } from "./gemini.js";
 import type { ShortScript } from "./types.js";
 
 const WORK = process.env.WORK_DIR || "/tmp/shorts";
@@ -36,6 +36,33 @@ function probeDuration(path: string): Promise<number> {
 }
 
 interface Cue { start: number; end: number; text: string }
+
+/** Turn the narration into ONE concrete, on-topic IMAGE prompt per sentence (single LLM call).
+ *  The prompts share one art style & recurring subject (so the video feels continuous) but each
+ *  depicts a DISTINCT scene literally matching its sentence — fixes "same image zooming" and
+ *  irrelevant visuals. Falls back to the raw sentences if generation fails. */
+async function planVisuals(topic: string, sentences: string[]): Promise<string[]> {
+  const numbered = sentences.map((s, i) => `${i + 1}. ${s}`).join("\n");
+  const system = `You are the art director for a fast-paced vertical (9:16) short video. You convert a narration into concrete, filmable image prompts for an AI image model.`;
+  const prompt = `TOPIC: ${topic}
+NARRATION, one image per numbered line, in order:
+${numbered}
+
+For EACH line write ONE image prompt (English) that LITERALLY and SPECIFICALLY depicts THAT line — concrete subject, setting, action and era-accurate, on-topic details. Never abstract or generic.
+Keep ONE consistent cinematic art style, color grade and the SAME recurring main subject/characters across all images so it reads as one continuous story — but every image MUST be a DISTINCT scene (different moment, angle and composition), never a near-duplicate of another.
+Each prompt ends with: "vertical 9:16, cinematic, no text, no watermark, no real logos or real public figures".
+Return ONLY JSON: {"prompts":[ ... ]} with EXACTLY ${sentences.length} strings, index-aligned to the lines.`;
+  try {
+    const r = await generate({ system, prompt, json: true });
+    const obj = JSON.parse(r.text.replace(/```json|```/g, "").trim());
+    const arr: string[] = (obj?.prompts ?? []).map((x: any) => String(x)).filter(Boolean);
+    if (!arr.length) return sentences;
+    while (arr.length < sentences.length) arr.push(sentences[arr.length]); // pad if short
+    return arr.slice(0, sentences.length);
+  } catch {
+    return sentences;
+  }
+}
 
 /** Split narration into one cue PER SENTENCE, timed by length over the real audio duration.
  *  Each cue becomes one image + one subtitle, so visuals change sentence-by-sentence. */
@@ -111,15 +138,18 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   //    PREVIOUS image is fed back as a reference so characters / style / palette / world stay
   //    consistent and the story visually continues sentence-by-sentence. No image-count cap.
   const cues = buildCues(script.narrationText || script.beats.join(". "), audioSec);
+  // Concrete, on-topic, distinct-but-consistent image prompt per sentence.
+  const topicCtx = [script.title, script.hook].filter(Boolean).join(" — ") || (script.narrationText || "").slice(0, 80);
+  const visuals = await planVisuals(topicCtx, cues.map((c) => c.text));
   const PALETTE = [["0x10243f", "0x2a1840"], ["0x1c1c2e", "0x3a2a10"], ["0x0e2a2a", "0x2a0e1e"], ["0x24201a", "0x10202c"], ["0x281020", "0x102820"]];
   const imgPaths: string[] = [];
   let prevB64: string | undefined;
   for (let i = 0; i < cues.length; i++) {
     const p = join(dir, `img${i}.png`);
-    const line = cues[i].text;
+    const scene = visuals[i] || cues[i].text;
     const prompt = i === 0
-      ? `Establish the visual world for a vertical 9:16 short video. Illustrate the meaning of this narration line: "${line}". Cinematic, original illustration, rich consistent color palette and lighting. No text, no captions, no watermark, no real logos or real people.`
-      : `Continue the SAME visual story — keep the exact same characters, art style, color palette, lighting and world as the reference image. Illustrate the meaning of the next narration line: "${line}". Vertical 9:16, cinematic. No text, no captions, no watermark.`;
+      ? `Cinematic vertical 9:16 illustration that establishes a consistent art style and color grade. Scene: ${scene}. No text, no watermark, no real logos or real public figures.`
+      : `Keep the SAME art style, color grade and recurring characters as the reference image — but render a NEW, clearly DIFFERENT scene (new composition, angle and moment; not a zoom or near-duplicate). Scene: ${scene}. Vertical 9:16, cinematic. No text, no watermark.`;
     try {
       const b64 = await generateImage(prompt, prevB64);
       await writeFile(p, Buffer.from(b64, "base64"));

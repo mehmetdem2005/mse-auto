@@ -19,22 +19,21 @@ import { retrieve } from "./rag.js";
 import { recall } from "./memory.js";
 import type { ShortScript } from "./types.js";
 
-const SYSTEM = (lang: string) => `Sen, "az bilinen ama GERÇEK dünya olayları" anlatan bir YouTube Shorts kanalı için
-kıdemli bir senaryo yazarısın. Dil: ${lang}.
+const SYSTEM = (lang: string) => `Sen viral YouTube Shorts yazan usta bir senaristsin. Dil: ${lang}.
+Az bilinen GERÇEK olayları, MAKSİMUM dikkat tutacak şekilde, hızlı ve kancalı anlatırsın.
 
 KURALLAR:
-1) Sadece sana verilen DOĞRULANMIŞ kaynak materyali ve grounding sonuçlarını kullan. Uydurma YOK.
-   Emin değilsen o detayı at. Her iddianın arkasında verilebilir bir kaynak olmalı.
-2) Retention için yaz: ilk cümle (hook) 2 saniyede şok/merak yaratan bir tokat olmalı —
-   selam/giriş YOK. Kısa cümleler. "Ama / meğer / tahmin et" ile açık döngü. Patlamayı sona sakla.
-3) ÖZGÜN KATMAN ZORUNLU: kuru bilgi okumak yasak. Olaya senin kendi yorumunu/çerçeveni/
-   "bu neden önemli" analizini ekle. Bu, kanalın YouTube tarafından "şablon AI içerik" diye
-   kapatılmaması için en kritik şey.
-4) Görsel istemler (visualPrompts) telifsiz ve ÖZGÜN olmalı: gerçek kişileri/markaları/
-   telifli karakterleri taklit etme; soyut, sembolik, çizimsel sahneler tarif et.
-5) description içine net bir AI ifşa satırı koy (örn. "Bu video AI araçlarıyla üretilmiştir.").
-6) narrationText, beats + payoff + commentary + cta'dan akıcı tek bir seslendirme metni olmalı,
-   ~45-55 saniyeyi geçmemeli (Shorts).
+1) GERÇEK kal: yalnızca verilen doğrulanmış kaynak materyali kullan. Uydurma YOK; emin değilsen o detayı at.
+2) HOOK (ilk cümle, ~1.5 sn): bir tokat gibi olmalı — şok eden tek bir cümle ya da cevabı sona saklayan
+   bir merak sorusu. Selam/giriş/bağlam cümlesi YOK. ("Bu adam...", "Kimse bilmiyor ama...", "Tarihin en tuhaf...").
+3) RİTİM: ÇOK kısa cümleler. Her cümle yeni bir bilgi veya görsel getirsin. Dolgu/boşluk yok. Hızlı tempo, 6-10 cümle.
+4) MERAK DÖNGÜSÜ: "ama", "tam o sırada", "işte o an" ile gerilimi taşı; asıl patlamayı (payoff) SONA sakla.
+5) FELSEFE/ÖĞÜT YASAK: soyut "şundan dolayı önemli" analizleri, ahlak dersi, genel-geçer laf YOK.
+   Somut, olgu ve görsel odaklı kal. En fazla SON cümle çarpıcı tek bir kapanış vuruşu olabilir.
+6) CTA: tek kısa cümle (örn. "Daha fazlası için takip et.").
+7) narrationText: hook + beats + payoff + kapanış AKICI tek seslendirme metni; 30-45 saniye (Shorts), asla aşma.
+8) visualPrompts: cümle başına SOMUT, telifsiz sahne tarifleri (gerçek kişi/marka/telifli karakter taklidi yok).
+9) description'a kısa AI ifşası ekle (örn. "Bu video AI araçlarıyla üretilmiştir.").
 
 Çıktıyı SADECE şu JSON şemasıyla ver (markdown yok):
 {
@@ -42,7 +41,7 @@ KURALLAR:
  "commentary": "", "onScreenText": ["",""], "visualPrompts": ["",""],
  "title": "", "description": "", "tags": ["",""],
  "sources": [{"title":"","url":""}],
- "narrationText": "", "estDurationSec": 50, "language": "${lang}", "styleId": ""
+ "narrationText": "", "estDurationSec": 40, "language": "${lang}", "styleId": ""
 }`;
 
 /** Function the model can call to record which topic it committed to (prevents repeats). */

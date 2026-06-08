@@ -167,7 +167,9 @@ export async function reviewLoop(script: ShortScript, topic: string): Promise<{ 
 
 /** Orchestrate produce → review board → consolidate → (revise loop) → report. */
 export async function runEditorialPipeline(opts: { topic: string; language?: string; styleId: string }): Promise<{ script: ShortScript; report: ReviewReport; usage: GenUsage }> {
-  const { script, usage } = await writeScript({ topic: opts.topic, language: opts.language, styleId: opts.styleId, useSearch: true });
+  // useSearch:false → routes to Vertex Gemini 3.1 Pro (the proxy can't forward grounding tools,
+  // and the verified knowledge-base material is already injected into the prompt).
+  const { script, usage } = await writeScript({ topic: opts.topic, language: opts.language, styleId: opts.styleId, useSearch: false });
   const { script: reviewed, report } = await reviewLoop(script, opts.topic);
   await recordUsage("reasoning", usage.totalTokens || 1);
   return { script: reviewed, report, usage };
