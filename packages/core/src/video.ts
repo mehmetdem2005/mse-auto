@@ -57,7 +57,8 @@ CRAFT — for each shot, FIRST decide what the viewer should FEEL, then choose t
 
 For EACH line write ONE image prompt (English) that LITERALLY depicts THAT moment (concrete subject, action, period-accurate setting/props) AND states the chosen shot type, lighting, color palette and atmosphere. Specific, never abstract or generic.
 Hold ONE consistent look across ALL shots — same art style, color grade and the SAME recurring main character(s)/world, as one film — but every shot MUST be a DISTINCT scene (new framing, angle and moment), never a zoom or near-duplicate.
-End each prompt with: "vertical 9:16, cinematic film still, photographic, 35mm, highly detailed, dramatic lighting, no text, no watermark, no real logos or real public figures".
+SAFE FOR IMAGE FILTERS: imply danger/tension through atmosphere, aftermath and expression — never graphic gore, wounds, corpses, explicit violence or real identifiable people. Keep it tasteful and suggestive so the image model never refuses.
+End each prompt with: "vertical 9:16, cinematic film still, photographic, 35mm, highly detailed, dramatic lighting, no text, no watermark, no gore, no real logos or real public figures".
 Return ONLY JSON: {"prompts":[ ... ]} with EXACTLY ${sentences.length} strings, index-aligned to the lines.`;
   try {
     const r = await generate({ system, prompt, json: true });
@@ -157,11 +158,17 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
     const prompt = i === 0
       ? `Cinematic vertical 9:16 illustration that establishes a consistent art style and color grade. Scene: ${scene}. No text, no watermark, no real logos or real public figures.`
       : `Keep the SAME art style, color grade and recurring characters as the reference image — but render a NEW, clearly DIFFERENT scene (new composition, angle and moment; not a zoom or near-duplicate). Scene: ${scene}. Vertical 9:16, cinematic. No text, no watermark.`;
-    try {
-      const b64 = await generateImage(prompt, prevB64);
+    // Never leave a gap: retry, then reuse the last good frame; gradient only if the very first fails.
+    let b64: string | undefined;
+    for (let attempt = 0; attempt < 2 && !b64; attempt++) {
+      try { b64 = await generateImage(prompt, prevB64); } catch { /* retry / fall through */ }
+    }
+    if (b64) {
       await writeFile(p, Buffer.from(b64, "base64"));
       prevB64 = b64; // carry the look forward to the next sentence
-    } catch {
+    } else if (prevB64) {
+      await writeFile(p, Buffer.from(prevB64, "base64")); // reuse last real image — no blank/gradient gap
+    } else {
       const [c0, c1] = PALETTE[i % PALETTE.length];
       await run("ffmpeg", ["-y", "-f", "lavfi", "-i", `gradients=s=1080x1920:c0=${c0}:c1=${c1}:x0=0:y0=0:x1=1080:y1=1920:duration=1`, "-frames:v", "1", p]);
     }

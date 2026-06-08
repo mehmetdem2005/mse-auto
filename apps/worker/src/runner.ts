@@ -46,11 +46,19 @@ async function ideateTopics(cfg: ChannelConfig, n = 10): Promise<number> {
   const avoid = [...new Set([...(known ?? []).map((k: any) => k.topic), ...(used ?? []).map((m: any) => m.content)])].slice(-250);
   const lang = cfg.language === "tr" ? "Türkçe" : cfg.language;
 
-  const system = `Sen bir YouTube Shorts kanalı için ÖZGÜN konu bulan bir araştırmacısın. "Az bilinen ama GERÇEK, doğrulanabilir" ilginç olay/bilgiler üretirsin (tarih, bilim, doğa, uzay, psikoloji, teknoloji, kültür). Uydurma/sansasyonel iddia YASAK — yalnızca gerçekten yaşanmış, kanıtlanabilir şeyler. Her konu birbirinden farklı temada olsun.`;
-  const prompt = `${n} adet YENİ ve birbirinden farklı ${lang} kısa video konusu öner.
-Aşağıdakileri ASLA tekrarlama:\n${avoid.join(" | ") || "(yok)"}\n
+  const CATS = ["tarih", "uzay/astronomi", "biyoloji/hayvanlar", "fizik/kimya", "psikoloji/beyin", "coğrafya/jeoloji", "teknoloji/mühendislik", "tıp/sağlık", "okyanus/derin deniz", "arkeoloji/kayıp medeniyetler", "ekonomi/dolandırıcılık", "doğa olayları"];
+  const system = `Sen bir YouTube Shorts kanalı için ÖZGÜN konu bulan titiz bir araştırmacısın.
+DOĞRULUK ŞART: yalnızca ANSİKLOPEDİK düzeyde, yaygın belgelenmiş, KESİN GERÇEK olayları/olguları öner.
+Tarih, sayı veya isimden en ufak şüphen varsa o konuyu HİÇ önerme. Uydurma/abartı/sansasyon YASAK.
+Her konu FARKLI bir alandan olsun — tek bir türe (ör. hep tarih felaketi) sıkışma; çeşitlilik kritik.`;
+  const prompt = `${n} adet YENİ, birbirinden tamamen farklı ALANLARDAN ${lang} kısa video konusu öner.
+Mümkünse şu kategorilere yay (her birinden en fazla 1-2): ${CATS.join(", ")}.
+Aşağıdaki konuları VE onların yakın varyasyonlarını/aynı temasını ASLA tekrarlama:
+${avoid.join(" | ") || "(yok)"}
+
+Her konu gerçekten ilginç, "vay be" dedirten ama %100 doğrulanabilir olmalı; kaynağı gerçek olmalı (Wikipedia/kurum/bilimsel).
 SADECE şu JSON'u dön (başka metin yok):
-{"topics":[{"topic":"kısa çekici başlık (varsa yıl)","text":"2-3 cümlelik doğrulanabilir özet","source_title":"kaynak adı","source_url":"https://gerçek-kaynak-linki"}]}`;
+{"topics":[{"topic":"kısa çekici başlık (varsa yıl)","text":"2-3 cümlelik KESİN doğru özet","source_title":"kaynak adı","source_url":"https://gerçek-kaynak-linki"}]}`;
 
   let items: any[] = [];
   try {

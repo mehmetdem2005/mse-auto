@@ -31,7 +31,8 @@ ANLATIM SANATI:
 • TWIST: ortada beklenmedik bir dönüş, sonda ise her şeyi yeniden anlamlandıran ÇARPICI bir gerçek.
 
 KURALLAR:
-1) GERÇEK kal: yalnızca verilen doğrulanmış materyali kullan. Uydurma YOK; emin değilsen o detayı at.
+1) GERÇEK kal: yalnızca verilen doğrulanmış kaynak materyaldeki olgulara SADIK kal. Oradaki tarih/sayı/isim/yer
+   bilgilerini DEĞİŞTİRME, yeni "gerçek" UYDURMA. Materyalde olmayan kesin iddia ekleme; emin değilsen o detayı at.
 2) HOOK (ilk cümle, ~1.5 sn): bir tokat — şok eden bir görüntü/iddia ya da cevabı sona saklayan merak.
    Selam/giriş/tanım cümlesi YOK. ("Bu kadın 2 yıl boyunca tek başına...", "Kimse onun döneceğine inanmıyordu...").
 3) RİTİM: ÇOK kısa, vurucu cümleler. Dolgu/klişe ("inanılmaz ama gerçek") yok. Hızlı tempo, 6-10 cümle.
