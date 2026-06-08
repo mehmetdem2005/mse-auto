@@ -120,7 +120,7 @@ export const COST = {
 // Configurable: free-tier Gemini is rate-limited, so the multi-agent draft can be slow.
 export const TIMEOUTS = {
   draft: Number(process.env.DRAFT_TIMEOUT_MS || 300_000),
-  render: Number(process.env.RENDER_TIMEOUT_MS || 300_000),
+  render: Number(process.env.RENDER_TIMEOUT_MS || 720_000), // Nano Banana Pro is sequential (ref-chained) & slow; keep < LEASE (900s)
   upload: Number(process.env.UPLOAD_TIMEOUT_MS || 600_000),
   analytics: 60_000,
 };

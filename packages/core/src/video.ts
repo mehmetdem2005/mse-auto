@@ -120,7 +120,9 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   //    and the story visually continues beat-to-beat.
   const PALETTE = [["0x10243f", "0x2a1840"], ["0x1c1c2e", "0x3a2a10"], ["0x0e2a2a", "0x2a0e1e"], ["0x24201a", "0x10202c"], ["0x281020", "0x102820"]];
   const imgPaths: string[] = [];
-  const prompts = script.visualPrompts.length ? script.visualPrompts : script.beats;
+  // Cap beats: each Nano Banana Pro image is sequential (ref-chained) & slow, so bound render time.
+  const MAX_IMG = Number(process.env.MAX_BEATS || 5);
+  const prompts = (script.visualPrompts.length ? script.visualPrompts : script.beats).slice(0, MAX_IMG);
   let prevB64: string | undefined;
   for (let i = 0; i < prompts.length; i++) {
     const p = join(dir, `img${i}.png`);
