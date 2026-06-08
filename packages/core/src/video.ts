@@ -1,10 +1,11 @@
 /**
  * Video assembly (default path: ffmpeg — light enough for Render's cheap tiers).
  *
- * Pipeline: ShortScript -> per-beat images (Vertex AI, each beat referencing the previous
- * image for a consistent visual story) -> Cloud TTS narration -> ffmpeg: vertical 1080x1920,
- * Ken-Burns zoom per image, burned-in TITLE (top banner) + word-wrapped SUBTITLES (bottom,
- * timed to the real narration length so nothing runs off-screen) -> output.mp4.
+ * Sentence-driven pipeline: the narration is split into SENTENCES; for EACH sentence we
+ * generate one semantically-matching image (Vertex AI, each referencing the previous image
+ * for a consistent visual story). Each image is shown for exactly its sentence's spoken
+ * duration, and the burned-in subtitle is that same sentence — so image + caption change
+ * together, perfectly in sync. A persistent title banner sits up top.
  *
  * Visuals are AI-generated/original or your own assets only — no scraping copyrighted media.
  */
@@ -23,7 +24,7 @@ function run(cmd: string, args: string[]): Promise<void> {
   });
 }
 
-/** Measure media duration in seconds with ffprobe (so captions sync to the real audio). */
+/** Measure media duration in seconds with ffprobe (so visuals/captions sync to the real audio). */
 function probeDuration(path: string): Promise<number> {
   return new Promise((res) => {
     let out = "";
@@ -34,7 +35,26 @@ function probeDuration(path: string): Promise<number> {
   });
 }
 
-// ── Subtitles (ASS): word-wrapped, boxed, timed to narration ──────────────────
+interface Cue { start: number; end: number; text: string }
+
+/** Split narration into one cue PER SENTENCE, timed by length over the real audio duration.
+ *  Each cue becomes one image + one subtitle, so visuals change sentence-by-sentence. */
+function buildCues(text: string, dur: number): Cue[] {
+  const sentences = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?…])\s+/).map((s) => s.trim()).filter(Boolean);
+  if (!sentences.length) return [];
+  const totalChars = sentences.reduce((a, s) => a + s.length, 0) || 1;
+  const cues: Cue[] = [];
+  let t = 0;
+  for (const s of sentences) {
+    const d = Math.max(1.2, (dur * s.length) / totalChars);
+    cues.push({ start: t, end: Math.min(dur, t + d), text: s });
+    t += d;
+  }
+  cues[cues.length - 1].end = dur;
+  return cues;
+}
+
+// ── Subtitles (ASS): word-wrapped, boxed, one cue per sentence ────────────────
 function assTime(s: number): string {
   s = Math.max(0, s);
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), sec = s % 60;
@@ -42,36 +62,9 @@ function assTime(s: number): string {
 }
 const assEsc = (t: string) => t.replace(/\r?\n/g, " ").replace(/\{/g, "(").replace(/\}/g, ")").trim();
 
-/** Split narration into short, screen-safe caption cues, weighted by length over the real duration. */
-function buildCues(text: string, dur: number): { start: number; end: number; text: string }[] {
-  const sentences = text.replace(/\s+/g, " ").trim().split(/(?<=[.!?…])\s+/).filter(Boolean);
-  const MAX = 84; // ~2 lines at fontsize 60 on a 1080-wide frame
-  const chunks: string[] = [];
-  for (const s of sentences) {
-    if (s.length <= MAX) { chunks.push(s); continue; }
-    let cur = "";
-    for (const w of s.split(" ")) {
-      if ((cur + " " + w).trim().length > MAX) { if (cur) chunks.push(cur.trim()); cur = w; }
-      else cur += " " + w;
-    }
-    if (cur.trim()) chunks.push(cur.trim());
-  }
-  if (!chunks.length) return [];
-  const totalChars = chunks.reduce((a, c) => a + c.length, 0) || 1;
-  const cues: { start: number; end: number; text: string }[] = [];
-  let t = 0;
-  for (const c of chunks) {
-    const d = Math.max(1.0, (dur * c.length) / totalChars);
-    cues.push({ start: t, end: Math.min(dur, t + d), text: c });
-    t += d;
-  }
-  cues[cues.length - 1].end = dur;
-  return cues;
-}
-
-/** Build an ASS subtitle file: persistent top title banner + bottom word-wrapped captions.
- *  Colours are &HAABBGGRR. BorderStyle 3 = opaque box (BackColour) so text never gets lost. */
-function buildAss(title: string, cues: { start: number; end: number; text: string }[], total: number): string {
+/** Top title banner + bottom word-wrapped captions. Colours are &HAABBGGRR; BorderStyle 3 =
+ *  opaque box (BackColour) so text never gets lost over busy imagery. */
+function buildAss(title: string, cues: Cue[], total: number): string {
   const header =
 `[Script Info]
 ScriptType: v4.00+
@@ -101,7 +94,6 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   const estSec = script.estDurationSec || 50;
 
   // 1) Narration (Cloud TTS Chirp 3 HD via Vertex; OpenAI/Gemini fallback).
-  //    Free-tier fallback: if TTS is unavailable, render a silent track so the video still builds.
   const voiceStyle = script.styleId.includes("narrator") ? script.styleId : "warm documentary narrator, unhurried";
   let audioPath = join(dir, "narration.mp3");
   try {
@@ -112,27 +104,26 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
     await run("ffmpeg", ["-y", "-f", "lavfi", "-i", "anullsrc=r=24000:cl=mono", "-t", String(estSec), audioPath]);
   }
 
-  // Real narration length drives both per-image timing and caption sync.
+  // Real narration length drives both per-sentence image timing and caption sync.
   const audioSec = (await probeDuration(audioPath)) || estSec;
 
-  // 2) One original image per beat. Each call is independent (no context limit), but we pass the
-  //    PREVIOUS image back in as a reference so characters / style / palette / world stay consistent
-  //    and the story visually continues beat-to-beat.
+  // 2) One semantic image PER SENTENCE. Each call is independent (no context limit), but the
+  //    PREVIOUS image is fed back as a reference so characters / style / palette / world stay
+  //    consistent and the story visually continues sentence-by-sentence. No image-count cap.
+  const cues = buildCues(script.narrationText || script.beats.join(". "), audioSec);
   const PALETTE = [["0x10243f", "0x2a1840"], ["0x1c1c2e", "0x3a2a10"], ["0x0e2a2a", "0x2a0e1e"], ["0x24201a", "0x10202c"], ["0x281020", "0x102820"]];
   const imgPaths: string[] = [];
-  // Cap beats: each Nano Banana Pro image is sequential (ref-chained) & slow, so bound render time.
-  const MAX_IMG = Number(process.env.MAX_BEATS || 5);
-  const prompts = (script.visualPrompts.length ? script.visualPrompts : script.beats).slice(0, MAX_IMG);
   let prevB64: string | undefined;
-  for (let i = 0; i < prompts.length; i++) {
+  for (let i = 0; i < cues.length; i++) {
     const p = join(dir, `img${i}.png`);
+    const line = cues[i].text;
     const prompt = i === 0
-      ? `Establish the visual world for a vertical 9:16 short video. Scene: ${prompts[i]}. Cinematic, original illustration, rich consistent color palette and lighting. No text, no captions, no watermark, no real logos or real people.`
-      : `Continue the SAME visual story — keep the exact same characters, art style, color palette, lighting and world as the reference image. Next moment in the narrative: ${prompts[i]}. Vertical 9:16, cinematic. No text, no captions, no watermark.`;
+      ? `Establish the visual world for a vertical 9:16 short video. Illustrate the meaning of this narration line: "${line}". Cinematic, original illustration, rich consistent color palette and lighting. No text, no captions, no watermark, no real logos or real people.`
+      : `Continue the SAME visual story — keep the exact same characters, art style, color palette, lighting and world as the reference image. Illustrate the meaning of the next narration line: "${line}". Vertical 9:16, cinematic. No text, no captions, no watermark.`;
     try {
       const b64 = await generateImage(prompt, prevB64);
       await writeFile(p, Buffer.from(b64, "base64"));
-      prevB64 = b64; // carry the look forward to the next beat
+      prevB64 = b64; // carry the look forward to the next sentence
     } catch {
       const [c0, c1] = PALETTE[i % PALETTE.length];
       await run("ffmpeg", ["-y", "-f", "lavfi", "-i", `gradients=s=1080x1920:c0=${c0}:c1=${c1}:x0=0:y0=0:x1=1080:y1=1920:duration=1`, "-frames:v", "1", p]);
@@ -140,18 +131,17 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
     imgPaths.push(p);
   }
 
-  // 3) Per-image duration from the real narration length.
-  const per = Math.max(2, audioSec / imgPaths.length);
   const FPS = 24;
-  const frames = Math.round(per * FPS);
-
   // Memory-bounded assembly (critical on 512MB tiers): render each Ken-Burns clip alone, stream-copy
   // concat them, then a single light caption+audio pass. All passes use ultrafast + 1 thread.
   const LOWMEM = ["-preset", "ultrafast", "-threads", "1", "-x264-params", "ref=1:bframes=0:rc-lookahead=10"];
 
-  // 3a) One short Ken-Burns clip per image (single input frame + -frames:v to avoid frame explosion).
+  // 3a) One Ken-Burns clip per sentence — duration = that sentence's spoken length (image↔caption sync).
+  //     Single input frame + -frames:v avoids zoompan's frame-count explosion.
   const clipPaths: string[] = [];
   for (let i = 0; i < imgPaths.length; i++) {
+    const per = Math.max(1.2, cues[i].end - cues[i].start);
+    const frames = Math.max(2, Math.round(per * FPS));
     const clip = join(dir, `clip${i}.mp4`);
     await run("ffmpeg", [
       "-y", "-loop", "1", "-i", imgPaths[i],
@@ -171,8 +161,7 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   const joined = join(dir, "joined.mp4");
   await run("ffmpeg", ["-y", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", joined]);
 
-  // 3c) Burn TITLE + SUBTITLES (ASS, word-wrapped & boxed so nothing overflows) and mux narration.
-  const cues = buildCues(script.narrationText || script.beats.join(". "), audioSec);
+  // 3c) Burn TITLE + per-sentence SUBTITLES (ASS) and mux narration.
   const title = (script.title || script.hook || "").slice(0, 90);
   const assPath = join(dir, "subs.ass");
   await writeFile(assPath, buildAss(title, cues, audioSec));
