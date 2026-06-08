@@ -169,8 +169,12 @@ export async function renderVideo(jobId: string, script: ShortScript): Promise<{
   await run("ffmpeg", [
     "-y", "-i", joined, "-i", audioPath,
     "-vf", `ass=${assPath}`,
-    "-c:v", "libx264", ...LOWMEM, "-pix_fmt", "yuv420p", "-r", String(FPS),
-    "-c:a", "aac", "-b:a", "192k",
+    // Cap the bitrate: ultrafast with no rate control produced ~75MB/54s (>Supabase's 50MB
+    // file limit → upload failed → null video_url). ~3.5Mbps is plenty for a 1080x1920 Short.
+    "-c:v", "libx264", ...LOWMEM, "-crf", "28", "-maxrate", "3500k", "-bufsize", "7000k",
+    "-pix_fmt", "yuv420p", "-r", String(FPS),
+    "-c:a", "aac", "-b:a", "128k",
+    "-movflags", "+faststart",
     "-shortest",
     videoPath,
   ]);
