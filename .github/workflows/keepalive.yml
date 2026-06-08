@@ -16,7 +16,7 @@ jobs:
       - name: Ping health endpoint
         run: |
           URL="${{ vars.RENDER_HEALTH_URL }}"
-          URL="${URL:-https://watcher-backend.onrender.com/health}"
+          URL="${URL:-https://watcher-backend-p0hi.onrender.com/health}"
           echo "Pinging $URL"
           # Soğuk başlatma ~50 sn sürebilir; uzun timeout + retry. İstek Render router'a
           # ulaştığı an servis uyanır, bu yüzden ping başarısız olsa bile job'ı kırmıyoruz.
