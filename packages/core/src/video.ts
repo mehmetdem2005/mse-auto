@@ -43,14 +43,21 @@ interface Cue { start: number; end: number; text: string }
  *  irrelevant visuals. Falls back to the raw sentences if generation fails. */
 async function planVisuals(topic: string, sentences: string[]): Promise<string[]> {
   const numbered = sentences.map((s, i) => `${i + 1}. ${s}`).join("\n");
-  const system = `You are an award-winning CINEMATOGRAPHER and art director for a viral vertical (9:16) short film. You turn narration into striking, filmable image prompts for a state-of-the-art image model. Think in shots: subject, action, setting, lighting, mood, lens and composition.`;
+  const system = `You are a film director and cinematographer. Strong visuals come from DELIBERATE CRAFT, not labels. You turn a narration into specific shot descriptions for a state-of-the-art image model — thinking like you are lighting and framing a real film.`;
   const prompt = `TOPIC: ${topic}
 NARRATION, one cinematic shot per numbered line, in order:
 ${numbered}
 
-For EACH line, write ONE vivid image prompt (English) that LITERALLY and SPECIFICALLY depicts THAT line's moment — concrete subject, action, period-accurate setting and props, plus art direction: dramatic lighting (golden hour / hard rim light / candle glow / cold fog…), atmosphere, depth and a deliberate camera angle/shot type (wide establishing, low-angle hero, tense close-up, over-the-shoulder…). Make it emotionally gripping and beautiful. Never abstract, generic or text-like.
-Hold ONE consistent look across ALL shots — same cinematic art style, color grade and the SAME recurring main character(s)/world — so it reads as one film. But every shot MUST be a DISTINCT scene (new moment, framing and composition), never a zoom or near-duplicate of another.
-End each prompt with: "vertical 9:16, cinematic film still, highly detailed, dramatic lighting, no text, no watermark, no real logos or real public figures".
+CRAFT — for each shot, FIRST decide what the viewer should FEEL, then choose the most fitting of:
+• Composition: rule of thirds, leading lines, frame-within-frame, strong foreground/midground/background depth, negative space, intentional symmetry or imbalance.
+• Lens & framing: a purposeful shot type — wide establishing, intimate close-up, low-angle (power), high-angle (vulnerability), Dutch tilt (unease), over-the-shoulder; shallow depth of field to isolate the subject (bokeh) or deep focus for scale.
+• Light (motivated, with a visible source): chiaroscuro / strong key-to-fill contrast, rim or back light to separate the subject, a single practical (candle, lantern, window), golden hour; low-key for tension.
+• Color: ONE cohesive, emotion-driven grade (e.g. cold teal vs warm amber); desaturate for grit.
+• Atmosphere & texture: haze, fog, smoke, dust, volumetric god-rays, rain; period-accurate production design and realistic materials.
+
+For EACH line write ONE image prompt (English) that LITERALLY depicts THAT moment (concrete subject, action, period-accurate setting/props) AND states the chosen shot type, lighting, color palette and atmosphere. Specific, never abstract or generic.
+Hold ONE consistent look across ALL shots — same art style, color grade and the SAME recurring main character(s)/world, as one film — but every shot MUST be a DISTINCT scene (new framing, angle and moment), never a zoom or near-duplicate.
+End each prompt with: "vertical 9:16, cinematic film still, photographic, 35mm, highly detailed, dramatic lighting, no text, no watermark, no real logos or real public figures".
 Return ONLY JSON: {"prompts":[ ... ]} with EXACTLY ${sentences.length} strings, index-aligned to the lines.`;
   try {
     const r = await generate({ system, prompt, json: true });
