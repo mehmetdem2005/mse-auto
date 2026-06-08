@@ -37,6 +37,45 @@ const unlock = { locked_by: null, locked_until: null };
 const estTokens = (...s: string[]) => Math.ceil(s.join(" ").length / 4);
 
 /** Keep the queue topped up to the daily cap (creates 'queued' jobs with a fresh topic). */
+/** Autonomous topic ideation — instead of recycling a fixed seed list, the AI (Gemini 3.1 Pro)
+ *  invents fresh, original, verifiably-true topics and adds them to the knowledge base so the
+ *  channel keeps "thinking" up new ideas and never runs dry. Called when no unused topic remains. */
+async function ideateTopics(cfg: ChannelConfig, n = 10): Promise<number> {
+  const { data: known } = await supabase.from("knowledge").select("topic");
+  const { data: used } = await supabase.from("memory").select("content").eq("kind", "used_topic");
+  const avoid = [...new Set([...(known ?? []).map((k: any) => k.topic), ...(used ?? []).map((m: any) => m.content)])].slice(-250);
+  const lang = cfg.language === "tr" ? "Türkçe" : cfg.language;
+
+  const system = `Sen bir YouTube Shorts kanalı için ÖZGÜN konu bulan bir araştırmacısın. "Az bilinen ama GERÇEK, doğrulanabilir" ilginç olay/bilgiler üretirsin (tarih, bilim, doğa, uzay, psikoloji, teknoloji, kültür). Uydurma/sansasyonel iddia YASAK — yalnızca gerçekten yaşanmış, kanıtlanabilir şeyler. Her konu birbirinden farklı temada olsun.`;
+  const prompt = `${n} adet YENİ ve birbirinden farklı ${lang} kısa video konusu öner.
+Aşağıdakileri ASLA tekrarlama:\n${avoid.join(" | ") || "(yok)"}\n
+SADECE şu JSON'u dön (başka metin yok):
+{"topics":[{"topic":"kısa çekici başlık (varsa yıl)","text":"2-3 cümlelik doğrulanabilir özet","source_title":"kaynak adı","source_url":"https://gerçek-kaynak-linki"}]}`;
+
+  let items: any[] = [];
+  try {
+    const r = await gemini.generate({ system, prompt, json: true });
+    const obj = JSON.parse(r.text.replace(/```json|```/g, "").trim());
+    items = (obj?.topics ?? []).filter((t: any) => t?.topic && t?.text);
+  } catch (e) {
+    log.warn("ideate: generation/parse failed", { err: String((e as any)?.message || e).slice(0, 140) });
+    return 0;
+  }
+  if (!items.length) return 0;
+  const rows = items.map((t: any, i: number) => ({
+    id: `ai-${Date.now()}-${i}`,
+    topic: String(t.topic).slice(0, 200),
+    text: String(t.text).slice(0, 1500),
+    source_title: String(t.source_title || "AI araştırma").slice(0, 160),
+    source_url: String(t.source_url || "").slice(0, 400),
+    verified: true,
+  }));
+  const { error } = await supabase.from("knowledge").insert(rows);
+  if (error) { log.warn("ideate: insert failed", { err: error.message }); return 0; }
+  log.info("ideate: AI generated fresh topics", { added: rows.length });
+  return rows.length;
+}
+
 async function topUp(cfg: ChannelConfig) {
   const st = await control.getState();
   if (st.mode === "dry_run") return;
@@ -45,14 +84,21 @@ async function topUp(cfg: ChannelConfig) {
     .in("stage", ["queued", "drafting", "needs_review", "approved", "rendering", "scheduled", "uploading"]);
   if ((count ?? 0) >= cfg.maxPerDay) return;
 
-  const { data: t } = await supabase.rpc("pick_unused_topic");
-  const topic = t?.[0]?.topic;
-  if (!topic) { log.info("topUp: no unused topics — add more to the knowledge base"); return; }
+  let { data: t } = await supabase.rpc("pick_unused_topic");
+  let topic = t?.[0]?.topic;
+  if (!topic) {
+    // Pool exhausted → let the AI think up fresh original topics, then pick one.
+    const added = await ideateTopics(cfg);
+    if (added) { ({ data: t } = await supabase.rpc("pick_unused_topic")); topic = t?.[0]?.topic; }
+  }
+  if (!topic) { log.info("topUp: no topics even after AI ideation"); return; }
 
   const traceId = newTraceId();
   const { data: job } = await supabase.from("video_jobs")
     .insert({ stage: "queued", topic, made_with_ai: true, trace_id: traceId, idempotency_key: `${topic}:${Date.now()}` })
     .select().single();
+  // Reserve the topic immediately so the next tick can't pick the same one (prevents duplicates).
+  await memory.remember("used_topic", topic);
   await events.logEvent({ jobId: job!.id, traceId, type: "created", data: { topic } });
 }
 
