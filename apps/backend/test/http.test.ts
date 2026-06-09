@@ -86,19 +86,16 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect((await res.json()) as { error: string }).toHaveProperty("error");
   });
 
-  it("POST /v1/subscription (abone ol) → pro; tüm sunum özellikleri açık", async () => {
+  it("POST /v1/subscription → 503 (ödeme entegrasyonu kapalı)", async () => {
     const app = makeApp();
     const res = await app.request(
       "/v1/subscription",
       post({ plan: "pro", interval: "month" }, "u1"),
     );
-    expect(res.status).toBe(200);
-    const s = (await res.json()) as Subscription;
-    expect(s.plan).toBe("pro");
-    expect(s.entitlements.alarmChannel).toBe(true);
-    expect(s.entitlements.allSounds).toBe(true);
-    expect(s.entitlements.personalFilters).toBe(true);
-    expect(s.limits.maxActiveWatches).toBe(100);
+    // Ödeme akışı bilinçli devre dışı (subscription.route.ts → 503). Ödeme
+    // açıldığında bu testi 200 + entitlements doğrulamasına geri çevir.
+    expect(res.status).toBe(503);
+    expect((await res.json()) as { error: string }).toHaveProperty("error");
   });
 
   it("POST /v1/devices → 201; ok", async () => {
