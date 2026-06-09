@@ -54,7 +54,21 @@ jobs:
           VERCEL_PROJECT_ID: prj_mUSqTFUVczjwuGfUpCLaJ0zRne1M
         run: |
           cd apps/dashboard/dist
-          printf '{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }' > vercel.json
+          cat > vercel.json <<'JSON'
+          {
+            "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+            "headers": [{
+              "source": "/(.*)",
+              "headers": [
+                { "key": "X-Content-Type-Options", "value": "nosniff" },
+                { "key": "X-Frame-Options", "value": "DENY" },
+                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+                { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+                { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+              ]
+            }]
+          }
+          JSON
           vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
 
       # ---------------- Mobil web (Expo export) ----------------
@@ -79,5 +93,19 @@ jobs:
           VERCEL_PROJECT_ID: prj_SMr1qNlncOeXZYrkpu00wwJYH0XZ
         run: |
           cd apps/mobile/dist
-          printf '{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }' > vercel.json
+          cat > vercel.json <<'JSON'
+          {
+            "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+            "headers": [{
+              "source": "/(.*)",
+              "headers": [
+                { "key": "X-Content-Type-Options", "value": "nosniff" },
+                { "key": "X-Frame-Options", "value": "DENY" },
+                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+                { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+                { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+              ]
+            }]
+          }
+          JSON
           vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"

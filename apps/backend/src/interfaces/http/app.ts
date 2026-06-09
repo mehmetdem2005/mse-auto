@@ -39,6 +39,14 @@ export function createApp(
     }),
   );
 
+  // Güvenlik başlıkları (MIME-sniffing, clickjacking, referrer sızıntısı önle).
+  app.use("*", async (c, next) => {
+    c.header("X-Content-Type-Options", "nosniff");
+    c.header("X-Frame-Options", "DENY");
+    c.header("Referrer-Policy", "no-referrer");
+    await next();
+  });
+
   app.use("*", requestId());
   app.use("*", requestLogger(container.logger));
 
