@@ -6,3 +6,5 @@
 - TOGAF (TAM): ADM taraması + P1–P9 conformance + değişiklik sınıfı + ADR (Artımlı/Yeniden-mimari) + EA güncelle. Kanonik: docs/EA-TOGAF-mimari.md, docs/mimari-karar-gunlugu.md.
 - ISO (TAM): 42010 view · 25010 kalite+ölçülebilir NFR · 25012 veri · 27001/27002 güvenlik · 29148 gereksinim · 9241 etkileşim.
 - ÇIKTI: işin sonunda "Standartlar" + TOGAF + ISO raporu. ABARTMA YOK — uygulamadığını "yapıldı" yazma; bilinçli atladığını gerekçesiyle belirt.
+- KAPI (Stop hook): tur biterken biome(a11y/lint) + typecheck + test temiz olmalı (yoksa harness bitirmeyi engeller).
+- İnceleme (isteğe bağlı, anlamlı diff'te öner/uygula): güvenlik-dokunuşu → /security-review; büyük değişiklik → /code-review veya /simplify.
