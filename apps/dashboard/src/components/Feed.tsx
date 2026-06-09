@@ -1,6 +1,8 @@
+import { useQuery } from "@tanstack/react-query";
 import type { FeedItem } from "@watcher/contracts";
-import { type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo } from "react";
 import { api } from "../lib/api";
+import { qk } from "../lib/query";
 import { Banner, Panel, Stat } from "./ui";
 
 /** Güvenilmez facts'i kısa okunur özete çevirir. */
@@ -34,7 +36,7 @@ function ago(iso: string): string {
   return new Date(iso).toLocaleDateString("tr-TR");
 }
 
-/** Son 14 günün günlük tespit sayısı (inline CSS çubuk grafik). */
+/** Son 14 günün günlük tespit sayısı — CSS sınıflı çubuk grafik (a11y: role=img + özet). */
 function DayChart({ items }: { items: FeedItem[] }): ReactNode {
   const days = useMemo(() => {
     const buckets: { label: string; count: number }[] = [];
@@ -54,36 +56,23 @@ function DayChart({ items }: { items: FeedItem[] }): ReactNode {
     return buckets;
   }, [items]);
   const max = Math.max(1, ...days.map((d) => d.count));
+  const total = days.reduce((a, b) => a + b.count, 0);
 
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 120 }}>
+    <div
+      className="chart"
+      role="img"
+      aria-label={`Son 14 günde toplam ${total} tespit, günlük dağılım çubuk grafiği`}
+    >
       {days.map((d) => (
-        <div
-          key={d.label}
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 6,
-          }}
-        >
+        <div className="chart-col" key={d.label}>
           <div
-            title={`${d.count} tespit`}
-            style={{
-              width: "100%",
-              height: `${Math.round((d.count / max) * 96)}px`,
-              minHeight: 3,
-              background: d.count
-                ? "linear-gradient(180deg, var(--accent), var(--accent-dim))"
-                : "var(--panel-2)",
-              borderRadius: 6,
-              transition: "height 0.4s ease",
-            }}
+            className={d.count ? "chart-bar" : "chart-bar empty"}
+            // Yükseklik veri-bağımlı → tek meşru inline değer.
+            style={{ height: `${Math.round((d.count / max) * 96)}px` }}
+            title={`${d.label}: ${d.count} tespit`}
           />
-          <span style={{ fontFamily: "var(--mono)", fontSize: 9, color: "var(--muted-2)" }}>
-            {d.label}
-          </span>
+          <span className="chart-lbl">{d.label}</span>
         </div>
       ))}
     </div>
@@ -91,23 +80,12 @@ function DayChart({ items }: { items: FeedItem[] }): ReactNode {
 }
 
 export function Feed({ token }: { token: string }): ReactNode {
-  const [items, setItems] = useState<FeedItem[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const { data, error, isLoading } = useQuery({
+    queryKey: qk.feed,
+    queryFn: () => api.feed(token),
+  });
 
-  const load = useCallback(async () => {
-    setErr(null);
-    try {
-      setItems(await api.feed(token));
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "yüklenemedi");
-    }
-  }, [token]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  const list = items ?? [];
+  const list = data ?? [];
   const last24 = list.filter(
     (it) => Date.now() - new Date(it.detectedAt).getTime() < 86_400_000,
   ).length;
@@ -120,7 +98,9 @@ export function Feed({ token }: { token: string }): ReactNode {
     <>
       <h1 className="page-title">Aktivite akışı</h1>
       <p className="page-sub">watcher'larından gelen tespitler</p>
-      {err ? <Banner kind="err">{err}</Banner> : null}
+      {error ? (
+        <Banner kind="err">{error instanceof Error ? error.message : "yüklenemedi"}</Banner>
+      ) : null}
 
       <div className="stats">
         <Stat n={String(list.length)} label="toplam tespit" tone="accent" />
@@ -136,37 +116,37 @@ export function Feed({ token }: { token: string }): ReactNode {
 
       <div style={{ height: 16 }} />
       <Panel title={`son tespitler (${list.length})`} delay={180}>
-        {items === null ? (
+        {isLoading ? (
           <div className="muted">yükleniyor…</div>
         ) : list.length === 0 ? (
           <div className="muted">
             Henüz tespit yok. Watcher'ların bir şey yakaladığında burada görünür.
           </div>
         ) : (
-          list.slice(0, 50).map((it) => (
-            <div className="row" key={it.deliveryId}>
-              <div style={{ minWidth: 0, flex: 1 }}>
-                <div
-                  className="v"
-                  style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
-                >
-                  {it.watchIntent || "Watcher"}
-                </div>
-                <div className="kpi" style={{ marginTop: 3 }}>
-                  {it.description || "Bir tespit oldu."}
-                </div>
-                <div className="kpi" style={{ marginTop: 2, color: "var(--accent)" }}>
-                  {factSummary(it.facts)}
-                </div>
-              </div>
-              <div style={{ textAlign: "right", flex: "none" }}>
-                <span className="chip">{it.status}</span>
-                <div className="kpi" style={{ marginTop: 6 }}>
-                  {ago(it.detectedAt)}
-                </div>
-              </div>
-            </div>
-          ))
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th scope="col">Watcher</th>
+                <th scope="col">Tespit</th>
+                <th scope="col">Olgu</th>
+                <th scope="col">Durum</th>
+                <th scope="col">Zaman</th>
+              </tr>
+            </thead>
+            <tbody>
+              {list.slice(0, 50).map((it) => (
+                <tr key={it.deliveryId}>
+                  <td className="tbl-strong">{it.watchIntent || "Watcher"}</td>
+                  <td>{it.description || "Bir tespit oldu."}</td>
+                  <td className="tbl-accent">{factSummary(it.facts)}</td>
+                  <td>
+                    <span className="chip">{it.status}</span>
+                  </td>
+                  <td className="tbl-num">{ago(it.detectedAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </Panel>
     </>

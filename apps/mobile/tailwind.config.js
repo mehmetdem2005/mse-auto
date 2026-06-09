@@ -13,7 +13,8 @@ module.exports = {
         accent: "#6366F1", // indigo (birincil)
         accent2: "#8B5CF6", // mor (vurgu/degrade)
         text: "#0F172A", // birincil metin (slate-900)
-        muted: "#64748B", // ikincil metin (slate-500)
+        muted: "#475569", // ikincil metin (slate-600) — küçük metinde de AA ≥4.5:1
+        muted2: "#64748B", // yalnız büyük/dekoratif (AA için küçük metinde kullanma)
         pos: "#16A34A", // olumlu/yeşil
         neg: "#DC2626", // olumsuz/kırmızı
       },

@@ -1,41 +1,26 @@
-import type { Plans, Subscription } from "@watcher/contracts";
-import { type ReactNode, useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { api } from "../lib/api";
 import { money, shortDate } from "../lib/format";
+import { qk } from "../lib/query";
 import { Banner, Panel } from "./ui";
 
 export function Overview({ token }: { token: string }): ReactNode {
-  const [sub, setSub] = useState<Subscription | null>(null);
-  const [plans, setPlans] = useState<Plans | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const qc = useQueryClient();
+  const subQ = useQuery({ queryKey: qk.subscription, queryFn: () => api.subscription(token) });
+  const plansQ = useQuery({ queryKey: qk.plans, queryFn: () => api.plans(token) });
+  const cancel = useMutation({
+    mutationFn: () => api.cancel(token),
+    onSuccess: (s) => qc.setQueryData(qk.subscription, s),
+  });
 
-  const load = useCallback(async () => {
-    setErr(null);
-    try {
-      const [s, p] = await Promise.all([api.subscription(token), api.plans(token)]);
-      setSub(s);
-      setPlans(p);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "yüklenemedi");
-    }
-  }, [token]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
-
-  async function act(fn: () => Promise<Subscription>): Promise<void> {
-    setBusy(true);
-    setErr(null);
-    try {
-      setSub(await fn());
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "işlem başarısız");
-    }
-    setBusy(false);
-  }
-
+  const sub = subQ.data ?? null;
+  const plans = plansQ.data ?? null;
+  const busy = cancel.isPending;
+  const err =
+    subQ.error || plansQ.error || cancel.error
+      ? ((subQ.error || plansQ.error || cancel.error) as Error).message
+      : null;
   const detail = sub?.subscription ?? null;
   const usagePct = sub
     ? Math.min(100, Math.round((sub.usage.activeWatches / sub.limits.maxActiveWatches) * 100))
@@ -102,7 +87,7 @@ export function Overview({ token }: { token: string }): ReactNode {
                   type="button"
                   disabled={busy}
                   style={{ marginTop: 14 }}
-                  onClick={() => act(() => api.cancel(token))}
+                  onClick={() => cancel.mutate()}
                 >
                   dönem sonunda iptal et
                 </button>

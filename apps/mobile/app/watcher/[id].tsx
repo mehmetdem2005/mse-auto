@@ -90,9 +90,9 @@ function EventCard({ e, canVote }: { e: DetectionEventView; canVote: boolean }):
             ) : (
               <>
                 <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-                <Vote glyph="👍" onPress={() => mutation.mutate("correct")} />
+                <Vote glyph="👍" label="Doğru" onPress={() => mutation.mutate("correct")} />
                 <View className="w-2" />
-                <Vote glyph="👎" onPress={() => mutation.mutate("incorrect")} />
+                <Vote glyph="👎" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
               </>
             )}
           </View>
@@ -102,15 +102,21 @@ function EventCard({ e, canVote }: { e: DetectionEventView; canVote: boolean }):
   );
 }
 
-function Vote({ glyph, onPress }: { glyph: string; onPress: () => void }): ReactNode {
+function Vote({
+  glyph,
+  label,
+  onPress,
+}: { glyph: string; label: string; onPress: () => void }): ReactNode {
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={8}
-      className="w-9 h-9 rounded-full bg-panel2 items-center justify-center active:opacity-60"
+      className="w-11 h-11 rounded-full bg-panel2 items-center justify-center active:opacity-60"
       accessibilityRole="button"
+      accessibilityLabel={label}
     >
-      <Text className="text-base">{glyph}</Text>
+      <Text className="text-base" accessibilityElementsHidden importantForAccessibility="no">
+        {glyph}
+      </Text>
     </Pressable>
   );
 }

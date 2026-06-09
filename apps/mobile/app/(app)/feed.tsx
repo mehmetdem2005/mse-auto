@@ -91,9 +91,9 @@ export default function Feed() {
               {unread > 0 ? (
                 <Pressable
                   onPress={() => markAll.mutate()}
-                  hitSlop={8}
-                  className="ml-auto active:opacity-60"
+                  className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
                   accessibilityRole="button"
+                  accessibilityLabel="Tüm tespitleri okundu yap"
                 >
                   <Text className="text-accent text-xs font-semibold">tümünü okundu yap</Text>
                 </Pressable>
@@ -163,9 +163,9 @@ function FeedCard({
         ) : (
           <>
             <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-            <Vote glyph="👍" onPress={() => mutation.mutate("correct")} />
+            <Vote glyph="👍" label="Doğru" onPress={() => mutation.mutate("correct")} />
             <View className="w-2" />
-            <Vote glyph="👎" onPress={() => mutation.mutate("incorrect")} />
+            <Vote glyph="👎" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
           </>
         )}
         <View className="ml-auto">
@@ -176,15 +176,18 @@ function FeedCard({
   );
 }
 
-function Vote({ glyph, onPress }: { glyph: string; onPress: () => void }) {
+function Vote({ glyph, label, onPress }: { glyph: string; label: string; onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
-      hitSlop={8}
-      className="w-9 h-9 rounded-full bg-panel2 items-center justify-center active:opacity-60"
+      // HIG dokunma hedefi ≥44pt
+      className="w-11 h-11 rounded-full bg-panel2 items-center justify-center active:opacity-60"
       accessibilityRole="button"
+      accessibilityLabel={label}
     >
-      <Text className="text-base">{glyph}</Text>
+      <Text className="text-base" accessibilityElementsHidden importantForAccessibility="no">
+        {glyph}
+      </Text>
     </Pressable>
   );
 }
