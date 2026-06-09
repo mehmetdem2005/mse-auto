@@ -80,7 +80,7 @@ export default function Settings() {
           İzin ver ve bu cihazı push için kaydet (FCM).
         </Text>
         <Btn onPress={enableNotifications} disabled={busy}>
-          <Text className="text-ink text-xs font-semibold uppercase tracking-wider">
+          <Text className="text-white text-xs font-semibold uppercase tracking-wider">
             bildirimleri etkinleştir
           </Text>
         </Btn>

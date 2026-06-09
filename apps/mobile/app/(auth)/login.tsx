@@ -22,13 +22,13 @@ export default function Login() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#0a0c10" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F5F7FB" }}>
       <View className="flex-1 justify-center px-6">
         <View className="flex-row items-center gap-3 mb-8">
           <View className="w-3 h-3 rounded-full bg-accent" />
           <View>
             <Text className="text-text text-lg font-bold tracking-widest">WATCHER</Text>
-            <Text className="text-muted text-[10px] tracking-[3px] uppercase">ops console</Text>
+            <Text className="text-muted text-[10px] tracking-[3px] uppercase">akıllı izleyici</Text>
           </View>
         </View>
         <Text className="text-text text-2xl font-bold mb-1">Oturum aç</Text>
@@ -48,7 +48,7 @@ export default function Login() {
                 autoCapitalize="none"
                 keyboardType="email-address"
                 placeholder="admin@watcher.app"
-                placeholderTextColor="#5c6470"
+                placeholderTextColor="#94A3B8"
                 className="bg-panel border border-line rounded-lg px-3 py-3 text-text"
               />
             </Field>
@@ -57,15 +57,15 @@ export default function Login() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
-                placeholderTextColor="#5c6470"
+                placeholderTextColor="#94A3B8"
                 className="bg-panel border border-line rounded-lg px-3 py-3 text-text"
               />
             </Field>
             <Btn onPress={signIn} disabled={busy || !email || !password}>
               {busy ? (
-                <ActivityIndicator color="#1a1205" />
+                <ActivityIndicator color="#FFFFFF" />
               ) : (
-                <Text className="text-ink font-semibold uppercase tracking-wider text-xs">
+                <Text className="text-white font-semibold uppercase tracking-wider text-xs">
                   giriş
                 </Text>
               )}
@@ -79,7 +79,7 @@ export default function Login() {
                 onChangeText={setDevId}
                 autoCapitalize="none"
                 placeholder="admin_demo"
-                placeholderTextColor="#5c6470"
+                placeholderTextColor="#94A3B8"
                 className="bg-panel border border-line rounded-lg px-3 py-3 text-text"
               />
             </Field>
@@ -87,7 +87,9 @@ export default function Login() {
               onPress={() => setSession({ token: devId.trim(), email: null, userId: devId.trim() })}
               disabled={!devId}
             >
-              <Text className="text-ink font-semibold uppercase tracking-wider text-xs">giriş</Text>
+              <Text className="text-white font-semibold uppercase tracking-wider text-xs">
+                giriş
+              </Text>
             </Btn>
             <Text className="text-muted text-[11px] mt-4">
               backend DevAuthVerifier · token = kullanıcı kimliği

@@ -33,7 +33,7 @@ export default function SubscriptionScreen() {
   if (sub.isLoading) {
     return (
       <View className="flex-1 bg-ink">
-        <ActivityIndicator color="#ffb020" className="mt-10" />
+        <ActivityIndicator color="#6366F1" className="mt-10" />
       </View>
     );
   }
@@ -46,7 +46,7 @@ export default function SubscriptionScreen() {
         <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">mevcut plan</Text>
         <Text
           className="text-3xl font-extrabold uppercase"
-          style={{ color: s?.plan === "pro" ? "#ffb020" : "#828c9a" }}
+          style={{ color: s?.plan === "pro" ? "#6366F1" : "#64748B" }}
         >
           {s?.plan ?? "—"}
         </Text>
@@ -104,7 +104,7 @@ export default function SubscriptionScreen() {
                 </Text>
               </View>
               <Btn onPress={() => {}} disabled>
-                <Text className="text-ink text-xs font-semibold uppercase tracking-wider">
+                <Text className="text-white text-xs font-semibold uppercase tracking-wider">
                   yakında
                 </Text>
               </Btn>

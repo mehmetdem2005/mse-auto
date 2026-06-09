@@ -39,7 +39,7 @@ function money(cents: number, currency = "usd"): string {
 const day = (iso: string): string => new Date(iso).toLocaleDateString("tr-TR");
 
 function Loading(): ReactNode {
-  return <ActivityIndicator color="#ffb020" className="mt-10" />;
+  return <ActivityIndicator color="#6366F1" className="mt-10" />;
 }
 function ErrText({ e }: { e: unknown }): ReactNode {
   return (
@@ -60,7 +60,7 @@ function ActBtn({
 }): ReactNode {
   const wrap =
     tone === "solid" ? "bg-accent" : tone === "danger" ? "border border-neg" : "border border-line";
-  const color = tone === "solid" ? "#1a1205" : tone === "danger" ? "#e5614d" : "#e7eaef";
+  const color = tone === "solid" ? "#FFFFFF" : tone === "danger" ? "#DC2626" : "#0F172A";
   return (
     <Pressable
       onPress={onPress}
@@ -87,7 +87,7 @@ export default function AdminScreen(): ReactNode {
           >
             <Text
               className="text-[11px] uppercase tracking-wider"
-              style={{ color: t.id === tab ? "#1a1205" : "#828c9a" }}
+              style={{ color: t.id === tab ? "#FFFFFF" : "#64748B" }}
             >
               {t.label}
             </Text>
@@ -172,7 +172,7 @@ function PriceEditor({
           onChangeText={setVal}
           keyboardType="decimal-pad"
           placeholder="4.99"
-          placeholderTextColor="#5c6470"
+          placeholderTextColor="#94A3B8"
           className="flex-1 bg-ink border border-line rounded-lg px-3 py-2 text-text"
         />
         <ActBtn
@@ -359,7 +359,7 @@ function SubsTab(): ReactNode {
             </Text>
             <Text
               className="text-xs"
-              style={{ color: s.status === "active" ? "#46c99a" : "#828c9a" }}
+              style={{ color: s.status === "active" ? "#16A34A" : "#64748B" }}
             >
               {s.status === "active" ? "aktif" : "iptal"}
             </Text>

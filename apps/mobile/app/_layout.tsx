@@ -22,7 +22,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <StatusBar style="light" />
+        <StatusBar style="dark" />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
@@ -31,8 +31,8 @@ export default function RootLayout() {
               options={{
                 headerShown: true,
                 title: "Araştırma",
-                headerStyle: { backgroundColor: "#0a0c10" },
-                headerTintColor: "#e7eaef",
+                headerStyle: { backgroundColor: "#FFFFFF" },
+                headerTintColor: "#0F172A",
                 headerShadowVisible: false,
               }}
             />

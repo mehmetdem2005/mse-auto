@@ -1,8 +1,9 @@
-import { type CheckRunView, type DetectionEventView, api } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
+import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import type { ReactNode } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { type ReactNode, useState } from "react";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 function when(iso: string): string {
   const d = new Date(iso);
@@ -24,7 +25,7 @@ export default function WatcherDetail(): ReactNode {
   if (q.isLoading) {
     return (
       <View className="flex-1 bg-ink justify-center">
-        <ActivityIndicator color="#ffb020" />
+        <ActivityIndicator color="#6366F1" />
       </View>
     );
   }
@@ -44,20 +45,17 @@ export default function WatcherDetail(): ReactNode {
   return (
     <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
       {/* Tespitler önce — en önemli sonuç */}
-      <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
-        tespitler ({events.length})
-      </Text>
+      <SectionLabel>tespitler ({events.length})</SectionLabel>
       {events.length > 0 ? (
-        events.map((e) => <EventCard key={e.id} e={e} />)
+        events.map((e) => <EventCard key={e.id} e={e} canVote={!isAdmin} />)
       ) : (
-        <View className="bg-panel border border-line rounded-xl p-4 mb-4">
+        <Card>
           <Text className="text-muted text-sm">Henüz bir tespit yok. İzleme sürüyor.</Text>
-        </View>
+        </Card>
       )}
 
-      <Text className="text-muted text-[10px] uppercase tracking-widest mt-4 mb-2">
-        kontrol geçmişi ({runs.length})
-      </Text>
+      <View className="h-5" />
+      <SectionLabel>kontrol geçmişi ({runs.length})</SectionLabel>
       {runs.length > 0 ? (
         runs.map((r) => <RunCard key={r.id} r={r} />)
       ) : (
@@ -67,37 +65,76 @@ export default function WatcherDetail(): ReactNode {
   );
 }
 
-function EventCard({ e }: { e: DetectionEventView }): ReactNode {
+function EventCard({ e, canVote }: { e: DetectionEventView; canVote: boolean }): ReactNode {
+  const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
+  const mutation = useMutation({
+    mutationFn: (verdict: FeedbackVerdict) => api.feedback(e.id, verdict),
+    onMutate: (verdict) => setVoted(verdict),
+    onError: () => setVoted(null),
+  });
   return (
-    <View className="bg-panel border rounded-xl p-4 mb-3" style={{ borderColor: "#46c99a55" }}>
-      <View className="flex-row items-center gap-2 mb-1">
-        <Text style={{ color: "#46c99a" }}>●</Text>
-        <Text className="text-pos text-xs uppercase tracking-wider">tespit</Text>
-        <Text className="text-muted text-[11px] ml-auto">{when(e.detectedAt)}</Text>
-      </View>
-      <Text className="text-text text-sm">{e.description}</Text>
+    <View className="mb-3">
+      <Card accent>
+        <View className="flex-row items-center gap-2 mb-1.5">
+          <Badge tone="pos">● tespit</Badge>
+          <Text className="text-muted text-[11px] ml-auto">{when(e.detectedAt)}</Text>
+        </View>
+        <Text className="text-text text-[15px] leading-5">{e.description}</Text>
+        <FactChips raw={e.facts} />
+        {canVote ? (
+          <View className="flex-row items-center mt-3 pt-3 border-t border-line">
+            {voted ? (
+              <Text className="text-muted text-xs">
+                {voted === "correct" ? "👍 Teşekkürler!" : "👎 Not edildi."}
+              </Text>
+            ) : (
+              <>
+                <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
+                <Vote glyph="👍" onPress={() => mutation.mutate("correct")} />
+                <View className="w-2" />
+                <Vote glyph="👎" onPress={() => mutation.mutate("incorrect")} />
+              </>
+            )}
+          </View>
+        ) : null}
+      </Card>
     </View>
+  );
+}
+
+function Vote({ glyph, onPress }: { glyph: string; onPress: () => void }): ReactNode {
+  return (
+    <Pressable
+      onPress={onPress}
+      hitSlop={8}
+      className="w-9 h-9 rounded-full bg-panel2 items-center justify-center active:opacity-60"
+      accessibilityRole="button"
+    >
+      <Text className="text-base">{glyph}</Text>
+    </Pressable>
   );
 }
 
 function RunCard({ r }: { r: CheckRunView }): ReactNode {
   const hit = r.decision;
   return (
-    <View className="bg-panel border border-line rounded-xl p-4 mb-2.5">
-      <View className="flex-row items-center gap-2">
-        <Text style={{ color: hit ? "#46c99a" : "#828c9a" }}>{hit ? "●" : "○"}</Text>
-        <Text className="text-text text-xs">{hit ? "tespit var" : "değişiklik yok"}</Text>
-        {r.confidence !== null ? (
-          <Text className="text-muted text-[11px]">· %{Math.round(r.confidence * 100)} güven</Text>
+    <View className="mb-2.5">
+      <Card>
+        <View className="flex-row items-center gap-2">
+          <Text style={{ color: hit ? "#16A34A" : "#94A3B8" }}>{hit ? "●" : "○"}</Text>
+          <Text className="text-text text-xs">{hit ? "tespit var" : "değişiklik yok"}</Text>
+          {r.confidence !== null ? (
+            <Text className="text-muted text-[11px]">
+              · %{Math.round(r.confidence * 100)} güven
+            </Text>
+          ) : null}
+          <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
+        </View>
+        {r.summary ? <Text className="text-muted text-xs mt-2">{r.summary}</Text> : null}
+        {r.reasoning ? (
+          <Text className="text-muted text-[11px] mt-1.5 italic">{r.reasoning}</Text>
         ) : null}
-        <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
-      </View>
-      {r.summary ? <Text className="text-muted text-xs mt-2">{r.summary}</Text> : null}
-      {r.reasoning ? (
-        <Text className="text-muted text-[11px] mt-1.5 italic" style={{ color: "#5c6470" }}>
-          {r.reasoning}
-        </Text>
-      ) : null}
+      </Card>
     </View>
   );
 }

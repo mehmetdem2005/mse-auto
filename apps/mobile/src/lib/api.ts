@@ -131,6 +131,20 @@ export interface WatchTimeline {
   events: DetectionEventView[];
 }
 
+// ---- Birleşik aktivite akışı (feed) + geri bildirim ----
+export interface FeedItem {
+  deliveryId: string;
+  watchId: string;
+  watchIntent: string;
+  eventId: string;
+  description: string;
+  detectedAt: string;
+  facts: unknown;
+  channel: string;
+  status: string;
+}
+export type FeedbackVerdict = "correct" | "incorrect";
+
 interface ReqInit {
   method?: string;
   body?: string;
@@ -218,4 +232,10 @@ export const api = {
     }),
   watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
   adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),
+  feed: () => req<FeedItem[]>("/v1/feed"),
+  feedback: (eventId: string, verdict: FeedbackVerdict) =>
+    req<{ ok: boolean }>(`/v1/events/${eventId}/feedback`, {
+      method: "POST",
+      body: JSON.stringify({ verdict }),
+    }),
 };

@@ -1,8 +1,15 @@
+import { Badge, Card, EmptyState } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Text, View } from "react-native";
+
+function labelFreq(m: number): string {
+  if (m >= 1440) return `günde ${Math.round(m / 1440) === 1 ? "bir" : m / 1440} kez`;
+  if (m >= 60) return `her ${m / 60} saatte`;
+  return `her ${m} dk`;
+}
 
 export default function Watchers() {
   const router = useRouter();
@@ -14,7 +21,7 @@ export default function Watchers() {
   return (
     <View className="flex-1 bg-ink px-5 pt-4">
       {isLoading ? (
-        <ActivityIndicator color="#ffb020" className="mt-10" />
+        <ActivityIndicator color="#6366F1" className="mt-10" />
       ) : error ? (
         <Text className="text-neg mt-6">
           {error instanceof Error ? error.message : "yüklenemedi"}
@@ -27,7 +34,10 @@ export default function Watchers() {
           refreshing={isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListEmptyComponent={
-            <Text className="text-muted mt-6">Henüz watcher yok. "Yeni" sekmesinden ekle.</Text>
+            <EmptyState
+              title="Henüz watcher yok"
+              hint="Alttaki “Yeni” sekmesinden ilk izleyicini oluştur."
+            />
           }
           renderItem={({ item }) => (
             <WatchRow item={item} onPress={() => router.push(`/watcher/${item.id}`)} />
@@ -39,27 +49,18 @@ export default function Watchers() {
 }
 
 function WatchRow({ item, onPress }: { item: Watch; onPress: () => void }) {
+  const active = item.status === "active";
   return (
-    <Pressable
-      onPress={onPress}
-      className="bg-panel border border-line rounded-xl p-4 active:opacity-70"
-    >
-      <Text className="text-text text-base" numberOfLines={2}>
+    <Card onPress={onPress}>
+      <Text className="text-text text-base font-medium leading-5" numberOfLines={2}>
         {item.rawIntent}
       </Text>
-      <View className="flex-row items-center gap-3 mt-2">
-        <Text className="text-muted text-xs">her {item.frequencyMinutes} dk</Text>
-        <Text
-          className="text-xs"
-          style={{ color: item.status === "active" ? "#46c99a" : "#828c9a" }}
-        >
-          ● {item.status === "active" ? "aktif" : "duraklatıldı"}
-        </Text>
-        <Text className="text-muted text-xs">
-          {item.archetype === "shared" ? "paylaşılan" : "kişisel"}
-        </Text>
+      <View className="flex-row items-center gap-2 mt-3">
+        <Badge tone={active ? "pos" : "muted"}>{active ? "● aktif" : "❚❚ duraklatıldı"}</Badge>
+        <Badge tone="accent">{item.archetype === "shared" ? "paylaşılan" : "kişisel"}</Badge>
+        <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
         <Text className="text-muted text-xs ml-auto">araştırma ›</Text>
       </View>
-    </Pressable>
+    </Card>
   );
 }

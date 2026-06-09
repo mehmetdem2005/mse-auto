@@ -5,15 +5,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ink: "#0a0c10",
-        panel: "#12151b",
-        panel2: "#171b22",
-        line: "#242a33",
-        accent: "#ffb020",
-        text: "#e7eaef",
-        muted: "#828c9a",
-        pos: "#46c99a",
-        neg: "#e5614d",
+        // Aurora Day — aydınlık tema (8pt grid + Material/HIG ilhamı)
+        ink: "#F5F7FB", // uygulama zemini (açık)
+        panel: "#FFFFFF", // kartlar
+        panel2: "#EEF2F8", // ikincil yüzey
+        line: "#E2E8F0", // kenarlık
+        accent: "#6366F1", // indigo (birincil)
+        accent2: "#8B5CF6", // mor (vurgu/degrade)
+        text: "#0F172A", // birincil metin (slate-900)
+        muted: "#64748B", // ikincil metin (slate-500)
+        pos: "#16A34A", // olumlu/yeşil
+        neg: "#DC2626", // olumsuz/kırmızı
       },
     },
   },

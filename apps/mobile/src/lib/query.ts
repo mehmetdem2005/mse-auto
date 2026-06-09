@@ -6,6 +6,7 @@ export const queryClient = new QueryClient({
 
 export const qk = {
   me: ["me"] as const,
+  feed: ["feed"] as const,
   watchers: ["watchers"] as const,
   subscription: ["subscription"] as const,
   plans: ["plans"] as const,

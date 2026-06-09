@@ -34,7 +34,7 @@ function CInput(props: {
       value={props.value}
       onChangeText={props.onChangeText}
       placeholder={props.placeholder}
-      placeholderTextColor="#5c6470"
+      placeholderTextColor="#94A3B8"
       keyboardType={props.numeric === false ? "default" : "numeric"}
       className="flex-1 bg-panel border border-line rounded-lg px-3 py-2 text-text"
     />
@@ -132,7 +132,7 @@ export default function NewWatcher() {
           onChangeText={setRawIntent}
           multiline
           placeholder="…"
-          placeholderTextColor="#5c6470"
+          placeholderTextColor="#94A3B8"
           className="bg-panel border border-line rounded-lg px-3 py-3 text-text min-h-[88px]"
           style={{ textAlignVertical: "top" }}
         />
@@ -314,9 +314,9 @@ export default function NewWatcher() {
         disabled={mutation.isPending || rawIntent.trim().length < 3}
       >
         {mutation.isPending ? (
-          <ActivityIndicator color="#1a1205" />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text className="text-ink font-semibold uppercase tracking-wider text-xs">oluştur</Text>
+          <Text className="text-white font-semibold uppercase tracking-wider text-xs">oluştur</Text>
         )}
       </Btn>
       <Text className="text-muted text-[11px] mt-4">

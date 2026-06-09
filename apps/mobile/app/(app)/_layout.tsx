@@ -21,8 +21,8 @@ export default function AppLayout() {
   const { data: me, isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#0a0c10", justifyContent: "center" }}>
-        <ActivityIndicator color="#ffb020" />
+      <View style={{ flex: 1, backgroundColor: "#F5F7FB", justifyContent: "center" }}>
+        <ActivityIndicator color="#6366F1" />
       </View>
     );
   }
@@ -30,15 +30,22 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: "#0a0c10" },
-        headerTitleStyle: { color: "#e7eaef" },
+        headerStyle: { backgroundColor: "#FFFFFF" },
+        headerTitleStyle: { color: "#0F172A", fontWeight: "700" },
         headerShadowVisible: false,
-        sceneStyle: { backgroundColor: "#0a0c10" },
-        tabBarStyle: { backgroundColor: "#0a0c10", borderTopColor: "#242a33" },
-        tabBarActiveTintColor: "#ffb020",
-        tabBarInactiveTintColor: "#828c9a",
+        sceneStyle: { backgroundColor: "#F5F7FB" },
+        tabBarStyle: { backgroundColor: "#FFFFFF", borderTopColor: "#E2E8F0" },
+        tabBarActiveTintColor: "#6366F1",
+        tabBarInactiveTintColor: "#94A3B8",
       }}
     >
+      <Tabs.Screen
+        name="feed"
+        options={{
+          title: "Akış",
+          tabBarIcon: ({ color }) => <Icon glyph="✦" color={color} />,
+        }}
+      />
       <Tabs.Screen
         name="index"
         options={{
