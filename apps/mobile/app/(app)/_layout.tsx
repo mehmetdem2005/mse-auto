@@ -4,7 +4,7 @@ import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { useEffect } from "react";
-import { Text } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 function Icon({ glyph, color }: { glyph: string; color: string }) {
   return <Text style={{ color, fontSize: 16 }}>{glyph}</Text>;
@@ -15,7 +15,17 @@ export default function AppLayout() {
     configureNotificationHandler();
     return registerForegroundListener();
   }, []);
-  const { data: me } = useQuery({ queryKey: qk.me, queryFn: api.me });
+  // /me yüklenene dek Tabs'ı render etme: expo-router sekme görünürlüğünü ilk
+  // render'da belirler; href'i sonradan null→görünür çevirmek sekmeyi geri
+  // getirmez. Bu yüzden isAdmin'i ilk render'dan ÖNCE biliyoruz.
+  const { data: me, isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: "#0a0c10", justifyContent: "center" }}>
+        <ActivityIndicator color="#ffb020" />
+      </View>
+    );
+  }
   const isAdmin = me?.isAdmin ?? false;
   return (
     <Tabs
