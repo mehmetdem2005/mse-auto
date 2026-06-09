@@ -1,15 +1,9 @@
-import type {
-  AdminStats,
-  AdminSubscription,
-  AdminSystem,
-  AdminUser,
-  AdminWatch,
-  BillingInterval,
-  Plans,
-} from "@watcher/contracts";
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { BillingInterval, Plans } from "@watcher/contracts";
+import { type ReactNode, useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { money, shortDate } from "../lib/format";
+import { qk } from "../lib/query";
 import { Banner, Panel, Stat } from "./ui";
 
 const msg = (e: unknown): string => (e instanceof Error ? e.message : "işlem başarısız");
@@ -52,7 +46,6 @@ export function Admin({ token }: { token: string }): ReactNode {
   );
 }
 
-/** Yükleme iskeleti (shimmer). */
 const SKEL_KEYS = ["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"];
 function Skeleton({ rows = 4 }: { rows?: number }): ReactNode {
   return (
@@ -67,28 +60,14 @@ function Skeleton({ rows = 4 }: { rows?: number }): ReactNode {
 // ----------------------------- Analitik + Fiyat -----------------------------
 
 function Analytics({ token }: { token: string }): ReactNode {
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [prices, setPrices] = useState<Plans | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    setErr(null);
-    try {
-      const [s, p] = await Promise.all([api.adminStats(token), api.adminPrices(token)]);
-      setStats(s);
-      setPrices(p);
-    } catch (e) {
-      setErr(msg(e));
-    }
-  }, [token]);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const statsQ = useQuery({ queryKey: qk.adminStats, queryFn: () => api.adminStats(token) });
+  const pricesQ = useQuery({ queryKey: qk.adminPrices, queryFn: () => api.adminPrices(token) });
+  const stats = statsQ.data;
+  const err = statsQ.error || pricesQ.error;
 
   return (
     <>
-      {err ? <Banner kind="err">{err}</Banner> : null}
+      {err ? <Banner kind="err">{msg(err)}</Banner> : null}
       {stats ? (
         <>
           <div className="stats">
@@ -126,8 +105,8 @@ function Analytics({ token }: { token: string }): ReactNode {
           dönemleri (aylık/yıllık) bitene kadar eski fiyattan devam eder.
         </Banner>
         <div className="grid cols-2">
-          <PriceEditor token={token} interval="month" plans={prices} onSaved={setPrices} />
-          <PriceEditor token={token} interval="year" plans={prices} onSaved={setPrices} />
+          <PriceEditor token={token} interval="month" plans={pricesQ.data ?? null} />
+          <PriceEditor token={token} interval="year" plans={pricesQ.data ?? null} />
         </div>
       </Panel>
     </>
@@ -137,44 +116,40 @@ function Analytics({ token }: { token: string }): ReactNode {
 // ----------------------------- Kullanıcılar -----------------------------
 
 function Users({ token }: { token: string }): ReactNode {
-  const [rows, setRows] = useState<AdminUser[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const usersQ = useQuery({ queryKey: qk.adminUsers, queryFn: () => api.adminUsers(token) });
+  const invalidate = () => qc.invalidateQueries({ queryKey: qk.adminUsers });
 
-  const load = useCallback(async () => {
-    setErr(null);
-    try {
-      setRows(await api.adminUsers(token));
-    } catch (e) {
-      setErr(msg(e));
-    }
-  }, [token]);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const setAdmin = useMutation({
+    mutationFn: (v: { id: string; makeAdmin: boolean }) =>
+      api.setUserAdmin(token, v.id, v.makeAdmin),
+    onSuccess: invalidate,
+  });
+  const gift = useMutation({
+    mutationFn: (v: { id: string; interval: BillingInterval }) =>
+      api.giftPro(token, v.id, v.interval),
+    onSuccess: invalidate,
+  });
+  const cancelSub = useMutation({
+    mutationFn: (id: string) => api.cancelUserSub(token, id),
+    onSuccess: invalidate,
+  });
+  const del = useMutation({
+    mutationFn: (id: string) => api.deleteUser(token, id),
+    onSuccess: invalidate,
+  });
+  const busy = setAdmin.isPending || gift.isPending || cancelSub.isPending || del.isPending;
+  const err = usersQ.error || setAdmin.error || gift.error || cancelSub.error || del.error;
 
-  async function act(id: string, fn: () => Promise<unknown>, confirmMsg?: string): Promise<void> {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-    setBusy(id);
-    setErr(null);
-    try {
-      await fn();
-      await load();
-    } catch (e) {
-      setErr(msg(e));
-    }
-    setBusy(null);
-  }
-
-  if (!rows) return <Skeleton rows={5} />;
+  if (!usersQ.data) return <Skeleton rows={5} />;
   return (
     <>
-      {err ? <Banner kind="err">{err}</Banner> : null}
+      {err ? <Banner kind="err">{msg(err)}</Banner> : null}
       <div className="muted" style={{ marginBottom: 10 }}>
-        {rows.length} kullanıcı
+        {usersQ.data.length} kullanıcı
       </div>
       <div className="grid">
-        {rows.map((u) => (
+        {usersQ.data.map((u) => (
           <Panel key={u.id}>
             <div className="row">
               <div>
@@ -189,46 +164,47 @@ function Users({ token }: { token: string }): ReactNode {
               <button
                 className="btn sm"
                 type="button"
-                disabled={busy === u.id}
-                onClick={() => act(u.id, () => api.setUserAdmin(token, u.id, !u.isAdmin))}
+                disabled={busy}
+                onClick={() => setAdmin.mutate({ id: u.id, makeAdmin: !u.isAdmin })}
               >
                 {u.isAdmin ? "admin yetkisini al" : "admin yap"}
               </button>
               <button
                 className="btn sm"
                 type="button"
-                disabled={busy === u.id}
-                onClick={() => act(u.id, () => api.giftPro(token, u.id, "month"))}
+                disabled={busy}
+                onClick={() => gift.mutate({ id: u.id, interval: "month" })}
               >
                 pro hediye (ay)
               </button>
               <button
                 className="btn sm"
                 type="button"
-                disabled={busy === u.id}
-                onClick={() => act(u.id, () => api.giftPro(token, u.id, "year"))}
+                disabled={busy}
+                onClick={() => gift.mutate({ id: u.id, interval: "year" })}
               >
                 pro hediye (yıl)
               </button>
               <button
                 className="btn sm"
                 type="button"
-                disabled={busy === u.id}
-                onClick={() => act(u.id, () => api.cancelUserSub(token, u.id))}
+                disabled={busy}
+                onClick={() => cancelSub.mutate(u.id)}
               >
                 aboneliği iptal
               </button>
               <button
                 className="btn danger sm"
                 type="button"
-                disabled={busy === u.id}
-                onClick={() =>
-                  act(
-                    u.id,
-                    () => api.deleteUser(token, u.id),
-                    `${u.email ?? u.id} hesabı KALICI silinsin mi? (tüm verisi gider)`,
+                disabled={busy}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `${u.email ?? u.id} hesabı KALICI silinsin mi? (tüm verisi gider)`,
+                    )
                   )
-                }
+                    del.mutate(u.id);
+                }}
               >
                 hesabı sil
               </button>
@@ -243,44 +219,31 @@ function Users({ token }: { token: string }): ReactNode {
 // ----------------------------- Watcher'lar -----------------------------
 
 function Watches({ token }: { token: string }): ReactNode {
-  const [rows, setRows] = useState<AdminWatch[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-  const [busy, setBusy] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const watchesQ = useQuery({ queryKey: qk.adminWatches, queryFn: () => api.adminWatches(token) });
+  const invalidate = () => qc.invalidateQueries({ queryKey: qk.adminWatches });
 
-  const load = useCallback(async () => {
-    setErr(null);
-    try {
-      setRows(await api.adminWatches(token));
-    } catch (e) {
-      setErr(msg(e));
-    }
-  }, [token]);
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const setStatus = useMutation({
+    mutationFn: (v: { id: string; status: "active" | "paused" }) =>
+      api.setWatchStatus(token, v.id, v.status),
+    onSuccess: invalidate,
+  });
+  const del = useMutation({
+    mutationFn: (id: string) => api.deleteWatch(token, id),
+    onSuccess: invalidate,
+  });
+  const busy = setStatus.isPending || del.isPending;
+  const err = watchesQ.error || setStatus.error || del.error;
 
-  async function act(id: string, fn: () => Promise<unknown>, confirmMsg?: string): Promise<void> {
-    if (confirmMsg && !window.confirm(confirmMsg)) return;
-    setBusy(id);
-    setErr(null);
-    try {
-      await fn();
-      await load();
-    } catch (e) {
-      setErr(msg(e));
-    }
-    setBusy(null);
-  }
-
-  if (!rows) return <Skeleton rows={5} />;
+  if (!watchesQ.data) return <Skeleton rows={5} />;
   return (
     <>
-      {err ? <Banner kind="err">{err}</Banner> : null}
+      {err ? <Banner kind="err">{msg(err)}</Banner> : null}
       <div className="muted" style={{ marginBottom: 10 }}>
-        {rows.length} watcher
+        {watchesQ.data.length} watcher
       </div>
       <div className="grid">
-        {rows.map((w) => (
+        {watchesQ.data.map((w) => (
           <Panel key={w.id}>
             <div className="v" style={{ marginBottom: 4 }}>
               {w.rawIntent}
@@ -294,11 +257,12 @@ function Watches({ token }: { token: string }): ReactNode {
               <button
                 className="btn sm"
                 type="button"
-                disabled={busy === w.id}
+                disabled={busy}
                 onClick={() =>
-                  act(w.id, () =>
-                    api.setWatchStatus(token, w.id, w.status === "active" ? "paused" : "active"),
-                  )
+                  setStatus.mutate({
+                    id: w.id,
+                    status: w.status === "active" ? "paused" : "active",
+                  })
                 }
               >
                 {w.status === "active" ? "duraklat" : "aktifleştir"}
@@ -306,10 +270,10 @@ function Watches({ token }: { token: string }): ReactNode {
               <button
                 className="btn danger sm"
                 type="button"
-                disabled={busy === w.id}
-                onClick={() =>
-                  act(w.id, () => api.deleteWatch(token, w.id), "Bu watcher silinsin mi?")
-                }
+                disabled={busy}
+                onClick={() => {
+                  if (window.confirm("Bu watcher silinsin mi?")) del.mutate(w.id);
+                }}
               >
                 sil
               </button>
@@ -324,26 +288,16 @@ function Watches({ token }: { token: string }): ReactNode {
 // ----------------------------- Abonelikler -----------------------------
 
 function Subs({ token }: { token: string }): ReactNode {
-  const [rows, setRows] = useState<AdminSubscription[] | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    let on = true;
-    api
-      .adminSubscriptions(token)
-      .then((r) => on && setRows(r))
-      .catch((e) => on && setErr(msg(e)));
-    return () => {
-      on = false;
-    };
-  }, [token]);
-
-  if (err) return <Banner kind="err">{err}</Banner>;
-  if (!rows) return <Skeleton rows={3} />;
-  if (rows.length === 0) return <div className="muted">abonelik yok.</div>;
+  const subsQ = useQuery({
+    queryKey: qk.adminSubscriptions,
+    queryFn: () => api.adminSubscriptions(token),
+  });
+  if (subsQ.error) return <Banner kind="err">{msg(subsQ.error)}</Banner>;
+  if (!subsQ.data) return <Skeleton rows={3} />;
+  if (subsQ.data.length === 0) return <div className="muted">abonelik yok.</div>;
   return (
     <div className="grid">
-      {rows.map((s) => (
+      {subsQ.data.map((s) => (
         <Panel key={s.userId}>
           <div className="row">
             <div>
@@ -371,21 +325,9 @@ function Subs({ token }: { token: string }): ReactNode {
 // ----------------------------- Sistem -----------------------------
 
 function System({ token }: { token: string }): ReactNode {
-  const [sys, setSys] = useState<AdminSystem | null>(null);
-  const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    let on = true;
-    api
-      .adminSystem(token)
-      .then((s) => on && setSys(s))
-      .catch((e) => on && setErr(msg(e)));
-    return () => {
-      on = false;
-    };
-  }, [token]);
-
-  if (err) return <Banner kind="err">{err}</Banner>;
+  const sysQ = useQuery({ queryKey: qk.adminSystem, queryFn: () => api.adminSystem(token) });
+  if (sysQ.error) return <Banner kind="err">{msg(sysQ.error)}</Banner>;
+  const sys = sysQ.data;
   if (!sys) return <Skeleton rows={4} />;
   return (
     <>
@@ -446,47 +388,38 @@ function PriceEditor({
   token,
   interval,
   plans,
-  onSaved,
 }: {
   token: string;
   interval: BillingInterval;
   plans: Plans | null;
-  onSaved: (p: Plans) => void;
 }): ReactNode {
+  const qc = useQueryClient();
   const current = plans?.prices.find((p) => p.interval === interval) ?? null;
   const [value, setValue] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [localErr, setLocalErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (current) setValue((current.amountCents / 100).toString());
   }, [current]);
 
-  async function save(): Promise<void> {
+  const save = useMutation({
+    mutationFn: (cents: number) => api.setPrice(token, interval, cents, current?.currency ?? "usd"),
+    onSuccess: () => qc.invalidateQueries({ queryKey: qk.adminPrices }),
+  });
+
+  function onSave(): void {
     const dollars = Number(value);
     if (!Number.isFinite(dollars) || dollars < 0) {
-      setErr("geçersiz tutar");
+      setLocalErr("geçersiz tutar");
       return;
     }
-    setBusy(true);
-    setErr(null);
-    try {
-      const updated = await api.setPrice(
-        token,
-        interval,
-        Math.round(dollars * 100),
-        current?.currency ?? "usd",
-      );
-      onSaved(updated);
-    } catch (e) {
-      setErr(msg(e));
-    }
-    setBusy(false);
+    setLocalErr(null);
+    save.mutate(Math.round(dollars * 100));
   }
 
-  const staticStyle: CSSProperties = { animation: "none", opacity: 1, transform: "none" };
+  const err = localErr ?? (save.error ? msg(save.error) : null);
   return (
-    <div className="panel" style={staticStyle}>
+    <div className="panel" style={{ animation: "none", opacity: 1, transform: "none" }}>
       <h3>pro · {interval === "month" ? "aylık" : "yıllık"}</h3>
       <div className="field">
         <label htmlFor={`price-${interval}`}>tutar (USD)</label>
@@ -508,7 +441,12 @@ function PriceEditor({
         </div>
       ) : null}
       <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
-        <button className="btn sm" type="button" disabled={busy || !value} onClick={save}>
+        <button
+          className="btn sm"
+          type="button"
+          disabled={save.isPending || !value}
+          onClick={onSave}
+        >
           kaydet
         </button>
         <span className="kpi">

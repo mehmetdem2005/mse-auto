@@ -12,4 +12,6 @@ export const qk = {
   adminWatches: ["admin", "watches"] as const,
   adminSubscriptions: ["admin", "subscriptions"] as const,
   adminStats: ["admin", "stats"] as const,
+  adminPrices: ["admin", "prices"] as const,
+  adminSystem: ["admin", "system"] as const,
 };

@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…027 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-027 (Phase H — geçici Groq reasoner).
+**İlerleme:** ADR-001…028 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
 
 ---
 
@@ -368,3 +368,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P1 ✓ (PII'siz canonical) · P3 ✓ (managed) · P7 ✓ (reasoner swap = env) · P8 ✓ (Functional Suitability).
 - **Doğrulama:** 62/62 test (Groq parse + hata). Canlı: geçerli Groq key + deploy sonrası DB'de CheckRun/DetectionEvent.
 - **Değerlendirilen alternatifler:** yalnız DeepSeek (bakiyesiz) · OpenAI (embedding'e ayrıldı) · Gemini (devre dışı).
+
+## ADR-028 — Standart uyum düzeltmeleri (a11y · react-query · atomic · font · inline→class)
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — özdenetimde tespit edilen, footer'da beyan edilip fiilen uygulanmayan standartları kapatır (yanlış-uyum borcu).
+- **Bağlam:** Footer'larda "WCAG 2.2 AA · ITCSS+CUBE · react-query · self-host font · 8pt" yazılmış ama bir kısmı uygulanmamıştı (kendi "yanlış beyan etme" kuralının ihlali).
+- **Karar:** (1) **a11y:** emoji/ikon-buton `accessibilityLabel` (Doğru/Yanlış/haritada-aç), emoji SR'dan gizli; **dokunma hedefleri 44pt**; dashboard `:focus-visible`; **semantik `<table>`** (Carbon) + grafik `role="img"`+`aria-label`. (2) **Kontrast (AA):** `muted` slate-500→**slate-600** (mobil token + `--muted`). (3) **State:** dashboard **tümü react-query** (QueryClientProvider + Feed/Overview/Admin; elle `useEffect`-fetch kaldırıldı). (4) **Atomic Design:** mobil `components/{atoms,molecules}/`. (5) **Font:** dashboard uzak IBM Plex/Archivo → **system-font** (remote bağımlılık yok). (6) **inline→CSS sınıf:** grafik + tablo `styles.css`'e.
+- **Sonuçlar:** Beyan-gerçek farkı kapandı; biome ci 195 + 4 paket typecheck + 60+ test yeşil, dashboard build temiz.
+- **Bilinçli kalan (footer'da ARTIK abartılmaz):** PRPL/route-lazy-split (mevcut ölçek küçük, tek bundle yeterli) + tam modüler type-scale (kısmen; ad-hoc `text-[11/13/15px]` bazı yerlerde duruyor). Bunlar gelecekte; "uygulandı" diye yazılmayacak.
+- **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓ (gerçek uygulama, ritüel değil).
+- **ISO:** 25010 *Interaction Capability* (a11y/WCAG) + *Maintainability* (react-query tek desen, atomic, token) · 9241-110 (öz-betimleyicilik/odak).
+- **Değerlendirilen alternatifler:** footer'ı kırpıp standartları uygulamamak (yanlış-beyanı sürdürür → reddedildi) · Admin'i elle-fetch bırakmak (kural ihlali → tümü çevrildi).
