@@ -11,7 +11,9 @@ const EnvSchema = z.object({
   // Checker: arama + DeepSeek (yoksa StubChecker)
   SERPER_API_KEY: z.string().min(1).optional(),
   TAVILY_API_KEY: z.string().min(1).optional(),
+  GEMINI_API_KEY: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
+  OPENAI_API_KEY: z.string().min(1).optional(),
   // FCM push (yoksa NoopNotifier — dev)
   FCM_PROJECT_ID: z.string().min(1).optional(),
   GOOGLE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),

@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…024 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
+**İlerleme:** ADR-001…025 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
 
 ---
 
@@ -339,3 +339,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9 conformance:** P1 ✓ (user-scoped, egress yok) · P4 ✓ (contracts) · P5 ✓ (RLS + service-role yazımı) · P7 ✓ (ayrı tablo kaçış kapısı açık) · P8 ✓ (Interaction Capability — gelen kutusu). Diğerleri etkisiz.
 - **Doğrulama:** in-memory 3 test (listFeed okunmamış · markDeliveryRead sahip+izolasyon · markAllRead sayım+idempotent); backend 55/55 + typecheck temiz.
 - **Değerlendirilen alternatifler:** ayrı `feed_reads` tablosu (çok-cihaz senkron derdi yoksa gereksiz → hariç) · cihaz-local okundu (çok-cihaz tutarsız → hariç).
+
+## ADR-025 — Canlı tespit sağlayıcıları: Gemini arama + OpenAI tek-anahtar checker
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — Faz 6 (AI tespit) sağlayıcı genişlemesi.
+- **Bağlam:** `LiveChecker` web araması için **Serper/Tavily** + muhakeme için **DeepSeek** istiyordu; `buildChecker` yalnız Serper/Tavily tanıyordu → bu anahtarlar yoksa **StubChecker** (gerçek arama/karar yok). Eldeki anahtarlar farklı (Gemini, OpenAI).
+- **Karar:** İki yeni sağlayıcı, hexagonal port'lara takılı: (1) **`GeminiSearchProvider`** — Gemini + Google Search grounding ile gerçek web araması; `SearchProvider` portu, DeepSeek reasoner ile eşleşir. (2) **`OpenAiChecker`** — OpenAI Responses API + `web_search` aracı; **arama + karar tek çağrı**, ayrı reasoner gerekmez (tek-anahtarlı yol), `Checker` portunu doğrudan uygular. `buildChecker` önceliği: `(Serper|Tavily|Gemini) + DeepSeek` → `LiveChecker`; değilse `OPENAI_API_KEY` → `OpenAiChecker`; değilse `StubChecker`. **P1 korunur:** dış hatta yalnız PII'siz canonical sorgu.
+- **Sonuçlar:** Tek funded anahtar (OpenAI) gerçek tespiti açar; Gemini yenilenince arama yolu da çalışır. Ödün: `OpenAiChecker` **canlı doğrulanamadı** (verilen OpenAI anahtarı kotasız → 429); birim testle (mock) doğrulandı, ayrıştırma OpenAI Responses şemasına göre toleranslı (output_text + output[]/message). Gerçek davranış funded anahtarla teyit edilecek.
+- **⚠️ KRİTİK işletme notu:** Kod hazır ama PROD'da tespit üretmek için **iki dış koşul** gerekir: (a) Render servisi `start:combined` ile dönmeli (scheduler/worker — şu an 0 check_run), (b) **funded** bir AI anahtarı Render env'ine girilmeli. Sağlanan anahtarların hepsi ölü: Gemini expired · DeepSeek $0 · OpenAI quota · Render API 401.
+- **P1–P9:** P1 ✓ (canonical PII'siz) · P3 ✓ (managed AI = buy) · P4 ✓ · P7 ✓ (sağlayıcı-agnostik adaptör, swap kolay) · P8 ✓ (25010 Functional Suitability — tespit). 
+- **Doğrulama:** 60/60 test (Gemini parse 2 + OpenAI parse 3 + mevcutlar); typecheck + biome temiz.
+- **Değerlendirilen alternatifler:** yalnız Serper/Tavily (kullanıcıda yok) · Gemini'yi hem arama hem reasoner yapmak (ileride; OpenAI tek-anahtar şimdilik yeterli) · DeepSeek (bakiyesiz → şimdilik dışı).
