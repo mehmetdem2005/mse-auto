@@ -5,6 +5,7 @@ import type {
   AdminUser,
   AdminWatch,
   BillingInterval,
+  FeedItem,
   Me,
   Plans,
   Subscription,
@@ -38,6 +39,7 @@ async function req<T>(path: string, token: string, init?: RequestInit): Promise<
 
 export const api = {
   me: (t: string) => req<Me>("/v1/me", t),
+  feed: (t: string) => req<FeedItem[]>("/v1/feed", t),
   subscription: (t: string) => req<Subscription>("/v1/subscription", t),
   plans: (t: string) => req<Plans>("/v1/plans", t),
   subscribe: (t: string, interval: BillingInterval) =>

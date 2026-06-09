@@ -1,6 +1,7 @@
 import type { Me } from "@watcher/contracts";
 import { type ReactNode, useCallback, useEffect, useState } from "react";
 import { Admin } from "./components/Admin";
+import { Feed } from "./components/Feed";
 import { Login } from "./components/Login";
 import { Overview } from "./components/Overview";
 import { Shell } from "./components/Shell";
@@ -11,12 +12,12 @@ export interface Session {
   token: string;
   email: string | null;
 }
-export type View = "overview" | "admin";
+export type View = "feed" | "overview" | "admin";
 
 export function App(): ReactNode {
   const [session, setSession] = useState<Session | null>(null);
   const [me, setMe] = useState<Me | null>(null);
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<View>("feed");
   const [booting, setBooting] = useState(true);
 
   // Supabase oturumu
@@ -57,7 +58,7 @@ export function App(): ReactNode {
     if (supabase) await supabase.auth.signOut();
     setSession(null);
     setMe(null);
-    setView("overview");
+    setView("feed");
   }, []);
 
   if (booting) return <div className="boot">yükleniyor…</div>;
@@ -67,8 +68,10 @@ export function App(): ReactNode {
     <Shell me={me} view={view} onNav={setView} onSignOut={() => void signOut()}>
       {view === "admin" && me?.isAdmin ? (
         <Admin token={session.token} />
-      ) : (
+      ) : view === "overview" ? (
         <Overview token={session.token} />
+      ) : (
+        <Feed token={session.token} />
       )}
     </Shell>
   );
