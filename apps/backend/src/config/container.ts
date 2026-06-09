@@ -19,7 +19,6 @@ import type { SubscriptionRepository } from "../domain/subscription";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
 import { SupabaseJwtVerifier } from "../infrastructure/auth/supabase.verifier";
 import { LiveChecker } from "../infrastructure/checker/live.checker";
-import { OpenAiChecker } from "../infrastructure/checker/openai.checker";
 import { StubChecker } from "../infrastructure/checker/stub.checker";
 import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gateway";
 import { InMemoryAdminConsoleRepository } from "../infrastructure/in-memory/admin-console.repo";
@@ -44,7 +43,6 @@ import { PgBossJobQueue } from "../infrastructure/queue/pgboss.queue";
 import { InMemoryRateLimiter } from "../infrastructure/rate-limit/in-memory.limiter";
 import { DeepSeekEventReasoner } from "../infrastructure/reasoner/deepseek.reasoner";
 import { FallbackSearchProvider } from "../infrastructure/search/fallback.search";
-import { GeminiSearchProvider } from "../infrastructure/search/gemini.search";
 import { SerperSearchProvider } from "../infrastructure/search/serper.search";
 import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
 import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gateway";
@@ -81,18 +79,17 @@ export interface Container {
 }
 
 function buildChecker(env: Env): Checker {
+  // Arama = Serper/Tavily, karar = DeepSeek. (OpenAI yalnız embedding için ayrılmıştır;
+  // Gemini provider'ı bilinçli devre dışı — kullanıcı yönlendirmesi.)
   const providers: SearchProvider[] = [];
   if (env.SERPER_API_KEY) providers.push(new SerperSearchProvider(env.SERPER_API_KEY));
   if (env.TAVILY_API_KEY) providers.push(new TavilySearchProvider(env.TAVILY_API_KEY));
-  if (env.GEMINI_API_KEY) providers.push(new GeminiSearchProvider(env.GEMINI_API_KEY));
   if (providers.length > 0 && env.DEEPSEEK_API_KEY) {
     return new LiveChecker(
       new FallbackSearchProvider(providers),
       new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY),
     );
   }
-  // Tek-anahtarlı yol: OpenAI Responses API + web_search (arama + karar tek çağrı).
-  if (env.OPENAI_API_KEY) return new OpenAiChecker(env.OPENAI_API_KEY);
   return new StubChecker();
 }
 

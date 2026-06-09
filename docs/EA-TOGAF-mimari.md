@@ -686,6 +686,8 @@ flowchart TB
 
 | C-006 | **Canlı tespit sağlayıcıları** — `GeminiSearchProvider` (Google Search grounding) + `OpenAiChecker` (Responses API + web_search, tek-anahtar arama+karar); `buildChecker` önceliklendirme | Artımlı | Faz 6 (Olay Tespiti / SBB-4) — StubChecker yerine gerçek arama+AI yolu | P1✓(canonical PII'siz)·P3✓(buy)·P4✓·P7✓(sağlayıcı-agnostik)·P8✓(Func.Suit.) | ADR-025 | TA-1/2 · **kod hazır; prod'da funded anahtar + çalışan scheduler bekliyor** |
 
+| C-007 | **Kuyruk hatası düzeltmesi** — `InMemoryJobQueue` enqueue'da otomatik işler (eskiden prod'da hiç işlenmiyordu → 0 check_run) + `runTopicCheck` checker hatasına dayanıklı + checker = Serper+DeepSeek (Gemini/OpenAI-checker çıkarıldı, kullanıcı yönlendirmesi) | Basitleştirme | SBB-3 İzleme Motoru — VS1/adım-3 fiilen çalışır hale geldi | P1✓·P3✓·P7✓(adaptör swap)·P8✓(Reliability) | ADR-026 | TA-1 · **deploy sonrası CheckRun ile doğrulanacak** |
+
 > **Re-baseline notu:** C-001/002 TA-2 (Lansman) kapsamındaki kullanıcı-dönük olgunlaşmadır; mimari prensiplerde sapma yok (dispensation gerekmedi). C-005 ("Okundu" durumu): migration 0005 **kullanıcı tarafından canlı Supabase'de uygulandı** (anon REST ile `deliveries.read_at` varlığı doğrulandı) → main'e merge edildi.
 
 ## 10. Requirements Management (MERKEZ — sürekli)

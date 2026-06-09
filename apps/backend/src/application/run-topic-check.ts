@@ -1,4 +1,4 @@
-import type { Checker } from "../domain/checker";
+import type { CheckOutcome, Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { EventFacts } from "../domain/personal";
 import type { CanonicalTopic } from "../domain/topic";
@@ -24,7 +24,22 @@ export async function runTopicCheck(
   deps: RunTopicCheckDeps,
   topic: CanonicalTopic,
 ): Promise<RunTopicCheckResult> {
-  const outcome = await deps.checker.check(topic);
+  let outcome: CheckOutcome;
+  try {
+    outcome = await deps.checker.check(topic);
+  } catch (err) {
+    // Checker hatası (örn. arama/LLM kotası): topic'i sonsuz "due" döngüsünde
+    // bırakmamak için başarısız bir CheckRun kaydet + checked işaretle.
+    await deps.monitoring.recordCheckRun({
+      topicId: topic.id,
+      resultSummary: "checker hatası",
+      reasoning: err instanceof Error ? err.message : "bilinmeyen hata",
+      decision: false,
+      confidence: 0,
+    });
+    await deps.monitoring.markTopicChecked(topic.id, new Date().toISOString());
+    return { detected: false, eventId: null, description: null, deliveries: 0, facts: null };
+  }
 
   const run = await deps.monitoring.recordCheckRun({
     topicId: topic.id,

@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…025 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
+**İlerleme:** ADR-001…026 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
 
 ---
 
@@ -349,3 +349,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P1 ✓ (canonical PII'siz) · P3 ✓ (managed AI = buy) · P4 ✓ · P7 ✓ (sağlayıcı-agnostik adaptör, swap kolay) · P8 ✓ (25010 Functional Suitability — tespit). 
 - **Doğrulama:** 60/60 test (Gemini parse 2 + OpenAI parse 3 + mevcutlar); typecheck + biome temiz.
 - **Değerlendirilen alternatifler:** yalnız Serper/Tavily (kullanıcıda yok) · Gemini'yi hem arama hem reasoner yapmak (ileride; OpenAI tek-anahtar şimdilik yeterli) · DeepSeek (bakiyesiz → şimdilik dışı).
+
+## ADR-026 — Kuyruk işleme hatası düzeltmesi + checker sağlayıcı sadeleştirme
+- **Durum:** Kabul · TOGAF Phase H (Basitleştirme — kritik üretim hatası).
+- **Bağlam:** Prod'da **0 check_run** (13+ saat, 3 aktif watcher). Render log teşhisi: combined süreç + scheduler çalışıyor ("scheduler: 2 topic kuyruğa alındı" her tick) ama **işler hiç işlenmiyor**. Kök neden: `InMemoryJobQueue.process()` yalnız handler **kaydediyor**; bekleyen işler yalnız `drain()` ile işleniyor ve `drain()` **test-only** — combined süreçte kimse çağırmıyor. Ayrıca bir checker hatası topic'i sonsuz "due" döngüsünde bırakıyordu. Kullanıcı yönlendirmesi: **OpenAI yalnız embedding**, **Gemini değil** → arama Serper, karar DeepSeek.
+- **Karar:** (1) `InMemoryJobQueue.enqueue` **otomatik pump** eder (re-entrancy guard'lı; bir handler içinden enqueue dış döngüye bırakılır; handler hatası izole edilir/loglanır). (2) `runTopicCheck` checker hatasında **başarısız CheckRun kaydeder + markTopicChecked** (anti-wedge + gözlemlenebilirlik). (3) `buildChecker` sadeleşti: `(Serper|Tavily) + DeepSeek → LiveChecker`; yoksa `StubChecker`. Gemini provider + OpenAiChecker **detection'dan çıkarıldı** (dosyalar durur, bağlantı kesildi — geri dönülebilir).
+- **Sonuçlar:** Motor artık işleri gerçekten işler; CheckRun'lar oluşur (DeepSeek fonlanınca gerçek tespit; fonlanmadan "checker hatası" run'ı görünür → döngünün çalıştığı kanıtlanır). Ödün: in-memory kuyruk **tek-süreç** içindir (render.yaml zaten tek servis); çok-süreç gerekirse pg-boss kaçış kapısı.
+- **P1–P9:** P1 ✓ · P3 ✓ · P4 ✓ · P7 ✓ (kuyruk/sağlayıcı adaptör swap) · P8 ✓ (25010 *Reliability* — döngü çalışır + hata-toleransı).
+- **Doğrulama:** 60/60 test; typecheck + biome temiz. **Canlı doğrulama:** deploy sonrası DB'de CheckRun belirmesi (bu ADR'nin kabul kriteri).
+- **Değerlendirilen alternatifler:** start-workers'da `setInterval` ile periyodik drain (enqueue-pump daha basit + anında) · pg-boss'u prod'a almak (tek serviste gereksiz; Supabase pooler region/format riski — ENOTFOUND tenant hatası gözlendi).
