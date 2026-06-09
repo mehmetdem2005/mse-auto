@@ -116,6 +116,9 @@ export function Overview({ token }: { token: string }): ReactNode {
 
       <div style={{ height: 16 }} />
       <Panel title="planlar" delay={120}>
+        <div className="muted" style={{ marginBottom: 12 }}>
+          Ödeme entegrasyonu yakında — abonelik geçici olarak kapalı.
+        </div>
         {plans && plans.prices.length > 0 ? (
           <div className="grid">
             {plans.prices.map((p) => (
@@ -128,13 +131,8 @@ export function Overview({ token }: { token: string }): ReactNode {
                     {money(p.amountCents, p.currency)} / {p.interval === "month" ? "ay" : "yıl"}
                   </div>
                 </div>
-                <button
-                  className="btn sm"
-                  type="button"
-                  disabled={busy}
-                  onClick={() => act(() => api.subscribe(token, p.interval))}
-                >
-                  abone ol
+                <button className="btn sm" type="button" disabled>
+                  yakında
                 </button>
               </div>
             ))}

@@ -1,8 +1,7 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { errorSchema, subscribeInputSchema, subscriptionSchema } from "@watcher/contracts";
+import { errorSchema, subscriptionSchema } from "@watcher/contracts";
 import { cancelSubscription } from "../../application/cancel";
 import { getSubscription } from "../../application/get-subscription";
-import { subscribeUser } from "../../application/subscribe";
 import type { Container } from "../../config/container";
 import type { AuthVariables } from "./auth.middleware";
 
@@ -32,20 +31,21 @@ export function subscriptionRoutes(
       method: "post",
       path: "/",
       tags: ["subscription"],
-      summary: "Abone ol (ödeme sonrası hook)",
-      request: { body: { content: { "application/json": { schema: subscribeInputSchema } } } },
+      summary: "Abone ol — devre dışı (ödeme entegrasyonu gerekli)",
       responses: {
-        200: {
-          content: { "application/json": { schema: subscriptionSchema } },
-          description: "Güncel",
+        503: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Ödeme akışı kapalı",
         },
       },
     }),
-    async (c) => {
-      const input = c.req.valid("json");
-      await subscribeUser(container, c.get("userId"), input.plan, input.interval);
-      return c.json(await getSubscription(container, c.get("userId")), 200);
-    },
+    // Güvenlik: eskiden bu uç doğrudan aktif Pro yazıyordu (ödemesiz). Artık Pro
+    // yalnız ödeme sağlayıcısının webhook'u üzerinden verilir (/v1/billing/checkout).
+    async (c) =>
+      c.json(
+        { error: "Abonelik ödeme gerektirir; bu uç devre dışı. Ödeme entegrasyonu yakında." },
+        503,
+      ),
   );
 
   app.openapi(

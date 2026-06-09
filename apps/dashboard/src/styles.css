@@ -565,18 +565,13 @@ body::after {
 
 /* panel: hover'da yüksel + amber kenar parıltısı */
 .panel {
-  transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 .panel:hover {
   transform: translateY(-3px);
   border-color: rgba(255, 176, 32, 0.32);
-  box-shadow:
-    0 14px 34px -16px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 176, 32, 0.07),
-    0 0 26px -8px rgba(255, 176, 32, 0.12);
+  box-shadow: 0 14px 34px -16px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 176, 32, 0.07), 0 0 26px
+    -8px rgba(255, 176, 32, 0.12);
 }
 
 /* grid içindeki panellere sıralı (stagger) giriş gecikmesi */
@@ -656,10 +651,7 @@ body::after {
   color: var(--muted);
   padding: 9px 16px;
   border-radius: 8px;
-  transition:
-    color 0.18s ease,
-    background 0.18s ease,
-    box-shadow 0.18s ease;
+  transition: color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
 }
 .tab:hover {
   color: var(--text);

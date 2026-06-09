@@ -1,5 +1,5 @@
 import { Btn } from "@/components/ui";
-import { type BillingInterval, api } from "@/lib/api";
+import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
@@ -25,10 +25,6 @@ export default function SubscriptionScreen() {
   const sub = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const plans = useQuery({ queryKey: qk.plans, queryFn: api.plans });
 
-  const subscribe = useMutation({
-    mutationFn: (interval: BillingInterval) => api.subscribe(interval),
-    onSuccess: () => qc.invalidateQueries({ queryKey: qk.subscription }),
-  });
   const cancel = useMutation({
     mutationFn: () => api.cancel(),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.subscription }),
@@ -91,6 +87,9 @@ export default function SubscriptionScreen() {
       ) : (
         <View className="mb-4">
           <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">planlar</Text>
+          <Text className="text-muted text-xs mb-3">
+            Ödeme entegrasyonu yakında — abonelik geçici olarak kapalı.
+          </Text>
           {plans.data?.prices.map((p) => (
             <View
               key={`${p.plan}-${p.interval}`}
@@ -104,9 +103,9 @@ export default function SubscriptionScreen() {
                   {money(p.amountCents, p.currency)} / {p.interval === "month" ? "ay" : "yıl"}
                 </Text>
               </View>
-              <Btn onPress={() => subscribe.mutate(p.interval)} disabled={subscribe.isPending}>
+              <Btn onPress={() => {}} disabled>
                 <Text className="text-ink text-xs font-semibold uppercase tracking-wider">
-                  abone ol
+                  yakında
                 </Text>
               </Btn>
             </View>
