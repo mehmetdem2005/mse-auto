@@ -2,7 +2,7 @@
 
 > **Doküman tipi:** Enterprise Architecture / Architecture Definition (TOGAF 10 ADM tabanlı, ISO/IEC/IEEE 42010 yapısında).
 > **Durum:** TOGAF ADM (Preliminary→H) + Requirements Management ✅ — **paket tam.** Canlı doküman; Phase H ile evrilir.
-> **İlgili doküman:** `watcher-mimari-karar-gunlugu.md` (Architecture Decision Record — ADR-001…009; bu dokümanın governance'ı altında).
+> **İlgili doküman:** `mimari-karar-gunlugu.md` (Architecture Decision Record — ADR-001…009; bu dokümanın governance'ı altında).
 > **Standart sürümleri:** TOGAF Standard 10th Edition (2022) · ISO/IEC/IEEE 42010:2022 · ISO/IEC 25010:2023 · ISO/IEC 27001:2022 + 27002:2022.
 
 ---
@@ -84,7 +84,7 @@ Mimari çalışmaya başlamadan önce: kapsamı netleştir, TOGAF'ı bu bağlama
   5. Architecture Governance (Phase G/H) + ADR log
 - **ISO entegrasyon noktaları:** 42010 = her tanımın yapısı (stakeholder→concern→viewpoint→view); 25010 = ARS'nin kalite bölümü; 27001/27002 = ARS'nin güvenlik bölümü + governance (ISMS framing, sertifika ertelenir).
 - **İterasyon yaklaşımı:** Greenfield → tek "Baseline yok / Target var" geçişi; Phase F'te artımlı teslim (MVP→ölçek); lansman sonrası Phase H ile döngü.
-- **Karar kaydı:** Mevcut ADR-001…009 + yeni ADR'ler = tek Architecture Decision Record (`watcher-mimari-karar-gunlugu.md`), bu doküman governance'ı altında.
+- **Karar kaydı:** Mevcut ADR-001…009 + yeni ADR'ler = tek Architecture Decision Record (`mimari-karar-gunlugu.md`), bu doküman governance'ı altında.
 
 ### 1.5 Architecture Governance (Preliminary kurulum)
 - **Uyum kontrolü (compliance):** CI kalite kapıları (Faz 9) + ADR self-review + prensip-conformance checklist (P1–P9 her karar için).
@@ -592,7 +592,7 @@ Her önemli değişiklik şunlara karşı denetlenir: (a) Mimari Prensipler **P1
 
 ### 8.5 Mimari Karar Governance (ADR süreci)
 - **Ne zaman yeni ADR:** prensip/ADR'den sapma · yeni yapısal seçim (alternatifli) · bir kaçış kapısının devreye alınması.
-- **Süreç:** taslak (Durum: Önerilen) → self-review/conformance → Kabul → `watcher-mimari-karar-gunlugu.md`'ye işle; eskiyi değiştiriyorsa **"supersedes"**.
+- **Süreç:** taslak (Durum: Önerilen) → self-review/conformance → Kabul → `mimari-karar-gunlugu.md`'ye işle; eskiyi değiştiriyorsa **"supersedes"**.
 
 ### 8.6 Dispensation / Sapma (P7 kaçış kapıları)
 Bir kaçış kapısı devreye alınırsa (örn. NestJS'e dön · gluestack-ui ekle · arketip-B için backend user-scoped eval) → bir ADR ile **gerekçe + kapsam + geri-dönüş planı** kaydedilir. Geçici sapmalar tarih/koşul ile sınırlanır.
@@ -664,6 +664,17 @@ flowchart TB
 - **Çıktı:** değişiklik tetikleyicileri + 3 sınıf + değişiklik süreci (diyagram) + evrim modeli + sürüm yönetimi + öngörülen değişiklik tablosu. Phase G governance + P7 + ADR süreciyle hizalı.
 - **ADM tamam:** Preliminary → A → B → C → D → E → F → G → H **tamamlandı**; döngü H→A ile kapandı.
 - **Sonraki:** **Requirements Management** (merkez): ISO/IEC 25010:2023 kalite modeli (NFR kanonik kaynağı) + ISO/IEC 27002:2022 güvenlik kontrol checklist'i — tüm fazlara akan gereksinimlerin konsolidasyonu. Bu, dokümanı tamamlar.
+
+### 9.8 Uygulanan Değişiklik Kaydı (canlı — her merge sonrası işlenir)
+*Phase H change-mgmt çıktısı: gerçekten uygulanan değişiklikler, sınıf (§9.2) + P1–P9 conformance (§8.2) + TA eşlemesiyle. Yeni iş buraya bir satır ekler.*
+
+| # | Değişiklik | Sınıf | Realize/ilişki | P1–P9 | ADR | TA |
+|---|---|---|---|---|---|---|
+| C-001 | **Aktivite Akışı** (`GET /v1/feed`) + **tespit geri-bildirimi** (`POST /v1/events/{id}/feedback`) — mobil "Akış" sekmesi + `EventFacts` rozetleri + 👍/👎; dashboard "Akış" görünümü (KPI + grafik + tablo) | Artımlı | Phase C `UserFeedback` + `RecordFeedback` + VS1/adım-6'yı gerçekler; Teslim kapasitesi görünürlüğü | P1✓(user-scoped, egress yok)·P4✓(contracts)·P5✓(auth+RLS)·P8✓(Func.Suit.+Reliability) | ADR-022 | TA-2 |
+| C-002 | **Aydınlık tasarım sistemi "Aurora Day"** — mobil tailwind + dashboard CSS token paleti tek kaynaktan; sabit koyu hex'ler token'a; yeni UI kiti (Card/Badge/EmptyState/FactChips) | Artımlı | ADR-008 light-theme token hedefini gerçekler (genişletme) | P1✓(salt görsel)·P4✓(token tek-kaynak)·P6✓(HIG)·P8✓(WCAG/Interaction)·P9✓(ceremony yok) | ADR-023 | TA-2 |
+| C-003 | **CI düzeltmesi** — `pnpm/action-setup` `version` ↔ `packageManager` çakışması giderildi (CI ilk kez lint/typecheck/test/build çalıştırıyor) + eski abonelik testi gerçek 503 davranışına hizalandı | Basitleştirme | ADR-014 (CI/test) operasyonel düzeltme; mimari değişiklik yok | P5✓(kalite kapısı geri işler)·P8✓(Maintainability) | — (ADR gerekmez) | TA-1 |
+
+> **Re-baseline notu:** C-001/002 TA-2 (Lansman) kapsamındaki kullanıcı-dönük olgunlaşmadır; mimari prensiplerde sapma yok (dispensation gerekmedi). "Okundu" durumu (`deliveries.read_at`) açık migration izni beklediğinden change-backlog'a alındı (Phase H §9.1 tetikleyici: yeni özellik).
 
 ## 10. Requirements Management (MERKEZ — sürekli)
 

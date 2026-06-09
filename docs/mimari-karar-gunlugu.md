@@ -10,13 +10,13 @@
 ## Nasıl çalışıyoruz — Mimari Düşünme Protokolü
 - **Kural #1:** Mantık akışı onaylanmadan KOD YOK.
 - **Her alt-faz akışı:** `<baglam>` → `<secenekler>` (dahil/hariç gerekçesi) → `<karar>` (ADR) → `<mantik_akisi>` (+ C4 seviyesi) → `<dogrulama>`.
-- **Kalibrasyon:** Taktiksel DDD (yalnızca domain çekirdeğinde) · C4 (diyagram) · ADR (karar) · arc42 (opsiyonel şablon). **TOGAF / ISO kurumsal EA = bizim ölçeğimize HARİÇ** (bürokrasi üretir).
+- **Kalibrasyon:** Taktiksel DDD (yalnızca domain çekirdeğinde) · C4 (diyagram) · ADR (karar) · arc42 (opsiyonel şablon). **TOGAF + ISO kurumsal EA = TAM uygulanır** (yöneten çerçeve: `EA-TOGAF-mimari.md`, ADM Preliminary→H). Her değişiklik P1–P9 conformance (§8.2) + değişiklik sınıfı (§9.2) ile denetlenir; Artımlı/Yeniden-mimari kararlar buraya ADR olarak işlenir.
 - **Uyulacak standartlar:** OWASP MASVS/ASVS + LLM Top 10 · KVKK · GDPR · WCAG · Google Play Developer Program Policies · 12-Factor · semver.
 
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…010 kayıtlı. **Not:** Mimari çalışma artık `watcher-EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-010 (Phase C).
+**İlerleme:** ADR-001…023 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-023 (Phase H — aydınlık tasarım sistemi).
 
 ---
 
@@ -308,3 +308,25 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - (−) Stripe impl doğrulaması **typecheck** (gerçek çağrı/imza canlıda; `stripe` SDK kurulu). Canlıda Stripe CLI ile test et: `stripe listen --forward-to .../webhooks/stripe` → `STRIPE_WEBHOOK_SECRET`'i oradan al.
 - (−) **Müşteri portalı (iptal/kart) + Stripe customer-id kalıcılığı bu turda yok** → sonraki Stripe alt-fazı (billing_customers tablosu + portal route). Webhook Stripe-tarafı iptalleri zaten işler.
 - (−) **Play Store politikası:** uygulama-içi dijital abonelik için Google Play çoğu durumda Play Billing ister (Stripe değil). Stripe web-checkout "uygulama dışı kullanım"/reader-app istisnalarına göre değerlendirilmeli — ürün/politika kararı.
+
+---
+
+## ADR-022 — Aktivite Akışı (feed) + tespit geri-bildirimi (UserFeedback realize)
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — Phase C'deki `UserFeedback` entity + `RecordFeedback` use-case + VS1/adım-6'yı **gerçekler**.
+- **Bağlam:** EA Phase C (§4.1.1/§4.2.5) `UserFeedback` + `RecordFeedback` + VS1 "geri-bildirim" adımını tanımlamıştı ama kod yoktu; `deliveries`+`detection_events` verisi vardı ama kullanıcıya birleşik "ne tespit edildi" akışı olarak sunulmuyordu. `user_feedback` tablosu boştaydı.
+- **Karar:** (1) `GET /v1/feed` (authed, **user-scoped**): kullanıcının `deliveries`'i + `detection_events` + `watches` birleştirilip `FeedItem[]` döner. **PII zonu user-scoped; dış hatta egress yok (P1).** (2) `POST /v1/events/{id}/feedback {verdict: correct|incorrect}` → `user_feedback` insert = `RecordFeedback` realize. (3) Şemalar `@watcher/contracts` (`feedItemSchema`, `feedbackInputSchema`) — **P4**. (4) `MonitoringRepository.listFeed` + `recordFeedback` (Supabase **ve** in-memory, ikisi gerçek). (5) Mobil yeni **"Akış"** ana sekmesi + watcher detayında `EventFacts` rozetleri (geo→haritada-aç) + 👍/👎; dashboard **"Akış"** görünümü (KPI + 14 günlük çubuk grafik + tablo).
+- **Sonuçlar:** VS1/adım-6 + Teslim görünürlüğü gerçeklendi; `user_feedback` ölü tablo olmaktan çıktı. Feed sorgusu **N+1 değil toplu** (`in()` + map). Ödün: feed user-scoped (admin geneli için ayrı `/v1/admin/system` var); "okundu" durumu (`deliveries.read_at`) migration gerektirdiği için **ertelendi** (ayrı karar/izin).
+- **P1–P9 conformance:** P1 ✓ (egress yok, user-scoped) · P2 ✓ (dedup'a dokunmaz; teslim okuması) · P4 ✓ (contracts) · P5 ✓ (auth + RLS `user_feedback`) · P7 ✓ (read_at kaçış kapısı açık) · P8 ✓ (25010 Functional Suitability + Reliability görünürlüğü). Diğerleri etkisiz.
+- **Doğrulama:** typecheck + biome + backend test 52/52 + dashboard build; CI yeşil (run #55).
+- **Değerlendirilen alternatifler:** feed'i `adminSystem`'e gömme (kullanıcı-dönük değil → hariç) · feedback için yeni tablo (şemadaki `user_feedback` kullanıldı) · feed'e `read_at` okundu-durumu (migration → ertelendi, P7 kaçış kapısı).
+
+---
+
+## ADR-023 — Aydınlık tasarım sistemi "Aurora Day" + token geçişi (ADR-008 genişletme)
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — **ADR-008'i genişletir, supersede etmez** (light/dark token hedefi zaten ADR-008'de vardı).
+- **Bağlam:** Uygulanan tek tema koyu "radar/amber"di; ürün sahibi **aydınlık tema + geliştirilmiş görünüm/yerleşim** istedi. ADR-008 zaten "primitive→semantic→theme **light**/dark, tek kaynak" öngörüyordu — bu karar onu light için fiilen uygular.
+- **Karar:** **"Aurora Day"** aydınlık paleti **tek kaynaktan**: mobil `tailwind.config` theme token'ları (ink `#F5F7FB` · panel beyaz · accent indigo `#6366F1` + accent2 mor `#8B5CF6` · text slate-900 · muted/pos/neg) **ve** dashboard CSS `:root` değişkenleri **aynı palet**. Sabit-kodlu koyu hex'ler token'a çevrildi. Yeni paylaşılan mobil UI kiti (`Card/Badge/SectionLabel/EmptyState/FactChips`) — **Atomic Design**. Token-bazlı olduğundan tüm ekranlar tek değişiklikle döndü.
+- **Sonuçlar:** Tek brand kaynağı (ADR-008 ilkesi) korundu; WCAG 2.2 AA kontrast (slate-900/beyaz, indigo/beyaz). Ödün: **dark-mode şimdilik kapalı** (light-only); ADR-008 light/dark hedefi `useColorScheme` + token theme ile ileride geri açılabilir (**kaçış kapısı**).
+- **P1–P9 conformance:** P1 ✓ (salt görsel, egress yok) · P4 ✓ (token tek-kaynak, contracts'a dokunmaz) · P6 ✓ (mobil HIG/dokunma hedefleri korundu) · P8 ✓ (25010 Interaction Capability + WCAG) · P9 ✓ (token disiplini, ceremony yok). Diğerleri etkisiz.
+- **Doğrulama:** mobil + dashboard typecheck + biome + build temiz; Vercel deploy.
+- **Değerlendirilen alternatifler:** koyu temada kalma (ürün sahibi reddetti) · ekran-ekran elle renk (token yerine → drift riski, hariç) · light+dark ikisini birden (şimdilik light-only; dark ertelendi).
