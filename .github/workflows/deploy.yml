@@ -1,0 +1,85 @@
+name: Deploy (Vercel)
+
+# main'e her push'ta dashboard + mobil-web sitelerini Vercel'e otomatik deploy eder.
+# Backend (Render) ayrıca main'i izleyip kendi otomatik deploy'unu yapar.
+# Tek gereken secret: VERCEL_TOKEN. Diğer değerler public istemci değerleridir
+# (Supabase anon key ve URL'ler zaten dağıtılan JS paketinde görünür).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: team_qD4CCjd1H6f4bYdabzhQHmIZ
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  # Public istemci değerleri (secret değil):
+  API_BASE: https://watcher-backend-p0hi.onrender.com
+  SUPABASE_URL: https://kozckegiwuaywqkkkntp.supabase.co
+  SUPABASE_ANON: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvemNrZWdpd3VheXdxa2trbnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5NTAyNjgsImV4cCI6MjA5NjUyNjI2OH0.Nr0eD5Ys2DDGwwOLR_aojZDUYTKyiVS2juDvefcE-QU
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Vercel CLI
+        run: pnpm add -g vercel@latest
+
+      # ---------------- Dashboard (Vite) ----------------
+      - name: Build dashboard
+        env:
+          VITE_API_BASE_URL: ${{ env.API_BASE }}
+          VITE_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
+        run: pnpm --filter @watcher/dashboard build
+
+      - name: Deploy dashboard → Vercel
+        env:
+          VERCEL_PROJECT_ID: prj_mUSqTFUVczjwuGfUpCLaJ0zRne1M
+        run: |
+          cd apps/dashboard/dist
+          printf '{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }' > vercel.json
+          vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
+
+      # ---------------- Mobil web (Expo export) ----------------
+      # Web bağımlılıkları yalnız CI'da kurulur; repo'ya (Android kaynağına) yazılmaz.
+      - name: Mobil web bağımlılıkları (CI-only)
+        working-directory: apps/mobile
+        run: |
+          npx --yes expo install react-native-web react-dom @expo/metro-runtime react-native-worklets
+          pnpm add react-native-css-interop@0.2.5
+          node -e "const fs=require('fs');const p='app.json';const d=JSON.parse(fs.readFileSync(p,'utf8'));d.expo.web={output:'single',bundler:'metro'};fs.writeFileSync(p,JSON.stringify(d,null,2))"
+
+      - name: Build mobil web
+        working-directory: apps/mobile
+        env:
+          EXPO_PUBLIC_API_BASE_URL: ${{ env.API_BASE }}
+          EXPO_PUBLIC_SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
+        run: npx --yes expo export --platform web
+
+      - name: Deploy mobil web → Vercel
+        env:
+          VERCEL_PROJECT_ID: prj_SMr1qNlncOeXZYrkpu00wwJYH0XZ
+        run: |
+          cd apps/mobile/dist
+          printf '{ "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }] }' > vercel.json
+          vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
