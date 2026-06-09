@@ -332,7 +332,7 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Değerlendirilen alternatifler:** koyu temada kalma (ürün sahibi reddetti) · ekran-ekran elle renk (token yerine → drift riski, hariç) · light+dark ikisini birden (şimdilik light-only; dark ertelendi).
 
 ## ADR-024 — Feed "okundu" durumu (deliveries.read_at)
-- **Durum:** Kabul — **uygulama hazır (branch); canlı migration 0005 izni bekleniyor** · TOGAF Phase H (Artımlı).
+- **Durum:** Kabul — **uygulandı** (migration 0005 canlı Supabase'de doğrulandı: `deliveries.read_at` mevcut) · TOGAF Phase H (Artımlı).
 - **Bağlam:** Feed bir gelen-kutusu gibi çalışsın; kullanıcı neyi gördüğünü ayırt etsin ("N yeni", okunmamış vurgusu, "tümünü okundu"). `Delivery` zaten kullanıcı-başına fan-out satırı → okundu durumu onun doğal özelliği (ayrı tablo şişirme).
 - **Karar:** `deliveries.read_at timestamptz NULL` (migration **0005**) + kısmi index (`user_id where read_at is null`). `MonitoringRepository.markDeliveryRead` + `markAllRead` (Supabase **ve** in-memory). Uçlar: `POST /v1/feed/{deliveryId}/read`, `POST /v1/feed/read-all`. `FeedItem.readAt` contracts'a eklendi. Mobil: okunmamış vurgusu (accent nokta + kalın + "yeni" rozeti) + açınca/oy verince okundu + "tümünü okundu" (optimistik cache patch). `read_at` user-scoped (RLS + service-role yazar). **Geriye dönük güvenli:** NULL = okunmamış.
 - **Deploy-güvenliği:** Kod Supabase'den `read_at` seçtiğinden, **0005 canlıya uygulanmadan main'e merge edilmez** (yoksa prod `/v1/feed` 500). Branch'te bekler.
