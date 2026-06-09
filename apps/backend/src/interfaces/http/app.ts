@@ -1,4 +1,5 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { cors } from "hono/cors";
 import type { Container } from "../../config/container";
 import { adminMiddleware } from "./admin.middleware";
 import { adminRoutes } from "./admin.route";
@@ -16,8 +17,27 @@ import { watchersRoutes } from "./watchers.route";
 import { webhookRoutes } from "./webhook.route";
 
 /** /health açık; /v1/* auth + rate-limit; /v1/admin/* ek admin; tümünde request-id + log. */
-export function createApp(container: Container): OpenAPIHono<{ Variables: AuthVariables }> {
+export function createApp(
+  container: Container,
+  corsOrigins?: string,
+): OpenAPIHono<{ Variables: AuthVariables }> {
   const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+  // CORS en başta: tarayıcı OPTIONS preflight'ı auth (401) öncesi yanıtlanmalı.
+  // CORS_ORIGINS verilmezse tüm origin'lere izin (Bearer token; cookie yok).
+  const origins = (corsOrigins ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  app.use(
+    "*",
+    cors({
+      origin: origins.length > 0 ? origins : "*",
+      allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowHeaders: ["Content-Type", "Authorization"],
+      maxAge: 86400,
+    }),
+  );
 
   app.use("*", requestId());
   app.use("*", requestLogger(container.logger));

@@ -17,6 +17,8 @@ const EnvSchema = z.object({
   GOOGLE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),
   // Dev/in-memory admin kullanıcı id'leri (virgülle). Supabase'de admins tablosu kaynaktır.
   ADMIN_USER_IDS: z.string().optional(),
+  // Dashboard CORS — virgülle origin listesi (yoksa tüm origin'lere izin verilir).
+  CORS_ORIGINS: z.string().optional(),
   // Stripe ödeme (yoksa in-memory gateway — dev)
   STRIPE_SECRET_KEY: z.string().min(1).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),

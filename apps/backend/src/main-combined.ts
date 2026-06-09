@@ -9,7 +9,7 @@ import { createApp } from "./interfaces/http/app";
 
 const env = loadEnv();
 const container = createContainer(env);
-const app = createApp(container);
+const app = createApp(container, env.CORS_ORIGINS);
 
 const backend = env.SUPABASE_URL ? "supabase" : "in-memory";
 const queueKind = env.DATABASE_URL ? "pg-boss" : "in-memory";
