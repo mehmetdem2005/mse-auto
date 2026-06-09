@@ -1,0 +1,8 @@
+[ZORUNLU STANDART HATIRLATICI — her kodlama/UI işinde uygula, footer'a YALNIZ fiilen uygulananı yaz]
+- Tasarım: Atomic Design (atoms/molecules/organisms) · 8pt grid · Material/HIG (dokunma ≥44pt) · token tek-kaynak (inline style yok).
+- A11y (WCAG 2.2 AA): kontrast ≥4.5:1 · görünür odak · interaktif öğeye rol+label (emoji/ikon butonlarına accessibilityLabel/aria-label) · semantik HTML (<table>/<button>/<nav>) · prefers-reduced-motion.
+- State: server durumu react-query (elle useEffect-fetch YOK) · çok adımlı akış FSM.
+- Perf: self-host/uzak-font-yok · gerek varsa lazy-split · CWV/RAIL.
+- TOGAF (TAM): ADM taraması + P1–P9 conformance + değişiklik sınıfı + ADR (Artımlı/Yeniden-mimari) + EA güncelle. Kanonik: docs/EA-TOGAF-mimari.md, docs/mimari-karar-gunlugu.md.
+- ISO (TAM): 42010 view · 25010 kalite+ölçülebilir NFR · 25012 veri · 27001/27002 güvenlik · 29148 gereksinim · 9241 etkileşim.
+- ÇIKTI: işin sonunda "Standartlar" + TOGAF + ISO raporu. ABARTMA YOK — uygulamadığını "yapıldı" yazma; bilinçli atladığını gerekçesiyle belirt.

@@ -11,6 +11,11 @@ Kanonik dokümanlar: `docs/EA-TOGAF-mimari.md` (ADM+Requirements Mgmt) · `docs/
 - Koda başlamadan skill'in ilgili bölümlerini uygula.
 - **Her işin SONUNDA** "**Standartlar**" dipnotu ekle: o işte fiilen uygulanan standartları madde madde yaz.
 
+### Otomatik zorlama (hafıza değil, harness çalıştırır)
+- **`.claude/settings.json` hook'ları:** `UserPromptSubmit` her prompt'a standart checklist'i enjekte eder (`.claude/standards-reminder.txt`) — context özetlense bile unutulmaz; `Stop` kapısı (`.claude/hooks/standards-gate.sh`) tur biterken biome (a11y/lint/format) temiz değilse **bitirmeyi engeller** (exit 2).
+- **Lint a11y zorunlu:** `packages/config/biome.json`'da a11y kuralları error; pre-commit (lefthook) + CI + Stop hook üç katmanda dener.
+- **Makinece denetlenemeyen** (TOGAF P1–P9, ISO, Atomic, react-query): hatırlatıcı + bu dosya + footer disipliniyle; bilinçli atlanan gerekçesiyle yazılır, "yapıldı" diye ABARTILMAZ.
+
 ## Mimari
 - **Monorepo (pnpm):** `apps/backend` (Hono, hexagonal), `apps/dashboard` (Vite/React), `apps/mobile` (Expo/expo-router, nativewind), `packages/contracts` (zod).
 - Backend: domain port → application → infrastructure (supabase/in-memory) → interfaces/http route; sözleşmeler `@watcher/contracts`.

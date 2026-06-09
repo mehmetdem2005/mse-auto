@@ -3,7 +3,21 @@
   "organizeImports": { "enabled": true },
   "linter": {
     "enabled": true,
-    "rules": { "recommended": true }
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "useButtonType": "error",
+        "useAltText": "error",
+        "useAnchorContent": "error",
+        "useKeyWithClickEvents": "error",
+        "useValidAriaRole": "error",
+        "useValidAriaProps": "error",
+        "useAriaPropsForRole": "error",
+        "useFocusableInteractive": "error",
+        "noLabelWithoutControl": "error",
+        "useValidAnchor": "error"
+      }
+    }
   },
   "formatter": {
     "enabled": true,
