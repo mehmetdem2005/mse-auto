@@ -1,4 +1,4 @@
-import { Btn, Field } from "@/components/ui";
+import { Btn, Card } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
@@ -14,11 +14,26 @@ import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 
 const FREQ = [60, 180, 360, 720, 1440];
 type FilterType = "none" | "geo" | "numeric" | "keyword";
 
+// FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
+const STEPS = [
+  { key: "intent", title: "Ne izlensin?" },
+  { key: "frequency", title: "Ne sıklıkla kontrol edilsin?" },
+  { key: "filter", title: "Kişisel filtre" },
+  { key: "alert", title: "Nasıl haber verilsin?" },
+  { key: "review", title: "Özet ve onay" },
+] as const;
+
 function labelFreq(m: number): string {
   if (m >= 1440) return "günlük";
   if (m >= 60) return `${m / 60} saat`;
   return `${m} dk`;
 }
+
+const ALERT_LABEL: Record<AlarmChannel, string> = {
+  silent: "Sessiz",
+  notify: "Bildirim",
+  alarm: "Alarm",
+};
 
 const chip = (active: boolean): string =>
   `px-3 py-2 rounded-lg border ${active ? "border-accent bg-accent/10" : "border-line"}`;
@@ -44,6 +59,7 @@ function CInput(props: {
 export default function NewWatcher() {
   const router = useRouter();
   const qc = useQueryClient();
+  const [step, setStep] = useState(0);
   const [rawIntent, setRawIntent] = useState("");
   const [freq, setFreq] = useState(60);
   const [err, setErr] = useState<string | null>(null);
@@ -108,6 +124,15 @@ export default function NewWatcher() {
     return null;
   }
 
+  function filterSummary(): string {
+    if (filterType === "none") return "Yok";
+    if (filterType === "geo") return `Konum ${geoLat}, ${geoLng} · ${geoRadius} km içi`;
+    if (filterType === "numeric") {
+      return `${numDir === "below" ? "≤" : "≥"} ${numThreshold}${numCurrency ? ` ${numCurrency}` : ""}`;
+    }
+    return `Kelime: ${keywords}`;
+  }
+
   const mutation = useMutation({
     mutationFn: (_criterion: PersonalCriterion | null) => api.createWatcher(rawIntent.trim(), freq),
     onSuccess: async (watch, criterion) => {
@@ -120,208 +145,318 @@ export default function NewWatcher() {
     onError: (e) => setErr(e instanceof Error ? e.message : "oluşturulamadı"),
   });
 
+  /** FSM geçiş kuralı: mevcut adım geçerli mi? */
+  function stepValid(i: number): boolean {
+    if (i === 0) return rawIntent.trim().length >= 3;
+    if (i === 2) return filterType === "none" || buildCriterion() !== null;
+    return true;
+  }
+
+  const current = STEPS[step];
+  const isLast = step === STEPS.length - 1;
+
+  function next() {
+    setErr(null);
+    if (!stepValid(step)) {
+      setErr(step === 0 ? "En az 3 karakter yaz." : "Filtre alanları geçersiz.");
+      return;
+    }
+    if (isLast) {
+      mutation.mutate(buildCriterion());
+      return;
+    }
+    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+  }
+
+  function back() {
+    setErr(null);
+    setStep((s) => Math.max(0, s - 1));
+  }
+
   return (
-    <ScrollView className="flex-1 bg-ink px-5 pt-4" keyboardShouldPersistTaps="handled">
-      <Text className="text-muted text-xs mb-4">
-        Doğal dille yaz — örn. "iPhone 17 fiyatı düşünce", "İzmir'de deprem olunca".
-      </Text>
-      {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}
-      <Field label="ne izlensin?">
-        <TextInput
-          value={rawIntent}
-          onChangeText={setRawIntent}
-          multiline
-          placeholder="…"
-          placeholderTextColor="#94A3B8"
-          className="bg-panel border border-line rounded-lg px-3 py-3 text-text min-h-[88px]"
-          style={{ textAlignVertical: "top" }}
-        />
-      </Field>
-
-      <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">kontrol sıklığı</Text>
-      <View className="flex-row flex-wrap gap-2 mb-5">
-        {FREQ.map((f) => (
-          <Pressable key={f} onPress={() => setFreq(f)} className={chip(freq === f)}>
-            <Text className={freq === f ? "text-accent text-xs" : "text-muted text-xs"}>
-              {labelFreq(f)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      <Text className="text-muted text-[10px] tracking-widest uppercase mb-1">
-        kişisel filtre · cihazda kalır
-      </Text>
-      <Text className="text-muted text-[11px] mb-2">
-        İsteğe bağlı. Kriterin cihazından çıkmaz; sunucu yalnız kamusal olayı yollar, eşleşmeyi
-        telefonun yapar.
-      </Text>
-      <View className="flex-row flex-wrap gap-2 mb-2">
-        {(
-          [
-            ["none", "yok"],
-            ["geo", "konum"],
-            ["numeric", "sayı/fiyat"],
-            ["keyword", "kelime"],
-          ] as const
-        ).map(([v, l]) => {
-          const locked = v !== "none" && !canPersonal;
-          let txt = "text-muted text-xs";
-          if (locked) txt = "text-muted text-xs opacity-50";
-          else if (filterType === v) txt = "text-accent text-xs";
-          return (
-            <Pressable
-              key={v}
-              disabled={locked}
-              onPress={locked ? undefined : () => setFilterType(v)}
-              className={chip(filterType === v)}
-            >
-              <Text className={txt}>{locked ? `${l} 🔒` : l}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-      {!canPersonal ? (
-        <Text className="text-muted text-[10px] mb-3">🔒 Kişisel filtre Pro planında.</Text>
-      ) : null}
-
-      {filterType === "geo" ? (
-        <View className="gap-2 mb-5">
-          <View className="flex-row gap-2">
-            <CInput value={geoLat} onChangeText={setGeoLat} placeholder="enlem" />
-            <CInput value={geoLng} onChangeText={setGeoLng} placeholder="boylam" />
-            <CInput value={geoRadius} onChangeText={setGeoRadius} placeholder="km" />
-          </View>
+    <View className="flex-1 bg-ink">
+      {/* İlerleme */}
+      <View className="px-5 pt-4">
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className="text-muted text-[11px] uppercase tracking-widest">
+            adım {step + 1}/{STEPS.length}
+          </Text>
+          <Text className="text-muted text-[11px]">{current.title}</Text>
         </View>
-      ) : null}
-
-      {filterType === "numeric" ? (
-        <View className="gap-2 mb-5">
-          <View className="flex-row gap-2">
-            {(["below", "above"] as const).map((d) => (
-              <Pressable key={d} onPress={() => setNumDir(d)} className={chip(numDir === d)}>
-                <Text className={numDir === d ? "text-accent text-xs" : "text-muted text-xs"}>
-                  {d === "below" ? "altına inince" : "üstüne çıkınca"}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <View className="flex-row gap-2">
-            <CInput value={numThreshold} onChangeText={setNumThreshold} placeholder="eşik" />
-            <CInput
-              value={numCurrency}
-              onChangeText={setNumCurrency}
-              placeholder="birim (ops.)"
-              numeric={false}
-            />
-          </View>
-        </View>
-      ) : null}
-
-      {filterType === "keyword" ? (
-        <View className="mb-5">
-          <CInput
-            value={keywords}
-            onChangeText={setKeywords}
-            placeholder="virgülle: zam, indirim"
-            numeric={false}
+        <View
+          className="h-1.5 bg-line rounded-full overflow-hidden"
+          accessibilityRole="progressbar"
+          accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
+        >
+          <View
+            className="h-full bg-accent rounded-full"
+            style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </View>
-      ) : null}
-
-      <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">uyarı şekli</Text>
-      <View className="flex-row flex-wrap gap-2 mb-2">
-        {(
-          [
-            ["silent", "sessiz"],
-            ["notify", "bildirim"],
-            ["alarm", "alarm"],
-          ] as const
-        ).map(([v, l]) => {
-          const locked = v === "alarm" && !canAlarm;
-          let txt = "text-muted text-xs";
-          if (locked) txt = "text-muted text-xs opacity-50";
-          else if (alarmChannel === v) txt = "text-accent text-xs";
-          return (
-            <Pressable
-              key={v}
-              disabled={locked}
-              onPress={locked ? undefined : () => setAlarmChannel(v)}
-              className={chip(alarmChannel === v)}
-            >
-              <Text className={txt}>{locked ? `${l} 🔒` : l}</Text>
-            </Pressable>
-          );
-        })}
       </View>
-      {!canAlarm ? (
-        <Text className="text-muted text-[10px] mb-3">🔒 Alarm ve özel sesler Pro planında.</Text>
-      ) : null}
-      {alarmChannel === "alarm" ? (
-        <View className="mb-5">
-          <View className="flex-row flex-wrap gap-2 mb-2">
-            {ALARM_CATEGORIES.map((c) => (
-              <Pressable key={c} onPress={() => setSoundCat(c)} className={chip(soundCat === c)}>
-                <Text
-                  className={soundCat === c ? "text-accent text-[11px]" : "text-muted text-[11px]"}
-                >
-                  {c}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-          <View className="border border-line rounded-lg overflow-hidden">
-            {ALARM_SOUNDS.filter((s) => s.category === soundCat).map((s) => {
-              const locked = !canAllSounds && s.id !== DEFAULT_ALARM_CONFIG.soundId;
-              const sel = soundId === s.id;
-              let cls = "text-text text-xs";
-              if (locked) cls = "text-muted text-xs opacity-50";
-              else if (sel) cls = "text-accent text-xs";
-              return (
+
+      <ScrollView className="flex-1 px-5 pt-5" keyboardShouldPersistTaps="handled">
+        <Text className="text-text text-xl font-bold mb-4">{current.title}</Text>
+        {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}
+
+        {/* 1) Niyet */}
+        {current.key === "intent" ? (
+          <>
+            <Text className="text-muted text-sm mb-3">
+              Doğal dille yaz — örn. “iPhone 17 fiyatı düşünce”, “İzmir’de deprem olunca”.
+            </Text>
+            <TextInput
+              value={rawIntent}
+              onChangeText={setRawIntent}
+              multiline
+              placeholder="Ne olduğunda haber vereyim?"
+              placeholderTextColor="#94A3B8"
+              className="bg-panel border border-line rounded-2xl px-4 py-4 text-text text-base min-h-[120px]"
+              style={{ textAlignVertical: "top" }}
+            />
+          </>
+        ) : null}
+
+        {/* 2) Sıklık */}
+        {current.key === "frequency" ? (
+          <>
+            <Text className="text-muted text-sm mb-3">
+              Daha sık kontrol daha hızlı haber demektir (ücretsiz planda en sık 60 dk).
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {FREQ.map((f) => (
                 <Pressable
-                  key={s.id}
-                  disabled={locked}
-                  onPress={locked ? undefined : () => setSoundId(s.id)}
-                  className={`px-3 py-2 border-b border-line ${sel ? "bg-accent/10" : ""}`}
+                  key={f}
+                  onPress={() => setFreq(f)}
+                  className={chip(freq === f)}
+                  accessibilityRole="button"
                 >
-                  <Text className={cls}>
-                    {sel ? "✓ " : ""}
-                    {locked ? `${s.name} 🔒` : s.name}
+                  <Text className={freq === f ? "text-accent text-sm" : "text-muted text-sm"}>
+                    {labelFreq(f)}
                   </Text>
                 </Pressable>
-              );
-            })}
-          </View>
-          {!canAllSounds ? (
-            <Text className="text-muted text-[10px] mt-1">🔒 Tüm sesler Pro planında.</Text>
-          ) : null}
-          <Text className="text-muted text-[10px] mt-2">
-            Önizleme/çalma EAS derlemesinde. 100 ses assets/sounds içinde.
-          </Text>
-        </View>
-      ) : null}
+              ))}
+            </View>
+          </>
+        ) : null}
 
-      <Btn
-        onPress={() => {
-          setErr(null);
-          const criterion = buildCriterion();
-          if (filterType !== "none" && criterion === null) {
-            setErr("filtre alanları geçersiz");
-            return;
-          }
-          mutation.mutate(criterion);
-        }}
-        disabled={mutation.isPending || rawIntent.trim().length < 3}
-      >
-        {mutation.isPending ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text className="text-white font-semibold uppercase tracking-wider text-xs">oluştur</Text>
-        )}
-      </Btn>
-      <Text className="text-muted text-[11px] mt-4">
-        Ücretsiz planda 3 watcher ve en sık 60 dk sınırı vardır.
+        {/* 3) Kişisel filtre */}
+        {current.key === "filter" ? (
+          <>
+            <Text className="text-muted text-sm mb-3">
+              İsteğe bağlı. Kriterin cihazından çıkmaz; sunucu yalnız kamusal olayı yollar,
+              eşleşmeyi telefonun yapar.
+            </Text>
+            <View className="flex-row flex-wrap gap-2 mb-2">
+              {(
+                [
+                  ["none", "yok"],
+                  ["geo", "konum"],
+                  ["numeric", "sayı/fiyat"],
+                  ["keyword", "kelime"],
+                ] as const
+              ).map(([v, l]) => {
+                const locked = v !== "none" && !canPersonal;
+                let txt = "text-muted text-sm";
+                if (locked) txt = "text-muted text-sm opacity-50";
+                else if (filterType === v) txt = "text-accent text-sm";
+                return (
+                  <Pressable
+                    key={v}
+                    disabled={locked}
+                    onPress={locked ? undefined : () => setFilterType(v)}
+                    className={chip(filterType === v)}
+                    accessibilityRole="button"
+                  >
+                    <Text className={txt}>{locked ? `${l} 🔒` : l}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {!canPersonal ? (
+              <Text className="text-muted text-[11px] mb-3">🔒 Kişisel filtre Pro planında.</Text>
+            ) : null}
+
+            {filterType === "geo" ? (
+              <View className="flex-row gap-2 mt-2">
+                <CInput value={geoLat} onChangeText={setGeoLat} placeholder="enlem" />
+                <CInput value={geoLng} onChangeText={setGeoLng} placeholder="boylam" />
+                <CInput value={geoRadius} onChangeText={setGeoRadius} placeholder="km" />
+              </View>
+            ) : null}
+
+            {filterType === "numeric" ? (
+              <View className="gap-2 mt-2">
+                <View className="flex-row gap-2">
+                  {(["below", "above"] as const).map((d) => (
+                    <Pressable
+                      key={d}
+                      onPress={() => setNumDir(d)}
+                      className={chip(numDir === d)}
+                      accessibilityRole="button"
+                    >
+                      <Text className={numDir === d ? "text-accent text-xs" : "text-muted text-xs"}>
+                        {d === "below" ? "altına inince" : "üstüne çıkınca"}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View className="flex-row gap-2">
+                  <CInput value={numThreshold} onChangeText={setNumThreshold} placeholder="eşik" />
+                  <CInput
+                    value={numCurrency}
+                    onChangeText={setNumCurrency}
+                    placeholder="birim (ops.)"
+                    numeric={false}
+                  />
+                </View>
+              </View>
+            ) : null}
+
+            {filterType === "keyword" ? (
+              <View className="mt-2">
+                <CInput
+                  value={keywords}
+                  onChangeText={setKeywords}
+                  placeholder="virgülle: zam, indirim"
+                  numeric={false}
+                />
+              </View>
+            ) : null}
+          </>
+        ) : null}
+
+        {/* 4) Uyarı şekli */}
+        {current.key === "alert" ? (
+          <>
+            <View className="flex-row flex-wrap gap-2 mb-2">
+              {(["silent", "notify", "alarm"] as const).map((v) => {
+                const locked = v === "alarm" && !canAlarm;
+                let txt = "text-muted text-sm";
+                if (locked) txt = "text-muted text-sm opacity-50";
+                else if (alarmChannel === v) txt = "text-accent text-sm";
+                return (
+                  <Pressable
+                    key={v}
+                    disabled={locked}
+                    onPress={locked ? undefined : () => setAlarmChannel(v)}
+                    className={chip(alarmChannel === v)}
+                    accessibilityRole="button"
+                  >
+                    <Text className={txt}>{locked ? `${ALERT_LABEL[v]} 🔒` : ALERT_LABEL[v]}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {!canAlarm ? (
+              <Text className="text-muted text-[11px] mb-3">
+                🔒 Alarm ve özel sesler Pro planında.
+              </Text>
+            ) : null}
+            {alarmChannel === "alarm" ? (
+              <View className="mt-1">
+                <View className="flex-row flex-wrap gap-2 mb-2">
+                  {ALARM_CATEGORIES.map((c) => (
+                    <Pressable
+                      key={c}
+                      onPress={() => setSoundCat(c)}
+                      className={chip(soundCat === c)}
+                      accessibilityRole="button"
+                    >
+                      <Text
+                        className={
+                          soundCat === c ? "text-accent text-[11px]" : "text-muted text-[11px]"
+                        }
+                      >
+                        {c}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+                <View className="border border-line rounded-xl overflow-hidden">
+                  {ALARM_SOUNDS.filter((s) => s.category === soundCat).map((s) => {
+                    const locked = !canAllSounds && s.id !== DEFAULT_ALARM_CONFIG.soundId;
+                    const sel = soundId === s.id;
+                    let cls = "text-text text-xs";
+                    if (locked) cls = "text-muted text-xs opacity-50";
+                    else if (sel) cls = "text-accent text-xs";
+                    return (
+                      <Pressable
+                        key={s.id}
+                        disabled={locked}
+                        onPress={locked ? undefined : () => setSoundId(s.id)}
+                        className={`px-3 py-2 border-b border-line ${sel ? "bg-accent/10" : ""}`}
+                        accessibilityRole="button"
+                      >
+                        <Text className={cls}>
+                          {sel ? "✓ " : ""}
+                          {locked ? `${s.name} 🔒` : s.name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {!canAllSounds ? (
+                  <Text className="text-muted text-[10px] mt-1">🔒 Tüm sesler Pro planında.</Text>
+                ) : null}
+                <Text className="text-muted text-[10px] mt-2">
+                  Önizleme/çalma EAS derlemesinde. 100 ses assets/sounds içinde.
+                </Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+
+        {/* 5) Özet */}
+        {current.key === "review" ? (
+          <Card>
+            <ReviewRow label="ne izlensin" value={rawIntent.trim() || "—"} />
+            <ReviewRow label="sıklık" value={labelFreq(freq)} />
+            <ReviewRow label="kişisel filtre" value={filterSummary()} />
+            <ReviewRow label="uyarı" value={ALERT_LABEL[alarmChannel]} last />
+            <Text className="text-muted text-[11px] mt-4">
+              Ücretsiz planda 3 watcher ve en sık 60 dk sınırı vardır.
+            </Text>
+          </Card>
+        ) : null}
+
+        <View className="h-24" />
+      </ScrollView>
+
+      {/* Sabit alt navigasyon */}
+      <View className="flex-row gap-3 px-5 py-4 border-t border-line bg-ink">
+        {step > 0 ? (
+          <View className="flex-1">
+            <Btn tone="ghost" onPress={back} disabled={mutation.isPending}>
+              <Text className="text-text font-semibold uppercase tracking-wider text-xs">geri</Text>
+            </Btn>
+          </View>
+        ) : null}
+        <View className="flex-[2]">
+          <Btn onPress={next} disabled={mutation.isPending}>
+            {mutation.isPending ? (
+              <ActivityIndicator color="#FFFFFF" />
+            ) : (
+              <Text className="text-white font-semibold uppercase tracking-wider text-xs">
+                {isLast ? "oluştur" : "devam"}
+              </Text>
+            )}
+          </Btn>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function ReviewRow({ label, value, last }: { label: string; value: string; last?: boolean }) {
+  return (
+    <View
+      className={`flex-row items-start justify-between py-2.5 ${last ? "" : "border-b border-line"}`}
+    >
+      <Text className="text-muted text-xs uppercase tracking-wider mr-3">{label}</Text>
+      <Text className="text-text text-sm flex-1 text-right" numberOfLines={3}>
+        {value}
       </Text>
-    </ScrollView>
+    </View>
   );
 }
