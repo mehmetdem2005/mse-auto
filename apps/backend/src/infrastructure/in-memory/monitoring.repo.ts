@@ -2,6 +2,8 @@ import type {
   CheckRunView,
   DeliveryStatus,
   DetectionEventView,
+  FeedItemRow,
+  FeedbackVerdict,
   MonitoringRepository,
   PendingDelivery,
   RecordCheckRunInput,
@@ -132,5 +134,35 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         detectedAt: e.detectedAt,
         facts: e.facts ?? null,
       }));
+  }
+
+  async listFeed(userId: string, limit: number): Promise<FeedItemRow[]> {
+    return this.store.deliveries
+      .filter((d) => d.userId === userId)
+      .slice(-limit)
+      .reverse()
+      .map((d) => {
+        const e = this.store.events.find((x) => x.id === d.eventId);
+        const w = this.store.watches.find((x) => x.id === d.watchId);
+        return {
+          deliveryId: d.id,
+          watchId: d.watchId,
+          watchIntent: w?.rawIntent ?? "",
+          eventId: d.eventId,
+          description: e?.description ?? "",
+          detectedAt: e?.detectedAt ?? "",
+          facts: e?.facts ?? null,
+          channel: d.channel,
+          status: d.status,
+        };
+      });
+  }
+
+  async recordFeedback(
+    _userId: string,
+    _eventId: string,
+    _verdict: FeedbackVerdict,
+  ): Promise<void> {
+    // Dev/in-memory: geri bildirim kalıcılığı yok (üretimde Supabase yazar).
   }
 }

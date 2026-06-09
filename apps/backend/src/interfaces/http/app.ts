@@ -7,6 +7,8 @@ import type { AuthVariables } from "./auth.middleware";
 import { authMiddleware } from "./auth.middleware";
 import { billingRoutes } from "./billing.route";
 import { devicesRoutes } from "./devices.route";
+import { eventsRoutes } from "./events.route";
+import { feedRoutes } from "./feed.route";
 import { healthRoute } from "./health.route";
 import { meRoutes } from "./me.route";
 import { errorHandler, requestId, requestLogger } from "./observability";
@@ -64,6 +66,8 @@ export function createApp(
   app.route("/v1/me", meRoutes(container));
   app.route("/v1/plans", plansRoutes(container));
   app.route("/v1/watchers", watchersRoutes(container));
+  app.route("/v1/feed", feedRoutes(container));
+  app.route("/v1/events", eventsRoutes(container));
   app.route("/v1/devices", devicesRoutes(container));
   app.route("/v1/subscription", subscriptionRoutes(container));
   app.route("/v1/billing", billingRoutes(container));

@@ -41,6 +41,21 @@ export interface DetectionEventView {
   facts: EventFacts | null;
 }
 
+/** Birleşik aktivite akışı satırı (teslimat + olay + watcher). */
+export interface FeedItemRow {
+  deliveryId: string;
+  watchId: string;
+  watchIntent: string;
+  eventId: string;
+  description: string;
+  detectedAt: string;
+  facts: EventFacts | null;
+  channel: string;
+  status: string;
+}
+
+export type FeedbackVerdict = "correct" | "incorrect";
+
 /** İzleme/tespit + teslim kalıcılığı port'u (paylaşılan zon + fan-out). */
 export interface MonitoringRepository {
   findTopicsDueForCheck(now: Date): Promise<CanonicalTopic[]>;
@@ -60,4 +75,7 @@ export interface MonitoringRepository {
   // --- araştırma okuma (kullanıcı/admin) ---
   listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]>;
   listDetectionEvents(topicId: string, limit: number): Promise<DetectionEventView[]>;
+  // --- aktivite feed + geri bildirim (kullanıcı) ---
+  listFeed(userId: string, limit: number): Promise<FeedItemRow[]>;
+  recordFeedback(userId: string, eventId: string, verdict: FeedbackVerdict): Promise<void>;
 }

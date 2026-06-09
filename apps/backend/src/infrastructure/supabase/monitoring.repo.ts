@@ -3,6 +3,8 @@ import type {
   CheckRunView,
   DeliveryStatus,
   DetectionEventView,
+  FeedItemRow,
+  FeedbackVerdict,
   MonitoringRepository,
   PendingDelivery,
   RecordCheckRunInput,
@@ -157,5 +159,53 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
       detectedAt: e.detected_at,
       facts: (e.facts as EventFacts | null) ?? null,
     }));
+  }
+
+  async listFeed(userId: string, limit: number): Promise<FeedItemRow[]> {
+    const { data: dels, error } = await this.db
+      .from("deliveries")
+      .select("id, channel, status, sent_at, watch_id, event_id")
+      .eq("user_id", userId)
+      .order("sent_at", { ascending: false, nullsFirst: false })
+      .limit(limit);
+    if (error) throw new Error(`listFeed: ${error.message}`);
+    const rows = dels ?? [];
+    if (rows.length === 0) return [];
+
+    const eventIds = [...new Set(rows.map((d) => d.event_id))];
+    const watchIds = [...new Set(rows.map((d) => d.watch_id))];
+    const [eventsRes, watchesRes] = await Promise.all([
+      this.db
+        .from("detection_events")
+        .select("id, description, detected_at, facts")
+        .in("id", eventIds),
+      this.db.from("watches").select("id, raw_intent").in("id", watchIds),
+    ]);
+    if (eventsRes.error) throw new Error(`feed events: ${eventsRes.error.message}`);
+    if (watchesRes.error) throw new Error(`feed watches: ${watchesRes.error.message}`);
+    const eMap = new Map((eventsRes.data ?? []).map((e) => [e.id, e]));
+    const wMap = new Map((watchesRes.data ?? []).map((w) => [w.id, w.raw_intent]));
+
+    return rows.map((d) => {
+      const e = eMap.get(d.event_id);
+      return {
+        deliveryId: d.id,
+        watchId: d.watch_id,
+        watchIntent: wMap.get(d.watch_id) ?? "",
+        eventId: d.event_id,
+        description: e?.description ?? "",
+        detectedAt: e?.detected_at ?? d.sent_at ?? "",
+        facts: (e?.facts as EventFacts | null) ?? null,
+        channel: d.channel,
+        status: d.status,
+      };
+    });
+  }
+
+  async recordFeedback(userId: string, eventId: string, verdict: FeedbackVerdict): Promise<void> {
+    const { error } = await this.db
+      .from("user_feedback")
+      .insert({ user_id: userId, event_id: eventId, verdict });
+    if (error) throw new Error(`recordFeedback: ${error.message}`);
   }
 }

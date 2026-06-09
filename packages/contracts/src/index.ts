@@ -7,3 +7,4 @@ export * from "./subscription";
 export * from "./error";
 export * from "./admin";
 export * from "./me";
+export * from "./feed";
