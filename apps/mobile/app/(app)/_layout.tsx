@@ -1,4 +1,7 @@
+import { api } from "@/lib/api";
 import { configureNotificationHandler, registerForegroundListener } from "@/lib/notifications";
+import { qk } from "@/lib/query";
+import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { useEffect } from "react";
 import { Text } from "react-native";
@@ -12,6 +15,8 @@ export default function AppLayout() {
     configureNotificationHandler();
     return registerForegroundListener();
   }, []);
+  const { data: me } = useQuery({ queryKey: qk.me, queryFn: api.me });
+  const isAdmin = me?.isAdmin ?? false;
   return (
     <Tabs
       screenOptions={{
@@ -42,6 +47,15 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{ title: "Ayarlar", tabBarIcon: ({ color }) => <Icon glyph="⚙" color={color} /> }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: "Admin",
+          // Yalnız adminlere görünür; değilse sekme gizli ve rota erişilemez.
+          href: isAdmin ? undefined : null,
+          tabBarIcon: ({ color }) => <Icon glyph="⛨" color={color} />,
+        }}
       />
     </Tabs>
   );

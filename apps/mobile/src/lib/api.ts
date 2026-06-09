@@ -49,6 +49,58 @@ export interface Plans {
   prices: Price[];
 }
 
+// ---- Admin konsolu tipleri (backend @watcher/contracts ile birebir) ----
+export interface AdminUser {
+  id: string;
+  email: string | null;
+  createdAt: string;
+  isAdmin: boolean;
+  plan: "free" | "pro";
+  watchCount: number;
+}
+export interface AdminWatch {
+  id: string;
+  userId: string;
+  userEmail: string | null;
+  rawIntent: string;
+  archetype: "shared" | "personal";
+  frequencyMinutes: number;
+  status: "active" | "paused";
+  createdAt: string;
+}
+export interface AdminSubscription {
+  userId: string;
+  userEmail: string | null;
+  plan: string;
+  interval: BillingInterval | null;
+  amountCents: number | null;
+  currency: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+export interface AdminSystem {
+  now: string;
+  backend: string;
+  counts: {
+    users: number;
+    watches: number;
+    activeWatches: number;
+    subscriptions: number;
+    deliveries: number;
+    checkRuns: number;
+  };
+  recentCheckRuns: {
+    id: string;
+    topicId: string;
+    ranAt: string;
+    decision: boolean;
+    confidence: number | null;
+    summary: string | null;
+  }[];
+  recentDeliveries: { id: string; status: string; channel: string; sentAt: string | null }[];
+}
+
 interface ReqInit {
   method?: string;
   body?: string;
@@ -101,4 +153,30 @@ export const api = {
       body: JSON.stringify({ fcmToken, platform }),
     }),
   deleteAccount: () => req<{ ok: boolean }>("/v1/me", { method: "DELETE" }),
+
+  // ---- Admin konsolu ----
+  adminUsers: () => req<AdminUser[]>("/v1/admin/users"),
+  setUserAdmin: (id: string, makeAdmin: boolean) =>
+    req<{ ok: boolean }>(`/v1/admin/users/${id}/admin`, {
+      method: "POST",
+      body: JSON.stringify({ makeAdmin }),
+    }),
+  deleteUser: (id: string) => req<{ ok: boolean }>(`/v1/admin/users/${id}`, { method: "DELETE" }),
+  giftPro: (id: string, interval: BillingInterval) =>
+    req<{ ok: boolean }>(`/v1/admin/users/${id}/gift-pro`, {
+      method: "POST",
+      body: JSON.stringify({ interval }),
+    }),
+  cancelUserSub: (id: string) =>
+    req<{ ok: boolean }>(`/v1/admin/users/${id}/cancel-subscription`, { method: "POST" }),
+  adminWatches: () => req<AdminWatch[]>("/v1/admin/watches"),
+  setWatchStatus: (id: string, status: "active" | "paused") =>
+    req<{ ok: boolean }>(`/v1/admin/watches/${id}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    }),
+  deleteWatch: (id: string) =>
+    req<{ ok: boolean }>(`/v1/admin/watches/${id}`, { method: "DELETE" }),
+  adminSubscriptions: () => req<AdminSubscription[]>("/v1/admin/subscriptions"),
+  adminSystem: () => req<AdminSystem>("/v1/admin/system"),
 };

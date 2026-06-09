@@ -9,4 +9,8 @@ export const qk = {
   watchers: ["watchers"] as const,
   subscription: ["subscription"] as const,
   plans: ["plans"] as const,
+  adminUsers: ["admin", "users"] as const,
+  adminWatches: ["admin", "watches"] as const,
+  adminSubscriptions: ["admin", "subscriptions"] as const,
+  adminSystem: ["admin", "system"] as const,
 };
