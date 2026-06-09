@@ -14,10 +14,29 @@ import type { Database } from "./database.types";
 export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
   constructor(private readonly db: SupabaseClient<Database>) {}
 
+  /** Kaynak doğruluk: auth.users (profiles tablosu trigger'sız boş kalabiliyor). */
+  private async authUserList(): Promise<{ id: string; email: string | null; createdAt: string }[]> {
+    const out: { id: string; email: string | null; createdAt: string }[] = [];
+    const perPage = 1000;
+    for (let page = 1; page <= 50; page++) {
+      const { data, error } = await this.db.auth.admin.listUsers({ page, perPage });
+      if (error) throw new Error(`auth users: ${error.message}`);
+      const users = data.users ?? [];
+      for (const u of users) {
+        out.push({
+          id: u.id,
+          email: u.email ?? null,
+          createdAt: u.created_at ?? new Date().toISOString(),
+        });
+      }
+      if (users.length < perPage) break;
+    }
+    return out;
+  }
+
   private async emailMap(): Promise<Map<string, string | null>> {
-    const { data, error } = await this.db.from("profiles").select("id, email");
-    if (error) throw new Error(`profiles email: ${error.message}`);
-    return new Map((data ?? []).map((p) => [p.id, p.email]));
+    const users = await this.authUserList();
+    return new Map(users.map((u) => [u.id, u.email]));
   }
 
   /** Aktif (dönemi geçmemiş) abonelikleri olan kullanıcı id kümesi. */
@@ -33,15 +52,12 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
   }
 
   async listUsers(): Promise<AdminUserRow[]> {
-    const [profilesRes, adminsRes, watchesRes, proIds] = await Promise.all([
-      this.db.from("profiles").select("id, email, created_at").order("created_at", {
-        ascending: false,
-      }),
+    const [users, adminsRes, watchesRes, proIds] = await Promise.all([
+      this.authUserList(),
       this.db.from("admins").select("user_id"),
       this.db.from("watches").select("user_id"),
       this.activeProUserIds(),
     ]);
-    if (profilesRes.error) throw new Error(`users: ${profilesRes.error.message}`);
     if (adminsRes.error) throw new Error(`admins: ${adminsRes.error.message}`);
     if (watchesRes.error) throw new Error(`watch counts: ${watchesRes.error.message}`);
 
@@ -51,14 +67,16 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       watchCounts.set(w.user_id, (watchCounts.get(w.user_id) ?? 0) + 1);
     }
 
-    return (profilesRes.data ?? []).map((p) => ({
-      id: p.id,
-      email: p.email,
-      createdAt: p.created_at,
-      isAdmin: adminSet.has(p.id),
-      plan: proIds.has(p.id) ? "pro" : "free",
-      watchCount: watchCounts.get(p.id) ?? 0,
-    }));
+    return users
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((u) => ({
+        id: u.id,
+        email: u.email,
+        createdAt: u.createdAt,
+        isAdmin: adminSet.has(u.id),
+        plan: proIds.has(u.id) ? "pro" : "free",
+        watchCount: watchCounts.get(u.id) ?? 0,
+      }));
   }
 
   async setAdmin(userId: string, makeAdmin: boolean): Promise<void> {
@@ -169,9 +187,9 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
   async getSystem(): Promise<AdminSystemInfo> {
     const nowIso = new Date().toISOString();
     const head = { count: "exact" as const, head: true };
-    const [users, watches, activeWatches, subs, deliveries, checkRuns, recentRuns, recentDel] =
+    const [userList, watches, activeWatches, subs, deliveries, checkRuns, recentRuns, recentDel] =
       await Promise.all([
-        this.db.from("profiles").select("*", head),
+        this.authUserList(),
         this.db.from("watches").select("*", head),
         this.db.from("watches").select("*", head).eq("status", "active"),
         this.db.from("subscriptions").select("*", head).eq("status", "active"),
@@ -193,7 +211,7 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       now: nowIso,
       backend: "supabase",
       counts: {
-        users: users.count ?? 0,
+        users: userList.length,
         watches: watches.count ?? 0,
         activeWatches: activeWatches.count ?? 0,
         subscriptions: subs.count ?? 0,

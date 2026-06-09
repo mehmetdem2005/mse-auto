@@ -3,12 +3,13 @@ import {
   type AdminUser,
   type AdminWatch,
   type BillingInterval,
+  type Plans,
   api,
 } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,11 +17,13 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
-type Tab = "users" | "watches" | "subs" | "system";
+type Tab = "analytics" | "users" | "watches" | "subs" | "system";
 const TABS: { id: Tab; label: string }[] = [
+  { id: "analytics", label: "Analitik" },
   { id: "users", label: "Kullanıcılar" },
   { id: "watches", label: "Watcher'lar" },
   { id: "subs", label: "Abonelik" },
@@ -72,7 +75,7 @@ function ActBtn({
 }
 
 export default function AdminScreen(): ReactNode {
-  const [tab, setTab] = useState<Tab>("users");
+  const [tab, setTab] = useState<Tab>("analytics");
   return (
     <View className="flex-1 bg-ink">
       <View className="flex-row flex-wrap gap-1.5 px-5 pt-4 pb-3">
@@ -91,10 +94,97 @@ export default function AdminScreen(): ReactNode {
           </Pressable>
         ))}
       </View>
+      {tab === "analytics" ? <AnalyticsTab /> : null}
       {tab === "users" ? <UsersTab /> : null}
       {tab === "watches" ? <WatchesTab /> : null}
       {tab === "subs" ? <SubsTab /> : null}
       {tab === "system" ? <SystemTab /> : null}
+    </View>
+  );
+}
+
+// ----------------------------- Analitik + Fiyat -----------------------------
+
+function AnalyticsTab(): ReactNode {
+  const stats = useQuery({ queryKey: ["adminStats"], queryFn: api.adminStats });
+  const prices = useQuery({ queryKey: ["adminPrices"], queryFn: api.adminPrices });
+  if (stats.isLoading) return <Loading />;
+  if (stats.error) return <ErrText e={stats.error} />;
+  const s = stats.data;
+  if (!s) return null;
+  return (
+    <ScrollView className="flex-1 px-5" contentContainerClassName="pb-8">
+      <View className="flex-row flex-wrap gap-2.5">
+        <Stat n={s.totalUsers} l="kullanıcı" />
+        <Stat n={s.proUsers} l="pro abone" />
+        <Stat n={s.freeUsers} l="ücretsiz" />
+        <Stat n={s.activeWatchers} l="aktif watcher" />
+      </View>
+      <View className="bg-panel border border-line rounded-xl p-4 mt-3">
+        <Text className="text-muted text-[10px] uppercase tracking-widest">MRR · aylık gelir</Text>
+        <Text className="text-pos text-3xl font-extrabold mt-1">{money(s.mrrCents)}</Text>
+        <Text className="text-muted text-xs mt-1">
+          {money(s.mrrCents * 12)} / yıl · {s.subscriptionsByInterval.month} aylık ·{" "}
+          {s.subscriptionsByInterval.year} yıllık
+        </Text>
+      </View>
+
+      <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
+        fiyatlandırma
+      </Text>
+      <PriceEditor interval="month" prices={prices.data} onSaved={() => prices.refetch()} />
+      <PriceEditor interval="year" prices={prices.data} onSaved={() => prices.refetch()} />
+      <Text className="text-muted text-[11px] mt-2">
+        Fiyat değişimi yalnız yeni satın alma/yenilemeler için geçerlidir; mevcut aboneler dönem
+        sonuna dek eski fiyattan devam eder.
+      </Text>
+    </ScrollView>
+  );
+}
+
+function PriceEditor({
+  interval,
+  prices,
+  onSaved,
+}: {
+  interval: BillingInterval;
+  prices: Plans | undefined;
+  onSaved: () => void;
+}): ReactNode {
+  const current = prices?.prices.find((p) => p.interval === interval) ?? null;
+  const [val, setVal] = useState("");
+  useEffect(() => {
+    if (current) setVal((current.amountCents / 100).toString());
+  }, [current]);
+  const save = useMutation({
+    mutationFn: () =>
+      api.setPrice(interval, Math.round(Number(val) * 100), current?.currency ?? "usd"),
+    onSuccess: onSaved,
+  });
+  return (
+    <View className="bg-panel border border-line rounded-xl p-4 mb-2.5">
+      <Text className="text-text text-sm uppercase mb-2">
+        pro · {interval === "month" ? "aylık" : "yıllık"}
+      </Text>
+      <View className="flex-row items-center gap-2">
+        <TextInput
+          value={val}
+          onChangeText={setVal}
+          keyboardType="decimal-pad"
+          placeholder="4.99"
+          placeholderTextColor="#5c6470"
+          className="flex-1 bg-ink border border-line rounded-lg px-3 py-2 text-text"
+        />
+        <ActBtn
+          label="kaydet"
+          tone="solid"
+          disabled={save.isPending || !val}
+          onPress={() => save.mutate()}
+        />
+      </View>
+      <Text className="text-muted text-xs mt-2">
+        şu an: {current ? money(current.amountCents, current.currency) : "—"}
+      </Text>
     </View>
   );
 }

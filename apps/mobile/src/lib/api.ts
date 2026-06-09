@@ -100,6 +100,16 @@ export interface AdminSystem {
   }[];
   recentDeliveries: { id: string; status: string; channel: string; sentAt: string | null }[];
 }
+export interface AdminStats {
+  totalUsers: number;
+  freeUsers: number;
+  proUsers: number;
+  activeSubscriptions: number;
+  subscriptionsByInterval: { month: number; year: number };
+  totalWatchers: number;
+  activeWatchers: number;
+  mrrCents: number;
+}
 
 // ---- Watcher "araştırma" geçmişi ----
 export interface CheckRunView {
@@ -199,6 +209,13 @@ export const api = {
     req<{ ok: boolean }>(`/v1/admin/watches/${id}`, { method: "DELETE" }),
   adminSubscriptions: () => req<AdminSubscription[]>("/v1/admin/subscriptions"),
   adminSystem: () => req<AdminSystem>("/v1/admin/system"),
+  adminStats: () => req<AdminStats>("/v1/admin/analytics"),
+  adminPrices: () => req<Plans>("/v1/admin/prices"),
+  setPrice: (interval: BillingInterval, amountCents: number, currency: string) =>
+    req<Plans>("/v1/admin/prices", {
+      method: "PUT",
+      body: JSON.stringify({ plan: "pro", interval, amountCents, currency }),
+    }),
   watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
   adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),
 };

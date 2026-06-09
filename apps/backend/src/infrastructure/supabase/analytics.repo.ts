@@ -8,9 +8,15 @@ export class SupabaseAnalyticsRepository implements AnalyticsRepository {
   async getStats(): Promise<AdminStats> {
     const nowIso = new Date().toISOString();
 
-    const usersCount = await this.db.from("profiles").select("*", { count: "exact", head: true });
-    if (usersCount.error) throw new Error(`stats users: ${usersCount.error.message}`);
-    const totalUsers = usersCount.count ?? 0;
+    // Kullanıcı sayısı: kaynak doğruluk auth.users (profiles trigger'sız boş kalabilir).
+    let totalUsers = 0;
+    for (let page = 1; page <= 50; page++) {
+      const { data, error } = await this.db.auth.admin.listUsers({ page, perPage: 1000 });
+      if (error) throw new Error(`stats users: ${error.message}`);
+      const n = data.users?.length ?? 0;
+      totalUsers += n;
+      if (n < 1000) break;
+    }
 
     const watchTotal = await this.db.from("watches").select("*", { count: "exact", head: true });
     if (watchTotal.error) throw new Error(`stats watches: ${watchTotal.error.message}`);
