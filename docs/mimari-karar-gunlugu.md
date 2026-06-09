@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…026 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
+**İlerleme:** ADR-001…027 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-027 (Phase H — geçici Groq reasoner).
 
 ---
 
@@ -358,3 +358,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P1 ✓ · P3 ✓ · P4 ✓ · P7 ✓ (kuyruk/sağlayıcı adaptör swap) · P8 ✓ (25010 *Reliability* — döngü çalışır + hata-toleransı).
 - **Doğrulama:** 60/60 test; typecheck + biome temiz. **Canlı doğrulama:** deploy sonrası DB'de CheckRun belirmesi (bu ADR'nin kabul kriteri).
 - **Değerlendirilen alternatifler:** start-workers'da `setInterval` ile periyodik drain (enqueue-pump daha basit + anında) · pg-boss'u prod'a almak (tek serviste gereksiz; Supabase pooler region/format riski — ENOTFOUND tenant hatası gözlendi).
+
+## ADR-027 — Geçici reasoner: Groq (DeepSeek kalıcı)
+- **Durum:** Kabul · TOGAF Phase H (Artımlı).
+- **Bağlam:** Arama (Serper) çalışıyor; tek eksik **çalışan bir reasoner**. DeepSeek key var ama bakiyesiz (402). Kullanıcı kararı: *"uygulama hazır olana kadar Groq kullan (ücretsiz/hızlı), DeepSeek'e bakiye koyunca kalıcıya o geçer; Groq kalıcı değil."*
+- **Karar:** `GroqEventReasoner` (OpenAI-uyumlu `api.groq.com`, `llama-3.3-70b-versatile`, JSON modu) — `EventReasoner` portu. `buildChecker` reasoner seçimi: **`GROQ_API_KEY` varsa Groq, yoksa `DEEPSEEK_API_KEY` → DeepSeek**. Böylece Groq anahtarı kaldırılıp DeepSeek fonlanınca tek env değişikliğiyle kalıcıya döner (kod değişmez).
+- **Sonuçlar:** Tek geçerli reasoner anahtarıyla gerçek tespit; sağlayıcı-agnostik (P7). Ödün: Groq geçici (rate-limit/kalıcı değil) — bilinçli; DeepSeek hedef.
+- **P1–P9:** P1 ✓ (PII'siz canonical) · P3 ✓ (managed) · P7 ✓ (reasoner swap = env) · P8 ✓ (Functional Suitability).
+- **Doğrulama:** 62/62 test (Groq parse + hata). Canlı: geçerli Groq key + deploy sonrası DB'de CheckRun/DetectionEvent.
+- **Değerlendirilen alternatifler:** yalnız DeepSeek (bakiyesiz) · OpenAI (embedding'e ayrıldı) · Gemini (devre dışı).

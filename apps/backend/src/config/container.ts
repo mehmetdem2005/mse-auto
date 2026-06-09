@@ -42,6 +42,7 @@ import { InMemoryJobQueue } from "../infrastructure/queue/in-memory.queue";
 import { PgBossJobQueue } from "../infrastructure/queue/pgboss.queue";
 import { InMemoryRateLimiter } from "../infrastructure/rate-limit/in-memory.limiter";
 import { DeepSeekEventReasoner } from "../infrastructure/reasoner/deepseek.reasoner";
+import { GroqEventReasoner } from "../infrastructure/reasoner/groq.reasoner";
 import { FallbackSearchProvider } from "../infrastructure/search/fallback.search";
 import { SerperSearchProvider } from "../infrastructure/search/serper.search";
 import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
@@ -79,16 +80,18 @@ export interface Container {
 }
 
 function buildChecker(env: Env): Checker {
-  // Arama = Serper/Tavily, karar = DeepSeek. (OpenAI yalnız embedding için ayrılmıştır;
-  // Gemini provider'ı bilinçli devre dışı — kullanıcı yönlendirmesi.)
+  // Arama = Serper/Tavily. Karar (reasoner): Groq geçici (varsa öncelikli),
+  // yoksa DeepSeek (kalıcı). OpenAI yalnız embedding; Gemini bilinçli devre dışı.
   const providers: SearchProvider[] = [];
   if (env.SERPER_API_KEY) providers.push(new SerperSearchProvider(env.SERPER_API_KEY));
   if (env.TAVILY_API_KEY) providers.push(new TavilySearchProvider(env.TAVILY_API_KEY));
-  if (providers.length > 0 && env.DEEPSEEK_API_KEY) {
-    return new LiveChecker(
-      new FallbackSearchProvider(providers),
-      new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY),
-    );
+  const reasoner = env.GROQ_API_KEY
+    ? new GroqEventReasoner(env.GROQ_API_KEY)
+    : env.DEEPSEEK_API_KEY
+      ? new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY)
+      : null;
+  if (providers.length > 0 && reasoner) {
+    return new LiveChecker(new FallbackSearchProvider(providers), reasoner);
   }
   return new StubChecker();
 }

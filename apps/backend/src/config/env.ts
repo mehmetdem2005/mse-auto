@@ -8,10 +8,11 @@ const EnvSchema = z.object({
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   // pg-boss kuyruğu (yoksa in-memory queue)
   DATABASE_URL: z.string().min(1).optional(),
-  // Checker: arama + DeepSeek (yoksa StubChecker)
+  // Checker: arama (Serper/Tavily) + reasoner (Groq geçici · DeepSeek kalıcı)
   SERPER_API_KEY: z.string().min(1).optional(),
   TAVILY_API_KEY: z.string().min(1).optional(),
   GEMINI_API_KEY: z.string().min(1).optional(),
+  GROQ_API_KEY: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   // FCM push (yoksa NoopNotifier — dev)
