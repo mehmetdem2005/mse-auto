@@ -26,6 +26,16 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
+            <Stack.Screen
+              name="watcher/[id]"
+              options={{
+                headerShown: true,
+                title: "Araştırma",
+                headerStyle: { backgroundColor: "#0a0c10" },
+                headerTintColor: "#e7eaef",
+                headerShadowVisible: false,
+              }}
+            />
           </Stack.Protected>
           <Stack.Protected guard={!isSignedIn}>
             <Stack.Screen name="(auth)" />

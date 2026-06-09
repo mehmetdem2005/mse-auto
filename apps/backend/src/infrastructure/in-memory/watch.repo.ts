@@ -12,6 +12,10 @@ export class InMemoryWatchRepository implements WatchRepository {
     return watch;
   }
 
+  async findById(watchId: string): Promise<Watch | null> {
+    return this.store.watches.find((w) => w.id === watchId) ?? null;
+  }
+
   async listByUser(userId: string): Promise<Watch[]> {
     return this.store.watches.filter((w) => w.userId === userId);
   }

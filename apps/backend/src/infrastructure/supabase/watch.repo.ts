@@ -39,6 +39,16 @@ export class SupabaseWatchRepository implements WatchRepository {
     return toDomain(data);
   }
 
+  async findById(watchId: string): Promise<Watch | null> {
+    const { data, error } = await this.db
+      .from("watches")
+      .select("*")
+      .eq("id", watchId)
+      .maybeSingle();
+    if (error) throw new Error(`watches findById: ${error.message}`);
+    return data ? toDomain(data) : null;
+  }
+
   async listByUser(userId: string): Promise<Watch[]> {
     const { data, error } = await this.db
       .from("watches")

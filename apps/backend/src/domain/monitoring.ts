@@ -25,6 +25,22 @@ export interface RecordCheckRunInput {
   confidence: number;
 }
 
+/** Kullanıcı/admin'in göreceği "araştırma" görünümleri (okuma). */
+export interface CheckRunView {
+  id: string;
+  ranAt: string;
+  decision: boolean;
+  confidence: number | null;
+  summary: string | null;
+  reasoning: string | null;
+}
+export interface DetectionEventView {
+  id: string;
+  description: string;
+  detectedAt: string;
+  facts: EventFacts | null;
+}
+
 /** İzleme/tespit + teslim kalıcılığı port'u (paylaşılan zon + fan-out). */
 export interface MonitoringRepository {
   findTopicsDueForCheck(now: Date): Promise<CanonicalTopic[]>;
@@ -41,4 +57,7 @@ export interface MonitoringRepository {
   // --- teslim (Faz 5) ---
   listPendingDeliveriesForEvent(eventId: string): Promise<PendingDelivery[]>;
   markDeliveryStatus(deliveryId: string, status: DeliveryStatus): Promise<void>;
+  // --- araştırma okuma (kullanıcı/admin) ---
+  listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]>;
+  listDetectionEvents(topicId: string, limit: number): Promise<DetectionEventView[]>;
 }

@@ -1,9 +1,11 @@
 import { type Watch, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
 export default function Watchers() {
+  const router = useRouter();
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: qk.watchers,
     queryFn: api.watchers,
@@ -27,20 +29,25 @@ export default function Watchers() {
           ListEmptyComponent={
             <Text className="text-muted mt-6">Henüz watcher yok. "Yeni" sekmesinden ekle.</Text>
           }
-          renderItem={({ item }) => <WatchRow item={item} />}
+          renderItem={({ item }) => (
+            <WatchRow item={item} onPress={() => router.push(`/watcher/${item.id}`)} />
+          )}
         />
       )}
     </View>
   );
 }
 
-function WatchRow({ item }: { item: Watch }) {
+function WatchRow({ item, onPress }: { item: Watch; onPress: () => void }) {
   return (
-    <View className="bg-panel border border-line rounded-xl p-4">
+    <Pressable
+      onPress={onPress}
+      className="bg-panel border border-line rounded-xl p-4 active:opacity-70"
+    >
       <Text className="text-text text-base" numberOfLines={2}>
         {item.rawIntent}
       </Text>
-      <View className="flex-row gap-3 mt-2">
+      <View className="flex-row items-center gap-3 mt-2">
         <Text className="text-muted text-xs">her {item.frequencyMinutes} dk</Text>
         <Text
           className="text-xs"
@@ -51,7 +58,8 @@ function WatchRow({ item }: { item: Watch }) {
         <Text className="text-muted text-xs">
           {item.archetype === "shared" ? "paylaşılan" : "kişisel"}
         </Text>
+        <Text className="text-muted text-xs ml-auto">araştırma ›</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }

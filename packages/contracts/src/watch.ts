@@ -27,3 +27,24 @@ export const watchSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 export type Watch = z.infer<typeof watchSchema>;
+
+/** Watcher "araştırma" görünümü: kontrol çalışmaları + tespit olayları. */
+export const checkRunViewSchema = z.object({
+  id: z.string(),
+  ranAt: z.string(),
+  decision: z.boolean(),
+  confidence: z.number().nullable(),
+  summary: z.string().nullable(),
+  reasoning: z.string().nullable(),
+});
+export const detectionEventViewSchema = z.object({
+  id: z.string(),
+  description: z.string(),
+  detectedAt: z.string(),
+  facts: z.unknown().nullable(),
+});
+export const watchTimelineSchema = z.object({
+  checkRuns: z.array(checkRunViewSchema),
+  events: z.array(detectionEventViewSchema),
+});
+export type WatchTimeline = z.infer<typeof watchTimelineSchema>;

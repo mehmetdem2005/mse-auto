@@ -1,6 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
+  CheckRunView,
   DeliveryStatus,
+  DetectionEventView,
   MonitoringRepository,
   PendingDelivery,
   RecordCheckRunInput,
@@ -121,5 +123,39 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
       .update({ status, sent_at: sentAt })
       .eq("id", deliveryId);
     if (error) throw new Error(`markDeliveryStatus: ${error.message}`);
+  }
+
+  async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
+    const { data, error } = await this.db
+      .from("check_runs")
+      .select("id, ran_at, decision, confidence, result_summary, reasoning")
+      .eq("topic_id", topicId)
+      .order("ran_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(`listCheckRuns: ${error.message}`);
+    return (data ?? []).map((r) => ({
+      id: r.id,
+      ranAt: r.ran_at,
+      decision: r.decision,
+      confidence: r.confidence,
+      summary: r.result_summary,
+      reasoning: r.reasoning,
+    }));
+  }
+
+  async listDetectionEvents(topicId: string, limit: number): Promise<DetectionEventView[]> {
+    const { data, error } = await this.db
+      .from("detection_events")
+      .select("id, description, detected_at, facts")
+      .eq("topic_id", topicId)
+      .order("detected_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(`listDetectionEvents: ${error.message}`);
+    return (data ?? []).map((e) => ({
+      id: e.id,
+      description: e.description,
+      detectedAt: e.detected_at,
+      facts: (e.facts as EventFacts | null) ?? null,
+    }));
   }
 }

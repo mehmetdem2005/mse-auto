@@ -9,6 +9,7 @@ export interface CanonicalTopicRepository {
 
 export interface WatchRepository {
   create(input: Omit<Watch, "id">): Promise<Watch>;
+  findById(watchId: string): Promise<Watch | null>;
   listByUser(userId: string): Promise<Watch[]>;
   update(
     watchId: string,

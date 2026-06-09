@@ -6,11 +6,13 @@ import {
   adminSystemSchema,
   adminUserListSchema,
   adminWatchListSchema,
+  errorSchema,
   giftProInputSchema,
   plansSchema,
   setAdminInputSchema,
   setPriceInputSchema,
   setWatchStatusInputSchema,
+  watchTimelineSchema,
 } from "@watcher/contracts";
 import { getAdminStats } from "../../application/admin-stats";
 import { getPlans } from "../../application/get-plans";
@@ -213,6 +215,36 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const { id } = c.req.valid("param");
       await container.adminConsole.deleteWatch(id);
       return c.json({ ok: true }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/watches/{id}/timeline",
+      tags: ["admin"],
+      summary: "Watcher araştırma geçmişi (herhangi bir kullanıcı)",
+      request: { params: adminIdParamSchema },
+      responses: {
+        200: {
+          content: { "application/json": { schema: watchTimelineSchema } },
+          description: "Araştırma geçmişi",
+        },
+        404: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Bulunamadı",
+        },
+      },
+    }),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const watch = await container.watches.findById(id);
+      if (!watch) return c.json({ error: "Watcher bulunamadı" }, 404);
+      const [checkRuns, events] = await Promise.all([
+        container.monitoring.listCheckRuns(watch.canonicalTopicId, 30),
+        container.monitoring.listDetectionEvents(watch.canonicalTopicId, 30),
+      ]);
+      return c.json({ checkRuns, events }, 200);
     },
   );
 

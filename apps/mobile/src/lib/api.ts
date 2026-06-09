@@ -101,6 +101,26 @@ export interface AdminSystem {
   recentDeliveries: { id: string; status: string; channel: string; sentAt: string | null }[];
 }
 
+// ---- Watcher "araştırma" geçmişi ----
+export interface CheckRunView {
+  id: string;
+  ranAt: string;
+  decision: boolean;
+  confidence: number | null;
+  summary: string | null;
+  reasoning: string | null;
+}
+export interface DetectionEventView {
+  id: string;
+  description: string;
+  detectedAt: string;
+  facts: unknown;
+}
+export interface WatchTimeline {
+  checkRuns: CheckRunView[];
+  events: DetectionEventView[];
+}
+
 interface ReqInit {
   method?: string;
   body?: string;
@@ -179,4 +199,6 @@ export const api = {
     req<{ ok: boolean }>(`/v1/admin/watches/${id}`, { method: "DELETE" }),
   adminSubscriptions: () => req<AdminSubscription[]>("/v1/admin/subscriptions"),
   adminSystem: () => req<AdminSystem>("/v1/admin/system"),
+  watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
+  adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),
 };

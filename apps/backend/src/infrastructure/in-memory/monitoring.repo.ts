@@ -1,5 +1,7 @@
 import type {
+  CheckRunView,
   DeliveryStatus,
+  DetectionEventView,
   MonitoringRepository,
   PendingDelivery,
   RecordCheckRunInput,
@@ -102,5 +104,33 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
   async markDeliveryStatus(deliveryId: string, status: DeliveryStatus): Promise<void> {
     const d = this.store.deliveries.find((x) => x.id === deliveryId);
     if (d) d.status = status;
+  }
+
+  async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
+    return this.store.checkRuns
+      .filter((r) => r.topicId === topicId)
+      .sort((a, b) => b.ranAt.localeCompare(a.ranAt))
+      .slice(0, limit)
+      .map((r) => ({
+        id: r.id,
+        ranAt: r.ranAt,
+        decision: r.decision,
+        confidence: r.confidence,
+        summary: r.resultSummary,
+        reasoning: r.reasoning,
+      }));
+  }
+
+  async listDetectionEvents(topicId: string, limit: number): Promise<DetectionEventView[]> {
+    return this.store.events
+      .filter((e) => e.topicId === topicId)
+      .sort((a, b) => b.detectedAt.localeCompare(a.detectedAt))
+      .slice(0, limit)
+      .map((e) => ({
+        id: e.id,
+        description: e.description,
+        detectedAt: e.detectedAt,
+        facts: e.facts ?? null,
+      }));
   }
 }

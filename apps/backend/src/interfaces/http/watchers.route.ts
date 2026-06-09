@@ -1,5 +1,10 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { createWatchInputSchema, errorSchema, watchSchema } from "@watcher/contracts";
+import {
+  createWatchInputSchema,
+  errorSchema,
+  watchSchema,
+  watchTimelineSchema,
+} from "@watcher/contracts";
 import { createWatcher } from "../../application/create-watcher";
 import type { Container } from "../../config/container";
 import { PlanLimitError } from "../../domain/errors";
@@ -63,6 +68,37 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
       createdAt: w.createdAt,
     }));
     return c.json(dto, 200);
+  });
+
+  const timeline = createRoute({
+    method: "get",
+    path: "/{id}/timeline",
+    tags: ["watchers"],
+    summary: "Watcher araştırma geçmişi (kontroller + tespitler)",
+    request: { params: z.object({ id: z.string().min(1) }) },
+    responses: {
+      200: {
+        content: { "application/json": { schema: watchTimelineSchema } },
+        description: "Araştırma geçmişi",
+      },
+      404: {
+        content: { "application/json": { schema: errorSchema } },
+        description: "Watcher bulunamadı",
+      },
+    },
+  });
+
+  app.openapi(timeline, async (c) => {
+    const { id } = c.req.valid("param");
+    const watch = await container.watches.findById(id);
+    if (!watch || watch.userId !== c.get("userId")) {
+      return c.json({ error: "Watcher bulunamadı" }, 404);
+    }
+    const [checkRuns, events] = await Promise.all([
+      container.monitoring.listCheckRuns(watch.canonicalTopicId, 30),
+      container.monitoring.listDetectionEvents(watch.canonicalTopicId, 30),
+    ]);
+    return c.json({ checkRuns, events }, 200);
   });
 
   return app;

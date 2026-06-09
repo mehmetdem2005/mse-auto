@@ -7,6 +7,7 @@ import {
 } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { type ReactNode, useState } from "react";
 import {
   ActivityIndicator,
@@ -181,6 +182,7 @@ function UsersTab(): ReactNode {
 
 function WatchesTab(): ReactNode {
   const qc = useQueryClient();
+  const router = useRouter();
   const q = useQuery({ queryKey: qk.adminWatches, queryFn: api.adminWatches });
   const done = (): void => {
     void qc.invalidateQueries({ queryKey: qk.adminWatches });
@@ -214,6 +216,11 @@ function WatchesTab(): ReactNode {
             {w.status === "active" ? "aktif" : "duraklatıldı"}
           </Text>
           <View className="flex-row flex-wrap gap-2 mt-3">
+            <ActBtn
+              label="araştırma"
+              tone="solid"
+              onPress={() => router.push(`/watcher/${w.id}?admin=1`)}
+            />
             <ActBtn
               label={w.status === "active" ? "duraklat" : "aktifleştir"}
               disabled={busy}
