@@ -1,6 +1,11 @@
 import type { AccountGateway } from "../domain/account";
 import type { AuthVerifier } from "../domain/auth";
-import type { AdminRepository, AnalyticsRepository, PriceRepository } from "../domain/billing";
+import type {
+  AdminConsoleRepository,
+  AdminRepository,
+  AnalyticsRepository,
+  PriceRepository,
+} from "../domain/billing";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
 import type { MonitoringRepository } from "../domain/monitoring";
@@ -16,6 +21,7 @@ import { SupabaseJwtVerifier } from "../infrastructure/auth/supabase.verifier";
 import { LiveChecker } from "../infrastructure/checker/live.checker";
 import { StubChecker } from "../infrastructure/checker/stub.checker";
 import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gateway";
+import { InMemoryAdminConsoleRepository } from "../infrastructure/in-memory/admin-console.repo";
 import { InMemoryAdminRepository } from "../infrastructure/in-memory/admin.repo";
 import { InMemoryAnalyticsRepository } from "../infrastructure/in-memory/analytics.repo";
 import { InMemoryDeviceRepository } from "../infrastructure/in-memory/device.repo";
@@ -40,6 +46,7 @@ import { FallbackSearchProvider } from "../infrastructure/search/fallback.search
 import { SerperSearchProvider } from "../infrastructure/search/serper.search";
 import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
 import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gateway";
+import { SupabaseAdminConsoleRepository } from "../infrastructure/supabase/admin-console.repo";
 import { SupabaseAdminRepository } from "../infrastructure/supabase/admin.repo";
 import { SupabaseAnalyticsRepository } from "../infrastructure/supabase/analytics.repo";
 import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
@@ -60,6 +67,7 @@ export interface Container {
   account: AccountGateway;
   prices: PriceRepository;
   admin: AdminRepository;
+  adminConsole: AdminConsoleRepository;
   analytics: AnalyticsRepository;
   checker: Checker;
   notifier: Notifier;
@@ -148,6 +156,7 @@ export function createContainer(env: Env): Container {
       account: new SupabaseAccountGateway(db),
       prices: new SupabasePriceRepository(db),
       admin: new SupabaseAdminRepository(db),
+      adminConsole: new SupabaseAdminConsoleRepository(db),
       analytics: new SupabaseAnalyticsRepository(db),
       checker,
       notifier,
@@ -169,6 +178,7 @@ export function createContainer(env: Env): Container {
     account: new InMemoryAccountGateway(store),
     prices: new InMemoryPriceRepository(store),
     admin: new InMemoryAdminRepository(adminIdsFromEnv(env)),
+    adminConsole: new InMemoryAdminConsoleRepository(),
     analytics: new InMemoryAnalyticsRepository(store),
     checker,
     notifier,

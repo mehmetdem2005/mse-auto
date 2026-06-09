@@ -1,4 +1,16 @@
-import type { AdminStats, BillingInterval, Me, Plans, Subscription } from "@watcher/contracts";
+import type {
+  AdminStats,
+  AdminSubscription,
+  AdminSystem,
+  AdminUser,
+  AdminWatch,
+  BillingInterval,
+  Me,
+  Plans,
+  Subscription,
+} from "@watcher/contracts";
+
+type Ok = { ok: boolean };
 
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "http://localhost:3000";
 
@@ -41,4 +53,30 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ plan: "pro", interval, amountCents, currency }),
     }),
+
+  // ---- Admin konsolu ----
+  adminUsers: (t: string) => req<AdminUser[]>("/v1/admin/users", t),
+  setUserAdmin: (t: string, id: string, makeAdmin: boolean) =>
+    req<Ok>(`/v1/admin/users/${id}/admin`, t, {
+      method: "POST",
+      body: JSON.stringify({ makeAdmin }),
+    }),
+  deleteUser: (t: string, id: string) => req<Ok>(`/v1/admin/users/${id}`, t, { method: "DELETE" }),
+  giftPro: (t: string, id: string, interval: BillingInterval) =>
+    req<Ok>(`/v1/admin/users/${id}/gift-pro`, t, {
+      method: "POST",
+      body: JSON.stringify({ interval }),
+    }),
+  cancelUserSub: (t: string, id: string) =>
+    req<Ok>(`/v1/admin/users/${id}/cancel-subscription`, t, { method: "POST" }),
+  adminWatches: (t: string) => req<AdminWatch[]>("/v1/admin/watches", t),
+  setWatchStatus: (t: string, id: string, status: "active" | "paused") =>
+    req<Ok>(`/v1/admin/watches/${id}/status`, t, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    }),
+  deleteWatch: (t: string, id: string) =>
+    req<Ok>(`/v1/admin/watches/${id}`, t, { method: "DELETE" }),
+  adminSubscriptions: (t: string) => req<AdminSubscription[]>("/v1/admin/subscriptions", t),
+  adminSystem: (t: string) => req<AdminSystem>("/v1/admin/system", t),
 };

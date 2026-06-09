@@ -81,3 +81,78 @@ export interface AdminRepository {
 export interface AnalyticsRepository {
   getStats(): Promise<AdminStats>;
 }
+
+// ---- Admin konsolu: yönetim okuma/yazma (kullanıcı, watcher, abonelik, sistem) ----
+
+export interface AdminUserRow {
+  id: string;
+  email: string | null;
+  createdAt: string;
+  isAdmin: boolean;
+  plan: "free" | "pro";
+  watchCount: number;
+}
+
+export interface AdminWatchRow {
+  id: string;
+  userId: string;
+  userEmail: string | null;
+  rawIntent: string;
+  archetype: "shared" | "personal";
+  frequencyMinutes: number;
+  status: "active" | "paused";
+  createdAt: string;
+}
+
+export interface AdminSubscriptionRow {
+  userId: string;
+  userEmail: string | null;
+  plan: string;
+  interval: BillingInterval | null;
+  amountCents: number | null;
+  currency: string;
+  status: string;
+  currentPeriodEnd: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface AdminSystemInfo {
+  now: string;
+  backend: string;
+  counts: {
+    users: number;
+    watches: number;
+    activeWatches: number;
+    subscriptions: number;
+    deliveries: number;
+    checkRuns: number;
+  };
+  recentCheckRuns: {
+    id: string;
+    topicId: string;
+    ranAt: string;
+    decision: boolean;
+    confidence: number | null;
+    summary: string | null;
+  }[];
+  recentDeliveries: {
+    id: string;
+    status: string;
+    channel: string;
+    sentAt: string | null;
+  }[];
+}
+
+/** Admin paneli için yönetim işlemleri (yalnız admin middleware arkasında). */
+export interface AdminConsoleRepository {
+  listUsers(): Promise<AdminUserRow[]>;
+  setAdmin(userId: string, makeAdmin: boolean): Promise<void>;
+  deleteUser(userId: string): Promise<void>;
+  listWatches(): Promise<AdminWatchRow[]>;
+  setWatchStatus(watchId: string, status: "active" | "paused"): Promise<void>;
+  deleteWatch(watchId: string): Promise<void>;
+  listSubscriptions(): Promise<AdminSubscriptionRow[]>;
+  giftPro(userId: string, interval: BillingInterval): Promise<void>;
+  cancelSubscription(userId: string): Promise<void>;
+  getSystem(): Promise<AdminSystemInfo>;
+}
