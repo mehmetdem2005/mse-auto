@@ -29,25 +29,38 @@ export function Admin({ token }: { token: string }): ReactNode {
     <>
       <h1 className="page-title">Admin</h1>
       <p className="page-sub">yönetim konsolu · kullanıcı · watcher · abonelik · sistem</p>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+      <div className="tabs">
         {TABS.map((t) => (
           <button
             key={t.id}
             type="button"
-            className="btn sm"
-            style={{ opacity: tab === t.id ? 1 : 0.5 }}
+            className={`tab ${tab === t.id ? "active" : ""}`}
             onClick={() => setTab(t.id)}
           >
             {t.label}
           </button>
         ))}
       </div>
-      {tab === "analytics" ? <Analytics token={token} /> : null}
-      {tab === "users" ? <Users token={token} /> : null}
-      {tab === "watches" ? <Watches token={token} /> : null}
-      {tab === "subs" ? <Subs token={token} /> : null}
-      {tab === "system" ? <System token={token} /> : null}
+      <div className="fade-in" key={tab}>
+        {tab === "analytics" ? <Analytics token={token} /> : null}
+        {tab === "users" ? <Users token={token} /> : null}
+        {tab === "watches" ? <Watches token={token} /> : null}
+        {tab === "subs" ? <Subs token={token} /> : null}
+        {tab === "system" ? <System token={token} /> : null}
+      </div>
     </>
+  );
+}
+
+/** Yükleme iskeleti (shimmer). */
+const SKEL_KEYS = ["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+function Skeleton({ rows = 4 }: { rows?: number }): ReactNode {
+  return (
+    <div>
+      {SKEL_KEYS.slice(0, rows).map((k) => (
+        <div className="skeleton" key={k} />
+      ))}
+    </div>
   );
 }
 
@@ -103,7 +116,7 @@ function Analytics({ token }: { token: string }): ReactNode {
           </div>
         </>
       ) : (
-        <div className="muted">analitik yükleniyor…</div>
+        <Skeleton rows={2} />
       )}
 
       <div style={{ height: 22 }} />
@@ -153,7 +166,7 @@ function Users({ token }: { token: string }): ReactNode {
     setBusy(null);
   }
 
-  if (!rows) return <div className="muted">kullanıcılar yükleniyor…</div>;
+  if (!rows) return <Skeleton rows={5} />;
   return (
     <>
       {err ? <Banner kind="err">{err}</Banner> : null}
@@ -259,7 +272,7 @@ function Watches({ token }: { token: string }): ReactNode {
     setBusy(null);
   }
 
-  if (!rows) return <div className="muted">watcher'lar yükleniyor…</div>;
+  if (!rows) return <Skeleton rows={5} />;
   return (
     <>
       {err ? <Banner kind="err">{err}</Banner> : null}
@@ -326,7 +339,7 @@ function Subs({ token }: { token: string }): ReactNode {
   }, [token]);
 
   if (err) return <Banner kind="err">{err}</Banner>;
-  if (!rows) return <div className="muted">abonelikler yükleniyor…</div>;
+  if (!rows) return <Skeleton rows={3} />;
   if (rows.length === 0) return <div className="muted">abonelik yok.</div>;
   return (
     <div className="grid">
@@ -373,7 +386,7 @@ function System({ token }: { token: string }): ReactNode {
   }, [token]);
 
   if (err) return <Banner kind="err">{err}</Banner>;
-  if (!sys) return <div className="muted">sistem durumu yükleniyor…</div>;
+  if (!sys) return <Skeleton rows={4} />;
   return (
     <>
       <div className="muted" style={{ marginBottom: 10 }}>

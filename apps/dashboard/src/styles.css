@@ -517,6 +517,229 @@ body::after {
   box-sizing: border-box;
 }
 
+/* ====================== gelişmiş animasyon & cila katmanı ====================== */
+
+/* ince, temaya uygun kaydırma çubuğu */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-2);
+}
+
+/* başlık: akan degrade parıltısı */
+.page-title {
+  background: linear-gradient(
+    100deg,
+    var(--text) 0%,
+    var(--text) 42%,
+    var(--accent) 50%,
+    var(--text) 58%,
+    var(--text) 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleSheen 7s ease-in-out 0.4s infinite;
+}
+@keyframes titleSheen {
+  0%,
+  100% {
+    background-position: 130% 0;
+  }
+  50% {
+    background-position: -30% 0;
+  }
+}
+
+/* panel: hover'da yüksel + amber kenar parıltısı */
+.panel {
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.panel:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 176, 32, 0.32);
+  box-shadow:
+    0 14px 34px -16px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 176, 32, 0.07),
+    0 0 26px -8px rgba(255, 176, 32, 0.12);
+}
+
+/* grid içindeki panellere sıralı (stagger) giriş gecikmesi */
+.grid > .panel:nth-child(1) {
+  animation-delay: 0.02s;
+}
+.grid > .panel:nth-child(2) {
+  animation-delay: 0.06s;
+}
+.grid > .panel:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.grid > .panel:nth-child(4) {
+  animation-delay: 0.14s;
+}
+.grid > .panel:nth-child(5) {
+  animation-delay: 0.18s;
+}
+.grid > .panel:nth-child(6) {
+  animation-delay: 0.22s;
+}
+.grid > .panel:nth-child(7) {
+  animation-delay: 0.26s;
+}
+.grid > .panel:nth-child(8) {
+  animation-delay: 0.3s;
+}
+.grid > .panel:nth-child(n + 9) {
+  animation-delay: 0.34s;
+}
+
+/* buton: hover'da ışık süpürmesi (open-source uiverse esintili) */
+.btn {
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+}
+.btn:hover:not(:disabled)::after {
+  animation: shine 0.7s ease;
+}
+@keyframes shine {
+  to {
+    left: 150%;
+  }
+}
+
+/* segment-kontrol sekmeler */
+.tabs {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 5px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  width: fit-content;
+  max-width: 100%;
+}
+.tab {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 9px 16px;
+  border-radius: 8px;
+  transition:
+    color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab.active {
+  color: #1a1205;
+  background: var(--accent);
+  box-shadow: 0 6px 16px -6px rgba(255, 176, 32, 0.55);
+}
+
+/* sekme içeriği yumuşak giriş */
+.fade-in {
+  animation: fadeIn 0.34s ease both;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* skeleton shimmer yükleme */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: var(--panel-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
+  height: 70px;
+}
+.skeleton + .skeleton {
+  margin-top: 12px;
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: shimmer 1.3s infinite;
+}
+@keyframes shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* rail nav ikonları */
+.nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav button svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  opacity: 0.75;
+  transition: opacity 0.16s ease;
+}
+.nav button:hover svg,
+.nav button.active svg {
+  opacity: 1;
+}
+
+/* erişilebilirlik: hareketi azalt */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 @media (max-width: 860px) {
   .app {
     grid-template-columns: 1fr;
