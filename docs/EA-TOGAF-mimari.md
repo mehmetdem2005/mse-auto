@@ -674,6 +674,11 @@ flowchart TB
 | C-002 | **Aydınlık tasarım sistemi "Aurora Day"** — mobil tailwind + dashboard CSS token paleti tek kaynaktan; sabit koyu hex'ler token'a; yeni UI kiti (Card/Badge/EmptyState/FactChips) | Artımlı | ADR-008 light-theme token hedefini gerçekler (genişletme) | P1✓(salt görsel)·P4✓(token tek-kaynak)·P6✓(HIG)·P8✓(WCAG/Interaction)·P9✓(ceremony yok) | ADR-023 | TA-2 |
 | C-003 | **CI düzeltmesi** — `pnpm/action-setup` `version` ↔ `packageManager` çakışması giderildi (CI ilk kez lint/typecheck/test/build çalıştırıyor) + eski abonelik testi gerçek 503 davranışına hizalandı | Basitleştirme | ADR-014 (CI/test) operasyonel düzeltme; mimari değişiklik yok | P5✓(kalite kapısı geri işler)·P8✓(Maintainability) | — (ADR gerekmez) | TA-1 |
 
+**ISO eşlemesi (her değişiklik — §10 Requirements Mgmt'a bağlı):**
+- **C-001 (feed + geri-bildirim):** 25010 → *Functional Suitability* (tespit→teslim görünürlüğü tam/doğru) + *Reliability* (kullanıcı kaçırdığını feed'de yakalar) + *Interaction Capability* (👍/👎, facts rozetleri). 25012 → `EventFacts` görünümünde *doğruluk + tamlık + güncellik (detected_at)*. 27002 → *erişim kontrol* (RLS `user_feedback`, user-scoped feed) + *veri minimizasyonu* (dış egress yok). 29148 → VS1/adım-6 gereksinimi izlenebilir (Phase C → uygulama). NFR: feed sorgusu toplu (N+1 yok); p95 < 300ms hedef.
+- **C-002 (Aurora Day aydınlık tema):** 25010 → *Interaction Capability* (okunabilirlik) + *Maintainability* (token tek-kaynak → modülerlik). 9241-110 → öz-betimleyicilik + tutarlılık; WCAG 2.2 AA kontrast (slate-900/beyaz, indigo/beyaz). 27002 → uygulanmaz (görsel). NFR: AA kontrast ≥ 4.5:1 metin.
+- **C-003 (CI düzeltmesi):** 25010 → *Maintainability* + *Reliability* (kalite kapısı ilk kez gerçek çalışıyor; regresyon koruması). 27002 → *güvenli geliştirme* (CI lint/test/secret-scan kapısı işler). NFR: CI yeşil, 52/52 test.
+
 > **Re-baseline notu:** C-001/002 TA-2 (Lansman) kapsamındaki kullanıcı-dönük olgunlaşmadır; mimari prensiplerde sapma yok (dispensation gerekmedi). "Okundu" durumu (`deliveries.read_at`) açık migration izni beklediğinden change-backlog'a alındı (Phase H §9.1 tetikleyici: yeni özellik).
 
 ## 10. Requirements Management (MERKEZ — sürekli)

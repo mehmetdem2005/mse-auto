@@ -1,6 +1,6 @@
 ---
 name: design-standards
-description: Tüm kodlama/UI işlerinde uygulanacak tasarım, frontend mimari, CSS, erişilebilirlik, state ve performans standartları. Watcher (mobil + dashboard + backend) dahil her arayüz/kod görevinde kullanılır. Çıktının sonunda uygulanan standartlar listelenir.
+description: Tüm kodlama/UI işlerinde uygulanacak tasarım, frontend mimari, CSS, erişilebilirlik, state, performans + kurumsal mimari (TOGAF ADM) + ISO kalite/güvenlik (42010/25010/25012/27001-27002/29148/9241) standartları. Watcher (mobil + dashboard + backend) dahil her arayüz/kod görevinde zorunlu. Çıktının sonunda uygulanan standartlar + TOGAF + ISO raporu listelenir.
 ---
 
 # Design & Engineering Standards
@@ -73,12 +73,24 @@ TOGAF bu projenin **yöneten mimari çerçevesidir** (kanonik doküman `docs/EA-
   6. **ISO çapraz-kontrol:** 25010 ilgili kalite karakteristiği + 27002 ilgili güvenlik kontrolü (§10) ele alındı mı.
 - **Salt görsel/kopya işi bile** en az P1–P9 taraması + değişiklik sınıfı (genelde "Basitleştirme") ile kayda geçer — atlanmaz, "mimari etki yok" diye yazılır ama checklist yine işletilir.
 
+## 8. ISO/IEC Standartları — TAM uygula (zorunlu)
+ISO, TOGAF ile birlikte **yöneten kalite/güvenlik/mimari disiplinidir** (EA dokümanı Requirements Management merkezi + Phase G). **Her kodlama işinde aşağıdaki standartlar tek tek işletilir ve footer'da raporlanır.** Sürümler EA dokümanıyla birebir:
+
+- **ISO/IEC/IEEE 42010:2022 — Architecture Description.** Mimariye dokunan işte tanım yapısı: **stakeholder → concern → viewpoint → view**. Yeni view/diyagram bu ayrımı korur (EA Phase A–D §2.3 matrisi kanonik).
+- **ISO/IEC 25010:2023 — Ürün Kalite Modeli (9 karakteristik).** Her iş **en az bir** karakteristiğe bağlanır + **ölçülebilir NFR** + doğrulama yöntemi yazılır. Karakteristikler: Functional Suitability · Performance Efficiency · Compatibility · **Interaction Capability** (UI işlerinde zorunlu) · **Reliability** (teslim/akış işlerinde kritik) · **Security** (kritik) · Maintainability · Flexibility · Safety. Kritik eksen: Reliability + Security + Functional Suitability. (EA §10.1 tablosu kanonik.)
+- **ISO/IEC 25012:2008 — Veri Kalite Modeli.** Veri/şema/`EventFacts`/feed işlerinde: doğruluk · tamlık · tutarlılık · güncellik · erişilebilirlik · gizlilik (PII zonuyla hizalı). Yeni veri alanı bu boyutlarda değerlendirilir.
+- **ISO/IEC 27001:2022 (ISMS) + 27002:2022 (kontroller, 4 tema: Org/People/Physical/Tech).** Güvenliğe dokunan işte ilgili kontrol(ler) işletilir: bilgi sınıflandırma (PII zon) · erişim kontrol (RLS + JWT least-privilege) · kriptografi (TLS + at-rest + secure-store) · güvenli geliştirme (CI kapı + secret-scan) · **veri minimizasyonu/maskeleme = PII-sınırı (P1)** · loglama/izleme · güvenli yapılandırma (env Zod fail-fast). **Sertifika ertelenir, kontrol-adopsiyonu zorunlu.** (EA §10.2 kanonik.)
+- **ISO/IEC/IEEE 29148:2018 — Gereksinim Mühendisliği.** Yeni gereksinim/özellik: tek/doğrulanabilir/izlenebilir ifade; Prensip→Gereksinim→Faz→Test izlenebilirliği (EA §10.3) güncellenir.
+- **ISO 9241-110/-210 — İnsan-Merkezli Etkileşim.** UI işlerinde WCAG'ı tamamlar: etkileşim ilkeleri (uygunluk, öz-betimleyicilik, hata-toleransı, kullanıcı-kontrolü) + insan-merkezli tasarım döngüsü.
+- **İşletilecek zorunlu sıra (her işte):** ① 25010'dan ilgili karakteristik(ler) + ölçülebilir NFR yaz ② veri dokunuşu varsa 25012 boyutları ③ güvenlik dokunuşu varsa 27002 kontrol(leri) ④ UI ise 9241 + WCAG ⑤ gereksinim değiştiyse 29148 izlenebilirlik ⑥ EA §10 Requirements Management'ı güncelle. **Atlanmaz**; ilgisizse "bu işte uygulanmaz" gerekçesi yazılır.
+
 ---
 
 ## Çıktı kuralı — "Standartlar" dipnotu
 Her kodlama işinin sonunda şu formatta bir blok ekle (yalnız fiilen uygulananları yaz):
 
 > **Standartlar:** Atomic Design · 8pt grid · HIG · ITCSS+CUBE · WCAG 2.2 AA · react-query/zustand tek-yönlü · RAIL/CWV (lazy-load)
-> **TOGAF (zorunlu rapor):** Phase(ler): C(Data+Application) · değişiklik sınıfı: Artımlı · P1–P9: tümü ✓ (P1 PII-sınırı: dış egress yok) · ADR-0XX eklendi · EA §9.x kaydı güncellendi · ISO 25010: <karakteristik> / 27002: <kontrol>.
+> **TOGAF (zorunlu rapor):** Phase(ler): C(Data+Application) · değişiklik sınıfı: Artımlı · P1–P9: tümü ✓ (P1 PII-sınırı: dış egress yok) · ADR-0XX eklendi · EA §9.x kaydı güncellendi.
+> **ISO (zorunlu rapor):** 42010 (view yapısı korundu) · **25010**: <karakteristik> + ölçülebilir NFR + doğrulama · 25012: <veri boyutu | uygulanmaz> · **27002**: <kontrol | uygulanmaz> · 29148: <izlenebilirlik | uygulanmaz> · 9241/WCAG: <UI | uygulanmaz>.
 
-Uygulanmayan ama ilgili bir standardı bilinçli atladıysan tek satırla nedenini belirt. **TOGAF asla atlanmaz** — mimari etki yoksa bile P1–P9 taraması + "Basitleştirme" sınıfı yazılır.
+Uygulanmayan ama ilgili bir standardı bilinçli atladıysan tek satırla nedenini belirt. **TOGAF ve ISO asla atlanmaz** — mimari/kalite etkisi yoksa bile P1–P9 taraması + 25010 karakteristiği + "Basitleştirme" sınıfı yazılır.

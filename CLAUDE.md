@@ -4,8 +4,9 @@
 **Her kodlama/UI işinde** `.claude/skills/design-standards/SKILL.md` skill'indeki standartlara uy:
 Atomic Design · Material/HIG/Fluent/Carbon · 8pt grid · App Shell/PRPL/SPA · ITCSS/CUBE/BEM/OOCSS ·
 WCAG 2.2 AA + WAI-ARIA + Semantic HTML5 · tek-yönlü state (react-query/zustand) + FSM · Core Web Vitals + RAIL ·
-TOGAF (TAM/zorunlu: her işte ADM taraması + P1–P9 conformance + değişiklik sınıfı + ADR + EA güncelle;
-kanonik doküman `docs/EA-TOGAF-mimari.md`, karar günlüğü `docs/mimari-karar-gunlugu.md`).
+TOGAF (TAM/zorunlu: her işte ADM taraması + P1–P9 conformance + değişiklik sınıfı + ADR + EA güncelle) ·
+ISO (TAM/zorunlu: 42010 view · 25010 kalite+NFR · 25012 veri · 27001/27002 güvenlik · 29148 gereksinim · 9241 etkileşim).
+Kanonik dokümanlar: `docs/EA-TOGAF-mimari.md` (ADM+Requirements Mgmt) · `docs/mimari-karar-gunlugu.md` (ADR).
 
 - Koda başlamadan skill'in ilgili bölümlerini uygula.
 - **Her işin SONUNDA** "**Standartlar**" dipnotu ekle: o işte fiilen uygulanan standartları madde madde yaz.
