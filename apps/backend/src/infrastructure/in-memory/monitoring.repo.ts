@@ -87,6 +87,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         watchId: s.watchId,
         channel: "push",
         status: "pending",
+        readAt: null,
       });
     }
     return subscribers.length;
@@ -154,6 +155,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
           facts: e?.facts ?? null,
           channel: d.channel,
           status: d.status,
+          readAt: d.readAt,
         };
       });
   }
@@ -164,5 +166,22 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
     _verdict: FeedbackVerdict,
   ): Promise<void> {
     // Dev/in-memory: geri bildirim kalıcılığı yok (üretimde Supabase yazar).
+  }
+
+  async markDeliveryRead(userId: string, deliveryId: string): Promise<void> {
+    const d = this.store.deliveries.find((x) => x.id === deliveryId && x.userId === userId);
+    if (d && d.readAt === null) d.readAt = new Date().toISOString();
+  }
+
+  async markAllRead(userId: string): Promise<number> {
+    const now = new Date().toISOString();
+    let n = 0;
+    for (const d of this.store.deliveries) {
+      if (d.userId === userId && d.readAt === null) {
+        d.readAt = now;
+        n++;
+      }
+    }
+    return n;
   }
 }

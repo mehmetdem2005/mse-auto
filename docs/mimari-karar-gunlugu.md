@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…023 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-023 (Phase H — aydınlık tasarım sistemi).
+**İlerleme:** ADR-001…024 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-024 (Phase H — feed okundu durumu, migration izni bekliyor).
 
 ---
 
@@ -330,3 +330,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9 conformance:** P1 ✓ (salt görsel, egress yok) · P4 ✓ (token tek-kaynak, contracts'a dokunmaz) · P6 ✓ (mobil HIG/dokunma hedefleri korundu) · P8 ✓ (25010 Interaction Capability + WCAG) · P9 ✓ (token disiplini, ceremony yok). Diğerleri etkisiz.
 - **Doğrulama:** mobil + dashboard typecheck + biome + build temiz; Vercel deploy.
 - **Değerlendirilen alternatifler:** koyu temada kalma (ürün sahibi reddetti) · ekran-ekran elle renk (token yerine → drift riski, hariç) · light+dark ikisini birden (şimdilik light-only; dark ertelendi).
+
+## ADR-024 — Feed "okundu" durumu (deliveries.read_at)
+- **Durum:** Kabul — **uygulama hazır (branch); canlı migration 0005 izni bekleniyor** · TOGAF Phase H (Artımlı).
+- **Bağlam:** Feed bir gelen-kutusu gibi çalışsın; kullanıcı neyi gördüğünü ayırt etsin ("N yeni", okunmamış vurgusu, "tümünü okundu"). `Delivery` zaten kullanıcı-başına fan-out satırı → okundu durumu onun doğal özelliği (ayrı tablo şişirme).
+- **Karar:** `deliveries.read_at timestamptz NULL` (migration **0005**) + kısmi index (`user_id where read_at is null`). `MonitoringRepository.markDeliveryRead` + `markAllRead` (Supabase **ve** in-memory). Uçlar: `POST /v1/feed/{deliveryId}/read`, `POST /v1/feed/read-all`. `FeedItem.readAt` contracts'a eklendi. Mobil: okunmamış vurgusu (accent nokta + kalın + "yeni" rozeti) + açınca/oy verince okundu + "tümünü okundu" (optimistik cache patch). `read_at` user-scoped (RLS + service-role yazar). **Geriye dönük güvenli:** NULL = okunmamış.
+- **Deploy-güvenliği:** Kod Supabase'den `read_at` seçtiğinden, **0005 canlıya uygulanmadan main'e merge edilmez** (yoksa prod `/v1/feed` 500). Branch'te bekler.
+- **P1–P9 conformance:** P1 ✓ (user-scoped, egress yok) · P4 ✓ (contracts) · P5 ✓ (RLS + service-role yazımı) · P7 ✓ (ayrı tablo kaçış kapısı açık) · P8 ✓ (Interaction Capability — gelen kutusu). Diğerleri etkisiz.
+- **Doğrulama:** in-memory 3 test (listFeed okunmamış · markDeliveryRead sahip+izolasyon · markAllRead sayım+idempotent); backend 55/55 + typecheck temiz.
+- **Değerlendirilen alternatifler:** ayrı `feed_reads` tablosu (çok-cihaz senkron derdi yoksa gereksiz → hariç) · cihaz-local okundu (çok-cihaz tutarsız → hariç).

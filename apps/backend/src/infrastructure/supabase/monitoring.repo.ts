@@ -164,7 +164,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
   async listFeed(userId: string, limit: number): Promise<FeedItemRow[]> {
     const { data: dels, error } = await this.db
       .from("deliveries")
-      .select("id, channel, status, sent_at, watch_id, event_id")
+      .select("id, channel, status, sent_at, read_at, watch_id, event_id")
       .eq("user_id", userId)
       .order("sent_at", { ascending: false, nullsFirst: false })
       .limit(limit);
@@ -198,6 +198,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
         facts: (e?.facts as EventFacts | null) ?? null,
         channel: d.channel,
         status: d.status,
+        readAt: d.read_at ?? null,
       };
     });
   }
@@ -207,5 +208,26 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
       .from("user_feedback")
       .insert({ user_id: userId, event_id: eventId, verdict });
     if (error) throw new Error(`recordFeedback: ${error.message}`);
+  }
+
+  async markDeliveryRead(userId: string, deliveryId: string): Promise<void> {
+    const { error } = await this.db
+      .from("deliveries")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", deliveryId)
+      .eq("user_id", userId)
+      .is("read_at", null);
+    if (error) throw new Error(`markDeliveryRead: ${error.message}`);
+  }
+
+  async markAllRead(userId: string): Promise<number> {
+    const { data, error } = await this.db
+      .from("deliveries")
+      .update({ read_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .is("read_at", null)
+      .select("id");
+    if (error) throw new Error(`markAllRead: ${error.message}`);
+    return (data ?? []).length;
   }
 }

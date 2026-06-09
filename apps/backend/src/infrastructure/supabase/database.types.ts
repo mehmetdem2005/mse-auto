@@ -140,6 +140,7 @@ export interface Database {
           channel: string;
           status: string;
           sent_at: string | null;
+          read_at: string | null;
         };
         Insert: {
           event_id: string;
@@ -149,8 +150,9 @@ export interface Database {
           id?: string;
           status?: string;
           sent_at?: string | null;
+          read_at?: string | null;
         };
-        Update: { status?: string; sent_at?: string | null };
+        Update: { status?: string; sent_at?: string | null; read_at?: string | null };
         Relationships: [];
       };
       subscriptions: {

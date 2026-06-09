@@ -11,6 +11,7 @@ export const feedItemSchema = z.object({
   facts: z.unknown().nullable(),
   channel: z.string(),
   status: z.string(),
+  readAt: z.string().nullable(),
 });
 export type FeedItem = z.infer<typeof feedItemSchema>;
 export const feedListSchema = z.array(feedItemSchema);

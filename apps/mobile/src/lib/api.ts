@@ -142,6 +142,7 @@ export interface FeedItem {
   facts: unknown;
   channel: string;
   status: string;
+  readAt: string | null;
 }
 export type FeedbackVerdict = "correct" | "incorrect";
 
@@ -238,4 +239,7 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ verdict }),
     }),
+  markFeedRead: (deliveryId: string) =>
+    req<{ ok: boolean }>(`/v1/feed/${deliveryId}/read`, { method: "POST" }),
+  markAllFeedRead: () => req<{ count: number }>("/v1/feed/read-all", { method: "POST" }),
 };

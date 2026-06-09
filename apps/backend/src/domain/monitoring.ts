@@ -52,6 +52,7 @@ export interface FeedItemRow {
   facts: EventFacts | null;
   channel: string;
   status: string;
+  readAt: string | null;
 }
 
 export type FeedbackVerdict = "correct" | "incorrect";
@@ -78,4 +79,8 @@ export interface MonitoringRepository {
   // --- aktivite feed + geri bildirim (kullanıcı) ---
   listFeed(userId: string, limit: number): Promise<FeedItemRow[]>;
   recordFeedback(userId: string, eventId: string, verdict: FeedbackVerdict): Promise<void>;
+  /** Tek teslimi okundu damgala (yalnız sahibinin satırı). */
+  markDeliveryRead(userId: string, deliveryId: string): Promise<void>;
+  /** Kullanıcının tüm okunmamışlarını okundu yap; etkilenen satır sayısı döner. */
+  markAllRead(userId: string): Promise<number>;
 }

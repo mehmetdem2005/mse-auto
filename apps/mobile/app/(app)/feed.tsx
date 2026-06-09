@@ -1,7 +1,7 @@
 import { Badge, Card, EmptyState, FactChips } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { qk } from "@/lib/query";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
@@ -24,10 +24,36 @@ function ago(iso: string): string {
 
 export default function Feed() {
   const router = useRouter();
+  const qc = useQueryClient();
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: qk.feed,
     queryFn: api.feed,
   });
+
+  /** Cache'i optimistik yamala (okundu damgala) — refetch beklemeden. */
+  function patch(fn: (it: FeedItem) => FeedItem) {
+    qc.setQueryData<FeedItem[]>(qk.feed, (old) => (old ? old.map(fn) : old));
+  }
+
+  const markRead = useMutation({
+    mutationFn: (deliveryId: string) => api.markFeedRead(deliveryId),
+    onMutate: (deliveryId) => {
+      const now = new Date().toISOString();
+      patch((it) => (it.deliveryId === deliveryId && !it.readAt ? { ...it, readAt: now } : it));
+    },
+  });
+  const markAll = useMutation({
+    mutationFn: () => api.markAllFeedRead(),
+    onMutate: () => {
+      const now = new Date().toISOString();
+      patch((it) => (it.readAt ? it : { ...it, readAt: now }));
+    },
+  });
+
+  function open(item: FeedItem) {
+    if (!item.readAt) markRead.mutate(item.deliveryId);
+    router.push(`/watcher/${item.watchId}`);
+  }
 
   if (isLoading) {
     return (
@@ -44,15 +70,37 @@ export default function Feed() {
     );
   }
 
+  const list = data ?? [];
+  const unread = list.filter((it) => !it.readAt).length;
+
   return (
     <View className="flex-1 bg-ink">
       <FlatList
-        data={data ?? []}
+        data={list}
         keyExtractor={(it) => it.deliveryId}
         contentContainerClassName="px-5 pt-3 pb-10"
         onRefresh={() => void refetch()}
         refreshing={isRefetching}
         ItemSeparatorComponent={() => <View className="h-3" />}
+        ListHeaderComponent={
+          list.length > 0 ? (
+            <View className="flex-row items-center mb-3">
+              <Text className="text-muted text-[11px] uppercase tracking-widest">
+                {unread > 0 ? `${unread} yeni tespit` : "tümü okundu"}
+              </Text>
+              {unread > 0 ? (
+                <Pressable
+                  onPress={() => markAll.mutate()}
+                  hitSlop={8}
+                  className="ml-auto active:opacity-60"
+                  accessibilityRole="button"
+                >
+                  <Text className="text-accent text-xs font-semibold">tümünü okundu yap</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <EmptyState
             title="Henüz tespit yok"
@@ -60,28 +108,44 @@ export default function Feed() {
           />
         }
         renderItem={({ item }) => (
-          <FeedCard item={item} onOpen={() => router.push(`/watcher/${item.watchId}`)} />
+          <FeedCard
+            item={item}
+            onOpen={() => open(item)}
+            onVote={() => markRead.mutate(item.deliveryId)}
+          />
         )}
       />
     </View>
   );
 }
 
-function FeedCard({ item, onOpen }: { item: FeedItem; onOpen: () => void }) {
+function FeedCard({
+  item,
+  onOpen,
+  onVote,
+}: { item: FeedItem; onOpen: () => void; onVote: () => void }) {
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
+  const isUnread = !item.readAt;
   const mutation = useMutation({
     mutationFn: (verdict: FeedbackVerdict) => api.feedback(item.eventId, verdict),
-    onMutate: (verdict) => setVoted(verdict),
+    onMutate: (verdict) => {
+      setVoted(verdict);
+      onVote(); // geri bildirim = görüldü
+    },
     onError: () => setVoted(null),
   });
 
   return (
-    <Card accent onPress={onOpen}>
+    <Card accent={isUnread} onPress={onOpen}>
       <View className="flex-row items-center gap-2 mb-1.5">
-        <View className="w-2 h-2 rounded-full bg-pos" />
-        <Text className="text-text text-[13px] font-semibold flex-1" numberOfLines={1}>
+        <View className={`w-2 h-2 rounded-full ${isUnread ? "bg-accent" : "bg-line"}`} />
+        <Text
+          className={`text-[13px] flex-1 ${isUnread ? "text-text font-bold" : "text-muted font-medium"}`}
+          numberOfLines={1}
+        >
           {item.watchIntent || "Watcher"}
         </Text>
+        {isUnread ? <Badge tone="accent">yeni</Badge> : null}
         <Text className="text-muted text-[11px]">{ago(item.detectedAt)}</Text>
       </View>
 

@@ -28,6 +28,7 @@ export interface StoredDelivery {
   watchId: string;
   channel: string;
   status: string;
+  readAt: string | null;
 }
 export interface StoredDeviceToken {
   userId: string;
