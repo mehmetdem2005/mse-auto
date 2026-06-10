@@ -59,6 +59,23 @@ jobs:
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
         run: npx --yes expo export --platform web
 
+      # SEO/a11y: tek-sayfa (single) export'ta +html.tsx onurlandırılmadığından,
+      # üretilen index.html'e meta description + lang'i deterministik enjekte ederiz.
+      - name: SEO meta enjekte (dist/index.html)
+        working-directory: apps/mobile
+        run: |
+          node -e "
+          const fs=require('fs');const p='dist/index.html';let h=fs.readFileSync(p,'utf8');
+          h=h.replace(/<html lang=\"en\"/i,'<html lang=\"tr\"');
+          if(!/name=\"description\"/.test(h)){
+            const d='Watcher — istediğin konuyu yapay zekâ ile sürekli izle; gelişme olduğunda anında bildirim al. Akıllı izleyici uygulaması.';
+            const t='<meta name=\"description\" content=\"'+d+'\"><meta name=\"theme-color\" content=\"#F5F7FB\"><meta property=\"og:title\" content=\"Watcher — akıllı izleyici\"><meta property=\"og:description\" content=\"'+d+'\"><meta property=\"og:type\" content=\"website\">';
+            h=h.replace('</head>',t+'</head>');
+          }
+          fs.writeFileSync(p,h);
+          console.log('SEO meta enjekte edildi; lang=tr');
+          "
+
       - name: Deploy mobil web → Vercel
         env:
           VERCEL_PROJECT_ID: prj_SMr1qNlncOeXZYrkpu00wwJYH0XZ
