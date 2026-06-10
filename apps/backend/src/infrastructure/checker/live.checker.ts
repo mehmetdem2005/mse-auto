@@ -45,7 +45,10 @@ export class LiveChecker implements Checker {
       seen.add(h.url);
       return true;
     });
-    const finalHits = hits.length > 0 ? hits.slice(0, 10) : await this.search.search(q);
+    // Hiç kaynak yoksa genel arama yedeği; o da patlarsa boş (checker hatası kaydı
+    // run-topic-check tarafından DB'ye yazılır → sessiz değil).
+    const finalHits =
+      hits.length > 0 ? hits.slice(0, 10) : await this.search.search(q).catch(() => []);
     const r = await this.reasoner.reason({
       canonicalQuery: q,
       hits: finalHits,
