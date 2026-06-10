@@ -8,6 +8,7 @@ import type {
 } from "../domain/billing";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
+import type { IntentAssistant } from "../domain/intent-assistant";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { Notifier } from "../domain/notifier";
 import type { PaymentGateway } from "../domain/payment";
@@ -16,6 +17,8 @@ import type { JobQueue } from "../domain/queue";
 import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
 import type { SubscriptionRepository } from "../domain/subscription";
+import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant";
+import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
 import { SupabaseJwtVerifier } from "../infrastructure/auth/supabase.verifier";
 import { LiveChecker } from "../infrastructure/checker/live.checker";
@@ -71,12 +74,13 @@ export interface Container {
   adminConsole: AdminConsoleRepository;
   analytics: AnalyticsRepository;
   checker: Checker;
+  assistant: IntentAssistant;
   notifier: Notifier;
   queue: JobQueue;
   auth: AuthVerifier;
   payment: PaymentGateway;
   logger: Logger;
-  rateLimit: { global: RateLimiter; createWatch: RateLimiter };
+  rateLimit: { global: RateLimiter; createWatch: RateLimiter; assist: RateLimiter };
 }
 
 function buildChecker(env: Env): Checker {
@@ -94,6 +98,13 @@ function buildChecker(env: Env): Checker {
     return new LiveChecker(new FallbackSearchProvider(providers), reasoner);
   }
   return new StubChecker();
+}
+
+function buildAssistant(env: Env): IntentAssistant {
+  // Niyet asistanı: Groq (varsa) yoksa sezgisel fallback (anahtarsız dev).
+  return env.GROQ_API_KEY
+    ? new GroqIntentAssistant(env.GROQ_API_KEY)
+    : new HeuristicIntentAssistant();
 }
 
 function buildNotifier(env: Env): Notifier {
@@ -139,6 +150,7 @@ function adminIdsFromEnv(env: Env): ReadonlySet<string> {
  */
 export function createContainer(env: Env): Container {
   const checker = buildChecker(env);
+  const assistant = buildAssistant(env);
   const notifier = buildNotifier(env);
   const auth = buildAuth(env);
   const payment = buildPayment(env);
@@ -148,6 +160,7 @@ export function createContainer(env: Env): Container {
   const rateLimit = {
     global: new InMemoryRateLimiter(env.RATE_LIMIT_PER_MINUTE, 60_000),
     createWatch: new InMemoryRateLimiter(env.WATCH_CREATE_PER_HOUR, 3_600_000),
+    assist: new InMemoryRateLimiter(env.ASSIST_PER_MINUTE, 60_000),
   };
 
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -164,6 +177,7 @@ export function createContainer(env: Env): Container {
       adminConsole: new SupabaseAdminConsoleRepository(db),
       analytics: new SupabaseAnalyticsRepository(db),
       checker,
+      assistant,
       notifier,
       queue,
       auth,
@@ -186,6 +200,7 @@ export function createContainer(env: Env): Container {
     adminConsole: new InMemoryAdminConsoleRepository(),
     analytics: new InMemoryAnalyticsRepository(store),
     checker,
+    assistant,
     notifier,
     queue,
     auth,

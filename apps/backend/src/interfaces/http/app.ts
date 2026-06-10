@@ -62,6 +62,11 @@ export function createApp(
     "/v1/watchers",
     onlyMethod("POST", rateLimit(container.rateLimit.createWatch, "watch_create")),
   );
+  // Niyet asistanı LLM çağrısı yapar → ayrı, daha sıkı dakikalık sınır.
+  app.use(
+    "/v1/watchers/assist",
+    onlyMethod("POST", rateLimit(container.rateLimit.assist, "assist")),
+  );
 
   app.route("/v1/me", meRoutes(container));
   app.route("/v1/plans", plansRoutes(container));

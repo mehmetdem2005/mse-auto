@@ -157,6 +157,20 @@ export interface FeedItem {
 }
 export type FeedbackVerdict = "correct" | "incorrect";
 
+// ---- Niyet asistanı (sohbet) ----
+export type AssistRole = "user" | "assistant";
+export interface AssistMessage {
+  role: AssistRole;
+  content: string;
+}
+export interface AssistReply {
+  ready: boolean;
+  message: string;
+  intent: string | null;
+  frequencyMinutes: number | null;
+  confidence: number;
+}
+
 interface ReqInit {
   method?: string;
   body?: string;
@@ -242,6 +256,11 @@ export const api = {
     req<Plans>("/v1/admin/prices", {
       method: "PUT",
       body: JSON.stringify({ plan: "pro", interval, amountCents, currency }),
+    }),
+  assistChat: (messages: AssistMessage[]) =>
+    req<AssistReply>("/v1/watchers/assist", {
+      method: "POST",
+      body: JSON.stringify({ messages }),
     }),
   watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
   adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),

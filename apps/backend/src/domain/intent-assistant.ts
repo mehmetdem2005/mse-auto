@@ -1,0 +1,26 @@
+/**
+ * Niyet asistanı port'u — kullanıcının doğal-dil isteğini sohbetle netleştirir.
+ * Genel/muğlak istekte tek tek spesifik soru sorar; yeterince netleşince
+ * izlemeye hazır (ready) temiz bir niyet + önerilen kontrol sıklığı döndürür.
+ */
+
+export interface AssistantMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AssistantReply {
+  /** true → spesifik, izlenebilir niyet hazır; false → daha fazla bilgi gerek. */
+  ready: boolean;
+  /** Kullanıcıya gösterilecek metin: netleştirme sorusu veya onay özeti. */
+  message: string;
+  /** ready ise temiz/spesifik niyet (tek cümle, izleme için kanonikleştirilebilir). */
+  intent: string | null;
+  /** Önerilen kontrol sıklığı (dakika); aciliyetine göre. */
+  frequencyMinutes: number | null;
+  confidence: number; // 0..1
+}
+
+export interface IntentAssistant {
+  chat(history: AssistantMessage[]): Promise<AssistantReply>;
+}

@@ -2,19 +2,21 @@ import { Btn, Card } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
-import { api } from "@/lib/api";
+import { type AssistMessage, api } from "@/lib/api";
 import { setCriterion } from "@/lib/criteria-store";
 import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { qk } from "@/lib/query";
+import { useReduceMotion } from "@/lib/reduce-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 const FREQ = [60, 180, 360, 720, 1440];
 type FilterType = "none" | "geo" | "numeric" | "keyword";
 
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
+// 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 const STEPS = [
   { key: "intent", title: "Ne izlensin?" },
   { key: "frequency", title: "Ne sıklıkla kontrol edilsin?" },
@@ -22,6 +24,21 @@ const STEPS = [
   { key: "alert", title: "Nasıl haber verilsin?" },
   { key: "review", title: "Özet ve onay" },
 ] as const;
+
+const GREETING: AssistMessage = {
+  role: "assistant",
+  content:
+    "Merhaba! Ne olduğunda sana haber vereyim? Doğal dille anlat — genel kalırsa netleştirmek için soru soracağım. Örn. “iPhone 17 fiyatı 50.000 TL altına inince”.",
+};
+
+/** Önerilen sıklığı plan sınırına ve seçeneklere oturt. */
+function snapFreq(suggested: number, minAllowed: number): number {
+  const pool = FREQ.filter((f) => f >= minAllowed);
+  const opts = pool.length > 0 ? pool : FREQ;
+  return opts.reduce((best, f) =>
+    Math.abs(f - suggested) < Math.abs(best - suggested) ? f : best,
+  );
+}
 
 function labelFreq(m: number): string {
   if (m >= 1440) return "günlük";
@@ -59,10 +76,18 @@ function CInput(props: {
 export default function NewWatcher() {
   const router = useRouter();
   const qc = useQueryClient();
+  const reduce = useReduceMotion();
   const [step, setStep] = useState(0);
   const [rawIntent, setRawIntent] = useState("");
   const [freq, setFreq] = useState(60);
   const [err, setErr] = useState<string | null>(null);
+
+  // AI sohbeti (1. adım): geçmiş + taslak + netleşmiş niyet.
+  const [messages, setMessages] = useState<AssistMessage[]>([GREETING]);
+  const [draft, setDraft] = useState("");
+  const [readyIntent, setReadyIntent] = useState<string | null>(null);
+  const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
+  const chatScroll = useRef<ScrollView>(null);
 
   // Kişisel filtre (ADR-015): CİHAZDA kalır, sunucuya gönderilmez.
   const [filterType, setFilterType] = useState<FilterType>("none");
@@ -88,6 +113,56 @@ export default function NewWatcher() {
       personalFilters: sub.entitlements.personalFilters,
     });
   }, [sub]);
+
+  const minFreq = sub?.limits.minFrequencyMinutes ?? 60;
+  const assist = useMutation({
+    mutationFn: (history: AssistMessage[]) => api.assistChat(history.slice(-40)),
+    onSuccess: (r) => {
+      setAssistDown(false);
+      setMessages((m) => [...m, { role: "assistant", content: r.message }]);
+      if (r.ready && r.intent) {
+        setReadyIntent(r.intent);
+        setRawIntent(r.intent);
+        if (r.frequencyMinutes) setFreq(snapFreq(r.frequencyMinutes, minFreq));
+      } else {
+        setReadyIntent(null);
+      }
+    },
+    onError: (e) => {
+      setAssistDown(true);
+      const msg = e instanceof Error && e.message ? e.message : "Bir sorun oluştu";
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: `${msg} — tekrar dene ya da yazdığını doğrudan kullan.` },
+      ]);
+    },
+  });
+
+  /** Asistan erişilemezse son kullanıcı mesajını niyet olarak kabul et (elle devam). */
+  function useDraftAsIntent() {
+    const last =
+      [...messages]
+        .reverse()
+        .find((m) => m.role === "user")
+        ?.content.trim() ?? "";
+    if (last.length < 3) return;
+    setReadyIntent(last);
+    setRawIntent(last);
+    setAssistDown(false);
+    setMessages((m) => [
+      ...m,
+      { role: "assistant", content: `Tamam, şunu izleyeceğim: “${last}”. “Devam” ile sürdür.` },
+    ]);
+  }
+
+  function sendChat() {
+    const text = draft.trim();
+    if (!text || assist.isPending) return;
+    const next: AssistMessage[] = [...messages, { role: "user", content: text }];
+    setMessages(next);
+    setDraft("");
+    assist.mutate(next);
+  }
 
   function buildCriterion(): PersonalCriterion | null {
     if (filterType === "geo") {
@@ -147,7 +222,7 @@ export default function NewWatcher() {
 
   /** FSM geçiş kuralı: mevcut adım geçerli mi? */
   function stepValid(i: number): boolean {
-    if (i === 0) return rawIntent.trim().length >= 3;
+    if (i === 0) return readyIntent !== null && rawIntent.trim().length >= 3;
     if (i === 2) return filterType === "none" || buildCriterion() !== null;
     return true;
   }
@@ -158,7 +233,7 @@ export default function NewWatcher() {
   function next() {
     setErr(null);
     if (!stepValid(step)) {
-      setErr(step === 0 ? "En az 3 karakter yaz." : "Filtre alanları geçersiz.");
+      setErr(step === 0 ? "Önce asistanla niyeti netleştir." : "Filtre alanları geçersiz.");
       return;
     }
     if (isLast) {
@@ -195,26 +270,66 @@ export default function NewWatcher() {
         </View>
       </View>
 
-      <ScrollView className="flex-1 px-5 pt-5" keyboardShouldPersistTaps="handled">
+      <ScrollView
+        ref={chatScroll}
+        className="flex-1 px-5 pt-5"
+        keyboardShouldPersistTaps="handled"
+        onContentSizeChange={() => {
+          if (step === 0) chatScroll.current?.scrollToEnd({ animated: !reduce });
+        }}
+      >
         <Text className="text-text text-xl font-bold mb-4">{current.title}</Text>
         {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}
 
-        {/* 1) Niyet */}
+        {/* 1) Niyet — AI sohbeti (Gemini tarzı): muğlaksa asistan soruyla netleştirir */}
         {current.key === "intent" ? (
-          <>
-            <Text className="text-muted text-sm mb-3">
-              Doğal dille yaz — örn. “iPhone 17 fiyatı düşünce”, “İzmir’de deprem olunca”.
-            </Text>
-            <TextInput
-              value={rawIntent}
-              onChangeText={setRawIntent}
-              multiline
-              placeholder="Ne olduğunda haber vereyim?"
-              placeholderTextColor="#94A3B8"
-              className="bg-panel border border-line rounded-2xl px-4 py-4 text-text text-base min-h-[120px]"
-              style={{ textAlignVertical: "top" }}
-            />
-          </>
+          <View accessibilityLabel="Asistan sohbeti">
+            {messages.map((m, i) => (
+              <View
+                // Sohbet geçmişi yalnız sona eklenir → indeks anahtarı kararlı.
+                key={`${i}-${m.role}`}
+                className={`max-w-[85%] rounded-2xl px-4 py-3 mb-2.5 ${
+                  m.role === "user"
+                    ? "self-end bg-accent rounded-br-md"
+                    : "self-start bg-panel border border-line rounded-bl-md"
+                }`}
+                accessibilityRole="text"
+                accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${m.content}`}
+              >
+                <Text className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}>
+                  {m.content}
+                </Text>
+              </View>
+            ))}
+            {assist.isPending ? (
+              <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
+                <ActivityIndicator size="small" color="#6366F1" />
+              </View>
+            ) : null}
+            {assistDown && messages.some((m) => m.role === "user") ? (
+              <Pressable
+                onPress={useDraftAsIntent}
+                accessibilityRole="button"
+                accessibilityLabel="Yazdığımı niyet olarak kullan"
+                className="self-start border border-accent rounded-full px-4 py-3 mb-2.5 min-h-[44px] justify-center"
+              >
+                <Text className="text-accent text-xs font-semibold uppercase tracking-wider">
+                  yazdığımı niyet olarak kullan
+                </Text>
+              </Pressable>
+            ) : null}
+            {readyIntent ? (
+              <View className="bg-accent/10 border border-accent rounded-2xl px-4 py-3 mt-1">
+                <Text className="text-accent text-[10px] uppercase tracking-widest mb-1">
+                  izlemeye hazır
+                </Text>
+                <Text className="text-text text-sm">{readyIntent}</Text>
+                <Text className="text-muted text-[11px] mt-1">
+                  Önerilen sıklık: {labelFreq(freq)} · “Devam” ile sürdür ya da yazmaya devam et.
+                </Text>
+              </View>
+            ) : null}
+          </View>
         ) : null}
 
         {/* 2) Sıklık */}
@@ -422,6 +537,41 @@ export default function NewWatcher() {
 
         <View className="h-24" />
       </ScrollView>
+
+      {/* Sohbet girişi (yalnız 1. adımda, alt navigasyonun üstünde) */}
+      {current.key === "intent" ? (
+        <View className="flex-row items-end gap-2 px-5 pt-3 border-t border-line bg-ink">
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            multiline
+            placeholder="Mesaj yaz…"
+            placeholderTextColor="#94A3B8"
+            accessibilityLabel="Asistana mesaj yaz"
+            onSubmitEditing={sendChat}
+            blurOnSubmit
+            className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
+            style={{ textAlignVertical: "top" }}
+          />
+          <Pressable
+            onPress={sendChat}
+            disabled={!draft.trim() || assist.isPending}
+            accessibilityRole="button"
+            accessibilityLabel="Gönder"
+            className={`rounded-full px-5 py-3 min-h-[44px] justify-center ${
+              !draft.trim() || assist.isPending ? "bg-line" : "bg-accent"
+            }`}
+          >
+            <Text
+              className={`text-xs font-semibold uppercase tracking-wider ${
+                !draft.trim() || assist.isPending ? "text-muted" : "text-white"
+              }`}
+            >
+              gönder
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {/* Sabit alt navigasyon */}
       <View className="flex-row gap-3 px-5 py-4 border-t border-line bg-ink">

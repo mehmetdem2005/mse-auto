@@ -1,10 +1,13 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
+  assistChatInputSchema,
+  assistReplySchema,
   createWatchInputSchema,
   errorSchema,
   watchSchema,
   watchTimelineSchema,
 } from "@watcher/contracts";
+import { assistIntent } from "../../application/assist-intent";
 import { createWatcher } from "../../application/create-watcher";
 import type { Container } from "../../config/container";
 import { PlanLimitError } from "../../domain/errors";
@@ -12,6 +15,40 @@ import type { AuthVariables } from "./auth.middleware";
 
 export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: AuthVariables }> {
   const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+  const assist = createRoute({
+    method: "post",
+    path: "/assist",
+    tags: ["watchers"],
+    summary: "Niyet asistanı (sohbetle netleştirme)",
+    request: {
+      body: { content: { "application/json": { schema: assistChatInputSchema } } },
+    },
+    responses: {
+      200: {
+        content: { "application/json": { schema: assistReplySchema } },
+        description: "Netleştirme sorusu veya hazır niyet",
+      },
+      503: {
+        content: { "application/json": { schema: errorSchema } },
+        description: "Asistan geçici olarak erişilemez (LLM hatası)",
+      },
+    },
+  });
+
+  app.openapi(assist, async (c) => {
+    const input = c.req.valid("json");
+    try {
+      const reply = await assistIntent(container, input);
+      return c.json(reply, 200);
+    } catch (err) {
+      // LLM ağ/parse hataları geçicidir; 500 yerine eyleme dönük 503 dön.
+      container.logger.warn("assist failed", {
+        err: err instanceof Error ? err.message : String(err),
+      });
+      return c.json({ error: "Asistan şu an yanıt veremiyor; az sonra tekrar dene." }, 503);
+    }
+  });
 
   const createWatch = createRoute({
     method: "post",

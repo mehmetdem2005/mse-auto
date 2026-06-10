@@ -31,6 +31,8 @@ const EnvSchema = z.object({
   // Rate limit
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
   WATCH_CREATE_PER_HOUR: z.coerce.number().int().positive().default(30),
+  // Niyet asistanı (LLM çağrısı) — kullanıcı başına dakikada
+  ASSIST_PER_MINUTE: z.coerce.number().int().positive().default(10),
 });
 
 export type Env = z.infer<typeof EnvSchema>;

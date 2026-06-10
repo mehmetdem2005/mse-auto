@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
+import { groqJsonChat } from "../groq/groq-json";
 
 const ReasonSchema = z.object({
   detected: z.boolean(),
@@ -7,10 +8,6 @@ const ReasonSchema = z.object({
   reasoning: z.string(),
   confidence: z.number().min(0).max(1),
 });
-
-interface GroqResponse {
-  choices?: Array<{ message?: { content?: string } }>;
-}
 
 /**
  * Groq (OpenAI-uyumlu, JSON modu) olay muhakemesi. PII'siz girdi.
@@ -36,24 +33,17 @@ export class GroqEventReasoner implements EventReasoner {
       ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
     ].join("\n");
 
-    const res = await this.fetchImpl("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0,
-        max_tokens: 1024,
-      }),
+    const content = await groqJsonChat({
+      apiKey: this.apiKey,
+      model: this.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: 0,
+      maxTokens: 1024,
+      fetchImpl: this.fetchImpl,
     });
-    if (!res.ok) throw new Error(`groq ${res.status}`);
-    const data = (await res.json()) as GroqResponse;
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("groq boş içerik");
     return ReasonSchema.parse(JSON.parse(content));
   }
 }

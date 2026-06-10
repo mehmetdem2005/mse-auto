@@ -11,6 +11,7 @@ function makeApp(admins?: string): ReturnType<typeof createApp> {
     PORT: 3000,
     RATE_LIMIT_PER_MINUTE: 1000,
     WATCH_CREATE_PER_HOUR: 1000,
+    ASSIST_PER_MINUTE: 1000,
     ...(admins ? { ADMIN_USER_IDS: admins } : {}),
   };
   return createApp(createContainer(env));
@@ -111,6 +112,79 @@ describe("HTTP API (in-memory + dev auth)", () => {
       headers: bearer("admin1"),
     });
     expect(ok.status).toBe(200);
+  });
+
+  it("watcher assist: muğlak → netleştirme sorusu; spesifik → hazır niyet (heuristic)", async () => {
+    // Selamlama balonu başta olsa bile muğlak ilk istekte soru sorulmalı.
+    const vague = await makeApp().request(
+      "/v1/watchers/assist",
+      post(
+        {
+          messages: [
+            { role: "assistant", content: "Merhaba! Ne olduğunda haber vereyim?" },
+            { role: "user", content: "telefon" },
+          ],
+        },
+        "u1",
+      ),
+    );
+    expect(vague.status).toBe(200);
+    const vb = (await vague.json()) as { ready: boolean; message: string; intent: string | null };
+    expect(vb.ready).toBe(false);
+    expect(vb.intent).toBeNull();
+    expect(vb.message.length).toBeGreaterThan(0);
+
+    const specific = await makeApp().request(
+      "/v1/watchers/assist",
+      post(
+        {
+          messages: [
+            { role: "user", content: "telefon fiyatı" },
+            { role: "assistant", content: "hangi model ve hangi eşik?" },
+            { role: "user", content: "iPhone 17 Pro fiyatı 50000 TL altına inince haber ver" },
+          ],
+        },
+        "u1",
+      ),
+    );
+    const sb = (await specific.json()) as {
+      ready: boolean;
+      intent: string | null;
+      frequencyMinutes: number | null;
+    };
+    expect(sb.ready).toBe(true);
+    expect(sb.intent).toBeTruthy();
+    expect(sb.frequencyMinutes).toBeGreaterThan(0);
+  });
+
+  it("assist rate-limit izolasyonu: createWatch kotası dolu olsa da /assist çalışır", async () => {
+    // Hono use() exact-match regresyonu: /v1/watchers middleware'i /assist'e sızmamalı.
+    const env: Env = {
+      NODE_ENV: "development",
+      PORT: 3000,
+      RATE_LIMIT_PER_MINUTE: 1000,
+      WATCH_CREATE_PER_HOUR: 1,
+      ASSIST_PER_MINUTE: 1000,
+    };
+    const app = createApp(createContainer(env));
+    const w1 = await app.request(
+      "/v1/watchers",
+      post({ rawIntent: "İzmir'de deprem olunca haber ver", frequencyMinutes: 60 }, "u1"),
+    );
+    expect(w1.status).toBe(201);
+    const w2 = await app.request(
+      "/v1/watchers",
+      post({ rawIntent: "başka bir konu olunca", frequencyMinutes: 60 }, "u1"),
+    );
+    expect(w2.status).toBe(429); // createWatch kotası doldu
+    const a = await app.request(
+      "/v1/watchers/assist",
+      post(
+        { messages: [{ role: "user", content: "iPhone 17 Pro 50000 TL altına düşünce" }] },
+        "u1",
+      ),
+    );
+    expect(a.status).toBe(200); // assist ayrı kovada, etkilenmez
   });
 
   it("admin timeseries: gün sayısı kadar nokta + sıfır toplamlar (in-memory)", async () => {

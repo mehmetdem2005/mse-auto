@@ -30,4 +30,11 @@ describe("loadEnv — boş string env temizliği", () => {
     process.env.FCM_PROJECT_ID = "demo-project";
     expect(loadEnv().FCM_PROJECT_ID).toBe("demo-project");
   });
+
+  it("rate-limit varsayılanları uygulanır (assist dahil)", () => {
+    const env = loadEnv();
+    expect(env.RATE_LIMIT_PER_MINUTE).toBeGreaterThan(0);
+    expect(env.WATCH_CREATE_PER_HOUR).toBeGreaterThan(0);
+    expect(env.ASSIST_PER_MINUTE).toBe(10);
+  });
 });
