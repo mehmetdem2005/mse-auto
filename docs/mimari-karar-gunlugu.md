@@ -624,3 +624,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Karar:** GradientHero'ya `back` varyantı (geri oku + marka, ≥48px). Araştırma detayı, Destek & İletişim, Canlı Destek ve Sihirbaz native beyaz başlıklardan imza hero'ya geçti; kök Stack başlıkları kapatıldı. Yan kazanım: Stack'teki gömülü TR başlıklar ("Araştırma" vb.) i18n'e bağlandı (11 dil). Sihirbazda adım başlığı hero'da, "1/6" ilerleme alt metinde; stepper hero'ya biner.
 - **P5:** geri oku erişilebilir etiketli (common.back, 11 dilde) · ilerleme `progressbar` rolü korunur.
 - **ISO:** 9241-112 tutarlılık (tüm yüzeyler tek başlık dili) · 25010.
+
+## ADR-056 — AAA Faz 3: içerik bileşenleri cilası (shimmer iskelet, illüstratif boş durum, elevated kart)
+- **Durum:** Kabul · Faz 2 (ADR-055) devamı.
+- **Karar:** Paylaşılan moleküller yükseltildi (tüm ekranları birden cilalar — en yüksek kaldıraç): (1) **Shimmer iskelet** — statik gri yerine reanimated nabız-opaklık (850ms inOut, reduce-motion'da sabit 0.6); SkeletonCard artık gölgeli. (2) **İllüstratif boş durum** — gradyan halka madalyon + ekran-özel ikon parametresi (Icon prop; watchers→Bell, feed→Sparkles); daha büyük başlık + sınırlı genişlik ipucu. (3) **Card `elevated` varyantı** — hero üstüne binen kartlar için SHADOW_LG (20px blur); gölge token'ları (SHADOW/SHADOW_LG) merkezîleşti. (4) Watcher listesi yükleme durumu spinner→3 shimmer iskelet.
+- **P5:** shimmer reduce-motion kapılı (3.2/2.3 — titreşim/animasyon kontrolü) · boş durum ikon dekoratif (metin taşıyıcı değil).
+- **ISO:** 25010 *Attractiveness* + algılanan performans (RAIL) · 9241 (yükleme geri bildirimi).

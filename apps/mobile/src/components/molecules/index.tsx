@@ -1,28 +1,50 @@
-// Molecules — atom + primitive bileşimleri (Atomic Design).
 import { type EventFacts, parseEventFacts } from "@/domain/personal";
-import { Eye, MapPin } from "lucide-react-native";
-import type { ReactNode } from "react";
+// Molecules — atom + primitive bileşimleri (Atomic Design).
+import { useReduceMotion } from "@/lib/reduce-motion";
+import { LinearGradient } from "expo-linear-gradient";
+import { type LucideIcon, MapPin, Sparkles } from "lucide-react-native";
+import { type ReactNode, useEffect } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
+
+// Yükseltilmiş yüzey gölge token'ları (elevation ölçeği).
+const SHADOW = {
+  shadowColor: "#0F172A",
+  shadowOpacity: 0.06,
+  shadowRadius: 12,
+  shadowOffset: { width: 0, height: 4 },
+  elevation: 2,
+} as const;
+const SHADOW_LG = {
+  shadowColor: "#0F172A",
+  shadowOpacity: 0.1,
+  shadowRadius: 20,
+  shadowOffset: { width: 0, height: 10 },
+  elevation: 6,
+} as const;
 
 export function Card({
   children,
   onPress,
   accent,
+  elevated,
   accessibilityLabel,
 }: {
   children: ReactNode;
   onPress?: () => void;
   accent?: boolean;
+  /** Hero üstüne binen kartlar için güçlü gölge. */
+  elevated?: boolean;
   accessibilityLabel?: string;
 }) {
   const cls = `bg-panel border rounded-2xl p-4 ${accent ? "border-pos/40" : "border-line"}`;
-  const shadow = {
-    shadowColor: "#0F172A",
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  } as const;
+  const shadow = elevated ? SHADOW_LG : SHADOW;
   if (onPress) {
     return (
       <Pressable
@@ -47,14 +69,36 @@ export function SectionLabel({ children }: { children: ReactNode }) {
   return <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">{children}</Text>;
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  Icon = Sparkles,
+}: { title: string; hint?: string; Icon?: LucideIcon }) {
   return (
     <View className="items-center py-16 px-6">
-      <View className="w-14 h-14 rounded-full bg-panel2 items-center justify-center mb-4">
-        <Eye size={24} color="#475569" />
+      {/* İllüstratif madalyon — gradyan halka + yumuşak iç daire (AAA görsel). */}
+      <View className="mb-5 items-center justify-center">
+        <LinearGradient
+          colors={["#6366F1", "#7C3AED"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 40,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <View className="w-[68px] h-[68px] rounded-full bg-panel items-center justify-center">
+            <Icon size={28} color="#6366F1" />
+          </View>
+        </LinearGradient>
       </View>
-      <Text className="text-text text-base font-semibold text-center">{title}</Text>
-      {hint ? <Text className="text-muted text-sm text-center mt-1.5">{hint}</Text> : null}
+      <Text className="text-text text-lg font-bold text-center">{title}</Text>
+      {hint ? (
+        <Text className="text-muted text-sm text-center mt-2 leading-5 max-w-[280px]">{hint}</Text>
+      ) : null}
     </View>
   );
 }
@@ -106,19 +150,35 @@ function GeoChip({ geo }: { geo: NonNullable<EventFacts["geo"]> }) {
   );
 }
 
-/** İskelet yükleme — kart silüeti (algılanan performans; spinner yerine). */
+/** Tek parıltılı (shimmer) iskelet bloğu — nabız opaklık (reduce-motion'da sabit). */
+function Shimmer({ className }: { className: string }) {
+  const reduce = useReduceMotion();
+  const o = useSharedValue(0.5);
+  useEffect(() => {
+    if (reduce) return;
+    o.value = withRepeat(
+      withTiming(1, { duration: 850, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true,
+    );
+  }, [reduce, o]);
+  const style = useAnimatedStyle(() => ({ opacity: reduce ? 0.6 : o.value }));
+  return <Animated.View className={`bg-panel2 ${className}`} style={style} />;
+}
+
+/** İskelet yükleme — kart silüeti, shimmer (algılanan performans; spinner yerine). */
 export function SkeletonCard() {
   return (
-    <View className="bg-panel border border-line rounded-2xl p-4 mb-3">
+    <View className="bg-panel border border-line rounded-2xl p-4 mb-3" style={SHADOW}>
       <View className="flex-row items-center gap-2.5">
-        <View className="w-10 h-10 rounded-xl bg-panel2" />
+        <Shimmer className="w-10 h-10 rounded-xl" />
         <View className="flex-1 gap-2">
-          <View className="h-3 rounded-full bg-panel2 w-3/5" />
-          <View className="h-2.5 rounded-full bg-panel2 w-2/5" />
+          <Shimmer className="h-3 rounded-full w-3/5" />
+          <Shimmer className="h-2.5 rounded-full w-2/5" />
         </View>
       </View>
-      <View className="h-3 rounded-full bg-panel2 mt-4 w-11/12" />
-      <View className="h-3 rounded-full bg-panel2 mt-2 w-4/5" />
+      <Shimmer className="h-3 rounded-full mt-4 w-11/12" />
+      <Shimmer className="h-3 rounded-full mt-2 w-4/5" />
     </View>
   );
 }

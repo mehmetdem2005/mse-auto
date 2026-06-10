@@ -1,11 +1,20 @@
 import { EnterItem } from "@/components/motion";
-import { Badge, Card, EmptyState, Fab, GradientHero, HeroOverlap } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  Fab,
+  GradientHero,
+  HeroOverlap,
+  SkeletonCard,
+} from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
+  Bell,
   ChevronRight,
   Globe,
   MoreVertical,
@@ -16,7 +25,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, View } from "react-native";
+import { Alert, FlatList, Modal, Pressable, Text, View } from "react-native";
 
 function useLabelFreq(): (m: number) => string {
   const { t } = useTranslation();
@@ -73,7 +82,11 @@ export default function Watchers() {
       />
       <HeroOverlap>
         {isLoading ? (
-          <ActivityIndicator color="#6366F1" className="mt-10" />
+          <View className="px-5">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
         ) : error ? (
           <Text className="text-neg mt-6 px-5">
             {error instanceof Error ? error.message : t("common.loadError")}
@@ -117,7 +130,11 @@ export default function Watchers() {
             refreshing={isRefetching}
             ItemSeparatorComponent={() => <View className="h-3" />}
             ListEmptyComponent={
-              <EmptyState title={t("watchers.emptyTitle")} hint={t("watchers.emptyHint")} />
+              <EmptyState
+                title={t("watchers.emptyTitle")}
+                hint={t("watchers.emptyHint")}
+                Icon={Bell}
+              />
             }
             renderItem={({ item, index }) => (
               <EnterItem index={index}>
