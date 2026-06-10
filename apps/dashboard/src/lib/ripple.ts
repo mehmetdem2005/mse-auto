@@ -6,7 +6,7 @@ const SELECTOR = ".btn, .nav button, .m3-icon-btn, .m3-menu-item, .tab";
 export function installRipple(): () => void {
   if (
     typeof window === "undefined" ||
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches
   ) {
     return () => {};
   }

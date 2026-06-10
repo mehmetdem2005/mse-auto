@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…030 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
+**İlerleme:** ADR-001…031 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
 
 ---
 
@@ -398,3 +398,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓.
 - **ISO:** 25010 *Interaction Capability* + *Performance Efficiency* (ripple delegasyon, GPU transform/opacity) · 9241-110 · WCAG 2.2 (reduced-motion).
 - **Değerlendirilen alternatifler:** ağır animasyon kütüphanesi (framer-motion/reanimated layout) — bundle/karmaşıklık; CSS keyframes + ince ripple tercih edildi (ADR-008 lean ilkesi).
+
+## ADR-031 — Dashboard UI test altyapısı (vitest + testing-library) + ripple düzeltmesi
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — ADR-014 test stratejisini **UI katmanına** genişletir; özdenetimde itiraf edilen "UI testi yok" açığını kapatır.
+- **Bağlam:** UI "doğrulandı" yalnız typecheck/build'e dayanıyordu. Stop kapısı `turbo run test` çalıştırıyor ama dashboard'da `test` script'i yoktu → UI hiç koşulmuyordu.
+- **Karar:** Dashboard'a **vitest (jsdom) + @testing-library/react + user-event** + `vitest.config.ts` + `test` script. → `turbo test` artık **dashboard'u da** koşar (3 katman: pre-commit/CI/Stop hook). Testler: **Menu** (aç/kapa · `aria-haspopup`/`aria-expanded` · Esc · menuitem seçimi+kapanış), **ripple** (eşleşen `.btn` ekler · eşleşmeyen/`disabled` atlar).
+- **Bulunan + düzeltilen bug:** `ripple.ts` `window.matchMedia?.("…").matches` — `matchMedia` yoksa (jsdom/eski tarayıcı) `.matches` **crash** ediyordu → `?.matches` (güvenli). (Test yazarken yakalandı.)
+- **Sonuçlar:** 4 yeni UI testi; `turbo test` 2 paket (backend 60 + dashboard 4); biome 202 + typecheck 4 temiz.
+- **P1–P9:** P8 ✓ (25010 Maintainability + Reliability — regresyon koruması UI'a indi).
+- **ISO:** 25010 *Maintainability* + *Functional Suitability* (menü davranışı + ripple test-korumalı) · WCAG (menü a11y testle sabitlendi).
+- **Bilinçli kalan:** mobil (RN) UI testi — RN test kurulumu ayrı (jest-native); henüz yok, abartmıyorum.
