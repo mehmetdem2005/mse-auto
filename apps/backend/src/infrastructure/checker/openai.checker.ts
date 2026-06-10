@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CheckOutcome, Checker } from "../../domain/checker";
+import type { CheckContext, CheckOutcome, Checker } from "../../domain/checker";
 import type { CanonicalTopic } from "../../domain/topic";
 
 const DecisionSchema = z.object({
@@ -33,10 +33,15 @@ export class OpenAiChecker implements Checker {
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
-  async check(topic: CanonicalTopic): Promise<CheckOutcome> {
+  async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
     const input = [
       "Bir olay-tespit asistanısın. Web'de ara ve YALNIZ bulduğun güncel kaynaklara dayan; tahmin yürütme.",
       `İzlenen konu: "${topic.canonicalQuery}". Bu olay GERÇEKLEŞTİ mi?`,
+      ...(ctx?.lastEventDescription
+        ? [
+            `Daha önce bildirilen olay: ${ctx.lastEventDescription} — yalnızca bundan FARKLI/YENİ bir gelişme tespittir; tekrarı için detected=false ver.`,
+          ]
+        : []),
       'SADECE şu JSON ile yanıtla: {"detected": boolean, "description": string|null, "reasoning": string, "confidence": number 0..1}.',
       "detected=true ise description olayın kısa, PII'siz açıklamasıdır; değilse null.",
     ].join("\n");

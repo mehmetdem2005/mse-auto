@@ -26,9 +26,13 @@ export class GroqEventReasoner implements EventReasoner {
       "Olayın GERÇEKLEŞİP gerçekleşmediğine yalnızca sonuçlara dayanarak karar ver; tahmin yürütme.",
       'Çıktıyı şu JSON şemasıyla ver: {"detected": boolean, "description": string|null, "reasoning": string, "confidence": number 0..1}.',
       "detected=true ise description olayın kısa, PII'siz açıklamasıdır; aksi halde null.",
+      "ÖNEMLİ: 'Daha önce bildirilen olay' verilirse, yalnızca ondan FARKLI/YENİ bir gelişme tespittir; aynı olayın tekrarı/teyidi için detected=false ver ve reasoning'de 'daha önce bildirildi' de.",
     ].join(" ");
     const user = [
       `İzlenen konu: ${input.canonicalQuery}`,
+      ...(input.lastEventDescription
+        ? [`Daha önce bildirilen olay: ${input.lastEventDescription}`]
+        : []),
       "Arama sonuçları:",
       ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
     ].join("\n");

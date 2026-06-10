@@ -4,6 +4,8 @@ import type { SearchHit } from "./search";
 export interface ReasonInput {
   canonicalQuery: string; // PII'siz
   hits: SearchHit[];
+  /** Daha önce bildirilen son olay — verilirse yalnız BUNDAN YENİ gelişme tespit sayılır. */
+  lastEventDescription?: string | null;
 }
 
 export interface ReasonResult {

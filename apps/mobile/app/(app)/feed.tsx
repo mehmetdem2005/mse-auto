@@ -22,6 +22,39 @@ function ago(iso: string): string {
   return new Date(iso).toLocaleDateString("tr-TR");
 }
 
+/**
+ * Watcher başına TEK kart (ADR-037): aynı watcher'ın tespitleri gruplanır —
+ * en yenisi gösterilir, gerisi "×N" sayacına katlanır. Kalabalık biter.
+ */
+interface FeedGroup {
+  watchId: string;
+  watchIntent: string;
+  latest: FeedItem;
+  count: number;
+  unreadIds: string[];
+}
+
+function groupFeed(list: FeedItem[]): FeedGroup[] {
+  const groups = new Map<string, FeedGroup>();
+  for (const it of list) {
+    // liste en-yeniden-eskiye gelir → ilk görülen, grubun en yenisidir
+    const g = groups.get(it.watchId);
+    if (!g) {
+      groups.set(it.watchId, {
+        watchId: it.watchId,
+        watchIntent: it.watchIntent,
+        latest: it,
+        count: 1,
+        unreadIds: it.readAt ? [] : [it.deliveryId],
+      });
+    } else {
+      g.count += 1;
+      if (!it.readAt) g.unreadIds.push(it.deliveryId);
+    }
+  }
+  return [...groups.values()];
+}
+
 export default function Feed() {
   const router = useRouter();
   const qc = useQueryClient();
@@ -42,6 +75,14 @@ export default function Feed() {
       patch((it) => (it.deliveryId === deliveryId && !it.readAt ? { ...it, readAt: now } : it));
     },
   });
+  const markGroup = useMutation({
+    mutationFn: (ids: string[]) => Promise.all(ids.map((id) => api.markFeedRead(id))),
+    onMutate: (ids) => {
+      const now = new Date().toISOString();
+      const set = new Set(ids);
+      patch((it) => (set.has(it.deliveryId) && !it.readAt ? { ...it, readAt: now } : it));
+    },
+  });
   const markAll = useMutation({
     mutationFn: () => api.markAllFeedRead(),
     onMutate: () => {
@@ -50,9 +91,9 @@ export default function Feed() {
     },
   });
 
-  function open(item: FeedItem) {
-    if (!item.readAt) markRead.mutate(item.deliveryId);
-    router.push(`/watcher/${item.watchId}`);
+  function open(g: FeedGroup) {
+    if (g.unreadIds.length > 0) markGroup.mutate(g.unreadIds);
+    router.push(`/watcher/${g.watchId}`);
   }
 
   if (isLoading) {
@@ -72,12 +113,13 @@ export default function Feed() {
 
   const list = data ?? [];
   const unread = list.filter((it) => !it.readAt).length;
+  const groups = groupFeed(list);
 
   return (
     <View className="flex-1 bg-ink">
       <FlatList
-        data={list}
-        keyExtractor={(it) => it.deliveryId}
+        data={groups}
+        keyExtractor={(g) => g.watchId}
         contentContainerClassName="px-5 pt-3 pb-10"
         onRefresh={() => void refetch()}
         refreshing={isRefetching}
@@ -107,11 +149,11 @@ export default function Feed() {
             hint="Watcher'ların bir şey yakaladığında burada görünür."
           />
         }
-        renderItem={({ item }) => (
+        renderItem={({ item: g }) => (
           <FeedCard
-            item={item}
-            onOpen={() => open(item)}
-            onVote={() => markRead.mutate(item.deliveryId)}
+            group={g}
+            onOpen={() => open(g)}
+            onVote={() => markRead.mutate(g.latest.deliveryId)}
           />
         )}
       />
@@ -121,12 +163,13 @@ export default function Feed() {
 }
 
 function FeedCard({
-  item,
+  group,
   onOpen,
   onVote,
-}: { item: FeedItem; onOpen: () => void; onVote: () => void }) {
+}: { group: FeedGroup; onOpen: () => void; onVote: () => void }) {
+  const item = group.latest;
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
-  const isUnread = !item.readAt;
+  const isUnread = group.unreadIds.length > 0;
   const mutation = useMutation({
     mutationFn: (verdict: FeedbackVerdict) => api.feedback(item.eventId, verdict),
     onMutate: (verdict) => {
@@ -146,7 +189,11 @@ function FeedCard({
         >
           {item.watchIntent || "Watcher"}
         </Text>
-        {isUnread ? <Badge tone="accent">yeni</Badge> : null}
+        {isUnread ? (
+          <Badge tone="accent">
+            {group.unreadIds.length > 1 ? `${group.unreadIds.length} yeni` : "yeni"}
+          </Badge>
+        ) : null}
         <Text className="text-muted text-[11px]">{ago(item.detectedAt)}</Text>
       </View>
 
@@ -170,7 +217,11 @@ function FeedCard({
           </>
         )}
         <View className="ml-auto">
-          <Badge tone="muted">{item.status}</Badge>
+          {group.count > 1 ? (
+            <Badge tone="muted">{`toplam ${group.count} tespit`}</Badge>
+          ) : (
+            <Badge tone="muted">{item.status}</Badge>
+          )}
         </View>
       </View>
     </Card>

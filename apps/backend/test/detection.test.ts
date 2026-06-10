@@ -59,6 +59,30 @@ const checker: Checker = {
 };
 const topic = { id: "t1", canonicalQuery: "deprem türkiye", lastCheckedAt: null };
 
+describe("tekrar-bildirim bastırma (ADR-037)", () => {
+  it("ikinci kontrolde checker'a son bildirilen olay verilir", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const seen: (string | null | undefined)[] = [];
+    const capturing: Checker = {
+      async check(_t, ctx) {
+        seen.push(ctx?.lastEventDescription);
+        return {
+          detected: true,
+          description: "Ege'de 5.1 deprem",
+          resultSummary: "deprem",
+          reasoning: "kaynak",
+          confidence: 0.9,
+        };
+      },
+    };
+    await runTopicCheck({ checker: capturing, monitoring }, topic);
+    await runTopicCheck({ checker: capturing, monitoring }, topic);
+    expect(seen[0]).toBeNull(); // ilk koşuda önceki olay yok
+    expect(seen[1]).toBe("Ege'de 5.1 deprem"); // ikinci koşu öncekini bilir
+  });
+});
+
 describe("tespit → facts kalıcılığı + arketip-farkında fan-out", () => {
   it("detection_event facts'i saklar; her aboneye delivery üretir", async () => {
     const store = seed();

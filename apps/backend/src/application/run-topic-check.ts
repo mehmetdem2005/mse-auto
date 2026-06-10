@@ -24,9 +24,14 @@ export async function runTopicCheck(
   deps: RunTopicCheckDeps,
   topic: CanonicalTopic,
 ): Promise<RunTopicCheckResult> {
+  // Tekrar-bildirim bastırma (ADR-037): son bildirilen olayı checker'a ver;
+  // muhakeme yalnız BUNDAN YENİ bir gelişmeyi tespit sayar.
+  const lastEvents = await deps.monitoring.listDetectionEvents(topic.id, 1);
+  const lastEventDescription = lastEvents[0]?.description ?? null;
+
   let outcome: CheckOutcome;
   try {
-    outcome = await deps.checker.check(topic);
+    outcome = await deps.checker.check(topic, { lastEventDescription });
   } catch (err) {
     // Checker hatası (örn. arama/LLM kotası): topic'i sonsuz "due" döngüsünde
     // bırakmamak için başarısız bir CheckRun kaydet + checked işaretle.

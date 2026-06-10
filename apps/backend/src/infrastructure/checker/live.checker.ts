@@ -1,4 +1,4 @@
-import type { CheckOutcome, Checker } from "../../domain/checker";
+import type { CheckContext, CheckOutcome, Checker } from "../../domain/checker";
 import type { EventReasoner } from "../../domain/reasoner";
 import type { SearchProvider } from "../../domain/search";
 import type { CanonicalTopic } from "../../domain/topic";
@@ -10,9 +10,13 @@ export class LiveChecker implements Checker {
     private readonly reasoner: EventReasoner,
   ) {}
 
-  async check(topic: CanonicalTopic): Promise<CheckOutcome> {
+  async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
     const hits = await this.search.search(topic.canonicalQuery);
-    const r = await this.reasoner.reason({ canonicalQuery: topic.canonicalQuery, hits });
+    const r = await this.reasoner.reason({
+      canonicalQuery: topic.canonicalQuery,
+      hits,
+      lastEventDescription: ctx?.lastEventDescription ?? null,
+    });
     return {
       detected: r.detected,
       description: r.description,

@@ -15,7 +15,12 @@ export interface CheckOutcome {
   hits?: SearchHit[] | null;
 }
 
-/** Checker port'u — Faz 6'da DeepSeek + web araması implemente eder. */
+/** Kontrol bağlamı: tekrar-bildirim bastırma için son bildirilen olay (ADR-037). */
+export interface CheckContext {
+  lastEventDescription: string | null;
+}
+
+/** Checker port'u — arama + muhakeme; ctx verilirse yalnız YENİ gelişme tespit sayılır. */
 export interface Checker {
-  check(topic: CanonicalTopic): Promise<CheckOutcome>;
+  check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome>;
 }
