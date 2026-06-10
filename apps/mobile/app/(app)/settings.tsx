@@ -5,7 +5,7 @@ import { useAuth } from "@/stores/auth";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import { ChevronRight, LifeBuoy } from "lucide-react-native";
+import { ChevronRight, LifeBuoy, ShieldCheck } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -118,6 +118,26 @@ export default function Settings() {
         </Btn>
         {status ? <Text className="text-muted text-xs mt-3">{status}</Text> : null}
       </View>
+
+      <Pressable
+        onPress={() => router.push("/support")}
+        accessibilityRole="button"
+        accessibilityLabel="Veri ve gizlilik hakların — destek sayfası"
+        className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+      >
+        <View className="flex-row items-center gap-3">
+          <View className="w-10 h-10 rounded-full bg-pos/10 items-center justify-center">
+            <ShieldCheck size={18} color="#16A34A" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-text text-sm font-semibold">Veri ve gizlilik</Text>
+            <Text className="text-muted text-xs mt-0.5">
+              KVKK/GDPR hakların · verilerin nasıl korunur
+            </Text>
+          </View>
+          <ChevronRight size={16} color="#475569" />
+        </View>
+      </Pressable>
 
       <View className="bg-panel border border-line rounded-xl p-5 mb-4">
         <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">

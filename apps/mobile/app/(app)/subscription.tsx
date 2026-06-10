@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Crown, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
 function money(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {
@@ -127,6 +127,22 @@ export default function SubscriptionScreen() {
           </View>
         </View>
       </EnterItem>
+
+      {/* Birincil CTA (maket: Planı Yükselt) — ödeme kapalıyken dürüst uyarı */}
+      {!isPro ? (
+        <View className="mt-4">
+          <Btn
+            onPress={() =>
+              Alert.alert(
+                "Planı Yükselt",
+                "Ödeme entegrasyonu çok yakında. Hazır olduğunda buradan tek dokunuşla Pro'ya geçebileceksin.",
+              )
+            }
+          >
+            <Text className="text-white text-[14px] font-semibold">Planı Yükselt</Text>
+          </Btn>
+        </View>
+      ) : null}
 
       {/* Faturalama (gerçek abonelik varsa) */}
       {d ? (

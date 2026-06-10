@@ -1,10 +1,11 @@
 import { EnterItem } from "@/components/motion";
 import { Badge, Card, EmptyState, Fab, FactChips } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
+import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { BellRing, Eye, Inbox, ThumbsDown, ThumbsUp } from "lucide-react-native";
+import { BellRing, Eye, Inbox, Radar, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
@@ -66,6 +67,7 @@ export default function Feed() {
     queryFn: api.feed,
   });
   const watchers = useQuery({ queryKey: qk.watchers, queryFn: api.watchers });
+  const stats = useQuery({ queryKey: ["meStats"], queryFn: api.meStats });
 
   /** Cache'i optimistik yamala (okundu damgala) — refetch beklemeden. */
   function patch(fn: (it: FeedItem) => FeedItem) {
@@ -146,6 +148,12 @@ export default function Feed() {
                 />
                 <MiniStat Icon={Inbox} n={detectionsToday} label="bugün tespit" tint="#16A34A" />
                 <MiniStat Icon={BellRing} n={unread} label="okunmamış" tint="#D97706" />
+                <MiniStat
+                  Icon={Radar}
+                  n={stats.data?.checks24h ?? 0}
+                  label="tarama 24s"
+                  tint="#7C3AED"
+                />
               </View>
               {/* Filtre çipleri */}
               <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
@@ -232,7 +240,7 @@ function FeedCard({
   return (
     <Card accent={isUnread} onPress={onOpen}>
       <View className="flex-row items-center gap-2 mb-1.5">
-        <View className={`w-2 h-2 rounded-full ${isUnread ? "bg-accent" : "bg-line"}`} />
+        <FeedAvatar intent={item.watchIntent} unread={isUnread} />
         <Text
           className={`text-[13px] flex-1 ${isUnread ? "text-text font-bold" : "text-muted font-medium"}`}
           numberOfLines={1}
@@ -313,6 +321,18 @@ function MiniStat({
         <Text className="text-text text-base font-bold">{n}</Text>
       </View>
       <Text className="text-muted text-[10px] mt-0.5">{label}</Text>
+    </View>
+  );
+}
+
+function FeedAvatar({ intent, unread }: { intent: string; unread: boolean }) {
+  const cat = categoryOf(intent);
+  return (
+    <View className={`w-8 h-8 rounded-lg ${cat.bg} items-center justify-center`}>
+      <cat.Icon size={15} color={cat.tint} />
+      {unread ? (
+        <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border border-white" />
+      ) : null}
     </View>
   );
 }

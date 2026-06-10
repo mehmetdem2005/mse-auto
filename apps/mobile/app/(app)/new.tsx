@@ -34,11 +34,11 @@ type FilterType = "none" | "geo" | "numeric" | "keyword";
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 const STEPS = [
-  { key: "intent", title: "Ne izlensin?" },
-  { key: "frequency", title: "Ne sıklıkla kontrol edilsin?" },
-  { key: "filter", title: "Kişisel filtre" },
-  { key: "alert", title: "Nasıl haber verilsin?" },
-  { key: "review", title: "Özet ve onay" },
+  { key: "intent", title: "Ne izlensin?", short: "Ne izlensin" },
+  { key: "frequency", title: "Ne sıklıkla kontrol edilsin?", short: "Sıklık" },
+  { key: "filter", title: "Kişisel filtre", short: "Filtre" },
+  { key: "alert", title: "Nasıl haber verilsin?", short: "Bildirim" },
+  { key: "review", title: "Özet ve onay", short: "Önizle" },
 ] as const;
 
 const GREETING: AssistMessage = {
@@ -294,7 +294,17 @@ export default function NewWatcher() {
             </View>
           ))}
         </View>
-        <Text className="text-muted text-[11px] mt-2">{current.title}</Text>
+        {/* Maket: her dairenin altında kısa adım etiketi */}
+        <View className="flex-row mt-1.5">
+          {STEPS.map((st, i) => (
+            <Text
+              key={st.key}
+              className={`flex-1 text-[9px] ${i === step ? "text-accent font-semibold" : "text-muted"}`}
+            >
+              {st.short}
+            </Text>
+          ))}
+        </View>
       </View>
 
       <ScrollView
@@ -617,7 +627,13 @@ export default function NewWatcher() {
             blurOnSubmit
             className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
             style={{ textAlignVertical: "top" }}
+            maxLength={2000}
           />
+          {draft.length > 0 ? (
+            <Text className="text-muted text-[9px] absolute right-20 bottom-1.5">
+              {draft.length}/2000
+            </Text>
+          ) : null}
           <Pressable
             onPress={sendChat}
             disabled={!draft.trim() || assist.isPending}

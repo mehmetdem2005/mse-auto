@@ -23,7 +23,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import Svg, { Circle } from "react-native-svg";
+import Svg, { Circle, Path } from "react-native-svg";
 
 type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "support" | "system";
 const TABS: { id: Tab; label: string }[] = [
@@ -166,6 +166,10 @@ export default function AdminScreen(): ReactNode {
 function AnalyticsTab(): ReactNode {
   const stats = useQuery({ queryKey: ["adminStats"], queryFn: api.adminStats });
   const prices = useQuery({ queryKey: ["adminPrices"], queryFn: api.adminPrices });
+  const series = useQuery({
+    queryKey: ["adminTimeseries", 30],
+    queryFn: () => api.adminTimeseries(30),
+  });
   if (stats.isLoading) return <Loading />;
   if (stats.error) return <ErrText e={stats.error} />;
   const s = stats.data;
@@ -186,6 +190,21 @@ function AnalyticsTab(): ReactNode {
           {s.subscriptionsByInterval.year} yıllık
         </Text>
       </View>
+
+      {/* Son 30 gün — gerçek tespit zaman serisinden alan grafiği (maket MRR slotu) */}
+      {series.data && series.data.totals.checkRuns > 0 ? (
+        <View className="bg-panel border border-line rounded-xl p-4 mt-3">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-muted text-[10px] uppercase tracking-widest">
+              tespitler · son 30 gün
+            </Text>
+            <Text className="text-accent text-xs font-bold">
+              {series.data.totals.detections} tespit
+            </Text>
+          </View>
+          <AreaChart points={series.data.points.map((p) => p.detections)} />
+        </View>
+      ) : null}
 
       {/* Plan dağılımı — gerçek free/pro sayılarından donut */}
       <View className="bg-panel border border-line rounded-xl p-4 mt-3">
@@ -830,6 +849,30 @@ function SubsTab(): ReactNode {
         </View>
       )}
     />
+  );
+}
+
+/** Alan grafiği (maket: MRR eğrisi slotu) — gerçek günlük seriden SVG path. */
+function AreaChart({
+  points,
+  width = 300,
+  height = 72,
+}: {
+  points: number[];
+  width?: number;
+  height?: number;
+}): ReactNode {
+  if (points.length < 2) return null;
+  const max = Math.max(1, ...points);
+  const stepX = width / (points.length - 1);
+  const y = (v: number) => height - (v / max) * (height - 6) - 2;
+  const line = points.map((v, i) => `${i === 0 ? "M" : "L"}${i * stepX},${y(v)}`).join(" ");
+  const area = `${line} L${width},${height} L0,${height} Z`;
+  return (
+    <Svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`}>
+      <Path d={area} fill="#6366F1" opacity={0.12} />
+      <Path d={line} stroke="#6366F1" strokeWidth={2} fill="none" strokeLinejoin="round" />
+    </Svg>
   );
 }
 

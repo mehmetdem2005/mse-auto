@@ -99,14 +99,24 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
 
   app.openapi(listWatches, async (c) => {
     const watches = await container.watches.listByUser(c.get("userId"));
-    const dto = watches.map((w) => ({
-      id: w.id,
-      rawIntent: w.rawIntent,
-      archetype: w.archetype,
-      frequencyMinutes: w.frequencyMinutes,
-      status: w.status,
-      createdAt: w.createdAt,
-    }));
+    // Kaynak etiketi (ADR-049): konunun çözülmüş resmî alanı listede gösterilir.
+    const dto = await Promise.all(
+      watches.map(async (w) => {
+        const auth = await container.topics.getAuthority(w.canonicalTopicId).catch(() => ({
+          domain: null,
+          resolved: false,
+        }));
+        return {
+          id: w.id,
+          rawIntent: w.rawIntent,
+          archetype: w.archetype,
+          frequencyMinutes: w.frequencyMinutes,
+          status: w.status,
+          createdAt: w.createdAt,
+          authorityDomain: auth.domain,
+        };
+      }),
+    );
     return c.json(dto, 200);
   });
 

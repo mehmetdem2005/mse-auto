@@ -1,37 +1,13 @@
 import { EnterItem } from "@/components/motion";
 import { Badge, Card, EmptyState, Fab } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
+import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import {
-  Activity,
-  ChevronRight,
-  GraduationCap,
-  type LucideIcon,
-  Pause,
-  Play,
-  Tag,
-  Target,
-  Ticket,
-  Trash2,
-} from "lucide-react-native";
+import { ChevronRight, Globe, Pause, Play, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Pressable, Text, View } from "react-native";
-
-/** Niyet metninden deterministik kategori ikonu + rengi (görsel kimlik). */
-function categoryOf(intent: string): { Icon: LucideIcon; tint: string; bg: string } {
-  const t = intent.toLowerCase();
-  if (/deprem|yangın|sel|afet|fırtına/.test(t))
-    return { Icon: Activity, tint: "#D97706", bg: "bg-amber-500/10" };
-  if (/fiyat|indirim|zam|ücret|stok/.test(t))
-    return { Icon: Tag, tint: "#7C3AED", bg: "bg-accent2/10" };
-  if (/sınav|yks|kpss|lgs|ales|sonuç|tercih/.test(t))
-    return { Icon: GraduationCap, tint: "#16A34A", bg: "bg-pos/10" };
-  if (/bilet|konser|maç|etkinlik/.test(t))
-    return { Icon: Ticket, tint: "#DB2777", bg: "bg-pink-500/10" };
-  return { Icon: Target, tint: "#6366F1", bg: "bg-accent/10" };
-}
 
 function labelFreq(m: number): string {
   if (m >= 1440) return `günde ${Math.round(m / 1440) === 1 ? "bir" : m / 1440} kez`;
@@ -182,6 +158,14 @@ function WatchRow({
         <Badge tone={active ? "pos" : "muted"}>{active ? "aktif" : "duraklatıldı"}</Badge>
         <Badge tone="accent">{item.archetype === "shared" ? "paylaşılan" : "kişisel"}</Badge>
         <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
+        {item.authorityDomain ? (
+          <View className="flex-row items-center gap-1">
+            <Globe size={11} color="#475569" />
+            <Text className="text-muted text-xs" numberOfLines={1}>
+              {item.authorityDomain}
+            </Text>
+          </View>
+        ) : null}
         <View className="flex-row items-center ml-auto">
           <Text className="text-muted text-xs">araştırma</Text>
           <ChevronRight size={14} color="#475569" />

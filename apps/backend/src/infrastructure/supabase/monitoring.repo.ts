@@ -131,6 +131,17 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
     if (error) throw new Error(`markDeliveryStatus: ${error.message}`);
   }
 
+  async countCheckRunsSince(topicIds: string[], sinceIso: string): Promise<number> {
+    if (topicIds.length === 0) return 0;
+    const { count, error } = await this.db
+      .from("check_runs")
+      .select("*", { count: "exact", head: true })
+      .in("topic_id", topicIds)
+      .gte("ran_at", sinceIso);
+    if (error) throw new Error(`countCheckRunsSince: ${error.message}`);
+    return count ?? 0;
+  }
+
   async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
     const { data, error } = await this.db
       .from("check_runs")

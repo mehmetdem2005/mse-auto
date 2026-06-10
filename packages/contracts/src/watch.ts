@@ -25,6 +25,8 @@ export const watchSchema = z.object({
   frequencyMinutes: z.number().int(),
   status: watchStatusSchema,
   createdAt: z.iso.datetime(),
+  /** Konunun resmî kaynak alanı (liste görünümünde kaynak etiketi; ADR-049). */
+  authorityDomain: z.string().nullable().optional(),
 });
 export type Watch = z.infer<typeof watchSchema>;
 

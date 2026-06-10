@@ -111,6 +111,11 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
     if (d) d.status = status;
   }
 
+  async countCheckRunsSince(topicIds: string[], sinceIso: string): Promise<number> {
+    const ids = new Set(topicIds);
+    return this.store.checkRuns.filter((r) => ids.has(r.topicId) && r.ranAt >= sinceIso).length;
+  }
+
   async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
     return this.store.checkRuns
       .filter((r) => r.topicId === topicId)

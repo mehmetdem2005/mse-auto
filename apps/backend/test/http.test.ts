@@ -282,6 +282,37 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(body.points[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  it("GET /v1/me/stats: watcher sayısı + 24s tarama (ADR-049)", async () => {
+    const env: Env = {
+      NODE_ENV: "development",
+      PORT: 3000,
+      RATE_LIMIT_PER_MINUTE: 1000,
+      WATCH_CREATE_PER_HOUR: 1000,
+      ASSIST_PER_MINUTE: 1000,
+    };
+    const container = createContainer(env);
+    await registerMonitoringWorker({
+      queue: container.queue,
+      monitoring: container.monitoring,
+      checker: container.checker,
+    });
+    const app = createApp(container);
+    await app.request(
+      "/v1/watchers",
+      post({ rawIntent: "istatistik konusu izle", frequencyMinutes: 60 }, "u1"),
+    );
+    const res = await app.request("/v1/me/stats", { headers: bearer("u1") });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      watchers: number;
+      activeWatchers: number;
+      checks24h: number;
+    };
+    expect(body.watchers).toBe(1);
+    expect(body.activeWatchers).toBe(1);
+    expect(body.checks24h).toBeGreaterThanOrEqual(1); // anında ilk kontrol koştu
+  });
+
   it("destek akışı: talep aç → admin listeler/yanıtlar → sahip görür; yabancı 404", async () => {
     const app = makeApp("admin1");
     // kullanıcı canlı talep açar

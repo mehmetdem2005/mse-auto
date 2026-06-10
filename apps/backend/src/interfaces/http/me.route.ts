@@ -20,6 +20,44 @@ export function meRoutes(container: Container): OpenAPIHono<{ Variables: AuthVar
     async (c) => c.json(await getMe(container, c.get("userId"), c.get("email")), 200),
   );
 
+  // Akış üst kartları için kullanıcı istatistikleri (ADR-049 — maket: "Tarama 24s").
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/stats",
+      tags: ["me"],
+      summary: "Kullanıcı istatistikleri (watcher sayısı + son 24 saat tarama)",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                watchers: z.number().int(),
+                activeWatchers: z.number().int(),
+                checks24h: z.number().int(),
+              }),
+            },
+          },
+          description: "İstatistik",
+        },
+      },
+    }),
+    async (c) => {
+      const watches = await container.watches.listByUser(c.get("userId"));
+      const topicIds = [...new Set(watches.map((w) => w.canonicalTopicId))];
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const checks24h = await container.monitoring.countCheckRunsSince(topicIds, since);
+      return c.json(
+        {
+          watchers: watches.length,
+          activeWatchers: watches.filter((w) => w.status === "active").length,
+          checks24h,
+        },
+        200,
+      );
+    },
+  );
+
   app.openapi(
     createRoute({
       method: "delete",

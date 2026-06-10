@@ -17,6 +17,12 @@ export interface Watch {
   frequencyMinutes: number;
   status: "active" | "paused";
   createdAt: string;
+  authorityDomain?: string | null;
+}
+export interface MeStats {
+  watchers: number;
+  activeWatchers: number;
+  checks24h: number;
 }
 export interface SubscriptionDetail {
   interval: BillingInterval;
@@ -233,6 +239,7 @@ async function req<T>(path: string, init?: ReqInit): Promise<T> {
 
 export const api = {
   me: () => req<Me>("/v1/me"),
+  meStats: () => req<MeStats>("/v1/me/stats"),
   watchers: () => req<Watch[]>("/v1/watchers"),
   createWatcher: (rawIntent: string, frequencyMinutes: number) =>
     req<Watch>("/v1/watchers", {
