@@ -8,11 +8,13 @@ import { InMemoryStore } from "../src/infrastructure/in-memory/store";
 import { InMemorySubscriptionRepository } from "../src/infrastructure/in-memory/subscription.repo";
 import { InMemoryCanonicalTopicRepository } from "../src/infrastructure/in-memory/topic.repo";
 import { InMemoryWatchRepository } from "../src/infrastructure/in-memory/watch.repo";
+import { InMemoryJobQueue } from "../src/infrastructure/queue/in-memory.queue";
 
 function deps() {
   const store = new InMemoryStore();
   return {
     store,
+    queue: new InMemoryJobQueue(),
     topics: new InMemoryCanonicalTopicRepository(store),
     watches: new InMemoryWatchRepository(store),
     subscriptions: new InMemorySubscriptionRepository(store),

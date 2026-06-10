@@ -4,12 +4,15 @@ import { canonicalize } from "../domain/canonicalize";
 import { PlanLimitError } from "../domain/errors";
 import { limitsFor } from "../domain/plan";
 import type { CanonicalTopicRepository, WatchRepository } from "../domain/ports";
+import type { JobQueue } from "../domain/queue";
 import type { SubscriptionRepository } from "../domain/subscription";
+import { CHECK_QUEUE, type TopicCheckJob } from "./scheduler";
 
 export interface CreateWatcherDeps {
   watches: WatchRepository;
   topics: CanonicalTopicRepository;
   subscriptions: SubscriptionRepository;
+  queue: JobQueue;
 }
 
 /** Plan limiti uygula → kanonikleştir → dedup → watch → DTO. */
@@ -39,6 +42,17 @@ export async function createWatcher(
   const { canonicalQuery, archetype } = canonicalize(input.rawIntent);
   const existing = await deps.topics.findByCanonicalQuery(canonicalQuery);
   const topic = existing ?? (await deps.topics.create({ canonicalQuery }));
+
+  // İlk arama hemen başlar (ADR-041): YENİ topic anında kuyruğa alınır —
+  // kontrol şimdi koşar, markTopicChecked ile periyot bu andan sayılır.
+  // Mevcut (paylaşılan) topic zaten rotasyondadır; çift kontrol üretme.
+  if (!existing) {
+    await deps.queue.enqueue<TopicCheckJob>(CHECK_QUEUE, {
+      topicId: topic.id,
+      canonicalQuery: topic.canonicalQuery,
+      lastCheckedAt: topic.lastCheckedAt,
+    });
+  }
 
   const watch = await deps.watches.create({
     userId,

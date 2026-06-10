@@ -494,3 +494,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P2 ✓ (port→impl→route) · P5 ✓ (≥44pt, etiketli butonlar, yıkıcı eylem onaylı) · P6 ✓ (sahiplik: yatay yetki kaçağı yok — 404) · P8 ✓ · P9 ✓.
 - **ISO:** 27001/27002 (erişim kontrolü: nesne-düzeyi yetkilendirme, varlık gizleme 404) · 25010 *Functional Suitability* + *Security* · 9241 (yıkıcı eylemde onay diyaloğu; durum görünür).
 - **Değerlendirilen alternatifler:** silme yerine arşivleme (şimdilik kapsam dışı; duraklatma zaten geri-dönüşlü yol → kalıcı silme + onay seçildi) · admin endpoint'lerini kullanıcıya açmak (yetki modeli karışır → ayrı kullanıcı-kapsamlı route).
+
+## ADR-041 — Anında ilk kontrol: watcher kurulur kurulmaz arama başlar
+- **Durum:** Kabul · TOGAF Phase C (Application) — ürün sahibi: "alarmı kurar kurmaz varsayılan olarak o saniye arama başlasın, ordan periyot başlasın".
+- **Bağlam:** Yeni topic ilk kontrolünü zamanlayıcının bir sonraki turunda (≤60 sn, Render cron'da daha geç olabilir) alıyordu; kullanıcı kurulum anında sonuç görmüyordu.
+- **Karar:** `createWatcher` YENİ oluşturulan topic'i anında `CHECK_QUEUE`'ya alır (`CreateWatcherDeps.queue`); kontrol hemen koşar, `markTopicChecked` ile bir sonraki kontrol "şimdi + frequency"den sayılır → **periyot kurulum anından başlar**. Mevcut (paylaşılan) topic yeniden kullanılıyorsa kuyruğa alınmaz — zaten rotasyonda, geçmişi timeline'da anında görünür; çift kontrol/maliyet üretilmez.
+- **Sonuçlar:** Kullanıcı watcher'ı açar açmaz ilk araştırmayı (arama dökümü + model kararı, ADR-036/038) saniyeler içinde görür. Ödün: zamanlayıcı turu ile nadir yarış → en kötü bir erken çift kontrol; tekrar-bastırma (ADR-037) çift bildirimi zaten engeller. Doğrulama: uçtan uca test (worker kayıtlı konteyner: POST /watchers → timeline'da ≥1 kontrol) + 4 test dosyasının deps'ine queue eklendi — toplam 70 test.
+- **P1–P9:** P2 ✓ (application katmanında, route'a sızmadı) · P3 ✓ (paylaşılan topic'te çift iş yok) · P8 ✓ (25010 *Time Behaviour* — ilk değer süresi dakikalardan saniyelere) · P9 ✓.
+- **ISO:** 25010 *Performance Efficiency / Time Behaviour* + *Functional Suitability* (anında geri bildirim) · 9241 (sistem durumu görünürlüğü: kurulumdan hemen sonra kanıt) · 29148 (istek ölçülebilir davranışa çevrildi: enqueue-on-create).
+- **Değerlendirilen alternatifler:** route'ta senkron kontrol bekletmek (oluşturma isteği LLM+arama süresince bloklanır, timeout riski → reddedildi; kuyruk asenkron) · zamanlayıcı aralığını kısaltmak (tüm sisteme maliyet; hedefe özgü değil → reddedildi).

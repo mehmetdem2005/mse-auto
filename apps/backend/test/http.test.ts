@@ -1,5 +1,6 @@
 import type { Me, Subscription, Watch } from "@watcher/contracts";
 import { describe, expect, it } from "vitest";
+import { registerMonitoringWorker } from "../src/application/monitoring-worker";
 import { createContainer } from "../src/config/container";
 import type { Env } from "../src/config/env";
 import { createApp } from "../src/interfaces/http/app";
@@ -155,6 +156,34 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(sb.ready).toBe(true);
     expect(sb.intent).toBeTruthy();
     expect(sb.frequencyMinutes).toBeGreaterThan(0);
+  });
+
+  it("watcher oluşturulunca ilk kontrol ANINDA koşar (kuyruk auto-pump)", async () => {
+    // Worker kayıtlı tam kurulum: enqueue → in-memory auto-pump → StubChecker koşar.
+    const env: Env = {
+      NODE_ENV: "development",
+      PORT: 3000,
+      RATE_LIMIT_PER_MINUTE: 1000,
+      WATCH_CREATE_PER_HOUR: 1000,
+      ASSIST_PER_MINUTE: 1000,
+    };
+    const container = createContainer(env);
+    await registerMonitoringWorker({
+      queue: container.queue,
+      monitoring: container.monitoring,
+      checker: container.checker,
+    });
+    const app = createApp(container);
+    const res = await app.request(
+      "/v1/watchers",
+      post({ rawIntent: "yeni bir konuyu izle hemen", frequencyMinutes: 60 }, "u1"),
+    );
+    expect(res.status).toBe(201);
+    const w = (await res.json()) as Watch;
+    const tl = await app.request(`/v1/watchers/${w.id}/timeline`, { headers: bearer("u1") });
+    expect(tl.status).toBe(200);
+    const body = (await tl.json()) as { checkRuns: unknown[] };
+    expect(body.checkRuns.length).toBeGreaterThanOrEqual(1);
   });
 
   it("watcher duraklat/sürdür + sil: sahip 200; başkası 404; limit dolarken sürdür 403", async () => {
