@@ -21,6 +21,7 @@ function seed() {
       frequencyMinutes: 60,
       status: "active",
       createdAt: now,
+      sourcePref: "news" as const,
     },
     {
       id: "w-personal",
@@ -31,6 +32,7 @@ function seed() {
       frequencyMinutes: 60,
       status: "active",
       createdAt: now,
+      sourcePref: "auto" as const,
     },
   );
   store.deviceTokens.push(
@@ -89,6 +91,28 @@ describe("resmî kaynak çözümü + cache (ADR-046)", () => {
     await runTopicCheck({ checker: capturing, monitoring, topics, authority }, topic);
     expect(resolveCalls).toBe(1); // konu başına TEK çözüm (cache)
     expect(seenDomains).toEqual(["kurum.gov.tr", "kurum.gov.tr"]);
+  });
+});
+
+describe("kaynak tercihi çoğunluğu (ADR-050)", () => {
+  it("abonelerin auto-dışı çoğunluk tercihi checker ctx'ine gider", async () => {
+    const store = seed(); // w-shared: news, w-personal: auto → çoğunluk news
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const seen: (string | null | undefined)[] = [];
+    const capturing: Checker = {
+      async check(_t, ctx) {
+        seen.push(ctx?.sourcePref);
+        return {
+          detected: false,
+          description: null,
+          resultSummary: "x",
+          reasoning: "r",
+          confidence: 0.5,
+        };
+      },
+    };
+    await runTopicCheck({ checker: capturing, monitoring }, topic);
+    expect(seen[0]).toBe("news");
   });
 });
 

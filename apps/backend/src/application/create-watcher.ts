@@ -62,6 +62,7 @@ export async function createWatcher(
     frequencyMinutes: input.frequencyMinutes,
     status: "active",
     createdAt: new Date().toISOString(),
+    sourcePref: input.sourcePref ?? "auto",
   });
 
   return {
@@ -71,5 +72,6 @@ export async function createWatcher(
     frequencyMinutes: watch.frequencyMinutes,
     status: watch.status,
     createdAt: watch.createdAt,
+    sourcePref: watch.sourcePref,
   };
 }

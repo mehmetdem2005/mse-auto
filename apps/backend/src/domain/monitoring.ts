@@ -6,6 +6,7 @@ export interface Subscriber {
   userId: string;
   watchId: string;
   archetype: WatchArchetype;
+  sourcePref: "auto" | "news" | "official" | "web";
 }
 
 export interface PendingDelivery {

@@ -4,7 +4,7 @@ import { Badge, Btn } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, Crown, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
+import { BellRing, Crown, FileText, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
 function money(cents: number, currency = "usd"): string {
@@ -202,6 +202,23 @@ export default function SubscriptionScreen() {
           </View>
         </EnterItem>
       )}
+      {/* Fatura geçmişi (maket) — gerçek fatura oluştukça burada listelenir */}
+      <EnterItem index={2} className="mt-4">
+        <View className="bg-panel border border-line rounded-2xl p-5">
+          <View className="flex-row items-center justify-between mb-2">
+            <Text className="text-muted text-[10px] tracking-widest uppercase">fatura geçmişi</Text>
+          </View>
+          <View className="items-center py-6">
+            <View className="w-11 h-11 rounded-full bg-panel2 items-center justify-center mb-3">
+              <FileText size={18} color="#475569" />
+            </View>
+            <Text className="text-text text-sm font-medium">Henüz fatura yok</Text>
+            <Text className="text-muted text-xs text-center mt-1">
+              Ödeme entegrasyonu açıldığında faturaların burada listelenecek ve indirilebilecek.
+            </Text>
+          </View>
+        </View>
+      </EnterItem>
     </ScrollView>
   );
 }

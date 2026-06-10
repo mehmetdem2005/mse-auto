@@ -78,11 +78,16 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
   async listActiveSubscribers(topicId: string): Promise<Subscriber[]> {
     const { data, error } = await this.db
       .from("watches")
-      .select("id, user_id, archetype")
+      .select("id, user_id, archetype, source_pref")
       .eq("canonical_topic_id", topicId)
       .eq("status", "active");
     if (error) throw new Error(`listActiveSubscribers: ${error.message}`);
-    return (data ?? []).map((r) => ({ userId: r.user_id, watchId: r.id, archetype: r.archetype }));
+    return (data ?? []).map((r) => ({
+      userId: r.user_id,
+      watchId: r.id,
+      archetype: r.archetype,
+      sourcePref: r.source_pref,
+    }));
   }
 
   async createPendingDeliveries(eventId: string, subscribers: Subscriber[]): Promise<number> {

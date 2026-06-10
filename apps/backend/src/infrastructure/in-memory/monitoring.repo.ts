@@ -77,7 +77,12 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
   async listActiveSubscribers(topicId: string): Promise<Subscriber[]> {
     return this.store.watches
       .filter((w) => w.canonicalTopicId === topicId && w.status === "active")
-      .map((w) => ({ userId: w.userId, watchId: w.id, archetype: w.archetype }));
+      .map((w) => ({
+        userId: w.userId,
+        watchId: w.id,
+        archetype: w.archetype,
+        sourcePref: w.sourcePref,
+      }));
   }
 
   async createPendingDeliveries(eventId: string, subscribers: Subscriber[]): Promise<number> {

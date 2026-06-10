@@ -51,6 +51,7 @@ export interface Database {
           frequency_minutes: number;
           status: "active" | "paused";
           created_at: string;
+          source_pref: "auto" | "news" | "official" | "web";
         };
         Insert: {
           user_id: string;
@@ -61,12 +62,14 @@ export interface Database {
           id?: string;
           status?: "active" | "paused";
           created_at?: string;
+          source_pref?: "auto" | "news" | "official" | "web";
         };
         Update: {
           raw_intent?: string;
           archetype?: "shared" | "personal";
           frequency_minutes?: number;
           status?: "active" | "paused";
+          source_pref?: "auto" | "news" | "official" | "web";
         };
         Relationships: [];
       };

@@ -52,9 +52,30 @@ export async function runTopicCheck(
     }
   }
 
+  // Kaynak tercihi (ADR-050): konunun aktif abonelerinin çoğunluk tercihi
+  // ('auto' sayılmaz) arama sırasını belirler.
+  let sourcePref: "news" | "official" | "web" | null = null;
+  try {
+    const subs = await deps.monitoring.listActiveSubscribers(topic.id);
+    const counts = new Map<string, number>();
+    for (const sub of subs) {
+      if (sub.sourcePref !== "auto") {
+        counts.set(sub.sourcePref, (counts.get(sub.sourcePref) ?? 0) + 1);
+      }
+    }
+    const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+    sourcePref = (top?.[0] as "news" | "official" | "web") ?? null;
+  } catch {
+    sourcePref = null;
+  }
+
   let outcome: CheckOutcome;
   try {
-    outcome = await deps.checker.check(topic, { lastEventDescription, authorityDomain });
+    outcome = await deps.checker.check(topic, {
+      lastEventDescription,
+      authorityDomain,
+      sourcePref,
+    });
   } catch (err) {
     // Checker hatası (örn. arama/LLM kotası): topic'i sonsuz "due" döngüsünde
     // bırakmamak için başarısız bir CheckRun kaydet + checked işaretle.

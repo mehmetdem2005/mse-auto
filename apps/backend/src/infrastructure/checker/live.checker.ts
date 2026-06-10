@@ -36,11 +36,16 @@ export class LiveChecker implements Checker {
             },
           ]
         : [];
-    const hits = [
-      ...liveHit,
-      ...official.slice(0, 4).map((h) => ({ ...h, title: `[RESMÎ] ${h.title}` })),
-      ...news,
-    ].filter((h) => {
+    // ADR-050: kaynak tercihi sıralamayı değiştirir (varsayılan: canlı > resmî > haber).
+    const officialTagged = official.slice(0, 4).map((h) => ({ ...h, title: `[RESMÎ] ${h.title}` }));
+    const pref = ctx?.sourcePref ?? null;
+    const ordered =
+      pref === "news"
+        ? [...news, ...liveHit, ...officialTagged]
+        : pref === "web"
+          ? [...liveHit, ...news, ...officialTagged] // web: genel yedek zaten devrede; haber öne
+          : [...liveHit, ...officialTagged, ...news]; // auto/official: resmî öncelik
+    const hits = ordered.filter((h) => {
       if (seen.has(h.url)) return false;
       seen.add(h.url);
       return true;

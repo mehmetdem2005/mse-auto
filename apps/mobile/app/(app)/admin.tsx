@@ -349,14 +349,36 @@ function StatsBody({
 }): ReactNode {
   const { points, totals } = data;
   const rate = totals.checkRuns > 0 ? Math.round((totals.detections / totals.checkRuns) * 100) : 0;
+  // Delta (maket +% çipleri) — GERÇEK seriden: bugün vs dün
+  const today = points[points.length - 1];
+  const yesterday = points[points.length - 2];
+  const delta = (a?: number, b?: number): string | undefined => {
+    if (a === undefined || b === undefined) return undefined;
+    const d = a - b;
+    return d === 0 ? "dünle aynı" : d > 0 ? `dünden +${d}` : `dünden ${d}`;
+  };
 
   return (
     <View>
       {/* Toplam kartları */}
       <View className="flex-row flex-wrap gap-2.5">
-        <Stat n={totals.checkRuns} l="kontrol" tone="accent" />
-        <Stat n={totals.detections} l="tespit" tone="pos" sub={`%${rate} tespit oranı`} />
-        <Stat n={totals.deliveries} l="teslimat" />
+        <Stat
+          n={totals.checkRuns}
+          l="kontrol"
+          tone="accent"
+          sub={delta(today?.checkRuns, yesterday?.checkRuns)}
+        />
+        <Stat
+          n={totals.detections}
+          l="tespit"
+          tone="pos"
+          sub={delta(today?.detections, yesterday?.detections) ?? `%${rate} tespit oranı`}
+        />
+        <Stat
+          n={totals.deliveries}
+          l="teslimat"
+          sub={delta(today?.deliveries, yesterday?.deliveries)}
+        />
       </View>
 
       {/* Kontroller & Tespitler — bindirmeli sütun grafik */}
@@ -552,9 +574,16 @@ function UsersTab(): ReactNode {
       ListEmptyComponent={<Text className="text-muted mt-6">kullanıcı yok.</Text>}
       renderItem={({ item: u }) => (
         <View className="bg-panel border border-line rounded-xl p-4">
-          <Text className="text-text text-sm" numberOfLines={1}>
-            {u.email ?? "(e-posta yok)"}
-          </Text>
+          <View className="flex-row items-center gap-3">
+            <View className="w-9 h-9 rounded-full bg-accent/10 items-center justify-center">
+              <Text className="text-accent text-sm font-bold">
+                {(u.email ?? "?").charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text className="text-text text-sm flex-1" numberOfLines={1}>
+              {u.email ?? "(e-posta yok)"}
+            </Text>
+          </View>
           <Text className="text-muted text-xs mt-1">
             {u.plan.toUpperCase()} · {u.watchCount} watcher · {day(u.createdAt)}
             {u.isAdmin ? " · ADMIN" : ""}

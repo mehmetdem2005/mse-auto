@@ -15,6 +15,7 @@ function toDomain(row: WatchRow): Watch {
     frequencyMinutes: row.frequency_minutes,
     status: row.status,
     createdAt: row.created_at,
+    sourcePref: row.source_pref,
   };
 }
 
@@ -32,6 +33,7 @@ export class SupabaseWatchRepository implements WatchRepository {
         frequency_minutes: input.frequencyMinutes,
         status: input.status,
         created_at: input.createdAt,
+        source_pref: input.sourcePref,
       })
       .select("*")
       .single();

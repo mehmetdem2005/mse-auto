@@ -5,9 +5,17 @@ import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ChevronRight, Globe, Pause, Play, Trash2 } from "lucide-react-native";
+import {
+  ChevronRight,
+  Globe,
+  MoreVertical,
+  Pause,
+  Play,
+  Search,
+  Trash2,
+} from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, View } from "react-native";
 
 function labelFreq(m: number): string {
   if (m >= 1440) return `günde ${Math.round(m / 1440) === 1 ? "bir" : m / 1440} kez`;
@@ -23,6 +31,8 @@ export default function Watchers() {
     queryKey: qk.watchers,
     queryFn: api.watchers,
   });
+  const feed = useQuery({ queryKey: qk.feed, queryFn: api.feed });
+  const unreadWatchIds = new Set((feed.data ?? []).filter((f) => !f.readAt).map((f) => f.watchId));
 
   const invalidate = (): void => {
     void qc.invalidateQueries({ queryKey: qk.watchers });
@@ -110,6 +120,7 @@ export default function Watchers() {
             <EnterItem index={index}>
               <WatchRow
                 item={item}
+                hasAlert={unreadWatchIds.has(item.id)}
                 busy={setStatus.isPending || del.isPending}
                 onPress={() => router.push(`/watcher/${item.id}`)}
                 onToggle={() =>
@@ -131,32 +142,82 @@ export default function Watchers() {
 
 function WatchRow({
   item,
+  hasAlert,
   busy,
   onPress,
   onToggle,
   onDelete,
 }: {
   item: Watch;
+  hasAlert: boolean;
   busy: boolean;
   onPress: () => void;
   onToggle: () => void;
   onDelete: () => void;
 }) {
+  const [menu, setMenu] = useState(false);
   const active = item.status === "active";
   const cat = categoryOf(item.rawIntent);
   return (
     <Card onPress={onPress}>
-      <View className="flex-row gap-3">
+      <View className="flex-row gap-3 items-start">
         <View className={`w-10 h-10 rounded-xl ${cat.bg} items-center justify-center`}>
           <cat.Icon size={18} color={cat.tint} />
         </View>
         <Text className="text-text text-base font-medium leading-5 flex-1" numberOfLines={2}>
           {item.rawIntent}
         </Text>
+        {/* Kebab menü (maket) */}
+        <Pressable
+          onPress={() => setMenu(true)}
+          accessibilityRole="button"
+          accessibilityLabel="Watcher menüsü"
+          className="w-11 h-11 -mr-2 -mt-1 items-center justify-center rounded-full active:bg-panel2"
+        >
+          <MoreVertical size={18} color="#475569" />
+        </Pressable>
       </View>
+      <Modal transparent visible={menu} animationType="fade" onRequestClose={() => setMenu(false)}>
+        <Pressable
+          className="flex-1 bg-black/30 justify-center px-10"
+          onPress={() => setMenu(false)}
+          accessibilityLabel="Menüyü kapat"
+        >
+          <View className="bg-panel rounded-2xl overflow-hidden">
+            <MenuItem
+              Icon={Search}
+              label="Araştırmayı aç"
+              onPress={() => {
+                setMenu(false);
+                onPress();
+              }}
+            />
+            <MenuItem
+              Icon={active ? Pause : Play}
+              label={active ? "Duraklat" : "Sürdür"}
+              disabled={busy}
+              onPress={() => {
+                setMenu(false);
+                onToggle();
+              }}
+            />
+            <MenuItem
+              Icon={Trash2}
+              label="Sil"
+              tone="danger"
+              disabled={busy}
+              onPress={() => {
+                setMenu(false);
+                onDelete();
+              }}
+            />
+          </View>
+        </Pressable>
+      </Modal>
       <View className="flex-row items-center gap-2 mt-3">
-        <Badge tone={active ? "pos" : "muted"}>{active ? "aktif" : "duraklatıldı"}</Badge>
-        <Badge tone="accent">{item.archetype === "shared" ? "paylaşılan" : "kişisel"}</Badge>
+        <Badge tone={active ? "pos" : "muted"}>{active ? "Aktif" : "Duraklatıldı"}</Badge>
+        {hasAlert ? <Badge tone="neg">Uyarı</Badge> : null}
+        <Badge tone="accent">{item.archetype === "shared" ? "Paylaşılan" : "Kişisel"}</Badge>
         <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
         {item.authorityDomain ? (
           <View className="flex-row items-center gap-1">
@@ -171,36 +232,38 @@ function WatchRow({
           <ChevronRight size={14} color="#475569" />
         </View>
       </View>
-
-      {/* Duraklat/Sürdür + Sil (HIG ≥44pt; vektör ikon + metin) */}
-      <View className="flex-row gap-2 mt-3 pt-3 border-t border-line">
-        <Pressable
-          onPress={onToggle}
-          disabled={busy}
-          accessibilityRole="button"
-          accessibilityLabel={active ? "Watcher'ı duraklat" : "Watcher'ı sürdür"}
-          className={`flex-1 min-h-[44px] flex-row gap-1.5 justify-center items-center rounded-xl border border-line active:bg-panel2 ${
-            busy ? "opacity-40" : ""
-          }`}
-        >
-          {active ? <Pause size={15} color="#0F172A" /> : <Play size={15} color="#0F172A" />}
-          <Text className="text-text text-[13px] font-semibold">
-            {active ? "Duraklat" : "Sürdür"}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={onDelete}
-          disabled={busy}
-          accessibilityRole="button"
-          accessibilityLabel="Watcher'ı sil"
-          className={`flex-1 min-h-[44px] flex-row gap-1.5 justify-center items-center rounded-xl border border-neg/40 active:bg-neg/5 ${
-            busy ? "opacity-40" : ""
-          }`}
-        >
-          <Trash2 size={15} color="#DC2626" />
-          <Text className="text-neg text-[13px] font-semibold">Sil</Text>
-        </Pressable>
-      </View>
     </Card>
+  );
+}
+
+function MenuItem({
+  Icon,
+  label,
+  onPress,
+  tone,
+  disabled,
+}: {
+  Icon: typeof Search;
+  label: string;
+  onPress: () => void;
+  tone?: "danger";
+  disabled?: boolean;
+}) {
+  const color = tone === "danger" ? "#DC2626" : "#0F172A";
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="menuitem"
+      accessibilityLabel={label}
+      className={`flex-row items-center gap-3 px-5 min-h-[52px] border-b border-line active:bg-panel2 ${
+        disabled ? "opacity-40" : ""
+      }`}
+    >
+      <Icon size={17} color={color} />
+      <Text className="text-[15px] font-medium" style={{ color }}>
+        {label}
+      </Text>
+    </Pressable>
   );
 }

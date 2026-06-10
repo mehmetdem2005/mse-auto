@@ -11,9 +11,13 @@ export type WatchStatus = z.infer<typeof watchStatusSchema>;
  * Watcher oluşturma girdisi. `rawIntent` doğal dildir ve PII içerebilir →
  * P1 gereği dış hatta (arama/DeepSeek) ASLA gitmez; yalnızca kanonik sorgu gider.
  */
+export const watchSourcePrefSchema = z.enum(["auto", "news", "official", "web"]);
+export type WatchSourcePref = z.infer<typeof watchSourcePrefSchema>;
+
 export const createWatchInputSchema = z.object({
   rawIntent: z.string().min(3).max(500),
   frequencyMinutes: z.number().int().min(1).max(1440),
+  sourcePref: watchSourcePrefSchema.default("auto"),
 });
 export type CreateWatchInput = z.infer<typeof createWatchInputSchema>;
 
@@ -27,6 +31,7 @@ export const watchSchema = z.object({
   createdAt: z.iso.datetime(),
   /** Konunun resmî kaynak alanı (liste görünümünde kaynak etiketi; ADR-049). */
   authorityDomain: z.string().nullable().optional(),
+  sourcePref: watchSourcePrefSchema.optional(),
 });
 export type Watch = z.infer<typeof watchSchema>;
 

@@ -10,7 +10,15 @@ import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Send } from "lucide-react-native";
+import {
+  Globe,
+  Landmark,
+  Newspaper,
+  Send,
+  ShoppingBag,
+  Sparkles,
+  Users2,
+} from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
@@ -35,6 +43,7 @@ type FilterType = "none" | "geo" | "numeric" | "keyword";
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 const STEPS = [
   { key: "intent", title: "Ne izlensin?", short: "Ne izlensin" },
+  { key: "source", title: "Kaynak tercihi", short: "Kaynak" },
   { key: "frequency", title: "Ne sıklıkla kontrol edilsin?", short: "Sıklık" },
   { key: "filter", title: "Kişisel filtre", short: "Filtre" },
   { key: "alert", title: "Nasıl haber verilsin?", short: "Bildirim" },
@@ -96,6 +105,7 @@ export default function NewWatcher() {
   const [step, setStep] = useState(0);
   const [rawIntent, setRawIntent] = useState("");
   const [freq, setFreq] = useState(60);
+  const [sourcePref, setSourcePref] = useState<"auto" | "news" | "official" | "web">("auto");
   const [err, setErr] = useState<string | null>(null);
 
   // AI sohbeti (1. adım): geçmiş + taslak + netleşmiş niyet.
@@ -225,7 +235,8 @@ export default function NewWatcher() {
   }
 
   const mutation = useMutation({
-    mutationFn: (_criterion: PersonalCriterion | null) => api.createWatcher(rawIntent.trim(), freq),
+    mutationFn: (_criterion: PersonalCriterion | null) =>
+      api.createWatcher(rawIntent.trim(), freq, sourcePref),
     onSuccess: async (watch, criterion) => {
       if (criterion) await setCriterion(watch.id, criterion);
       await setAlarmConfig(watch.id, { channel: alarmChannel, soundId });
@@ -391,7 +402,64 @@ export default function NewWatcher() {
           </View>
         ) : null}
 
-        {/* 2) Sıklık */}
+        {/* 2) Kaynak tercihi (ADR-050 — aramanın sırasını gerçekten değiştirir) */}
+        {current.key === "source" ? (
+          <>
+            <Text className="text-muted text-sm mb-3">
+              Motor hangi kaynağa öncelik versin? Otomatik: canlı resmî sayfa → resmî arama → son 24
+              saat haber.
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {(
+                [
+                  ["auto", "Otomatik", Sparkles, "Önerilen"],
+                  ["official", "Resmî Açıklama", Landmark, "Kurum sitesi önce"],
+                  ["news", "Haberler", Newspaper, "Son 24 saat önce"],
+                  ["web", "Web", Globe, "Genel arama"],
+                ] as const
+              ).map(([v, l, Icon, d]) => {
+                const sel = sourcePref === v;
+                return (
+                  <Pressable
+                    key={v}
+                    onPress={() => setSourcePref(v)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={`${l} — ${d}`}
+                    className={`w-[47%] rounded-xl border px-3 py-3 min-h-[72px] ${
+                      sel ? "border-accent bg-accent/10" : "border-line bg-panel"
+                    }`}
+                  >
+                    <Icon size={18} color={sel ? "#6366F1" : "#475569"} />
+                    <Text
+                      className={`text-sm font-semibold mt-1.5 ${sel ? "text-accent" : "text-text"}`}
+                    >
+                      {l}
+                    </Text>
+                    <Text className="text-muted text-[10px] mt-0.5">{d}</Text>
+                  </Pressable>
+                );
+              })}
+              {(
+                [
+                  ["Sosyal Medya", Users2],
+                  ["Fiyat/Ürün", ShoppingBag],
+                ] as const
+              ).map(([l, Icon]) => (
+                <View
+                  key={l}
+                  className="w-[47%] rounded-xl border border-line bg-panel px-3 py-3 min-h-[72px] opacity-45"
+                >
+                  <Icon size={18} color="#94A3B8" />
+                  <Text className="text-text text-sm font-semibold mt-1.5">{l}</Text>
+                  <Text className="text-muted text-[10px] mt-0.5">yakında</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
+
+        {/* 3) Sıklık */}
         {current.key === "frequency" ? (
           <>
             <Text className="text-muted text-sm mb-3">
@@ -458,13 +526,13 @@ export default function NewWatcher() {
                     className={chip(filterType === v)}
                     accessibilityRole="button"
                   >
-                    <Text className={txt}>{locked ? `${l} 🔒` : l}</Text>
+                    <Text className={txt}>{locked ? `${l} (Pro)` : l}</Text>
                   </Pressable>
                 );
               })}
             </View>
             {!canPersonal ? (
-              <Text className="text-muted text-[11px] mb-3">🔒 Kişisel filtre Pro planında.</Text>
+              <Text className="text-muted text-[11px] mb-3">Kişisel filtre Pro planında.</Text>
             ) : null}
 
             {filterType === "geo" ? (
@@ -533,16 +601,30 @@ export default function NewWatcher() {
                     className={chip(alarmChannel === v)}
                     accessibilityRole="button"
                   >
-                    <Text className={txt}>{locked ? `${ALERT_LABEL[v]} 🔒` : ALERT_LABEL[v]}</Text>
+                    <Text className={txt}>
+                      {locked ? `${ALERT_LABEL[v]} (Pro)` : ALERT_LABEL[v]}
+                    </Text>
                   </Pressable>
                 );
               })}
             </View>
             {!canAlarm ? (
               <Text className="text-muted text-[11px] mb-3">
-                🔒 Alarm ve özel sesler Pro planında.
+                Alarm ve özel sesler Pro planında.
               </Text>
             ) : null}
+            {/* Maket: ek bildirim yöntemleri — entegrasyon hazır olana dek 'yakında' */}
+            <View className="mt-3 border border-line rounded-xl overflow-hidden">
+              {(["E-posta", "WhatsApp", "Telegram"] as const).map((ch) => (
+                <View
+                  key={ch}
+                  className="flex-row items-center justify-between px-4 py-3 border-b border-line opacity-50"
+                >
+                  <Text className="text-text text-sm">{ch}</Text>
+                  <Text className="text-muted text-[10px] font-semibold uppercase">yakında</Text>
+                </View>
+              ))}
+            </View>
             {alarmChannel === "alarm" ? (
               <View className="mt-1">
                 <View className="flex-row flex-wrap gap-2 mb-2">
@@ -579,15 +661,15 @@ export default function NewWatcher() {
                         accessibilityRole="button"
                       >
                         <Text className={cls}>
-                          {sel ? "✓ " : ""}
-                          {locked ? `${s.name} 🔒` : s.name}
+                          {sel ? "• " : ""}
+                          {locked ? `${s.name} (Pro)` : s.name}
                         </Text>
                       </Pressable>
                     );
                   })}
                 </View>
                 {!canAllSounds ? (
-                  <Text className="text-muted text-[10px] mt-1">🔒 Tüm sesler Pro planında.</Text>
+                  <Text className="text-muted text-[10px] mt-1">Tüm sesler Pro planında.</Text>
                 ) : null}
                 <Text className="text-muted text-[10px] mt-2">
                   Önizleme/çalma EAS derlemesinde. 100 ses assets/sounds içinde.
@@ -601,6 +683,14 @@ export default function NewWatcher() {
         {current.key === "review" ? (
           <Card>
             <ReviewRow label="ne izlensin" value={rawIntent.trim() || "—"} />
+            <ReviewRow
+              label="kaynak"
+              value={
+                { auto: "Otomatik", official: "Resmî Açıklama", news: "Haberler", web: "Web" }[
+                  sourcePref
+                ]
+              }
+            />
             <ReviewRow label="sıklık" value={labelFreq(freq)} />
             <ReviewRow label="kişisel filtre" value={filterSummary()} />
             <ReviewRow label="uyarı" value={ALERT_LABEL[alarmChannel]} last />

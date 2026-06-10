@@ -81,6 +81,19 @@ describe("LiveChecker orkestrasyonu (ADR-046/047/048)", () => {
     expect(seen[0]?.hits).toEqual([]); // yedek patladı → boş, ama akış sürdü
   });
 
+  it("sourcePref=news → haber sonuçları RESMÎ'den önce gelir (ADR-050)", async () => {
+    const { reasoner, seen } = spyReasoner();
+    const c = new LiveChecker(provider({ site: [hit("o1")], news: [hit("n1")] }), reasoner);
+    await c.check(topic, {
+      lastEventDescription: null,
+      authorityDomain: "kurum.gov.tr",
+      sourcePref: "news",
+    });
+    const titles = seen[0]?.hits.map((h) => h.title) ?? [];
+    expect(titles[0]).toBe("n1"); // haber önce
+    expect(titles).toContain("[RESMÎ] o1");
+  });
+
   it("lastEventDescription muhakemeye iletilir (tekrar-bastırma)", async () => {
     const { reasoner, seen } = spyReasoner();
     const c = new LiveChecker(provider({ general: [hit("g")] }), reasoner);

@@ -20,6 +20,8 @@ export interface CheckContext {
   lastEventDescription: string | null;
   /** Konunun resmî kaynak alan adı (ADR-046) — varsa önce orada aranır. */
   authorityDomain?: string | null;
+  /** Abonelerin çoğunluk kaynak tercihi (ADR-050) — arama sırasını değiştirir. */
+  sourcePref?: "news" | "official" | "web" | null;
 }
 
 /** Checker port'u — arama + muhakeme; ctx verilirse yalnız YENİ gelişme tespit sayılır. */

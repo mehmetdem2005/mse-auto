@@ -241,10 +241,14 @@ export const api = {
   me: () => req<Me>("/v1/me"),
   meStats: () => req<MeStats>("/v1/me/stats"),
   watchers: () => req<Watch[]>("/v1/watchers"),
-  createWatcher: (rawIntent: string, frequencyMinutes: number) =>
+  createWatcher: (
+    rawIntent: string,
+    frequencyMinutes: number,
+    sourcePref: "auto" | "news" | "official" | "web" = "auto",
+  ) =>
     req<Watch>("/v1/watchers", {
       method: "POST",
-      body: JSON.stringify({ rawIntent, frequencyMinutes }),
+      body: JSON.stringify({ rawIntent, frequencyMinutes, sourcePref }),
     }),
   subscription: () => req<Subscription>("/v1/subscription"),
   plans: () => req<Plans>("/v1/plans"),
