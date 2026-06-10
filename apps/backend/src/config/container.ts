@@ -85,6 +85,22 @@ export interface Container {
   payment: PaymentGateway;
   logger: Logger;
   rateLimit: { global: RateLimiter; createWatch: RateLimiter; assist: RateLimiter };
+  /** Env'den türetilen GERÇEK servis yapılandırma durumu (admin sistem görünümü). */
+  serviceHealth: { name: string; ok: boolean }[];
+}
+
+/** Hangi backing servislerin yapılandırıldığı — uydurma sağlık değil, gerçek config. */
+function buildServiceHealth(env: Env): { name: string; ok: boolean }[] {
+  return [
+    { name: "Veritabanı (Supabase)", ok: !!(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) },
+    { name: "Arama (Serper/Tavily)", ok: !!(env.SERPER_API_KEY || env.TAVILY_API_KEY) },
+    { name: "Yapay zekâ (Groq/DeepSeek)", ok: !!(env.GROQ_API_KEY || env.DEEPSEEK_API_KEY) },
+    {
+      name: "Bildirim (FCM)",
+      ok: !!(env.FCM_PROJECT_ID && env.GOOGLE_SERVICE_ACCOUNT_JSON),
+    },
+    { name: "Ödeme (Stripe)", ok: !!env.STRIPE_SECRET_KEY },
+  ];
 }
 
 function buildChecker(env: Env): Checker {
@@ -166,6 +182,7 @@ export function createContainer(env: Env): Container {
     createWatch: new InMemoryRateLimiter(env.WATCH_CREATE_PER_HOUR, 3_600_000),
     assist: new InMemoryRateLimiter(env.ASSIST_PER_MINUTE, 60_000),
   };
+  const serviceHealth = buildServiceHealth(env);
 
   if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
     const db = createSupabaseAdminClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
@@ -189,6 +206,7 @@ export function createContainer(env: Env): Container {
       payment,
       logger,
       rateLimit,
+      serviceHealth,
     };
   }
 
@@ -213,5 +231,6 @@ export function createContainer(env: Env): Container {
     payment,
     logger,
     rateLimit,
+    serviceHealth,
   };
 }

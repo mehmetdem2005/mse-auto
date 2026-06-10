@@ -27,7 +27,7 @@ export default function Login() {
         <View className="flex-row items-center gap-3 mb-8">
           <View className="w-3 h-3 rounded-full bg-accent" />
           <View>
-            <Text className="text-text text-lg font-bold tracking-widest">WATCHER</Text>
+            <Text className="text-text text-lg font-bold tracking-widest">WHENLY</Text>
             <Text className="text-muted text-[10px] tracking-[3px] uppercase">akıllı izleyici</Text>
           </View>
         </View>

@@ -4,7 +4,7 @@ import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ThumbsDown, ThumbsUp } from "lucide-react-native";
+import { BellRing, Eye, Inbox, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
@@ -60,10 +60,12 @@ function groupFeed(list: FeedItem[]): FeedGroup[] {
 export default function Feed() {
   const router = useRouter();
   const qc = useQueryClient();
+  const [filter, setFilter] = useState<"all" | "unread">("all");
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: qk.feed,
     queryFn: api.feed,
   });
+  const watchers = useQuery({ queryKey: qk.watchers, queryFn: api.watchers });
 
   /** Cache'i optimistik yamala (okundu damgala) — refetch beklemeden. */
   function patch(fn: (it: FeedItem) => FeedItem) {
@@ -115,7 +117,12 @@ export default function Feed() {
 
   const list = data ?? [];
   const unread = list.filter((it) => !it.readAt).length;
-  const groups = groupFeed(list);
+  const today = new Date().toDateString();
+  const detectionsToday = list.filter(
+    (it) => new Date(it.detectedAt).toDateString() === today,
+  ).length;
+  const allGroups = groupFeed(list);
+  const groups = filter === "unread" ? allGroups.filter((g) => g.unreadIds.length > 0) : allGroups;
 
   return (
     <View className="flex-1 bg-ink">
@@ -128,20 +135,59 @@ export default function Feed() {
         ItemSeparatorComponent={() => <View className="h-3" />}
         ListHeaderComponent={
           list.length > 0 ? (
-            <View className="flex-row items-center mb-3">
-              <Text className="text-muted text-[11px] uppercase tracking-widest">
-                {unread > 0 ? `${unread} yeni tespit` : "tümü okundu"}
-              </Text>
-              {unread > 0 ? (
-                <Pressable
-                  onPress={() => markAll.mutate()}
-                  className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
-                  accessibilityRole="button"
-                  accessibilityLabel="Tüm tespitleri okundu yap"
-                >
-                  <Text className="text-accent text-xs font-semibold">tümünü okundu yap</Text>
-                </Pressable>
-              ) : null}
+            <View>
+              {/* Özet kartları (gerçek veriden) */}
+              <View className="flex-row gap-2 mb-3">
+                <MiniStat
+                  Icon={Eye}
+                  n={watchers.data?.length ?? 0}
+                  label="watcher"
+                  tint="#6366F1"
+                />
+                <MiniStat Icon={Inbox} n={detectionsToday} label="bugün tespit" tint="#16A34A" />
+                <MiniStat Icon={BellRing} n={unread} label="okunmamış" tint="#D97706" />
+              </View>
+              {/* Filtre çipleri */}
+              <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
+                {(
+                  [
+                    ["all", "Tümü"],
+                    ["unread", "Okunmamış"],
+                  ] as const
+                ).map(([v, l]) => (
+                  <Pressable
+                    key={v}
+                    onPress={() => setFilter(v)}
+                    accessibilityRole="tab"
+                    accessibilityState={{ selected: filter === v }}
+                    className={`rounded-full px-4 py-2 min-h-[36px] ${
+                      filter === v ? "bg-accent" : "bg-panel border border-line"
+                    }`}
+                  >
+                    <Text
+                      className="text-xs font-semibold"
+                      style={{ color: filter === v ? "#FFFFFF" : "#475569" }}
+                    >
+                      {l}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View className="flex-row items-center mb-3">
+                <Text className="text-muted text-[11px] uppercase tracking-widest">
+                  {unread > 0 ? `${unread} yeni tespit` : "tümü okundu"}
+                </Text>
+                {unread > 0 ? (
+                  <Pressable
+                    onPress={() => markAll.mutate()}
+                    className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
+                    accessibilityRole="button"
+                    accessibilityLabel="Tüm tespitleri okundu yap"
+                  >
+                    <Text className="text-accent text-xs font-semibold">tümünü okundu yap</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             </View>
           ) : null
         }
@@ -251,5 +297,22 @@ function Vote({
         <ThumbsDown size={18} color="#475569" />
       )}
     </Pressable>
+  );
+}
+
+function MiniStat({
+  Icon,
+  n,
+  label,
+  tint,
+}: { Icon: typeof Eye; n: number; label: string; tint: string }) {
+  return (
+    <View className="flex-1 bg-panel border border-line rounded-xl px-3 py-2.5">
+      <View className="flex-row items-center gap-1.5">
+        <Icon size={13} color={tint} />
+        <Text className="text-text text-base font-bold">{n}</Text>
+      </View>
+      <Text className="text-muted text-[10px] mt-0.5">{label}</Text>
+    </View>
   );
 }

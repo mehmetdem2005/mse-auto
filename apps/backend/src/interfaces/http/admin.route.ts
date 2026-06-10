@@ -399,7 +399,11 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
         },
       },
     }),
-    async (c) => c.json(await container.adminConsole.getSystem(), 200),
+    async (c) =>
+      c.json(
+        { ...(await container.adminConsole.getSystem()), services: container.serviceHealth },
+        200,
+      ),
   );
 
   return app;

@@ -23,6 +23,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 
 type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "support" | "system";
 const TABS: { id: Tab; label: string }[] = [
@@ -184,6 +185,18 @@ function AnalyticsTab(): ReactNode {
           {money(s.mrrCents * 12)} / yıl · {s.subscriptionsByInterval.month} aylık ·{" "}
           {s.subscriptionsByInterval.year} yıllık
         </Text>
+      </View>
+
+      {/* Plan dağılımı — gerçek free/pro sayılarından donut */}
+      <View className="bg-panel border border-line rounded-xl p-4 mt-3">
+        <Text className="text-muted text-[10px] uppercase tracking-widest mb-3">plan dağılımı</Text>
+        <View className="flex-row items-center gap-5">
+          <Donut pro={s.proUsers} free={s.freeUsers} />
+          <View className="gap-2">
+            <LegendRow color="#6366F1" label={`Pro · ${s.proUsers}`} />
+            <LegendRow color="#E2E8F0" label={`Ücretsiz · ${s.freeUsers}`} />
+          </View>
+        </View>
       </View>
 
       <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
@@ -820,6 +833,54 @@ function SubsTab(): ReactNode {
   );
 }
 
+/** Plan dağılımı donut'u — react-native-svg, gerçek sayılarla. */
+function Donut({ pro, free }: { pro: number; free: number }): ReactNode {
+  const total = Math.max(1, pro + free);
+  const size = 92;
+  const stroke = 14;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const proLen = (pro / total) * c;
+  return (
+    <View accessibilityLabel={`Plan dağılımı: ${pro} pro, ${free} ücretsiz`}>
+      <Svg width={size} height={size}>
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke="#E2E8F0"
+          strokeWidth={stroke}
+          fill="none"
+        />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          stroke="#6366F1"
+          strokeWidth={stroke}
+          fill="none"
+          strokeDasharray={`${proLen} ${c - proLen}`}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </Svg>
+      <View className="absolute inset-0 items-center justify-center">
+        <Text className="text-text text-sm font-bold">%{Math.round((pro / total) * 100)}</Text>
+        <Text className="text-muted text-[9px]">pro</Text>
+      </View>
+    </View>
+  );
+}
+
+function LegendRow({ color, label }: { color: string; label: string }): ReactNode {
+  return (
+    <View className="flex-row items-center gap-2">
+      <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: color }} />
+      <Text className="text-text text-xs">{label}</Text>
+    </View>
+  );
+}
+
 // ----------------------------- Sistem -----------------------------
 
 function Stat({
@@ -867,6 +928,28 @@ function SystemTab(): ReactNode {
         <Stat n={s.counts.subscriptions} l="abonelik" />
         <Stat n={s.counts.deliveries} l="teslimat" />
         <Stat n={s.counts.checkRuns} l="kontrol" tone="accent" />
+      </View>
+
+      <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
+        sistem sağlığı
+      </Text>
+      <View className="bg-panel border border-line rounded-xl p-4">
+        {s.services.map((sv) => (
+          <View
+            key={sv.name}
+            className="flex-row items-center justify-between py-2 border-b border-line"
+          >
+            <Text className="text-text text-xs">{sv.name}</Text>
+            <View className={`px-2 py-1 rounded-full ${sv.ok ? "bg-pos/10" : "bg-neg/10"}`}>
+              <Text
+                className="text-[10px] font-semibold"
+                style={{ color: sv.ok ? "#16A34A" : "#DC2626" }}
+              >
+                {sv.ok ? "Sağlıklı" : "Yapılandırılmadı"}
+              </Text>
+            </View>
+          </View>
+        ))}
       </View>
 
       <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">

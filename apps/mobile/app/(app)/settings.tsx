@@ -72,9 +72,20 @@ export default function Settings() {
 
   return (
     <ScrollView className="flex-1 bg-ink px-5 pt-4">
-      <View className="bg-panel border border-line rounded-xl p-5 mb-4">
-        <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">hesap</Text>
-        <Text className="text-text">{session?.email ?? session?.userId ?? "—"}</Text>
+      <View className="bg-panel border border-line rounded-2xl p-5 mb-4">
+        <View className="flex-row items-center gap-3">
+          <View className="w-12 h-12 rounded-full bg-accent items-center justify-center">
+            <Text className="text-white text-lg font-bold">
+              {(session?.email ?? session?.userId ?? "?").charAt(0).toUpperCase()}
+            </Text>
+          </View>
+          <View className="flex-1">
+            <Text className="text-text text-sm font-semibold" numberOfLines={1}>
+              {session?.email ?? session?.userId ?? "—"}
+            </Text>
+            <Text className="text-muted text-xs mt-0.5">Whenly hesabın</Text>
+          </View>
+        </View>
       </View>
 
       <Pressable
@@ -121,8 +132,11 @@ export default function Settings() {
       </View>
 
       <Btn tone="ghost" onPress={signOut}>
-        <Text className="text-text text-xs uppercase tracking-wider">çıkış</Text>
+        <Text className="text-text text-[13px] font-semibold">Çıkış yap</Text>
       </Btn>
+      <Text className="text-muted text-[10px] text-center mt-6 mb-8">
+        Whenly · hesabındaki gizlilik ve veri hakların için Destek &amp; İletişim
+      </Text>
     </ScrollView>
   );
 }

@@ -14,7 +14,21 @@ import { Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-const FREQ = [60, 180, 360, 720, 1440];
+const FREQ = [15, 60, 180, 360, 720, 1440];
+/** Sıklık kartı metası: ad + açıklama (maket dili). */
+const FREQ_META: Record<number, { name: string; desc: string }> = {
+  15: { name: "15 dk", desc: "En hızlı" },
+  60: { name: "1 saat", desc: "Dengeli" },
+  180: { name: "3 saat", desc: "Normal" },
+  360: { name: "6 saat", desc: "Düşük" },
+  720: { name: "12 saat", desc: "Çok düşük" },
+  1440: { name: "Günlük", desc: "En düşük" },
+};
+const INTENT_EXAMPLES = [
+  "İzmir'de deprem olunca haber ver",
+  "iPhone 17 fiyatı düşünce haber ver",
+  "YKS sonuçları açıklanınca haber ver",
+];
 type FilterType = "none" | "geo" | "numeric" | "keyword";
 
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
@@ -252,24 +266,35 @@ export default function NewWatcher() {
 
   return (
     <View className="flex-1 bg-ink">
-      {/* İlerleme */}
-      <View className="px-5 pt-4">
-        <View className="flex-row items-center justify-between mb-2">
-          <Text className="text-muted text-[11px] uppercase tracking-widest">
-            adım {step + 1}/{STEPS.length}
-          </Text>
-          <Text className="text-muted text-[11px]">{current.title}</Text>
+      {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
+      <View
+        className="px-5 pt-4"
+        accessibilityRole="progressbar"
+        accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
+        accessibilityLabel={`Adım ${step + 1} / ${STEPS.length}: ${current.title}`}
+      >
+        <View className="flex-row items-center">
+          {STEPS.map((st, i) => (
+            <View key={st.key} className="flex-row items-center flex-1">
+              <View
+                className={`w-7 h-7 rounded-full items-center justify-center ${
+                  i < step ? "bg-accent" : i === step ? "bg-accent" : "bg-panel border border-line"
+                }`}
+              >
+                <Text
+                  className="text-[11px] font-bold"
+                  style={{ color: i <= step ? "#FFFFFF" : "#94A3B8" }}
+                >
+                  {i + 1}
+                </Text>
+              </View>
+              {i < STEPS.length - 1 ? (
+                <View className={`flex-1 h-0.5 mx-1 ${i < step ? "bg-accent" : "bg-line"}`} />
+              ) : null}
+            </View>
+          ))}
         </View>
-        <View
-          className="h-1.5 bg-line rounded-full overflow-hidden"
-          accessibilityRole="progressbar"
-          accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
-        >
-          <View
-            className="h-full bg-accent rounded-full"
-            style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-          />
-        </View>
+        <Text className="text-muted text-[11px] mt-2">{current.title}</Text>
       </View>
 
       <ScrollView
@@ -306,6 +331,25 @@ export default function NewWatcher() {
                 </Text>
               </EnterItem>
             ))}
+            {messages.length === 1 && !assist.isPending ? (
+              <View className="flex-row flex-wrap gap-2 mb-2.5">
+                {INTENT_EXAMPLES.map((ex) => (
+                  <Pressable
+                    key={ex}
+                    onPress={() => {
+                      const next: AssistMessage[] = [...messages, { role: "user", content: ex }];
+                      setMessages(next);
+                      assist.mutate(next);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Örnek: ${ex}`}
+                    className="border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] justify-center active:bg-accent/15"
+                  >
+                    <Text className="text-accent text-xs">{ex}</Text>
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
             {assist.isPending ? (
               <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
                 <ActivityIndicator size="small" color="#6366F1" />
@@ -344,18 +388,34 @@ export default function NewWatcher() {
               Daha sık kontrol daha hızlı haber demektir (ücretsiz planda en sık 60 dk).
             </Text>
             <View className="flex-row flex-wrap gap-2">
-              {FREQ.map((f) => (
-                <Pressable
-                  key={f}
-                  onPress={() => setFreq(f)}
-                  className={chip(freq === f)}
-                  accessibilityRole="button"
-                >
-                  <Text className={freq === f ? "text-accent text-sm" : "text-muted text-sm"}>
-                    {labelFreq(f)}
-                  </Text>
-                </Pressable>
-              ))}
+              {FREQ.map((f) => {
+                const meta = FREQ_META[f];
+                const locked = f < minFreq; // plan sınırı (free: 60 dk altı kilitli)
+                const sel = freq === f;
+                return (
+                  <Pressable
+                    key={f}
+                    disabled={locked}
+                    onPress={() => setFreq(f)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: sel, disabled: locked }}
+                    accessibilityLabel={`${meta?.name ?? labelFreq(f)} — ${meta?.desc ?? ""}${locked ? " (Pro planında)" : ""}`}
+                    className={`w-[31%] rounded-xl border px-3 py-3 min-h-[64px] ${
+                      sel ? "border-accent bg-accent/10" : "border-line bg-panel"
+                    } ${locked ? "opacity-45" : ""}`}
+                  >
+                    <Text className={`text-sm font-semibold ${sel ? "text-accent" : "text-text"}`}>
+                      {meta?.name ?? labelFreq(f)}
+                    </Text>
+                    <View className="flex-row items-center gap-1 mt-0.5">
+                      <Text className="text-muted text-[10px]">{meta?.desc}</Text>
+                      {locked ? (
+                        <Text className="text-accent text-[9px] font-bold">PRO</Text>
+                      ) : null}
+                    </View>
+                  </Pressable>
+                );
+              })}
             </View>
           </>
         ) : null}

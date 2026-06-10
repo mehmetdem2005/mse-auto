@@ -99,6 +99,7 @@ export interface AdminSystem {
     summary: string | null;
   }[];
   recentDeliveries: { id: string; status: string; channel: string; sentAt: string | null }[];
+  services: { name: string; ok: boolean }[];
 }
 export interface AdminStats {
   totalUsers: number;

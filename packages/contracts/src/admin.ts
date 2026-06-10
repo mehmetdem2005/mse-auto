@@ -90,6 +90,8 @@ export const adminSystemSchema = z.object({
       sentAt: z.string().nullable(),
     }),
   ),
+  /** Env'den türetilen gerçek servis yapılandırma durumu. */
+  services: z.array(z.object({ name: z.string(), ok: z.boolean() })),
 });
 export type AdminSystem = z.infer<typeof adminSystemSchema>;
 

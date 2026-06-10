@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 // M3 bottom-nav: aktif öğede pill (secondary-container) gösterge + vektör ikon.
 function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; focused: boolean }) {
@@ -48,6 +48,23 @@ export default function AppLayout() {
         headerStyle: { backgroundColor: "#FFFFFF" },
         headerTitleStyle: { color: "#0F172A", fontWeight: "700" },
         headerShadowVisible: false,
+        // Whenly markası: sol üstte W logosu (her sekmede)
+        headerLeft: () => (
+          <View
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              marginLeft: 16,
+              marginRight: 4,
+              backgroundColor: "#6366F1",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 15 }}>W</Text>
+          </View>
+        ),
         sceneStyle: { backgroundColor: "#F5F7FB" },
         tabBarStyle: {
           backgroundColor: "#FFFFFF",
