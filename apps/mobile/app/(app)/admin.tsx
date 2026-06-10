@@ -1,5 +1,6 @@
 import {
   type AdminSubscription,
+  type AdminTimeseriesPoint,
   type AdminUser,
   type AdminWatch,
   type BillingInterval,
@@ -22,9 +23,10 @@ import {
   View,
 } from "react-native";
 
-type Tab = "analytics" | "users" | "watches" | "subs" | "system";
+type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "system";
 const TABS: { id: Tab; label: string }[] = [
   { id: "analytics", label: "Analitik" },
+  { id: "stats", label: "İstatistik" },
   { id: "users", label: "Kullanıcılar" },
   { id: "watches", label: "Watcher'lar" },
   { id: "subs", label: "Abonelik" },
@@ -146,6 +148,7 @@ export default function AdminScreen(): ReactNode {
         ))}
       </View>
       {tab === "analytics" ? <AnalyticsTab /> : null}
+      {tab === "stats" ? <StatsTab /> : null}
       {tab === "users" ? <UsersTab /> : null}
       {tab === "watches" ? <WatchesTab /> : null}
       {tab === "subs" ? <SubsTab /> : null}
@@ -238,6 +241,243 @@ function PriceEditor({
       </Text>
     </View>
   );
+}
+
+// ----------------------------- İstatistik & Grafik -----------------------------
+
+const RANGES: { d: number; label: string }[] = [
+  { d: 7, label: "7 gün" },
+  { d: 14, label: "14 gün" },
+  { d: 30, label: "30 gün" },
+];
+
+type SeriesKey = "checkRuns" | "detections" | "deliveries";
+type Series = { key: SeriesKey; color: string; label: string };
+
+const C = {
+  checks: "#C7D2FE", // indigo-200 (arka plan: toplam kontrol)
+  detect: "#6366F1", // accent (tespitler — kontrollerin alt kümesi)
+  deliver: "#16A34A", // pos (teslimatlar)
+} as const;
+
+function StatsTab(): ReactNode {
+  const [days, setDays] = useState(14);
+  const q = useQuery({
+    queryKey: ["adminTimeseries", days],
+    queryFn: () => api.adminTimeseries(days),
+  });
+
+  return (
+    <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+      {/* Aralık seçici */}
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel="Zaman aralığı"
+        className="flex-row gap-2 mt-1 mb-4"
+      >
+        {RANGES.map((r) => {
+          const on = r.d === days;
+          return (
+            <Pressable
+              key={r.d}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: on }}
+              accessibilityLabel={r.label}
+              onPress={() => setDays(r.d)}
+              className={`rounded-full px-4 py-2 ${on ? "bg-accent" : "border border-line"}`}
+            >
+              <Text
+                className="text-[11px] uppercase tracking-wider"
+                style={{ color: on ? "#FFFFFF" : "#475569" }}
+              >
+                {r.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      {q.isLoading ? <Skeleton rows={3} /> : null}
+      {q.error ? <ErrText e={q.error} /> : null}
+      {q.data ? <StatsBody data={q.data} /> : null}
+    </ScrollView>
+  );
+}
+
+function StatsBody({
+  data,
+}: {
+  data: {
+    points: AdminTimeseriesPoint[];
+    totals: { checkRuns: number; detections: number; deliveries: number };
+  };
+}): ReactNode {
+  const { points, totals } = data;
+  const rate = totals.checkRuns > 0 ? Math.round((totals.detections / totals.checkRuns) * 100) : 0;
+
+  return (
+    <View>
+      {/* Toplam kartları */}
+      <View className="flex-row flex-wrap gap-2.5">
+        <Stat n={totals.checkRuns} l="kontrol" tone="accent" />
+        <Stat n={totals.detections} l="tespit" tone="pos" sub={`%${rate} tespit oranı`} />
+        <Stat n={totals.deliveries} l="teslimat" />
+      </View>
+
+      {/* Kontroller & Tespitler — bindirmeli sütun grafik */}
+      <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
+        kontroller & tespitler / gün
+      </Text>
+      <View
+        className="bg-panel border border-line rounded-2xl p-4"
+        style={{
+          shadowColor: "#0F172A",
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 1,
+        }}
+      >
+        <BarChart
+          key={`cr-${points.length}`}
+          points={points}
+          series={[
+            { key: "checkRuns", color: C.checks, label: "Kontrol" },
+            { key: "detections", color: C.detect, label: "Tespit" },
+          ]}
+        />
+        <Legend
+          items={[
+            { color: C.checks, label: "Kontrol" },
+            { color: C.detect, label: "Tespit" },
+          ]}
+        />
+      </View>
+
+      {/* Teslimatlar */}
+      <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
+        teslimatlar / gün
+      </Text>
+      <View
+        className="bg-panel border border-line rounded-2xl p-4"
+        style={{
+          shadowColor: "#0F172A",
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 1,
+        }}
+      >
+        <BarChart
+          key={`dl-${points.length}`}
+          points={points}
+          series={[{ key: "deliveries", color: C.deliver, label: "Teslimat" }]}
+        />
+      </View>
+
+      {totals.checkRuns === 0 ? (
+        <Text className="text-muted text-[11px] mt-3">
+          Bu aralıkta henüz kayıt yok. Watcher'lar çalıştıkça grafik dolacaktır.
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+/** Material 3 sütun grafik — RN View'leri; bindirmeli seriler (tespit ⊆ kontrol). */
+function BarChart({
+  points,
+  series,
+  height = 132,
+}: {
+  points: AdminTimeseriesPoint[];
+  series: Series[];
+  height?: number;
+}): ReactNode {
+  const reduce = useReduceMotion();
+  const anim = useRef(new Animated.Value(reduce ? 1 : 0)).current;
+  useEffect(() => {
+    if (reduce) {
+      anim.setValue(1);
+      return;
+    }
+    anim.setValue(0);
+    const a = Animated.timing(anim, { toValue: 1, duration: 650, useNativeDriver: false });
+    a.start();
+    return () => a.stop();
+  }, [reduce, anim]);
+
+  const max = Math.max(1, ...points.flatMap((p) => series.map((s) => p[s.key])));
+  // Eksen yoğunluğunu seyrelt: en çok ~7 etiket göster.
+  const step = Math.max(1, Math.ceil(points.length / 7));
+
+  return (
+    <View>
+      <Text className="text-muted text-[10px] mb-2">en yüksek: {max.toLocaleString("tr-TR")}</Text>
+      <View className="flex-row items-end" style={{ height }}>
+        {points.map((p) => {
+          const a11y = `${dayShort(p.date)}: ${p.checkRuns} kontrol, ${p.detections} tespit, ${p.deliveries} teslimat`;
+          return (
+            <View
+              key={p.date}
+              accessibilityLabel={a11y}
+              className="flex-1 items-center justify-end"
+              style={{ height }}
+            >
+              <View style={{ height, width: "100%", justifyContent: "flex-end" }}>
+                {series.map((s) => {
+                  const target = (p[s.key] / max) * height;
+                  const h = anim.interpolate({ inputRange: [0, 1], outputRange: [0, target] });
+                  return (
+                    <Animated.View
+                      key={s.key}
+                      style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: "16%",
+                        right: "16%",
+                        height: h,
+                        backgroundColor: s.color,
+                        borderTopLeftRadius: 4,
+                        borderTopRightRadius: 4,
+                      }}
+                    />
+                  );
+                })}
+              </View>
+            </View>
+          );
+        })}
+      </View>
+      {/* X ekseni etiketleri (seyrek) */}
+      <View className="flex-row mt-1.5">
+        {points.map((p, i) => (
+          <View key={p.date} className="flex-1 items-center">
+            <Text className="text-muted2 text-[9px]">{i % step === 0 ? dayShort(p.date) : ""}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function Legend({ items }: { items: { color: string; label: string }[] }): ReactNode {
+  return (
+    <View className="flex-row gap-4 mt-3">
+      {items.map((it) => (
+        <View key={it.label} className="flex-row items-center gap-1.5">
+          <View style={{ width: 10, height: 10, borderRadius: 3, backgroundColor: it.color }} />
+          <Text className="text-muted text-[11px]">{it.label}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** "2026-06-09" → "9 Haz" (kısa, eksen etiketi). */
+function dayShort(iso: string): string {
+  const d = new Date(`${iso}T00:00:00Z`);
+  return d.toLocaleDateString("tr-TR", { day: "numeric", month: "short", timeZone: "UTC" });
 }
 
 // ----------------------------- Kullanıcılar -----------------------------

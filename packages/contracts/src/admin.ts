@@ -93,6 +93,32 @@ export const adminSystemSchema = z.object({
 });
 export type AdminSystem = z.infer<typeof adminSystemSchema>;
 
+// ---- Zaman serisi (istatistik & grafik) ----
+
+/** Bir günün kovası (YYYY-MM-DD, UTC). */
+export const adminTimeseriesPointSchema = z.object({
+  date: z.string(), // "2026-06-09"
+  checkRuns: z.number().int(),
+  detections: z.number().int(),
+  deliveries: z.number().int(),
+});
+export type AdminTimeseriesPoint = z.infer<typeof adminTimeseriesPointSchema>;
+
+export const adminTimeseriesSchema = z.object({
+  days: z.number().int(),
+  points: z.array(adminTimeseriesPointSchema),
+  totals: z.object({
+    checkRuns: z.number().int(),
+    detections: z.number().int(),
+    deliveries: z.number().int(),
+  }),
+});
+export type AdminTimeseries = z.infer<typeof adminTimeseriesSchema>;
+
+export const adminTimeseriesQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(90).default(14),
+});
+
 export const adminIdParamSchema = z.object({ id: z.string().min(1) });
 export const setAdminInputSchema = z.object({ makeAdmin: z.boolean() });
 export const setWatchStatusInputSchema = z.object({ status: z.enum(["active", "paused"]) });

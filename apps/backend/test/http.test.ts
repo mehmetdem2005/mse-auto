@@ -113,6 +113,24 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(ok.status).toBe(200);
   });
 
+  it("admin timeseries: gün sayısı kadar nokta + sıfır toplamlar (in-memory)", async () => {
+    const res = await makeApp("admin1").request("/v1/admin/timeseries?days=7", {
+      headers: bearer("admin1"),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      days: number;
+      points: { date: string; checkRuns: number }[];
+      totals: { checkRuns: number; detections: number; deliveries: number };
+    };
+    expect(body.points).toHaveLength(7);
+    expect(body.days).toBe(7);
+    expect(body.totals).toEqual({ checkRuns: 0, detections: 0, deliveries: 0 });
+    // tarihler eskiden yeniye, ISO gün biçimi
+    expect(body.points[0].date < body.points[6].date).toBe(true);
+    expect(body.points[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
   it("GET /openapi.json → 200; yol tanımları içerir", async () => {
     const res = await makeApp().request("/openapi.json");
     expect(res.status).toBe(200);

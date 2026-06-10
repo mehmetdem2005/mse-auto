@@ -110,6 +110,17 @@ export interface AdminStats {
   activeWatchers: number;
   mrrCents: number;
 }
+export interface AdminTimeseriesPoint {
+  date: string;
+  checkRuns: number;
+  detections: number;
+  deliveries: number;
+}
+export interface AdminTimeseries {
+  days: number;
+  points: AdminTimeseriesPoint[];
+  totals: { checkRuns: number; detections: number; deliveries: number };
+}
 
 // ---- Watcher "araştırma" geçmişi ----
 export interface CheckRunView {
@@ -225,6 +236,7 @@ export const api = {
   adminSubscriptions: () => req<AdminSubscription[]>("/v1/admin/subscriptions"),
   adminSystem: () => req<AdminSystem>("/v1/admin/system"),
   adminStats: () => req<AdminStats>("/v1/admin/analytics"),
+  adminTimeseries: (days = 14) => req<AdminTimeseries>(`/v1/admin/timeseries?days=${days}`),
   adminPrices: () => req<Plans>("/v1/admin/prices"),
   setPrice: (interval: BillingInterval, amountCents: number, currency: string) =>
     req<Plans>("/v1/admin/prices", {

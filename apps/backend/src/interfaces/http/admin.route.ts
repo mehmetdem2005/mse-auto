@@ -4,6 +4,8 @@ import {
   adminStatsSchema,
   adminSubscriptionListSchema,
   adminSystemSchema,
+  adminTimeseriesQuerySchema,
+  adminTimeseriesSchema,
   adminUserListSchema,
   adminWatchListSchema,
   errorSchema,
@@ -40,6 +42,26 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       },
     }),
     async (c) => c.json(await getAdminStats(container), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/timeseries",
+      tags: ["admin"],
+      summary: "Günlük zaman serisi (kontrol/tespit/teslimat)",
+      request: { query: adminTimeseriesQuerySchema },
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminTimeseriesSchema } },
+          description: "Zaman serisi",
+        },
+      },
+    }),
+    async (c) => {
+      const { days } = c.req.valid("query");
+      return c.json(await container.adminConsole.getTimeseries(days), 200);
+    },
   );
 
   app.openapi(

@@ -2,9 +2,11 @@ import type {
   AdminConsoleRepository,
   AdminSubscriptionRow,
   AdminSystemInfo,
+  AdminTimeseriesData,
   AdminUserRow,
   AdminWatchRow,
 } from "../../domain/billing";
+import { emptyTimeseries } from "../shared/timeseries.util";
 
 /**
  * Dev/in-memory admin konsolu — kalıcı yönetim verisi yok.
@@ -42,5 +44,8 @@ export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
       recentCheckRuns: [],
       recentDeliveries: [],
     };
+  }
+  async getTimeseries(days: number): Promise<AdminTimeseriesData> {
+    return emptyTimeseries(days);
   }
 }

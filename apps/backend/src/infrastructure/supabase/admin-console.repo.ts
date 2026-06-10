@@ -3,11 +3,13 @@ import type {
   AdminConsoleRepository,
   AdminSubscriptionRow,
   AdminSystemInfo,
+  AdminTimeseriesData,
   AdminUserRow,
   AdminWatchRow,
   BillingInterval,
 } from "../../domain/billing";
 import { addInterval } from "../../domain/billing";
+import { dayKey, emptyBuckets, finalizeTimeseries, sinceIso } from "../shared/timeseries.util";
 import type { Database } from "./database.types";
 
 /** Admin paneli yönetim sorguları — service-role client ile (RLS bypass). */
@@ -233,5 +235,29 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         sentAt: d.sent_at,
       })),
     };
+  }
+
+  async getTimeseries(days: number): Promise<AdminTimeseriesData> {
+    const since = sinceIso(days);
+    const buckets = emptyBuckets(days);
+    const [runs, dels] = await Promise.all([
+      this.db.from("check_runs").select("ran_at, decision").gte("ran_at", since),
+      this.db.from("deliveries").select("sent_at").gte("sent_at", since),
+    ]);
+    if (runs.error) throw new Error(`timeseries check_runs: ${runs.error.message}`);
+    if (dels.error) throw new Error(`timeseries deliveries: ${dels.error.message}`);
+
+    for (const r of runs.data ?? []) {
+      const b = buckets.get(dayKey(r.ran_at));
+      if (!b) continue; // sınır dışı (saat dilimi kayması) — atla
+      b.checkRuns += 1;
+      if (r.decision) b.detections += 1;
+    }
+    for (const d of dels.data ?? []) {
+      if (!d.sent_at) continue;
+      const b = buckets.get(dayKey(d.sent_at));
+      if (b) b.deliveries += 1;
+    }
+    return finalizeTimeseries(days, buckets);
   }
 }

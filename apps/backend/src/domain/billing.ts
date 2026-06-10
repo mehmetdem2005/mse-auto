@@ -143,6 +143,20 @@ export interface AdminSystemInfo {
   }[];
 }
 
+/** Günlük kova (UTC, YYYY-MM-DD) — istatistik/grafik için zaman serisi. */
+export interface AdminTimeseriesPoint {
+  date: string;
+  checkRuns: number;
+  detections: number;
+  deliveries: number;
+}
+
+export interface AdminTimeseriesData {
+  days: number;
+  points: AdminTimeseriesPoint[];
+  totals: { checkRuns: number; detections: number; deliveries: number };
+}
+
 /** Admin paneli için yönetim işlemleri (yalnız admin middleware arkasında). */
 export interface AdminConsoleRepository {
   listUsers(): Promise<AdminUserRow[]>;
@@ -155,4 +169,6 @@ export interface AdminConsoleRepository {
   giftPro(userId: string, interval: BillingInterval): Promise<void>;
   cancelSubscription(userId: string): Promise<void>;
   getSystem(): Promise<AdminSystemInfo>;
+  /** Son `days` günün günlük kontrol/tespit/teslimat sayıları (eskiden yeniye). */
+  getTimeseries(days: number): Promise<AdminTimeseriesData>;
 }
