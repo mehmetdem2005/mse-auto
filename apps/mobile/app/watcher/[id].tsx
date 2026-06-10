@@ -58,9 +58,9 @@ export default function WatcherDetail(): ReactNode {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero title={t("detail.title")} back compact />
+      <GradientHero title={t("detail.title")} back />
       <HeroOverlap>
-        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-12">
           {/* Tespitler önce — en önemli sonuç */}
           <SectionLabel>
             {t("detail.detections")} ({eventGroups.length})

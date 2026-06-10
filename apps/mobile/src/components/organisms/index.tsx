@@ -17,13 +17,11 @@ export function GradientHero({
   title,
   subtitle,
   right,
-  compact,
   back,
 }: {
   title: string;
   subtitle?: string;
   right?: ReactNode;
-  compact?: boolean;
   /** Yığın ekranı: sol başta geri oku (markanın önünde). */
   back?: boolean;
 }) {
@@ -36,8 +34,10 @@ export function GradientHero({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
-        paddingTop: Platform.OS === "web" ? 24 : 56,
-        paddingBottom: compact ? 48 : 64,
+        // TÜM sayfalarda EŞİT yükseklik (compact kaldırıldı — morluk seviyesi tutarlı).
+        // Alt boşluk, içeriğin -mt-7 ile bineceği yuvarlak paneli hesaba katar.
+        paddingTop: Platform.OS === "web" ? 28 : 56,
+        paddingBottom: 60,
         paddingHorizontal: 20,
       }}
     >
@@ -82,7 +82,11 @@ export function GradientHero({
   );
 }
 
-/** Hero'nun üstüne binen içerik sarmalayıcı (yükseltilmiş yüzey). */
+/**
+ * Hero'nun üstüne binen içerik "sheet"i — yuvarlak üst köşeler + açık zemin
+ * gradyanı TEMİZ keser (mor şerit/uyumsuzluk biter). İçerik bu panelin içinde
+ * kayar; gradyan her sayfada eşit yükseklikte görünür.
+ */
 export function HeroOverlap({ children }: { children: ReactNode }) {
-  return <View className="flex-1 -mt-10">{children}</View>;
+  return <View className="flex-1 -mt-7 bg-ink rounded-t-[28px] overflow-hidden">{children}</View>;
 }

@@ -47,7 +47,7 @@ export default function SupportThread() {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero title={t("support.thread")} back compact />
+      <GradientHero title={t("support.thread")} back />
       <ScrollView
         ref={scroll}
         className="flex-1 px-5 pt-4"

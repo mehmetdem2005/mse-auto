@@ -630,3 +630,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Karar:** Paylaşılan moleküller yükseltildi (tüm ekranları birden cilalar — en yüksek kaldıraç): (1) **Shimmer iskelet** — statik gri yerine reanimated nabız-opaklık (850ms inOut, reduce-motion'da sabit 0.6); SkeletonCard artık gölgeli. (2) **İllüstratif boş durum** — gradyan halka madalyon + ekran-özel ikon parametresi (Icon prop; watchers→Bell, feed→Sparkles); daha büyük başlık + sınırlı genişlik ipucu. (3) **Card `elevated` varyantı** — hero üstüne binen kartlar için SHADOW_LG (20px blur); gölge token'ları (SHADOW/SHADOW_LG) merkezîleşti. (4) Watcher listesi yükleme durumu spinner→3 shimmer iskelet.
 - **P5:** shimmer reduce-motion kapılı (3.2/2.3 — titreşim/animasyon kontrolü) · boş durum ikon dekoratif (metin taşıyıcı değil).
 - **ISO:** 25010 *Attractiveness* + algılanan performans (RAIL) · 9241 (yükleme geri bildirimi).
+
+## ADR-057 — Hero tutarlılık düzeltmesi: eşit morluk + temiz sheet bindirme
+- **Durum:** Kabul · ürün sahibi geri bildirimi (Android ekran görüntüleri): "morlukların seviyeleri diğer sayfalarla eşit değil; beyaz kaydırılan kısımlar uyumsuz".
+- **Kök neden:** (1) GradientHero `compact` varyantı paddingBottom'u sayfaya göre 48/64 değiştiriyordu → mor yükseklik tutarsız. (2) HeroOverlap şeffaftı + `-mt-10`; kayan liste/kart ile sabit hero arasında gradyan şeridi sızıyordu (kart üstünde mor görünüyordu).
+- **Karar:** (1) **`compact` tamamen kaldırıldı** — tüm sayfalarda eşit yükseklik (paddingTop 56 / paddingBottom 60; web 28/60). (2) HeroOverlap artık **yuvarlak köşeli açık sheet**: `-mt-7 bg-ink rounded-t-[28px] overflow-hidden` → gradyanı temiz keser, mor şerit/uyumsuzluk biter; içerik panel içinde kayar. (3) Tüm içerik kapsayıcılarına `pt-5` nefes payı (yuvarlak köşeden sonra).
+- **Sonuç:** 6 yüzeyde (Akış/Watcher'lar/Abonelik/Ayarlar/Detay/Destek + Sihirbaz) mor seviyesi birebir aynı, geçiş temiz.
+- **ISO:** 9241-112 tutarlılık (kanıtlanmış sapma giderildi) · 25010 *Attractiveness*.

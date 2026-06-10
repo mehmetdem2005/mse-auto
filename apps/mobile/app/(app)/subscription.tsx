@@ -59,10 +59,9 @@ export default function SubscriptionScreen() {
       <GradientHero
         title={t("tabs.subscription")}
         subtitle={isPro ? t("sub.proName") : t("sub.freeName")}
-        compact
       />
       <HeroOverlap>
-        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-10">
           {/* Hero plan kartı */}
           <EnterItem index={0}>
             <View

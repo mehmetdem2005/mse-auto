@@ -45,9 +45,9 @@ export default function Support() {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero title={t("support.title")} back compact />
+      <GradientHero title={t("support.title")} back />
       <HeroOverlap>
-        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-12">
           {/* İletişim */}
           <SectionLabel>{t("support.contact")}</SectionLabel>
           <Card

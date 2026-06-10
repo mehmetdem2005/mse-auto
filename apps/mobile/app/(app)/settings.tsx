@@ -77,9 +77,9 @@ export default function Settings() {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero title={t("tabs.settings")} subtitle={t("settings.account")} compact />
+      <GradientHero title={t("tabs.settings")} subtitle={t("settings.account")} />
       <HeroOverlap>
-        <ScrollView className="flex-1 px-5">
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-10">
           <View className="bg-panel border border-line rounded-2xl p-5 mb-4">
             <View className="flex-row items-center gap-3">
               <View className="w-12 h-12 rounded-full bg-accent items-center justify-center">

@@ -132,7 +132,7 @@ export default function Feed() {
       <View className="flex-1 bg-ink">
         <GradientHero title={t("feed.title")} subtitle={t("feed.subtitle")} />
         <HeroOverlap>
-          <View className="px-5">
+          <View className="px-5 pt-5">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -171,7 +171,7 @@ export default function Feed() {
         <FlatList
           data={groups}
           keyExtractor={(g) => g.watchId}
-          contentContainerClassName="px-5 pt-0 pb-10"
+          contentContainerClassName="px-5 pt-5 pb-10"
           onRefresh={() => void refetch()}
           refreshing={isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}

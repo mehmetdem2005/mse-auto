@@ -286,12 +286,7 @@ export default function NewWatcher() {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero
-        title={t(current.titleK)}
-        subtitle={`${step + 1} / ${STEPS.length}`}
-        back
-        compact
-      />
+      <GradientHero title={t(current.titleK)} subtitle={`${step + 1} / ${STEPS.length}`} back />
       {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
       <View
         className="mx-5 -mt-10 bg-panel border border-line rounded-2xl px-4 py-3"

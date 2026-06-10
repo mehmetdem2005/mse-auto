@@ -82,7 +82,7 @@ export default function Watchers() {
       />
       <HeroOverlap>
         {isLoading ? (
-          <View className="px-5">
+          <View className="px-5 pt-5">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
@@ -95,7 +95,7 @@ export default function Watchers() {
           <FlatList
             data={(data ?? []).filter((w) => filter === "all" || w.status === filter)}
             keyExtractor={(w) => w.id}
-            contentContainerClassName="px-5 pb-10"
+            contentContainerClassName="px-5 pt-5 pb-10"
             ListHeaderComponent={
               (data ?? []).length > 0 ? (
                 <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
