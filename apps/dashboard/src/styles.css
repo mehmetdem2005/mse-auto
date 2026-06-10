@@ -1001,3 +1001,21 @@ body::after {
     transform: translateY(8px);
   }
 }
+
+/* M3 kademeli (cascading) alt menü */
+.m3-sub {
+  position: relative;
+}
+.m3-has-sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.m3-submenu {
+  position: absolute;
+  left: calc(100% + 4px);
+  top: -6px;
+  right: auto;
+  min-width: 160px;
+}

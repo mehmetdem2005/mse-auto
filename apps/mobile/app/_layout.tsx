@@ -1,6 +1,7 @@
 import "../global.css";
 import { registerBackgroundNotifications } from "@/lib/background-notifications";
 import { queryClient } from "@/lib/query";
+import { useReduceMotion } from "@/lib/reduce-motion";
 import { initAuth, useAuth } from "@/stores/auth";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -11,6 +12,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 export default function RootLayout() {
   const ready = useAuth((s) => s.ready);
   const isSignedIn = useAuth((s) => s.session !== null);
+  const reduce = useReduceMotion();
 
   useEffect(() => initAuth(), []);
   useEffect(() => {
@@ -23,7 +25,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
+        <Stack screenOptions={{ headerShown: false, animation: reduce ? "none" : "fade" }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
             <Stack.Screen
@@ -34,8 +36,8 @@ export default function RootLayout() {
                 headerStyle: { backgroundColor: "#FFFFFF" },
                 headerTintColor: "#0F172A",
                 headerShadowVisible: false,
-                // M3 shared-axis benzeri yatay geçiş (detaya giriş)
-                animation: "slide_from_right",
+                // M3 shared-axis benzeri geçiş; reduce-motion'da kapalı.
+                animation: reduce ? "none" : "slide_from_right",
               }}
             />
           </Stack.Protected>

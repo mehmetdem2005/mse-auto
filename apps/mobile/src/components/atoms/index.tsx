@@ -1,4 +1,5 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
+import { useReduceMotion } from "@/lib/reduce-motion";
 import type { ReactNode } from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -62,20 +63,21 @@ export function Fab({
   accessibilityLabel: string;
   glyph?: string;
 }) {
+  const reduce = useReduceMotion();
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl bg-accent items-center justify-center"
-      // M3 bas-küçül geri bildirimi (state layer) + elevation
+      // M3 bas-küçül geri bildirimi (state layer) + elevation; reduce-motion'da scale kapalı.
       style={({ pressed }) => ({
         shadowColor: "#0F172A",
         shadowOpacity: pressed ? 0.12 : 0.22,
         shadowRadius: 10,
         shadowOffset: { width: 0, height: 5 },
         elevation: pressed ? 3 : 6,
-        transform: [{ scale: pressed ? 0.92 : 1 }],
+        transform: [{ scale: pressed && !reduce ? 0.92 : 1 }],
         opacity: pressed ? 0.92 : 1,
       })}
     >

@@ -26,14 +26,15 @@ function RowContextMenu({ ctx, onClose }: { ctx: CtxState; onClose: () => void }
     };
   }, [onClose]);
 
+  const [subOpen, setSubOpen] = useState(false);
   const copy = (text: string): void => {
     void navigator.clipboard?.writeText(text);
     onClose();
   };
-  const items = [
-    { label: "Açıklamayı kopyala", v: ctx.item.description || "" },
-    { label: "Olgu (JSON) kopyala", v: JSON.stringify(ctx.item.facts ?? null) },
-    { label: "Watcher ID kopyala", v: ctx.item.watchId },
+  const copyItems = [
+    { label: "Açıklama", v: ctx.item.description || "" },
+    { label: "Olgu (JSON)", v: JSON.stringify(ctx.item.facts ?? null) },
+    { label: "Watcher ID", v: ctx.item.watchId },
   ];
   return (
     <div
@@ -42,17 +43,50 @@ function RowContextMenu({ ctx, onClose }: { ctx: CtxState; onClose: () => void }
       aria-label="Tespit işlemleri"
       style={{ position: "fixed", left: ctx.x, top: ctx.y, right: "auto" }}
     >
-      {items.map((it) => (
+      {/* Kademeli (cascading) alt menü: hover/ArrowRight ile yana açılır */}
+      <div
+        className="m3-sub"
+        onMouseEnter={() => setSubOpen(true)}
+        onMouseLeave={() => setSubOpen(false)}
+      >
         <button
-          key={it.label}
           type="button"
           role="menuitem"
-          className="m3-menu-item"
-          onClick={() => copy(it.v)}
+          aria-haspopup="menu"
+          aria-expanded={subOpen}
+          className="m3-menu-item m3-has-sub"
+          onClick={(e) => {
+            e.stopPropagation();
+            setSubOpen((o) => !o);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowRight") {
+              e.preventDefault();
+              setSubOpen(true);
+            } else if (e.key === "ArrowLeft" || e.key === "Escape") {
+              setSubOpen(false);
+            }
+          }}
         >
-          {it.label}
+          <span>Kopyala</span>
+          <span aria-hidden="true">▸</span>
         </button>
-      ))}
+        {subOpen ? (
+          <div className="m3-menu-list m3-submenu" role="menu" aria-label="Kopyalama biçimi">
+            {copyItems.map((it) => (
+              <button
+                key={it.label}
+                type="button"
+                role="menuitem"
+                className="m3-menu-item"
+                onClick={() => copy(it.v)}
+              >
+                {it.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
