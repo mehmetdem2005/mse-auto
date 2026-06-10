@@ -637,3 +637,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Karar:** (1) **`compact` tamamen kaldırıldı** — tüm sayfalarda eşit yükseklik (paddingTop 56 / paddingBottom 60; web 28/60). (2) HeroOverlap artık **yuvarlak köşeli açık sheet**: `-mt-7 bg-ink rounded-t-[28px] overflow-hidden` → gradyanı temiz keser, mor şerit/uyumsuzluk biter; içerik panel içinde kayar. (3) Tüm içerik kapsayıcılarına `pt-5` nefes payı (yuvarlak köşeden sonra).
 - **Sonuç:** 6 yüzeyde (Akış/Watcher'lar/Abonelik/Ayarlar/Detay/Destek + Sihirbaz) mor seviyesi birebir aynı, geçiş temiz.
 - **ISO:** 9241-112 tutarlılık (kanıtlanmış sapma giderildi) · 25010 *Attractiveness*.
+
+## ADR-058 — AAA Faz 4: Admin konsolu imza kabuğa geçti + durum çubuğu uyumu
+- **Durum:** Kabul · Faz 3/ADR-057 devamı.
+- **Karar:** (1) **Admin sekmesi** (işletmeci konsolu) son kalan eski-beyaz-başlıklı yüzeydi — GradientHero("Admin · Whenly işletme konsolu") + HeroOverlap sheet'e geçti; iç sekme çipleri sheet içinde. Native header kapatıldı. Artık UYGULAMANIN TÜM YÜZEYLERİ tek imza kabukta. (2) **StatusBar** dark→light: durum çubuğu artık gradyan hero üstünde beyaz ikonlarla (Android'de okunaklı).
+- **Not:** Admin içerik metinleri bilinçli TR (ADR-053 kapsam kararı); kabuk tutarlılığı içerik dilinden bağımsız.
+- **ISO:** 9241-112 tutarlılık tamamlandı (kabuk %100 kapsam) · 25010.

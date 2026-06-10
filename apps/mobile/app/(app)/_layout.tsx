@@ -146,6 +146,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="admin"
         options={{
+          headerShown: false,
           title: t("tabs.admin"),
           href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, focused }) => (

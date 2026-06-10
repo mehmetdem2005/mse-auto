@@ -1,3 +1,4 @@
+import { GradientHero, HeroOverlap } from "@/components/ui";
 // NOT (ADR-053): Admin konsolu yalnız işletmeciye görünür — bilinçli olarak
 // i18n kapsamı dışında (TR). Kullanıcı yüzeyleri 11 dilde.
 import {
@@ -136,29 +137,32 @@ export default function AdminScreen(): ReactNode {
   const [tab, setTab] = useState<Tab>("analytics");
   return (
     <View className="flex-1 bg-ink">
-      <View className="flex-row flex-wrap gap-1.5 px-5 pt-4 pb-3">
-        {TABS.map((t) => (
-          <Pressable
-            key={t.id}
-            onPress={() => setTab(t.id)}
-            className={`rounded-lg px-3 py-2 ${t.id === tab ? "bg-accent" : "border border-line"}`}
-          >
-            <Text
-              className="text-[11px] uppercase tracking-wider"
-              style={{ color: t.id === tab ? "#FFFFFF" : "#64748B" }}
+      <GradientHero title="Admin" subtitle="Whenly işletme konsolu" />
+      <HeroOverlap>
+        <View className="flex-row flex-wrap gap-1.5 px-5 pt-4 pb-3">
+          {TABS.map((t) => (
+            <Pressable
+              key={t.id}
+              onPress={() => setTab(t.id)}
+              className={`rounded-lg px-3 py-2 ${t.id === tab ? "bg-accent" : "border border-line"}`}
             >
-              {t.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-      {tab === "analytics" ? <AnalyticsTab /> : null}
-      {tab === "stats" ? <StatsTab /> : null}
-      {tab === "users" ? <UsersTab /> : null}
-      {tab === "watches" ? <WatchesTab /> : null}
-      {tab === "subs" ? <SubsTab /> : null}
-      {tab === "support" ? <SupportTab /> : null}
-      {tab === "system" ? <SystemTab /> : null}
+              <Text
+                className="text-[11px] uppercase tracking-wider"
+                style={{ color: t.id === tab ? "#FFFFFF" : "#64748B" }}
+              >
+                {t.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        {tab === "analytics" ? <AnalyticsTab /> : null}
+        {tab === "stats" ? <StatsTab /> : null}
+        {tab === "users" ? <UsersTab /> : null}
+        {tab === "watches" ? <WatchesTab /> : null}
+        {tab === "subs" ? <SubsTab /> : null}
+        {tab === "support" ? <SupportTab /> : null}
+        {tab === "system" ? <SystemTab /> : null}
+      </HeroOverlap>
     </View>
   );
 }

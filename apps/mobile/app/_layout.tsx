@@ -25,7 +25,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
+        <StatusBar style="light" /> {/* gradyan hero üstünde beyaz ikonlar */}
         <Stack screenOptions={{ headerShown: false, animation: reduce ? "none" : "fade" }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
