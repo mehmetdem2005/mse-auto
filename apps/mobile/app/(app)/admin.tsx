@@ -1,5 +1,6 @@
 import {
   type AdminSubscription,
+  type AdminSupportTicket,
   type AdminTimeseriesPoint,
   type AdminUser,
   type AdminWatch,
@@ -23,13 +24,14 @@ import {
   View,
 } from "react-native";
 
-type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "system";
+type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "support" | "system";
 const TABS: { id: Tab; label: string }[] = [
   { id: "analytics", label: "Analitik" },
   { id: "stats", label: "İstatistik" },
   { id: "users", label: "Kullanıcılar" },
   { id: "watches", label: "Watcher'lar" },
   { id: "subs", label: "Abonelik" },
+  { id: "support", label: "Destek" },
   { id: "system", label: "Sistem" },
 ];
 
@@ -152,6 +154,7 @@ export default function AdminScreen(): ReactNode {
       {tab === "users" ? <UsersTab /> : null}
       {tab === "watches" ? <WatchesTab /> : null}
       {tab === "subs" ? <SubsTab /> : null}
+      {tab === "support" ? <SupportTab /> : null}
       {tab === "system" ? <SystemTab /> : null}
     </View>
   );
@@ -624,6 +627,155 @@ function WatchesTab(): ReactNode {
         </View>
       )}
     />
+  );
+}
+
+// ----------------------------- Destek (ADR-044) -----------------------------
+
+function SupportTab(): ReactNode {
+  const [selected, setSelected] = useState<AdminSupportTicket | null>(null);
+  const q = useQuery({
+    queryKey: ["adminSupport"],
+    queryFn: api.adminSupport,
+    refetchInterval: 10000, // yeni talepler için kısa aralıklı yoklama
+  });
+  if (q.isLoading) return <Loading />;
+  if (q.error) return <ErrText e={q.error} />;
+  if (selected) {
+    return (
+      <SupportThreadAdmin
+        ticket={selected}
+        onBack={() => {
+          setSelected(null);
+          void q.refetch();
+        }}
+      />
+    );
+  }
+  const rows = q.data ?? [];
+  const openCount = rows.filter((t) => t.status === "open").length;
+  return (
+    <FlatList
+      data={rows}
+      keyExtractor={(t) => t.id}
+      contentContainerClassName="px-5 pb-8"
+      onRefresh={() => void q.refetch()}
+      refreshing={q.isRefetching}
+      ItemSeparatorComponent={() => <View className="h-3" />}
+      ListHeaderComponent={
+        <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
+          {openCount} açık talep
+        </Text>
+      }
+      ListEmptyComponent={<Text className="text-muted mt-6">destek talebi yok.</Text>}
+      renderItem={({ item: t }) => (
+        <Pressable
+          onPress={() => setSelected(t)}
+          accessibilityRole="button"
+          accessibilityLabel={`Destek talebi: ${t.userEmail ?? t.userId}, ${t.status === "open" ? "açık" : "kapalı"}`}
+          className="bg-panel border border-line rounded-xl p-4 active:bg-panel2"
+        >
+          <View className="flex-row items-center gap-2">
+            <Text
+              className="text-[11px] font-semibold"
+              style={{ color: t.status === "open" ? "#16A34A" : "#64748B" }}
+            >
+              {t.status === "open" ? "AÇIK" : "kapalı"}
+            </Text>
+            <Text className="text-muted text-[11px]">{t.kind === "live" ? "canlı" : "sorun"}</Text>
+            <Text className="text-muted text-[11px] ml-auto">{day(t.createdAt)}</Text>
+          </View>
+          <Text className="text-text text-sm mt-1" numberOfLines={1}>
+            {t.userEmail ?? t.userId}
+          </Text>
+          {t.lastMessage ? (
+            <Text className="text-muted text-xs mt-1" numberOfLines={2}>
+              {t.lastMessage}
+            </Text>
+          ) : null}
+        </Pressable>
+      )}
+    />
+  );
+}
+
+function SupportThreadAdmin({
+  ticket,
+  onBack,
+}: { ticket: AdminSupportTicket; onBack: () => void }): ReactNode {
+  const qc = useQueryClient();
+  const [draft, setDraft] = useState("");
+  const q = useQuery({
+    queryKey: ["adminSupportThread", ticket.id],
+    queryFn: () => api.adminSupportMessages(ticket.id),
+    refetchInterval: 5000,
+  });
+  const reply = useMutation({
+    mutationFn: (body: string) => api.adminSupportReply(ticket.id, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ["adminSupportThread", ticket.id] }),
+  });
+  const close = useMutation({
+    mutationFn: () => api.adminSupportClose(ticket.id),
+    onSuccess: onBack,
+  });
+
+  return (
+    <View className="flex-1">
+      <View className="flex-row items-center gap-2 px-5 pb-2">
+        <ActBtn label="geri" onPress={onBack} />
+        <Text className="text-text text-sm flex-1" numberOfLines={1}>
+          {ticket.userEmail ?? ticket.userId}
+        </Text>
+        {ticket.status === "open" ? (
+          <ActBtn
+            label="kapat"
+            tone="danger"
+            disabled={close.isPending}
+            onPress={() => close.mutate()}
+          />
+        ) : null}
+      </View>
+      <ScrollView className="flex-1 px-5">
+        {(q.data ?? []).map((m) => (
+          <View
+            key={m.id}
+            className={`max-w-[85%] rounded-2xl px-4 py-3 mb-2.5 ${
+              m.sender === "admin"
+                ? "self-end bg-accent rounded-br-md"
+                : "self-start bg-panel border border-line rounded-bl-md"
+            }`}
+          >
+            <Text className={m.sender === "admin" ? "text-white text-sm" : "text-text text-sm"}>
+              {m.body}
+            </Text>
+          </View>
+        ))}
+        <View className="h-4" />
+      </ScrollView>
+      <View className="flex-row items-end gap-2 px-5 py-3 border-t border-line">
+        <TextInput
+          value={draft}
+          onChangeText={setDraft}
+          multiline
+          placeholder="Yanıt yaz…"
+          placeholderTextColor="#94A3B8"
+          accessibilityLabel="Destek yanıtı yaz"
+          className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
+        />
+        <ActBtn
+          label="gönder"
+          tone="solid"
+          disabled={!draft.trim() || reply.isPending}
+          onPress={() => {
+            const t = draft.trim();
+            if (t) {
+              setDraft("");
+              reply.mutate(t);
+            }
+          }}
+        />
+      </View>
+    </View>
   );
 }
 

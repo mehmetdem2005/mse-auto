@@ -5,4 +5,7 @@ export class InMemoryAdminRepository implements AdminRepository {
   async isAdmin(userId: string): Promise<boolean> {
     return this.adminIds.has(userId);
   }
+  async listAdminIds(): Promise<string[]> {
+    return [...this.adminIds];
+  }
 }

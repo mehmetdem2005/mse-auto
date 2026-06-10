@@ -45,6 +45,21 @@ export class InMemoryStore {
   readonly topicIdByQuery = new Map<string, string>();
   readonly watches: Watch[] = [];
   readonly checkRuns: StoredCheckRun[] = [];
+  readonly supportTickets: {
+    id: string;
+    userId: string;
+    kind: "problem" | "live";
+    status: "open" | "closed";
+    createdAt: string;
+    updatedAt: string;
+  }[] = [];
+  readonly supportMessages: {
+    id: string;
+    ticketId: string;
+    sender: "user" | "admin";
+    body: string;
+    createdAt: string;
+  }[] = [];
   readonly events: StoredEvent[] = [];
   readonly deliveries: StoredDelivery[] = [];
   readonly deviceTokens: StoredDeviceToken[] = [];

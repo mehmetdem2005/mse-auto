@@ -40,6 +40,28 @@ export default function RootLayout() {
                 animation: reduce ? "none" : "slide_from_right",
               }}
             />
+            <Stack.Screen
+              name="support/index"
+              options={{
+                headerShown: true,
+                title: "Destek & İletişim",
+                headerStyle: { backgroundColor: "#FFFFFF" },
+                headerTintColor: "#0F172A",
+                headerShadowVisible: false,
+                animation: reduce ? "none" : "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="support/[id]"
+              options={{
+                headerShown: true,
+                title: "Canlı Destek",
+                headerStyle: { backgroundColor: "#FFFFFF" },
+                headerTintColor: "#0F172A",
+                headerShadowVisible: false,
+                animation: reduce ? "none" : "slide_from_right",
+              }}
+            />
           </Stack.Protected>
           <Stack.Protected guard={!isSignedIn}>
             <Stack.Screen name="(auth)" />

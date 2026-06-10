@@ -84,6 +84,44 @@ export interface Database {
         Update: { criteria_data?: Json };
         Relationships: [];
       };
+      support_tickets: {
+        Row: {
+          id: string;
+          user_id: string;
+          kind: "problem" | "live";
+          status: "open" | "closed";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          kind: "problem" | "live";
+          id?: string;
+          status?: "open" | "closed";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: { status?: "open" | "closed"; updated_at?: string };
+        Relationships: [];
+      };
+      support_messages: {
+        Row: {
+          id: string;
+          ticket_id: string;
+          sender: "user" | "admin";
+          body: string;
+          created_at: string;
+        };
+        Insert: {
+          ticket_id: string;
+          sender: "user" | "admin";
+          body: string;
+          id?: string;
+          created_at?: string;
+        };
+        Update: { body?: string };
+        Relationships: [];
+      };
       check_runs: {
         Row: {
           id: string;

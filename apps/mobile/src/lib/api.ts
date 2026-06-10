@@ -165,6 +165,27 @@ export interface FeedItem {
 }
 export type FeedbackVerdict = "correct" | "incorrect";
 
+// ---- Destek (sorun bildir + canlı destek) ----
+export type SupportKind = "problem" | "live";
+export interface SupportTicket {
+  id: string;
+  kind: SupportKind;
+  status: "open" | "closed";
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: string | null;
+}
+export interface SupportMessage {
+  id: string;
+  sender: "user" | "admin";
+  body: string;
+  createdAt: string;
+}
+export interface AdminSupportTicket extends SupportTicket {
+  userId: string;
+  userEmail: string | null;
+}
+
 // ---- Niyet asistanı (sohbet) ----
 export type AssistRole = "user" | "assistant";
 export interface AssistMessage {
@@ -276,6 +297,26 @@ export const api = {
       body: JSON.stringify({ status }),
     }),
   deleteMyWatch: (id: string) => req<{ ok: boolean }>(`/v1/watchers/${id}`, { method: "DELETE" }),
+
+  // ---- Destek ----
+  createSupport: (kind: SupportKind, message: string) =>
+    req<SupportTicket>("/v1/support", { method: "POST", body: JSON.stringify({ kind, message }) }),
+  supportTickets: () => req<SupportTicket[]>("/v1/support"),
+  supportMessages: (id: string) => req<SupportMessage[]>(`/v1/support/${id}/messages`),
+  supportSend: (id: string, body: string) =>
+    req<SupportMessage>(`/v1/support/${id}/messages`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    }),
+  adminSupport: () => req<AdminSupportTicket[]>("/v1/admin/support"),
+  adminSupportMessages: (id: string) => req<SupportMessage[]>(`/v1/admin/support/${id}/messages`),
+  adminSupportReply: (id: string, body: string) =>
+    req<SupportMessage>(`/v1/admin/support/${id}/reply`, {
+      method: "POST",
+      body: JSON.stringify({ body }),
+    }),
+  adminSupportClose: (id: string) =>
+    req<{ ok: boolean }>(`/v1/admin/support/${id}/close`, { method: "POST" }),
   watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
   adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),
   feed: () => req<FeedItem[]>("/v1/feed"),

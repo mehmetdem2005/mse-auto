@@ -4,10 +4,13 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
+import { ChevronRight, LifeBuoy } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Platform, ScrollView, Text, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function Settings() {
+  const router = useRouter();
   const session = useAuth((s) => s.session);
   const setSession = useAuth((s) => s.setSession);
   const [status, setStatus] = useState<string | null>(null);
@@ -73,6 +76,24 @@ export default function Settings() {
         <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">hesap</Text>
         <Text className="text-text">{session?.email ?? session?.userId ?? "—"}</Text>
       </View>
+
+      <Pressable
+        onPress={() => router.push("/support")}
+        accessibilityRole="button"
+        accessibilityLabel="Destek ve iletişim sayfasını aç"
+        className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+      >
+        <View className="flex-row items-center gap-3">
+          <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+            <LifeBuoy size={18} color="#6366F1" />
+          </View>
+          <View className="flex-1">
+            <Text className="text-text text-sm font-semibold">Destek & İletişim</Text>
+            <Text className="text-muted text-xs mt-0.5">Sorun bildir · canlı destek · e-posta</Text>
+          </View>
+          <ChevronRight size={16} color="#475569" />
+        </View>
+      </Pressable>
 
       <View className="bg-panel border border-line rounded-xl p-5 mb-4">
         <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">bildirimler</Text>

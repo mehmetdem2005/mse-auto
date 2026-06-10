@@ -15,6 +15,7 @@ import { errorHandler, requestId, requestLogger } from "./observability";
 import { plansRoutes } from "./plans.route";
 import { onlyMethod, rateLimit } from "./rate-limit.middleware";
 import { subscriptionRoutes } from "./subscription.route";
+import { supportRoutes } from "./support.route";
 import { watchersRoutes } from "./watchers.route";
 import { webhookRoutes } from "./webhook.route";
 
@@ -67,11 +68,14 @@ export function createApp(
     "/v1/watchers/assist",
     onlyMethod("POST", rateLimit(container.rateLimit.assist, "assist")),
   );
+  // Destek talebi açma da spam'e açık → aynı sıkı kovayla sınırlı (ayrı bucket).
+  app.use("/v1/support", onlyMethod("POST", rateLimit(container.rateLimit.assist, "support")));
 
   app.route("/v1/me", meRoutes(container));
   app.route("/v1/plans", plansRoutes(container));
   app.route("/v1/watchers", watchersRoutes(container));
   app.route("/v1/feed", feedRoutes(container));
+  app.route("/v1/support", supportRoutes(container));
   app.route("/v1/events", eventsRoutes(container));
   app.route("/v1/devices", devicesRoutes(container));
   app.route("/v1/subscription", subscriptionRoutes(container));

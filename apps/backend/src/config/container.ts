@@ -17,6 +17,7 @@ import type { JobQueue } from "../domain/queue";
 import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
 import type { SubscriptionRepository } from "../domain/subscription";
+import type { SupportRepository } from "../domain/support";
 import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
@@ -33,6 +34,7 @@ import { InMemoryPaymentGateway } from "../infrastructure/in-memory/payment.gate
 import { InMemoryPriceRepository } from "../infrastructure/in-memory/price.repo";
 import { InMemoryStore } from "../infrastructure/in-memory/store";
 import { InMemorySubscriptionRepository } from "../infrastructure/in-memory/subscription.repo";
+import { InMemorySupportRepository } from "../infrastructure/in-memory/support.repo";
 import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/topic.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import { logger } from "../infrastructure/logging/logger";
@@ -58,6 +60,7 @@ import { SupabaseDeviceRepository } from "../infrastructure/supabase/device.repo
 import { SupabaseMonitoringRepository } from "../infrastructure/supabase/monitoring.repo";
 import { SupabasePriceRepository } from "../infrastructure/supabase/price.repo";
 import { SupabaseSubscriptionRepository } from "../infrastructure/supabase/subscription.repo";
+import { SupabaseSupportRepository } from "../infrastructure/supabase/support.repo";
 import { SupabaseCanonicalTopicRepository } from "../infrastructure/supabase/topic.repo";
 import { SupabaseWatchRepository } from "../infrastructure/supabase/watch.repo";
 import type { Env } from "./env";
@@ -73,6 +76,7 @@ export interface Container {
   admin: AdminRepository;
   adminConsole: AdminConsoleRepository;
   analytics: AnalyticsRepository;
+  support: SupportRepository;
   checker: Checker;
   assistant: IntentAssistant;
   notifier: Notifier;
@@ -176,6 +180,7 @@ export function createContainer(env: Env): Container {
       admin: new SupabaseAdminRepository(db),
       adminConsole: new SupabaseAdminConsoleRepository(db),
       analytics: new SupabaseAnalyticsRepository(db),
+      support: new SupabaseSupportRepository(db),
       checker,
       assistant,
       notifier,
@@ -199,6 +204,7 @@ export function createContainer(env: Env): Container {
     admin: new InMemoryAdminRepository(adminIdsFromEnv(env)),
     adminConsole: new InMemoryAdminConsoleRepository(),
     analytics: new InMemoryAnalyticsRepository(store),
+    support: new InMemorySupportRepository(store),
     checker,
     assistant,
     notifier,

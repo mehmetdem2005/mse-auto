@@ -13,4 +13,10 @@ export class SupabaseAdminRepository implements AdminRepository {
     if (error) throw new Error(`isAdmin: ${error.message}`);
     return data !== null;
   }
+
+  async listAdminIds(): Promise<string[]> {
+    const { data, error } = await this.db.from("admins").select("user_id");
+    if (error) throw new Error(`listAdminIds: ${error.message}`);
+    return (data ?? []).map((r) => r.user_id);
+  }
 }

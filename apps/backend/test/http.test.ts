@@ -282,6 +282,52 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(body.points[0].date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
+  it("destek akışı: talep aç → admin listeler/yanıtlar → sahip görür; yabancı 404", async () => {
+    const app = makeApp("admin1");
+    // kullanıcı canlı talep açar
+    const created = await app.request(
+      "/v1/support",
+      post({ kind: "live", message: "Uygulama bildirim göndermiyor" }, "u1"),
+    );
+    expect(created.status).toBe(201);
+    const t = (await created.json()) as { id: string; status: string; lastMessage: string };
+    expect(t.status).toBe("open");
+    expect(t.lastMessage).toContain("bildirim");
+
+    // admin listede görür
+    const adminList = await app.request("/v1/admin/support", { headers: bearer("admin1") });
+    expect(adminList.status).toBe(200);
+    const rows = (await adminList.json()) as { id: string }[];
+    expect(rows.some((r) => r.id === t.id)).toBe(true);
+
+    // admin yanıtlar → sahip mesajlarda görür
+    const reply = await app.request(
+      `/v1/admin/support/${t.id}/reply`,
+      post({ body: "Merhaba, bakıyoruz." }, "admin1"),
+    );
+    expect(reply.status).toBe(201);
+    const msgs = await app.request(`/v1/support/${t.id}/messages`, { headers: bearer("u1") });
+    const list = (await msgs.json()) as { sender: string; body: string }[];
+    expect(list).toHaveLength(2);
+    expect(list[1]?.sender).toBe("admin");
+
+    // yabancı kullanıcı talebi göremez/yazamaz → 404
+    const foreign = await app.request(`/v1/support/${t.id}/messages`, { headers: bearer("u2") });
+    expect(foreign.status).toBe(404);
+
+    // admin kapatır
+    const closed = await app.request(`/v1/admin/support/${t.id}/close`, {
+      method: "POST",
+      headers: bearer("admin1"),
+    });
+    expect(closed.status).toBe(200);
+    const mine = (await (await app.request("/v1/support", { headers: bearer("u1") })).json()) as {
+      id: string;
+      status: string;
+    }[];
+    expect(mine.find((x) => x.id === t.id)?.status).toBe("closed");
+  });
+
   it("GET /openapi.json → 200; yol tanımları içerir", async () => {
     const res = await makeApp().request("/openapi.json");
     expect(res.status).toBe(200);

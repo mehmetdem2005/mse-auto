@@ -76,6 +76,8 @@ export interface PriceRepository {
 
 export interface AdminRepository {
   isAdmin(userId: string): Promise<boolean>;
+  /** Tüm admin kullanıcı id'leri (destek bildirimi fan-out'u için). */
+  listAdminIds(): Promise<string[]>;
 }
 
 export interface AnalyticsRepository {
