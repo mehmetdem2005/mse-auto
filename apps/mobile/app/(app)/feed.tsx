@@ -15,30 +15,35 @@ import {
   ThumbsUp,
 } from "lucide-react-native";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
 const ACCENT = "#6366F1";
 
 type Filter = "all" | "detection" | "warning" | "unread";
-const FILTERS: { id: Filter; label: string }[] = [
-  { id: "all", label: "Tümü" },
-  { id: "detection", label: "Tespitler" },
-  { id: "warning", label: "Uyarılar" },
-  { id: "unread", label: "Okunmamış" },
-];
+const FILTER_IDS: Filter[] = ["all", "detection", "warning", "unread"];
+const FILTER_KEYS: Record<Filter, string> = {
+  all: "feed.filterAll",
+  detection: "feed.filterDetections",
+  warning: "feed.filterWarnings",
+  unread: "feed.filterUnread",
+};
 
-/** Göreli zaman: "az önce", "3 sa önce", tam tarih. */
-function ago(iso: string): string {
-  if (!iso) return "";
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 1) return "az önce";
-  if (m < 60) return `${m} dk önce`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h} sa önce`;
-  const d = Math.floor(h / 24);
-  if (d < 7) return `${d} gün önce`;
-  return new Date(iso).toLocaleDateString("tr-TR");
+/** Göreli zaman — aktif dilde (i18n). */
+function useAgo(): (iso: string) => string {
+  const { t, i18n } = useTranslation();
+  return (iso: string) => {
+    if (!iso) return "";
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return t("common.justNow");
+    if (m < 60) return t("common.minAgo", { n: m });
+    const h = Math.floor(m / 60);
+    if (h < 24) return t("common.hourAgo", { n: h });
+    const d = Math.floor(h / 24);
+    if (d < 7) return t("common.dayAgo", { n: d });
+    return new Date(iso).toLocaleDateString(i18n.language);
+  };
 }
 
 /** Watcher başına TEK kart (ADR-037): tespitleri gruplanır, en yenisi gösterilir. */
@@ -71,6 +76,7 @@ function groupFeed(list: FeedItem[]): FeedGroup[] {
 }
 
 export default function Feed() {
+  const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<Filter>("all");
@@ -155,44 +161,52 @@ export default function Feed() {
           <View>
             {/* Başlık bloğu (maket) */}
             <View className="flex-row items-center gap-2 mb-1">
-              <Text className="text-text text-2xl font-extrabold">Akış</Text>
+              <Text className="text-text text-2xl font-extrabold">{t("feed.title")}</Text>
               <Sparkles size={18} color={ACCENT} />
             </View>
-            <Text className="text-muted text-[13px] mb-4">
-              Tüm watcher'larından canlı gelişmeler.
-            </Text>
+            <Text className="text-muted text-[13px] mb-4">{t("feed.subtitle")}</Text>
 
             {/* 4 özet kartı — 2x2 (gerçek veriden) */}
             <View className="flex-row gap-2.5 mb-2.5">
               <StatCard
                 Icon={Eye}
                 n={watchers.data?.length ?? 0}
-                label="Toplam watcher"
+                label={t("feed.statWatchers")}
                 tint="#6366F1"
               />
-              <StatCard Icon={Sparkles} n={detectionsToday} label="Tespit bugün" tint="#16A34A" />
+              <StatCard
+                Icon={Sparkles}
+                n={detectionsToday}
+                label={t("feed.statToday")}
+                tint="#16A34A"
+              />
             </View>
             <View className="flex-row gap-2.5 mb-4">
               <StatCard
                 Icon={Radar}
                 n={stats.data?.checks24h ?? 0}
-                label="Tarama 24s"
+                label={t("feed.statScans")}
                 tint="#7C3AED"
               />
-              <StatCard Icon={BellRing} n={list.length} label="Bildirim" tint="#D97706" />
+              <StatCard
+                Icon={BellRing}
+                n={list.length}
+                label={t("feed.statNotifs")}
+                tint="#D97706"
+              />
             </View>
 
             {/* Segment filtre (maket) */}
             <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
-              {FILTERS.map((f) => {
-                const on = filter === f.id;
+              {FILTER_IDS.map((id) => {
+                const on = filter === id;
                 return (
                   <Pressable
-                    key={f.id}
-                    onPress={() => setFilter(f.id)}
+                    key={id}
+                    onPress={() => setFilter(id)}
                     accessibilityRole="tab"
                     accessibilityState={{ selected: on }}
-                    accessibilityLabel={f.label}
+                    accessibilityLabel={t(FILTER_KEYS[id])}
                     className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
                       on ? "bg-accent" : "bg-panel border border-line"
                     }`}
@@ -201,7 +215,7 @@ export default function Feed() {
                       className="text-[12px] font-semibold"
                       style={{ color: on ? "#FFFFFF" : "#475569" }}
                     >
-                      {f.label}
+                      {t(FILTER_KEYS[id])}
                     </Text>
                   </Pressable>
                 );
@@ -211,15 +225,15 @@ export default function Feed() {
             {unread > 0 ? (
               <View className="flex-row items-center mb-3">
                 <Text className="text-muted text-[11px] uppercase tracking-widest">
-                  {unread} yeni tespit
+                  {t("feed.newCount", { n: unread })}
                 </Text>
                 <Pressable
                   onPress={() => markAll.mutate()}
                   className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
                   accessibilityRole="button"
-                  accessibilityLabel="Tüm tespitleri okundu yap"
+                  accessibilityLabel={t("feed.markAllA11y")}
                 >
-                  <Text className="text-accent text-xs font-semibold">tümünü okundu yap</Text>
+                  <Text className="text-accent text-xs font-semibold">{t("feed.markAll")}</Text>
                 </Pressable>
               </View>
             ) : null}
@@ -227,12 +241,8 @@ export default function Feed() {
         }
         ListEmptyComponent={
           <EmptyState
-            title={filter === "all" ? "Henüz tespit yok" : "Bu filtrede sonuç yok"}
-            hint={
-              filter === "all"
-                ? "Watcher'ların bir şey yakaladığında burada görünür."
-                : "Filtreyi değiştirip tekrar dene."
-            }
+            title={filter === "all" ? t("feed.emptyTitle") : t("feed.emptyFilterTitle")}
+            hint={filter === "all" ? t("feed.emptyHint") : t("feed.emptyFilterHint")}
           />
         }
         renderItem={({ item: g, index }) => (
@@ -245,7 +255,7 @@ export default function Feed() {
           </EnterItem>
         )}
       />
-      <Fab accessibilityLabel="Yeni watcher oluştur" onPress={() => router.push("/new")} />
+      <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
     </View>
   );
 }
@@ -255,6 +265,8 @@ function FeedCard({
   onOpen,
   onVote,
 }: { group: FeedGroup; onOpen: () => void; onVote: () => void }) {
+  const { t } = useTranslation();
+  const ago = useAgo();
   const item = group.latest;
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
   const isUnread = group.unreadIds.length > 0;
@@ -282,12 +294,14 @@ function FeedCard({
           </Text>
           <Text className="text-muted text-[11px] mt-0.5">{ago(item.detectedAt)}</Text>
         </View>
-        <Badge tone={sev.tone}>{sev.label}</Badge>
+        <Badge tone={sev.tone}>
+          {t(sev.kind === "warning" ? "feed.warning" : "feed.detection")}
+        </Badge>
       </View>
 
       {/* Tespit açıklaması */}
       <Text className="text-text text-[15px] leading-5 mt-2.5">
-        {item.description || "Bir tespit oldu."}
+        {item.description || t("feed.fallback")}
       </Text>
 
       <FactChips raw={item.facts} />
@@ -296,21 +310,25 @@ function FeedCard({
       <View className="flex-row items-center mt-3 pt-3 border-t border-line">
         {voted ? (
           <Text className="text-muted text-xs">
-            {voted === "correct" ? "Teşekkürler!" : "Not edildi, geliştireceğiz."}
+            {voted === "correct" ? t("feed.thanks") : t("feed.noted")}
           </Text>
         ) : (
           <>
-            <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-            <Vote kind="up" label="Doğru" onPress={() => mutation.mutate("correct")} />
+            <Text className="text-muted text-xs mr-3">{t("feed.wasCorrect")}</Text>
+            <Vote kind="up" label={t("feed.correct")} onPress={() => mutation.mutate("correct")} />
             <View className="w-2" />
-            <Vote kind="down" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
+            <Vote
+              kind="down"
+              label={t("feed.wrong")}
+              onPress={() => mutation.mutate("incorrect")}
+            />
           </>
         )}
         <View className="ml-auto">
           {group.count > 1 ? (
-            <Badge tone="muted">{`${group.count} tespit`}</Badge>
+            <Badge tone="muted">{t("feed.groupCount", { n: group.count })}</Badge>
           ) : isUnread ? (
-            <Badge tone="accent">Yeni</Badge>
+            <Badge tone="accent">{t("common.new")}</Badge>
           ) : null}
         </View>
       </View>

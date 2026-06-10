@@ -20,6 +20,7 @@ import {
   Users2,
 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 const FREQ = [1, 15, 60, 360, 720, 1440];
@@ -42,18 +43,21 @@ type FilterType = "none" | "geo" | "numeric" | "keyword";
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 const STEPS = [
-  { key: "intent", title: "Ne izlensin?", short: "Ne izlensin" },
-  { key: "source", title: "Kaynak tercihi", short: "Kaynak" },
-  { key: "frequency", title: "Ne sıklıkla kontrol edilsin?", short: "Sıklık" },
-  { key: "filter", title: "Kişisel filtre", short: "Filtre" },
-  { key: "alert", title: "Nasıl haber verilsin?", short: "Bildirim" },
-  { key: "review", title: "Özet ve onay", short: "Önizle" },
+  { key: "intent", titleK: "wizard.titles.intent", shortK: "wizard.steps.intent" },
+  { key: "source", titleK: "wizard.titles.source", shortK: "wizard.steps.source" },
+  { key: "frequency", titleK: "wizard.titles.freq", shortK: "wizard.steps.freq" },
+  { key: "filter", titleK: "wizard.titles.filter", shortK: "wizard.steps.filter" },
+  { key: "alert", titleK: "wizard.titles.alert", shortK: "wizard.steps.alert" },
+  { key: "review", titleK: "wizard.titles.review", shortK: "wizard.steps.review" },
 ] as const;
 
-const GREETING: AssistMessage = {
-  role: "assistant",
-  content:
-    "Merhaba! Ne olduğunda sana haber vereyim? Doğal dille anlat — genel kalırsa netleştirmek için soru soracağım. Örn. “iPhone 17 fiyatı 50.000 TL altına inince”.",
+const FREQ_KEYS: Record<number, { n: string; d: string }> = {
+  1: { n: "wizard.freqNames.f1", d: "wizard.freqDescs.f1" },
+  15: { n: "wizard.freqNames.f15", d: "wizard.freqDescs.f15" },
+  60: { n: "wizard.freqNames.f60", d: "wizard.freqDescs.f60" },
+  360: { n: "wizard.freqNames.f360", d: "wizard.freqDescs.f360" },
+  720: { n: "wizard.freqNames.f720", d: "wizard.freqDescs.f720" },
+  1440: { n: "wizard.freqNames.f1440", d: "wizard.freqDescs.f1440" },
 };
 
 /** Önerilen sıklığı plan sınırına ve seçeneklere oturt. */
@@ -66,15 +70,15 @@ function snapFreq(suggested: number, minAllowed: number): number {
 }
 
 function labelFreq(m: number): string {
-  if (m >= 1440) return "günlük";
-  if (m >= 60) return `${m / 60} saat`;
-  return `${m} dk`;
+  if (m >= 1440) return "24h";
+  if (m >= 60) return `${m / 60}h`;
+  return `${m}m`;
 }
 
 const ALERT_LABEL: Record<AlarmChannel, string> = {
-  silent: "Sessiz",
-  notify: "Bildirim",
-  alarm: "Alarm",
+  silent: "wizard.alertSilent",
+  notify: "wizard.alertNotify",
+  alarm: "wizard.alertAlarm",
 };
 
 const chip = (active: boolean): string =>
@@ -99,6 +103,7 @@ function CInput(props: {
 }
 
 export default function NewWatcher() {
+  const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const reduce = useReduceMotion();
@@ -109,7 +114,9 @@ export default function NewWatcher() {
   const [err, setErr] = useState<string | null>(null);
 
   // AI sohbeti (1. adım): geçmiş + taslak + netleşmiş niyet.
-  const [messages, setMessages] = useState<AssistMessage[]>([GREETING]);
+  const [messages, setMessages] = useState<AssistMessage[]>([
+    { role: "assistant", content: t("wizard.greeting") },
+  ]);
   const [draft, setDraft] = useState("");
   const [readyIntent, setReadyIntent] = useState<string | null>(null);
   const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
@@ -226,12 +233,13 @@ export default function NewWatcher() {
   }
 
   function filterSummary(): string {
-    if (filterType === "none") return "Yok";
-    if (filterType === "geo") return `Konum ${geoLat}, ${geoLng} · ${geoRadius} km içi`;
+    if (filterType === "none") return t("wizard.filterNone");
+    if (filterType === "geo")
+      return t("wizard.filterGeoSum", { lat: geoLat, lng: geoLng, r: geoRadius });
     if (filterType === "numeric") {
       return `${numDir === "below" ? "≤" : "≥"} ${numThreshold}${numCurrency ? ` ${numCurrency}` : ""}`;
     }
-    return `Kelime: ${keywords}`;
+    return t("wizard.filterKeySum", { words: keywords });
   }
 
   const mutation = useMutation({
@@ -260,7 +268,7 @@ export default function NewWatcher() {
   function next() {
     setErr(null);
     if (!stepValid(step)) {
-      setErr(step === 0 ? "Önce asistanla niyeti netleştir." : "Filtre alanları geçersiz.");
+      setErr(step === 0 ? t("wizard.needIntent") : t("wizard.badFilter"));
       return;
     }
     if (isLast) {
@@ -282,7 +290,7 @@ export default function NewWatcher() {
         className="px-5 pt-4"
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
-        accessibilityLabel={`Adım ${step + 1} / ${STEPS.length}: ${current.title}`}
+        accessibilityLabel={`${step + 1} / ${STEPS.length}: ${t(current.titleK)}`}
       >
         <View className="flex-row items-center">
           {STEPS.map((st, i) => (
@@ -312,7 +320,7 @@ export default function NewWatcher() {
               key={st.key}
               className={`flex-1 text-[9px] ${i === step ? "text-accent font-semibold" : "text-muted"}`}
             >
-              {st.short}
+              {t(st.shortK)}
             </Text>
           ))}
         </View>
@@ -326,12 +334,12 @@ export default function NewWatcher() {
           if (step === 0) chatScroll.current?.scrollToEnd({ animated: !reduce });
         }}
       >
-        <Text className="text-text text-xl font-bold mb-4">{current.title}</Text>
+        <Text className="text-text text-xl font-bold mb-4">{t(current.titleK)}</Text>
         {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}
 
         {/* 1) Niyet — AI sohbeti (Gemini tarzı): muğlaksa asistan soruyla netleştirir */}
         {current.key === "intent" ? (
-          <View accessibilityLabel="Asistan sohbeti">
+          <View accessibilityLabel={t("wizard.chatA11y")}>
             {messages.map((m, i) => (
               <EnterItem
                 // Sohbet geçmişi yalnız sona eklenir → indeks anahtarı kararlı.
@@ -391,11 +399,11 @@ export default function NewWatcher() {
             {readyIntent ? (
               <View className="bg-accent/10 border border-accent rounded-2xl px-4 py-3 mt-1">
                 <Text className="text-accent text-[10px] uppercase tracking-widest mb-1">
-                  izlemeye hazır
+                  {t("wizard.ready")}
                 </Text>
                 <Text className="text-text text-sm">{readyIntent}</Text>
                 <Text className="text-muted text-[11px] mt-1">
-                  Önerilen sıklık: {labelFreq(freq)} · “Devam” ile sürdür ya da yazmaya devam et.
+                  {t("wizard.readyHint", { freq: labelFreq(freq) })}
                 </Text>
               </View>
             ) : null}
@@ -412,10 +420,10 @@ export default function NewWatcher() {
             <View className="flex-row flex-wrap gap-2">
               {(
                 [
-                  ["auto", "Otomatik", Sparkles, "Önerilen"],
-                  ["official", "Resmî Açıklama", Landmark, "Kurum sitesi önce"],
-                  ["news", "Haberler", Newspaper, "Son 24 saat önce"],
-                  ["web", "Web", Globe, "Genel arama"],
+                  ["auto", t("wizard.srcAuto"), Sparkles, t("wizard.srcAutoD")],
+                  ["official", t("wizard.srcOfficial"), Landmark, t("wizard.srcOfficialD")],
+                  ["news", t("wizard.srcNews"), Newspaper, t("wizard.srcNewsD")],
+                  ["web", t("wizard.srcWeb"), Globe, t("wizard.srcWebD")],
                 ] as const
               ).map(([v, l, Icon, d]) => {
                 const sel = sourcePref === v;
@@ -442,8 +450,8 @@ export default function NewWatcher() {
               })}
               {(
                 [
-                  ["Sosyal Medya", Users2],
-                  ["Fiyat/Ürün", ShoppingBag],
+                  [t("wizard.srcSocial"), Users2],
+                  [t("wizard.srcShop"), ShoppingBag],
                 ] as const
               ).map(([l, Icon]) => (
                 <View
@@ -452,7 +460,7 @@ export default function NewWatcher() {
                 >
                   <Icon size={18} color="#94A3B8" />
                   <Text className="text-text text-sm font-semibold mt-1.5">{l}</Text>
-                  <Text className="text-muted text-[10px] mt-0.5">yakında</Text>
+                  <Text className="text-muted text-[10px] mt-0.5">{t("common.soon")}</Text>
                 </View>
               ))}
             </View>
@@ -462,12 +470,10 @@ export default function NewWatcher() {
         {/* 3) Sıklık */}
         {current.key === "frequency" ? (
           <>
-            <Text className="text-muted text-sm mb-3">
-              Daha sık kontrol daha hızlı haber demektir (ücretsiz planda en sık 60 dk).
-            </Text>
+            <Text className="text-muted text-sm mb-3">{t("wizard.freqHint")}</Text>
             <View className="flex-row flex-wrap gap-2">
               {FREQ.map((f) => {
-                const meta = FREQ_META[f];
+                const meta = FREQ_KEYS[f];
                 const locked = f < minFreq; // plan sınırı (free: 60 dk altı kilitli)
                 const sel = freq === f;
                 return (
@@ -477,16 +483,16 @@ export default function NewWatcher() {
                     onPress={() => setFreq(f)}
                     accessibilityRole="button"
                     accessibilityState={{ selected: sel, disabled: locked }}
-                    accessibilityLabel={`${meta?.name ?? labelFreq(f)} — ${meta?.desc ?? ""}${locked ? " (Pro planında)" : ""}`}
+                    accessibilityLabel={`${meta ? t(meta.n) : labelFreq(f)} — ${meta ? t(meta.d) : ""}${locked ? " (Pro)" : ""}`}
                     className={`w-[31%] rounded-xl border px-3 py-3 min-h-[64px] ${
                       sel ? "border-accent bg-accent/10" : "border-line bg-panel"
                     } ${locked ? "opacity-45" : ""}`}
                   >
                     <Text className={`text-sm font-semibold ${sel ? "text-accent" : "text-text"}`}>
-                      {meta?.name ?? labelFreq(f)}
+                      {meta ? t(meta.n) : labelFreq(f)}
                     </Text>
                     <View className="flex-row items-center gap-1 mt-0.5">
-                      <Text className="text-muted text-[10px]">{meta?.desc}</Text>
+                      <Text className="text-muted text-[10px]">{meta ? t(meta.d) : ""}</Text>
                       {locked ? (
                         <Text className="text-accent text-[9px] font-bold">PRO</Text>
                       ) : null}
@@ -501,17 +507,14 @@ export default function NewWatcher() {
         {/* 3) Kişisel filtre */}
         {current.key === "filter" ? (
           <>
-            <Text className="text-muted text-sm mb-3">
-              İsteğe bağlı. Kriterin cihazından çıkmaz; sunucu yalnız kamusal olayı yollar,
-              eşleşmeyi telefonun yapar.
-            </Text>
+            <Text className="text-muted text-sm mb-3">{t("wizard.filterHint")}</Text>
             <View className="flex-row flex-wrap gap-2 mb-2">
               {(
                 [
-                  ["none", "yok"],
-                  ["geo", "konum"],
-                  ["numeric", "sayı/fiyat"],
-                  ["keyword", "kelime"],
+                  ["none", t("wizard.fNone")],
+                  ["geo", t("wizard.fGeo")],
+                  ["numeric", t("wizard.fNum")],
+                  ["keyword", t("wizard.fKey")],
                 ] as const
               ).map(([v, l]) => {
                 const locked = v !== "none" && !canPersonal;
@@ -532,14 +535,18 @@ export default function NewWatcher() {
               })}
             </View>
             {!canPersonal ? (
-              <Text className="text-muted text-[11px] mb-3">Kişisel filtre Pro planında.</Text>
+              <Text className="text-muted text-[11px] mb-3">{t("wizard.proOnly")}</Text>
             ) : null}
 
             {filterType === "geo" ? (
               <View className="flex-row gap-2 mt-2">
-                <CInput value={geoLat} onChangeText={setGeoLat} placeholder="enlem" />
-                <CInput value={geoLng} onChangeText={setGeoLng} placeholder="boylam" />
-                <CInput value={geoRadius} onChangeText={setGeoRadius} placeholder="km" />
+                <CInput value={geoLat} onChangeText={setGeoLat} placeholder={t("wizard.lat")} />
+                <CInput value={geoLng} onChangeText={setGeoLng} placeholder={t("wizard.lng")} />
+                <CInput
+                  value={geoRadius}
+                  onChangeText={setGeoRadius}
+                  placeholder={t("wizard.km")}
+                />
               </View>
             ) : null}
 
@@ -554,17 +561,21 @@ export default function NewWatcher() {
                       accessibilityRole="button"
                     >
                       <Text className={numDir === d ? "text-accent text-xs" : "text-muted text-xs"}>
-                        {d === "below" ? "altına inince" : "üstüne çıkınca"}
+                        {d === "below" ? t("wizard.below") : t("wizard.above")}
                       </Text>
                     </Pressable>
                   ))}
                 </View>
                 <View className="flex-row gap-2">
-                  <CInput value={numThreshold} onChangeText={setNumThreshold} placeholder="eşik" />
+                  <CInput
+                    value={numThreshold}
+                    onChangeText={setNumThreshold}
+                    placeholder={t("wizard.threshold")}
+                  />
                   <CInput
                     value={numCurrency}
                     onChangeText={setNumCurrency}
-                    placeholder="birim (ops.)"
+                    placeholder={t("wizard.unit")}
                     numeric={false}
                   />
                 </View>
@@ -576,7 +587,7 @@ export default function NewWatcher() {
                 <CInput
                   value={keywords}
                   onChangeText={setKeywords}
-                  placeholder="virgülle: zam, indirim"
+                  placeholder={t("wizard.keywords")}
                   numeric={false}
                 />
               </View>
@@ -602,7 +613,7 @@ export default function NewWatcher() {
                     accessibilityRole="button"
                   >
                     <Text className={txt}>
-                      {locked ? `${ALERT_LABEL[v]} (Pro)` : ALERT_LABEL[v]}
+                      {locked ? `${t(ALERT_LABEL[v])} (Pro)` : t(ALERT_LABEL[v])}
                     </Text>
                   </Pressable>
                 );
@@ -669,11 +680,9 @@ export default function NewWatcher() {
                   })}
                 </View>
                 {!canAllSounds ? (
-                  <Text className="text-muted text-[10px] mt-1">Tüm sesler Pro planında.</Text>
+                  <Text className="text-muted text-[10px] mt-1">{t("wizard.allSoundsPro")}</Text>
                 ) : null}
-                <Text className="text-muted text-[10px] mt-2">
-                  Önizleme/çalma EAS derlemesinde. 100 ses assets/sounds içinde.
-                </Text>
+                <Text className="text-muted text-[10px] mt-2">{t("wizard.soundNote")}</Text>
               </View>
             ) : null}
           </>
@@ -682,21 +691,22 @@ export default function NewWatcher() {
         {/* 5) Özet */}
         {current.key === "review" ? (
           <Card>
-            <ReviewRow label="ne izlensin" value={rawIntent.trim() || "—"} />
+            <ReviewRow label={t("wizard.rIntent")} value={rawIntent.trim() || "—"} />
             <ReviewRow
-              label="kaynak"
+              label={t("wizard.rSource")}
               value={
-                { auto: "Otomatik", official: "Resmî Açıklama", news: "Haberler", web: "Web" }[
-                  sourcePref
-                ]
+                {
+                  auto: t("wizard.srcAuto"),
+                  official: t("wizard.srcOfficial"),
+                  news: t("wizard.srcNews"),
+                  web: t("wizard.srcWeb"),
+                }[sourcePref]
               }
             />
-            <ReviewRow label="sıklık" value={labelFreq(freq)} />
-            <ReviewRow label="kişisel filtre" value={filterSummary()} />
-            <ReviewRow label="uyarı" value={ALERT_LABEL[alarmChannel]} last />
-            <Text className="text-muted text-[11px] mt-4">
-              Ücretsiz planda 3 watcher ve en sık 60 dk sınırı vardır.
-            </Text>
+            <ReviewRow label={t("wizard.rFreq")} value={labelFreq(freq)} />
+            <ReviewRow label={t("wizard.rFilter")} value={filterSummary()} />
+            <ReviewRow label={t("wizard.rAlert")} value={t(ALERT_LABEL[alarmChannel])} last />
+            <Text className="text-muted text-[11px] mt-4">{t("wizard.rNote")}</Text>
           </Card>
         ) : null}
 
@@ -710,9 +720,9 @@ export default function NewWatcher() {
             value={draft}
             onChangeText={setDraft}
             multiline
-            placeholder="Mesaj yaz…"
+            placeholder={t("wizard.chatPlaceholder")}
             placeholderTextColor="#94A3B8"
-            accessibilityLabel="Asistana mesaj yaz"
+            accessibilityLabel={t("wizard.chatA11y")}
             onSubmitEditing={sendChat}
             blurOnSubmit
             className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
@@ -728,7 +738,7 @@ export default function NewWatcher() {
             onPress={sendChat}
             disabled={!draft.trim() || assist.isPending}
             accessibilityRole="button"
-            accessibilityLabel="Gönder"
+            accessibilityLabel={t("wizard.sendA11y")}
             className={`rounded-full w-12 h-12 min-h-[44px] items-center justify-center ${
               !draft.trim() || assist.isPending ? "bg-line" : "bg-accent"
             }`}
@@ -743,7 +753,9 @@ export default function NewWatcher() {
         {step > 0 ? (
           <View className="flex-1">
             <Btn tone="ghost" onPress={back} disabled={mutation.isPending}>
-              <Text className="text-text font-semibold uppercase tracking-wider text-xs">geri</Text>
+              <Text className="text-text font-semibold uppercase tracking-wider text-xs">
+                {t("common.back")}
+              </Text>
             </Btn>
           </View>
         ) : null}
@@ -753,7 +765,7 @@ export default function NewWatcher() {
               <ActivityIndicator color="#FFFFFF" />
             ) : (
               <Text className="text-white font-semibold uppercase tracking-wider text-xs">
-                {isLast ? "oluştur" : "devam"}
+                {isLast ? t("common.create") : t("common.continue")}
               </Text>
             )}
           </Btn>

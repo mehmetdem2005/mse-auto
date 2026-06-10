@@ -1,3 +1,5 @@
+// NOT (ADR-053): Admin konsolu yalnız işletmeciye görünür — bilinçli olarak
+// i18n kapsamı dışında (TR). Kullanıcı yüzeyleri 11 dilde.
 import {
   type AdminSubscription,
   type AdminSupportTicket,

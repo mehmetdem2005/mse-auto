@@ -601,3 +601,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P5 ✓ (parola toggle/buton etiketli, ≥44pt) · P8 ✓ (25010 *Attractiveness*) · P9 ✓.
 - **ISO:** 9241 (tipografi okunabilirlik + giriş diyaloğu) · 25010 *Usability/Attractiveness* · 42010.
 - **Sıradaki turlar:** sayfa-sayfa parite sürüyor; native Inter (expo-font) + diğer ekranların gradyan/derinlik cilası ayrı turlarda.
+
+## ADR-053 — Çoklu dil desteği: i18n altyapısı + 11 dil (TR + 10 büyük dil)
+- **Durum:** Kabul · TOGAF Phase C — ürün sahibi: "yazılar çoklu dile uygun mu yoksa gömülü mü? Düzelt + 10 büyük dil ekle".
+- **Tespit:** TÜM kullanıcı metinleri koda gömülü Türkçe'ydi (string literal'ler + sabit `tr-TR` tarih formatları) — i18n'e uygun DEĞİLDİ.
+- **Karar:** (1) **Altyapı**: i18next + react-i18next + expo-localization — cihaz dili otomatik algılanır; kullanıcı seçimi AsyncStorage'da kalıcı; eksik anahtar TR'ye düşer (fallback). `fmtDate/fmtTime` aktif dile göre. (2) **Diller (11)**: tr (taban) + en, es, de, fr, pt, ru, ar, hi, zh, ja. tr+en+es elle yazıldı; kalan 8 **Groq ile bölüm-bazlı üretildi** (placeholder/marka koruma kurallı) ve **TypeScript Catalog tipiyle doğrulandı** (eksik anahtar derlemede patlar — eksikler EN'den otomatik dolduruldu, raporlu). (3) **Dil seçici**: Ayarlar'da 11 dillik modal (native adlarla, seçim anında uygulanır + kalıcı). (4) **Ekran kapsaması**: login, sekmeler, akış, watcher listesi, sihirbaz (6 adım), abonelik, ayarlar, destek (liste+sohbet), araştırma detayı — tamamı t() üzerinden; göreli zaman/tarihler aktif dilde.
+- **Bilinçli kapsam dışı (dürüst):** Admin konsolu TR (yalnız işletmeciye görünür — kodda notlu) · backend API hata mesajları TR (Accept-Language desteği ayrı tur) · Arapça METİN çevrildi ama **RTL düzen aynalama yapılmadı** (I18nManager ayrı iş) · LLM asistan zaten kullanıcının dilinde yanıtlıyor (ADR-035 v3).
+- **Kalite notu:** 8 makine-çevirili katalog UI-kısa-metin düzeyinde; anadil düzeltmeleri tek dosyada yapılabilir (locales/*.ts). Tip güvenliği yapıyı garanti eder, çeviri kalitesini değil — abartılmıyor.
+- **P1–P9:** P5 ✓ (dil seçici erişilebilir; a11y etiketleri de çevrildi) · P7 ✓ (dil başına tek dosya, geri alınabilir) · P8 ✓.
+- **ISO:** 9241 (dil/yerelleştirme erişilebilirliği) · 25010 *Usability/Flexibility* · 25012 (tip-doğrulamalı katalog bütünlüğü) · 42010.

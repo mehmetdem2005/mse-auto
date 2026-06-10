@@ -5,13 +5,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { Send } from "lucide-react-native";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-function when(iso: string): string {
-  return new Date(iso).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+function when(iso: string, lang: string): string {
+  return new Date(iso).toLocaleTimeString(lang, { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function SupportThread() {
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const qc = useQueryClient();
   const [draft, setDraft] = useState("");
@@ -60,7 +62,7 @@ export default function SupportThread() {
             }`}
           >
             <Text
-              accessibilityLabel={`${m.sender === "user" ? "Sen" : "Destek"}: ${m.body}`}
+              accessibilityLabel={`${m.sender === "user" ? t("support.you") : t("support.supportTeam")}: ${m.body}`}
               className={m.sender === "user" ? "text-white text-sm" : "text-text text-sm"}
             >
               {m.body}
@@ -68,7 +70,7 @@ export default function SupportThread() {
             <Text
               className={`text-[10px] mt-1 ${m.sender === "user" ? "text-white/70" : "text-muted"}`}
             >
-              {when(m.createdAt)}
+              {when(m.createdAt, i18n.language)}
             </Text>
           </EnterItem>
         ))}
@@ -80,9 +82,9 @@ export default function SupportThread() {
           value={draft}
           onChangeText={setDraft}
           multiline
-          placeholder="Mesaj yaz…"
+          placeholder={t("support.msgPlaceholder")}
           placeholderTextColor="#94A3B8"
-          accessibilityLabel="Destek mesajı yaz"
+          accessibilityLabel={t("support.msgA11y")}
           className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
           style={{ textAlignVertical: "top" }}
         />
@@ -90,7 +92,7 @@ export default function SupportThread() {
           onPress={submit}
           disabled={!draft.trim() || send.isPending}
           accessibilityRole="button"
-          accessibilityLabel="Gönder"
+          accessibilityLabel={t("common.send")}
           className={`rounded-full w-12 h-12 min-h-[44px] items-center justify-center ${
             !draft.trim() || send.isPending ? "bg-line" : "bg-accent"
           }`}

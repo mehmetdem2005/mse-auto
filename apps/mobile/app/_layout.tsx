@@ -1,3 +1,4 @@
+import "@/i18n";
 import "../global.css";
 import { registerBackgroundNotifications } from "@/lib/background-notifications";
 import { queryClient } from "@/lib/query";

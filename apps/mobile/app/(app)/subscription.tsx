@@ -5,6 +5,7 @@ import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Crown, FileText, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
 function money(cents: number, currency = "usd"): string {
@@ -28,6 +29,7 @@ function Row({ k, v, tone }: { k: string; v: string; tone?: "pos" | "neg" }) {
 }
 
 export default function SubscriptionScreen() {
+  const { t, i18n } = useTranslation();
   const qc = useQueryClient();
   const sub = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const plans = useQuery({ queryKey: qk.plans, queryFn: api.plans });
@@ -68,7 +70,7 @@ export default function SubscriptionScreen() {
           }}
         >
           <View className="flex-row items-center justify-between">
-            <Badge tone="accent">MEVCUT PLAN</Badge>
+            <Badge tone="accent">{t("sub.currentPlan")}</Badge>
             <View
               className={`w-12 h-12 rounded-2xl items-center justify-center ${
                 isPro ? "bg-accent" : "bg-panel2"
@@ -84,26 +86,26 @@ export default function SubscriptionScreen() {
             {isPro ? "PRO" : "FREE"}
           </Text>
           <Text className="text-muted text-xs mt-0.5">
-            {isPro ? "Profesyonel plan" : "Ücretsiz plan"}
+            {isPro ? t("sub.proName") : t("sub.freeName")}
           </Text>
 
           {/* Gerçek haklar */}
           {s ? (
             <View className="flex-row flex-wrap gap-2 mt-4">
-              <Feature Icon={Gauge} label={`en sık ${s.limits.minFrequencyMinutes} dk`} />
+              <Feature Icon={Gauge} label={t("sub.minFreq", { n: s.limits.minFrequencyMinutes })} />
               <Feature
                 Icon={BellRing}
-                label={s.entitlements.alarmChannel ? "alarm açık" : "alarm (pro)"}
+                label={s.entitlements.alarmChannel ? t("sub.alarmOn") : t("sub.alarmPro")}
                 on={s.entitlements.alarmChannel}
               />
               <Feature
                 Icon={Music}
-                label={s.entitlements.allSounds ? "tüm sesler" : "sesler (pro)"}
+                label={s.entitlements.allSounds ? t("sub.soundsOn") : t("sub.soundsPro")}
                 on={s.entitlements.allSounds}
               />
               <Feature
                 Icon={SlidersHorizontal}
-                label={s.entitlements.personalFilters ? "kişisel filtre" : "filtre (pro)"}
+                label={s.entitlements.personalFilters ? t("sub.filtersOn") : t("sub.filtersPro")}
                 on={s.entitlements.personalFilters}
               />
             </View>
@@ -112,7 +114,7 @@ export default function SubscriptionScreen() {
           {/* Kullanım barı */}
           <View className="mt-5">
             <View className="flex-row justify-between mb-1.5">
-              <Text className="text-muted text-[11px]">Watcher kullanımın</Text>
+              <Text className="text-muted text-[11px]">{t("sub.usage")}</Text>
               <Text className="text-text text-[11px] font-semibold">
                 {used} / {max}
               </Text>
@@ -131,15 +133,8 @@ export default function SubscriptionScreen() {
       {/* Birincil CTA (maket: Planı Yükselt) — ödeme kapalıyken dürüst uyarı */}
       {!isPro ? (
         <View className="mt-4">
-          <Btn
-            onPress={() =>
-              Alert.alert(
-                "Planı Yükselt",
-                "Ödeme entegrasyonu çok yakında. Hazır olduğunda buradan tek dokunuşla Pro'ya geçebileceksin.",
-              )
-            }
-          >
-            <Text className="text-white text-[14px] font-semibold">Planı Yükselt</Text>
+          <Btn onPress={() => Alert.alert(t("sub.upgrade"), t("sub.upgradeMsg"))}>
+            <Text className="text-white text-[14px] font-semibold">{t("sub.upgrade")}</Text>
           </Btn>
         </View>
       ) : null}
@@ -149,22 +144,28 @@ export default function SubscriptionScreen() {
         <EnterItem index={1} className="mt-4">
           <View className="bg-panel border border-line rounded-2xl p-5">
             <Text className="text-muted text-[10px] tracking-widest uppercase mb-1">
-              faturalama bilgileri
+              {t("sub.billing")}
             </Text>
-            <Row k="Dönem" v={d.interval === "month" ? "Aylık" : "Yıllık"} />
-            <Row k="Tutar" v={money(d.amountCents, d.currency)} />
             <Row
-              k="Durum"
+              k={t("sub.period")}
+              v={d.interval === "month" ? t("sub.monthly") : t("sub.yearly")}
+            />
+            <Row k={t("sub.amount")} v={money(d.amountCents, d.currency)} />
+            <Row
+              k={t("sub.status")}
               v={
                 d.status === "active"
                   ? d.cancelAtPeriodEnd
-                    ? "dönem sonu iptal"
-                    : "Aktif"
-                  : "İptal"
+                    ? t("sub.stPeriodEnd")
+                    : t("sub.stActive")
+                  : t("sub.stCancel")
               }
               tone={d.status === "active" && !d.cancelAtPeriodEnd ? "pos" : "neg"}
             />
-            <Row k="Yenilenme" v={new Date(d.currentPeriodEnd).toLocaleDateString("tr-TR")} />
+            <Row
+              k={t("sub.renewal")}
+              v={new Date(d.currentPeriodEnd).toLocaleDateString(i18n.language)}
+            />
             {d.status === "active" && !d.cancelAtPeriodEnd ? (
               <View className="mt-4">
                 <Btn tone="danger" onPress={() => cancel.mutate()} disabled={cancel.isPending}>
@@ -178,11 +179,9 @@ export default function SubscriptionScreen() {
         <EnterItem index={1} className="mt-4">
           <View className="bg-panel border border-line rounded-2xl p-5">
             <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">
-              plan yükselt
+              {t("sub.plans")}
             </Text>
-            <Text className="text-muted text-xs mb-3">
-              Ödeme entegrasyonu yakında — fiyatlar aşağıda, satın alma henüz kapalı.
-            </Text>
+            <Text className="text-muted text-xs mb-3">{t("sub.plansNote")}</Text>
             {plans.data?.prices.map((p) => (
               <View
                 key={`${p.plan}-${p.interval}`}
@@ -193,10 +192,11 @@ export default function SubscriptionScreen() {
                     {p.plan} · {p.interval === "month" ? "Aylık" : "Yıllık"}
                   </Text>
                   <Text className="text-muted text-xs mt-0.5">
-                    {money(p.amountCents, p.currency)} / {p.interval === "month" ? "ay" : "yıl"}
+                    {money(p.amountCents, p.currency)} /{" "}
+                    {p.interval === "month" ? t("sub.perMonth") : t("sub.perYear")}
                   </Text>
                 </View>
-                <Badge tone="muted">yakında</Badge>
+                <Badge tone="muted">{t("common.soon")}</Badge>
               </View>
             ))}
           </View>
@@ -212,10 +212,8 @@ export default function SubscriptionScreen() {
             <View className="w-11 h-11 rounded-full bg-panel2 items-center justify-center mb-3">
               <FileText size={18} color="#475569" />
             </View>
-            <Text className="text-text text-sm font-medium">Henüz fatura yok</Text>
-            <Text className="text-muted text-xs text-center mt-1">
-              Ödeme entegrasyonu açıldığında faturaların burada listelenecek ve indirilebilecek.
-            </Text>
+            <Text className="text-text text-sm font-medium">{t("sub.invoicesEmpty")}</Text>
+            <Text className="text-muted text-xs text-center mt-1">{t("sub.invoicesHint")}</Text>
           </View>
         </View>
       </EnterItem>

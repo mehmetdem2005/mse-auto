@@ -12,17 +12,19 @@ import {
   ThumbsUp,
 } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
-function when(iso: string): string {
+function when(iso: string, lang = "tr"): string {
   const d = new Date(iso);
-  return `${d.toLocaleDateString("tr-TR")} ${d.toLocaleTimeString("tr-TR", {
+  return `${d.toLocaleDateString(lang)} ${d.toLocaleTimeString(lang, {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
 }
 
 export default function WatcherDetail(): ReactNode {
+  const { t } = useTranslation();
   const { id, admin } = useLocalSearchParams<{ id: string; admin?: string }>();
   const isAdmin = admin === "1";
   const q = useQuery({
@@ -56,7 +58,9 @@ export default function WatcherDetail(): ReactNode {
   return (
     <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
       {/* Tespitler önce — en önemli sonuç */}
-      <SectionLabel>tespitler ({eventGroups.length})</SectionLabel>
+      <SectionLabel>
+        {t("detail.detections")} ({eventGroups.length})
+      </SectionLabel>
       {eventGroups.length > 0 ? (
         eventGroups.map((g, i) => (
           <EnterItem key={g.latest.id} index={i}>
@@ -65,12 +69,14 @@ export default function WatcherDetail(): ReactNode {
         ))
       ) : (
         <Card>
-          <Text className="text-muted text-sm">Henüz bir tespit yok. İzleme sürüyor.</Text>
+          <Text className="text-muted text-sm">{t("detail.noDetections")}</Text>
         </Card>
       )}
 
       <View className="h-5" />
-      <SectionLabel>kontrol geçmişi ({runs.length})</SectionLabel>
+      <SectionLabel>
+        {t("detail.history")} ({runs.length})
+      </SectionLabel>
       {runs.length > 0 ? (
         runs.map((r, i) => (
           <EnterItem key={r.id} index={i}>
@@ -78,7 +84,7 @@ export default function WatcherDetail(): ReactNode {
           </EnterItem>
         ))
       ) : (
-        <Text className="text-muted text-sm">Henüz kontrol çalışması yok.</Text>
+        <Text className="text-muted text-sm">{t("detail.noHistory")}</Text>
       )}
     </ScrollView>
   );
@@ -106,6 +112,7 @@ function EventCard({
   times,
   canVote,
 }: { e: DetectionEventView; times: string[]; canVote: boolean }): ReactNode {
+  const { t, i18n } = useTranslation();
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
   const mutation = useMutation({
     mutationFn: (verdict: FeedbackVerdict) => api.feedback(e.id, verdict),
@@ -116,15 +123,20 @@ function EventCard({
     <View className="mb-3">
       <Card accent>
         <View className="flex-row items-center gap-2 mb-1.5">
-          <Badge tone="pos">● tespit</Badge>
-          <Text className="text-muted text-[11px] ml-auto">{when(e.detectedAt)}</Text>
+          <Badge tone="pos">● {t("detail.detected")}</Badge>
+          <Text className="text-muted text-[11px] ml-auto">
+            {when(e.detectedAt, i18n.language)}
+          </Text>
         </View>
         <Text className="text-text text-[15px] leading-5">{e.description}</Text>
         {times.length > 1 ? (
           <View className="flex-row items-center gap-1 mt-1.5">
             <RotateCw size={11} color="#475569" />
             <Text className="text-muted text-[11px]">
-              {times.length} kez bildirildi · ilki {when(times[times.length - 1] ?? "")}
+              {t("detail.repeatNote", {
+                n: times.length,
+                date: when(times[times.length - 1] ?? "", i18n.language),
+              })}
             </Text>
           </View>
         ) : null}
@@ -133,14 +145,22 @@ function EventCard({
           <View className="flex-row items-center mt-3 pt-3 border-t border-line">
             {voted ? (
               <Text className="text-muted text-xs">
-                {voted === "correct" ? "Teşekkürler!" : "Not edildi."}
+                {voted === "correct" ? t("feed.thanks") : t("feed.noted")}
               </Text>
             ) : (
               <>
-                <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-                <Vote kind="up" label="Doğru" onPress={() => mutation.mutate("correct")} />
+                <Text className="text-muted text-xs mr-3">{t("feed.wasCorrect")}</Text>
+                <Vote
+                  kind="up"
+                  label={t("feed.correct")}
+                  onPress={() => mutation.mutate("correct")}
+                />
                 <View className="w-2" />
-                <Vote kind="down" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
+                <Vote
+                  kind="down"
+                  label={t("feed.wrong")}
+                  onPress={() => mutation.mutate("incorrect")}
+                />
               </>
             )}
           </View>
@@ -176,6 +196,7 @@ function Vote({
  * (ADR-036: ne arandı, hangi sonuçlar görüldü, nasıl karar verildi).
  */
 function RunCard({ r }: { r: CheckRunView }): ReactNode {
+  const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
   const hit = r.decision;
   return (
@@ -185,18 +206,24 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
           onPress={() => setOpen((o) => !o)}
           accessibilityRole="button"
           accessibilityState={{ expanded: open }}
-          accessibilityLabel={`${when(r.ranAt)} kontrolü — ${hit ? "tespit var" : "değişiklik yok"}. Arama ve düşünme sürecini ${open ? "gizle" : "göster"}`}
+          accessibilityLabel={t("detail.expandA11y", {
+            date: when(r.ranAt, i18n.language),
+            status: hit ? t("detail.detected") : t("detail.noChange"),
+            action: open ? t("detail.hide") : t("detail.show"),
+          })}
           className="min-h-[44px] justify-center"
         >
           <View className="flex-row items-center gap-2">
             <Text style={{ color: hit ? "#16A34A" : "#94A3B8" }}>{hit ? "●" : "○"}</Text>
-            <Text className="text-text text-xs">{hit ? "tespit var" : "değişiklik yok"}</Text>
+            <Text className="text-text text-xs">
+              {hit ? t("detail.detected") : t("detail.noChange")}
+            </Text>
             {r.confidence !== null ? (
               <Text className="text-muted text-[11px]">
-                · %{Math.round(r.confidence * 100)} güven
+                · {t("detail.confidence", { n: Math.round(r.confidence * 100) })}
               </Text>
             ) : null}
-            <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
+            <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt, i18n.language)}</Text>
             {open ? (
               <ChevronDown size={15} color="#475569" />
             ) : (
@@ -209,24 +236,24 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
           <ExpandIn className="mt-2 pt-3 border-t border-line">
             {/* Gerçek LLM konuşması — kontrol anında saklanan girdi/çıktı dökümü (ADR-038) */}
             <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
-              modelle konuşma · {when(r.ranAt)}
+              {t("detail.convo")} · {when(r.ranAt, i18n.language)}
             </Text>
 
             {/* 1) Modele giden istek (birebir: konu + gördüğü sonuçlar) */}
             <View className="self-start max-w-[94%] bg-panel2 rounded-2xl rounded-bl-md px-3.5 py-3 mb-2">
               <Text className="text-muted text-[10px] uppercase tracking-wider mb-1">
-                watcher → modele
+                {t("detail.toModel")}
               </Text>
               <View className="flex-row items-center gap-1.5">
                 <Search size={12} color="#0F172A" />
                 <Text className="text-text text-xs leading-5 flex-1">
-                  İzlenen konu: “{r.searchQuery ?? "—"}”
+                  {t("detail.watching", { q: r.searchQuery ?? "—" })}
                 </Text>
               </View>
               {r.hits && r.hits.length > 0 ? (
                 <View className="mt-2">
                   <Text className="text-muted text-[11px] mb-1">
-                    Arama sonuçları ({r.hits.length}):
+                    {t("detail.results", { n: r.hits.length })}
                   </Text>
                   {r.hits.map((h, i) => (
                     <View key={`${r.id}-h${i}`} className="mb-1.5">
@@ -243,8 +270,8 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
               ) : (
                 <Text className="text-muted text-[11px] mt-1.5 italic">
                   {r.searchQuery
-                    ? `Arama yapıldı (${r.summary ?? "özet yok"}); sonuç listesi bu kayıtta yok.`
-                    : "Bu kontrol, arama dökümü kaydedilmeye başlanmadan önce çalıştı — yalnız modelin yanıtı saklı."}
+                    ? t("detail.noResultsList", { sum: r.summary ?? t("detail.noSummary") })
+                    : t("detail.noResultsOld")}
                 </Text>
               )}
             </View>
@@ -252,16 +279,18 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
             {/* 2) Modelin tam yanıtı (karar + güven + tam gerekçe) */}
             <View className="self-start max-w-[94%] bg-accent/10 border border-accent/30 rounded-2xl rounded-bl-md px-3.5 py-3">
               <Text className="text-accent text-[10px] uppercase tracking-wider mb-1">
-                model → karar
+                {t("detail.decision")}
               </Text>
               <Text className="text-text text-xs font-semibold">
-                {hit ? "● TESPİT VAR" : "○ Tespit yok"}
+                {hit ? `● ${t("detail.hit")}` : `○ ${t("detail.miss")}`}
                 {r.confidence !== null ? ` · güven %${Math.round(r.confidence * 100)}` : ""}
               </Text>
               {r.reasoning ? (
                 <Text className="text-text text-xs leading-5 mt-1.5">{r.reasoning}</Text>
               ) : (
-                <Text className="text-muted text-[11px] mt-1.5 italic">gerekçe kaydedilmemiş</Text>
+                <Text className="text-muted text-[11px] mt-1.5 italic">
+                  {t("detail.noReasoning")}
+                </Text>
               )}
             </View>
           </ExpandIn>

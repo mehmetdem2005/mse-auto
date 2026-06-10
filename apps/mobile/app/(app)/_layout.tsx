@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Tabs, useRouter } from "expo-router";
 import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 // M3 bottom-nav: aktif öğede pill (secondary-container) gösterge + vektör ikon.
@@ -26,6 +27,7 @@ function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; fo
 }
 
 export default function AppLayout() {
+  const { t } = useTranslation();
   useEffect(() => {
     configureNotificationHandler();
     return registerForegroundListener();
@@ -99,7 +101,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="feed"
         options={{
-          title: "Akış",
+          title: t("tabs.feed"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Sparkles} color={color} focused={focused} />
           ),
@@ -108,7 +110,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Watcher'lar",
+          title: t("tabs.watchers"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Bell} color={color} focused={focused} />
           ),
@@ -122,7 +124,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="subscription"
         options={{
-          title: "Abonelik",
+          title: t("tabs.subscription"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Star} color={color} focused={focused} />
           ),
@@ -131,7 +133,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Ayarlar",
+          title: t("tabs.settings"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Settings} color={color} focused={focused} />
           ),
@@ -140,7 +142,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="admin"
         options={{
-          title: "Admin",
+          title: t("tabs.admin"),
           href: isAdmin ? undefined : null,
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Shield} color={color} focused={focused} />

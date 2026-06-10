@@ -5,6 +5,7 @@ import { useAuth } from "@/stores/auth";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -19,6 +20,7 @@ import {
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 export default function Login() {
+  const { t } = useTranslation();
   const reduce = useReduceMotion();
   const setSession = useAuth((s) => s.setSession);
   const [email, setEmail] = useState("");
@@ -60,16 +62,14 @@ export default function Login() {
             <View>
               <Text className="text-white text-xl font-extrabold tracking-tight">Whenly</Text>
               <Text className="text-white/70 text-[11px] tracking-[2px] uppercase">
-                akıllı izleyici
+                {t("login.tagline")}
               </Text>
             </View>
           </View>
           <Text className="text-white text-[26px] font-extrabold leading-8 mt-7">
-            İzlemek istediğin{"\n"}her şey, anında.
+            {t("login.hero")}
           </Text>
-          <Text className="text-white/80 text-[13px] mt-2 leading-5">
-            Yapay zekâ konunu sürekli takip eder; gelişme olduğu an haber verir.
-          </Text>
+          <Text className="text-white/80 text-[13px] mt-2 leading-5">{t("login.heroSub")}</Text>
         </Animated.View>
       </LinearGradient>
 
@@ -91,11 +91,9 @@ export default function Login() {
                 elevation: 8,
               }}
             >
-              <Text className="text-text text-xl font-bold">Oturum aç</Text>
+              <Text className="text-text text-xl font-bold">{t("login.title")}</Text>
               <Text className="text-muted text-[13px] mt-1 mb-5">
-                {supabaseConfigured
-                  ? "Hesabınla giriş yap, kaldığın yerden devam et."
-                  : "Geliştirme modu · kullanıcı kimliği"}
+                {supabaseConfigured ? t("login.subtitle") : t("login.devSubtitle")}
               </Text>
 
               {err ? (
@@ -109,7 +107,7 @@ export default function Login() {
 
               {supabaseConfigured ? (
                 <>
-                  <Field label="e-posta">
+                  <Field label={t("login.email")}>
                     <TextInput
                       value={email}
                       onChangeText={setEmail}
@@ -121,7 +119,7 @@ export default function Login() {
                       className="bg-ink border border-line rounded-xl px-4 py-3.5 text-text text-[15px]"
                     />
                   </Field>
-                  <Field label="parola">
+                  <Field label={t("login.password")}>
                     <View className="flex-row items-center bg-ink border border-line rounded-xl pr-2">
                       <TextInput
                         value={password}
@@ -130,13 +128,13 @@ export default function Login() {
                         autoComplete="password"
                         placeholder="••••••••"
                         placeholderTextColor="#94A3B8"
-                        accessibilityLabel="parola"
+                        accessibilityLabel={t("login.password")}
                         className="flex-1 px-4 py-3.5 text-text text-[15px]"
                       />
                       <Pressable
                         onPress={() => setShowPass((v) => !v)}
                         accessibilityRole="button"
-                        accessibilityLabel={showPass ? "Parolayı gizle" : "Parolayı göster"}
+                        accessibilityLabel={showPass ? t("login.hidePass") : t("login.showPass")}
                         className="w-11 h-11 items-center justify-center"
                       >
                         {showPass ? (
@@ -148,7 +146,7 @@ export default function Login() {
                     </View>
                   </Field>
                   <PrimaryButton
-                    label="Giriş yap"
+                    label={t("login.signIn")}
                     busy={busy}
                     disabled={busy || !email || !password}
                     onPress={signIn}
@@ -156,7 +154,7 @@ export default function Login() {
                 </>
               ) : (
                 <>
-                  <Field label="dev kullanıcı kimliği">
+                  <Field label={t("login.devId")}>
                     <TextInput
                       value={devId}
                       onChangeText={setDevId}
@@ -167,7 +165,7 @@ export default function Login() {
                     />
                   </Field>
                   <PrimaryButton
-                    label="Giriş yap"
+                    label={t("login.signIn")}
                     busy={false}
                     disabled={!devId}
                     onPress={() =>
@@ -175,7 +173,7 @@ export default function Login() {
                     }
                   />
                   <Text className="text-muted text-[11px] mt-4 text-center">
-                    Geliştirme · token = kullanıcı kimliği
+                    {t("login.devNote")}
                   </Text>
                 </>
               )}
@@ -185,7 +183,7 @@ export default function Login() {
               entering={enter(160)}
               className="text-muted text-[11px] text-center mt-6 leading-4"
             >
-              Devam ederek Whenly'nin koşullarını ve gizlilik politikasını kabul edersin.
+              {t("login.terms")}
             </Animated.Text>
           </ScrollView>
         </KeyboardAvoidingView>

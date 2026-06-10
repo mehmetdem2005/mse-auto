@@ -15,15 +15,20 @@ import {
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, View } from "react-native";
 
-function labelFreq(m: number): string {
-  if (m >= 1440) return `günde ${Math.round(m / 1440) === 1 ? "bir" : m / 1440} kez`;
-  if (m >= 60) return `her ${m / 60} saatte`;
-  return `her ${m} dk`;
+function useLabelFreq(): (m: number) => string {
+  const { t } = useTranslation();
+  return (m: number) => {
+    if (m >= 1440) return t("watchers.perDay");
+    if (m >= 60) return t("watchers.perHours", { n: m / 60 });
+    return t("watchers.perMin", { n: m });
+  };
 }
 
 export default function Watchers() {
+  const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
@@ -42,18 +47,20 @@ export default function Watchers() {
     mutationFn: (v: { id: string; status: "active" | "paused" }) =>
       api.setMyWatchStatus(v.id, v.status),
     onSuccess: invalidate,
-    onError: (e) => Alert.alert("Olmadı", e instanceof Error ? e.message : "değiştirilemedi"),
+    onError: (e) =>
+      Alert.alert(t("watchers.fail"), e instanceof Error ? e.message : t("common.loadError")),
   });
   const del = useMutation({
     mutationFn: (id: string) => api.deleteMyWatch(id),
     onSuccess: invalidate,
-    onError: (e) => Alert.alert("Olmadı", e instanceof Error ? e.message : "silinemedi"),
+    onError: (e) =>
+      Alert.alert(t("watchers.fail"), e instanceof Error ? e.message : t("common.loadError")),
   });
 
   function confirmDelete(w: Watch) {
-    Alert.alert("Watcher'ı sil", `"${w.rawIntent}" kalıcı olarak silinsin mi?`, [
-      { text: "Vazgeç", style: "cancel" },
-      { text: "Sil", style: "destructive", onPress: () => del.mutate(w.id) },
+    Alert.alert(t("watchers.deleteTitle"), t("watchers.deleteMsg", { intent: w.rawIntent }), [
+      { text: t("common.cancel"), style: "cancel" },
+      { text: t("common.delete"), style: "destructive", onPress: () => del.mutate(w.id) },
     ]);
   }
 
@@ -74,9 +81,9 @@ export default function Watchers() {
               <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
                 {(
                   [
-                    ["all", "Tümü"],
-                    ["active", "Aktif"],
-                    ["paused", "Duraklatıldı"],
+                    ["all", t("watchers.filterAll")],
+                    ["active", t("watchers.filterActive")],
+                    ["paused", t("watchers.filterPaused")],
                   ] as const
                 ).map(([v, l]) => (
                   <Pressable
@@ -102,8 +109,9 @@ export default function Watchers() {
           ListFooterComponent={
             (data ?? []).length > 0 ? (
               <Text className="text-muted text-[11px] text-center mt-4">
-                {(data ?? []).filter((w) => w.status === "active").length} watcher aktif · tüm
-                gelişmeleri takip ediyoruz
+                {t("watchers.footer", {
+                  n: (data ?? []).filter((w) => w.status === "active").length,
+                })}
               </Text>
             ) : null
           }
@@ -111,10 +119,7 @@ export default function Watchers() {
           refreshing={isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListEmptyComponent={
-            <EmptyState
-              title="Henüz watcher yok"
-              hint="Sağ alttaki artı butonundan ilk izleyicini oluştur."
-            />
+            <EmptyState title={t("watchers.emptyTitle")} hint={t("watchers.emptyHint")} />
           }
           renderItem={({ item, index }) => (
             <EnterItem index={index}>
@@ -135,7 +140,7 @@ export default function Watchers() {
           )}
         />
       )}
-      <Fab accessibilityLabel="Yeni watcher oluştur" onPress={() => router.push("/new")} />
+      <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
     </View>
   );
 }
@@ -155,6 +160,8 @@ function WatchRow({
   onToggle: () => void;
   onDelete: () => void;
 }) {
+  const { t } = useTranslation();
+  const labelFreq = useLabelFreq();
   const [menu, setMenu] = useState(false);
   const active = item.status === "active";
   const cat = categoryOf(item.rawIntent);
@@ -171,7 +178,7 @@ function WatchRow({
         <Pressable
           onPress={() => setMenu(true)}
           accessibilityRole="button"
-          accessibilityLabel="Watcher menüsü"
+          accessibilityLabel={t("watchers.menuA11y")}
           className="w-11 h-11 -mr-2 -mt-1 items-center justify-center rounded-full active:bg-panel2"
         >
           <MoreVertical size={18} color="#475569" />
@@ -181,12 +188,12 @@ function WatchRow({
         <Pressable
           className="flex-1 bg-black/30 justify-center px-10"
           onPress={() => setMenu(false)}
-          accessibilityLabel="Menüyü kapat"
+          accessibilityLabel={t("common.close")}
         >
           <View className="bg-panel rounded-2xl overflow-hidden">
             <MenuItem
               Icon={Search}
-              label="Araştırmayı aç"
+              label={t("watchers.menuOpen")}
               onPress={() => {
                 setMenu(false);
                 onPress();
@@ -194,7 +201,7 @@ function WatchRow({
             />
             <MenuItem
               Icon={active ? Pause : Play}
-              label={active ? "Duraklat" : "Sürdür"}
+              label={active ? t("watchers.pause") : t("watchers.resume")}
               disabled={busy}
               onPress={() => {
                 setMenu(false);
@@ -203,7 +210,7 @@ function WatchRow({
             />
             <MenuItem
               Icon={Trash2}
-              label="Sil"
+              label={t("common.delete")}
               tone="danger"
               disabled={busy}
               onPress={() => {
@@ -215,9 +222,13 @@ function WatchRow({
         </Pressable>
       </Modal>
       <View className="flex-row items-center gap-2 mt-3">
-        <Badge tone={active ? "pos" : "muted"}>{active ? "Aktif" : "Duraklatıldı"}</Badge>
-        {hasAlert ? <Badge tone="neg">Uyarı</Badge> : null}
-        <Badge tone="accent">{item.archetype === "shared" ? "Paylaşılan" : "Kişisel"}</Badge>
+        <Badge tone={active ? "pos" : "muted"}>
+          {active ? t("common.active") : t("common.paused")}
+        </Badge>
+        {hasAlert ? <Badge tone="neg">{t("watchers.alert")}</Badge> : null}
+        <Badge tone="accent">
+          {item.archetype === "shared" ? t("watchers.shared") : t("watchers.personal")}
+        </Badge>
         <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
         {item.authorityDomain ? (
           <View className="flex-row items-center gap-1">
@@ -228,7 +239,7 @@ function WatchRow({
           </View>
         ) : null}
         <View className="flex-row items-center ml-auto">
-          <Text className="text-muted text-xs">araştırma</Text>
+          <Text className="text-muted text-xs">{t("watchers.research")}</Text>
           <ChevronRight size={14} color="#475569" />
         </View>
       </View>
