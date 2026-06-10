@@ -11,20 +11,39 @@ export class LiveChecker implements Checker {
   ) {}
 
   async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
-    const hits = await this.search.search(topic.canonicalQuery);
+    // ADR-046: önce RESMÎ kaynak (site:domain) + son 24 saatin HABERLERİ;
+    // ikisi de boşsa genel arama (qdr:w → filtresiz) yedeği.
+    const q = topic.canonicalQuery;
+    const [official, news] = await Promise.all([
+      ctx?.authorityDomain
+        ? this.search.search(`site:${ctx.authorityDomain} ${q}`).catch(() => [])
+        : Promise.resolve([]),
+      this.search.searchNews ? this.search.searchNews(q).catch(() => []) : Promise.resolve([]),
+    ]);
+    // Resmî sonuçlar başa + [RESMÎ] etiketi (model güven sıralaması için); URL dedupe.
+    const seen = new Set<string>();
+    const hits = [
+      ...official.slice(0, 4).map((h) => ({ ...h, title: `[RESMÎ] ${h.title}` })),
+      ...news,
+    ].filter((h) => {
+      if (seen.has(h.url)) return false;
+      seen.add(h.url);
+      return true;
+    });
+    const finalHits = hits.length > 0 ? hits.slice(0, 10) : await this.search.search(q);
     const r = await this.reasoner.reason({
-      canonicalQuery: topic.canonicalQuery,
-      hits,
+      canonicalQuery: q,
+      hits: finalHits,
       lastEventDescription: ctx?.lastEventDescription ?? null,
     });
     return {
       detected: r.detected,
       description: r.description,
-      resultSummary: `${hits.length} sonuç (${this.search.name})`,
+      resultSummary: `${finalHits.length} sonuç (resmî: ${Math.min(official.length, 4)} · haber: ${news.length})`,
       reasoning: r.reasoning,
       confidence: r.confidence,
-      searchQuery: topic.canonicalQuery,
-      hits,
+      searchQuery: ctx?.authorityDomain ? `${q} (+ site:${ctx.authorityDomain})` : q,
+      hits: finalHits,
     };
   }
 }

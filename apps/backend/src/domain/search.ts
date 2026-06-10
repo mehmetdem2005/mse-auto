@@ -9,4 +9,6 @@ export interface SearchHit {
 export interface SearchProvider {
   readonly name: string;
   search(query: string): Promise<SearchHit[]>;
+  /** Tarihe duyarlı HABER araması (son 24 saat) — destekleyen sağlayıcılarda. */
+  searchNews?(query: string): Promise<SearchHit[]>;
 }

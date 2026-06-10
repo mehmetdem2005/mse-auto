@@ -1,5 +1,6 @@
 import type { AccountGateway } from "../domain/account";
 import type { AuthVerifier } from "../domain/auth";
+import type { AuthorityResolver } from "../domain/authority";
 import type {
   AdminConsoleRepository,
   AdminRepository,
@@ -49,6 +50,10 @@ import { InMemoryRateLimiter } from "../infrastructure/rate-limit/in-memory.limi
 import { DeepSeekEventReasoner } from "../infrastructure/reasoner/deepseek.reasoner";
 import { GroqEventReasoner } from "../infrastructure/reasoner/groq.reasoner";
 import { FallbackSearchProvider } from "../infrastructure/search/fallback.search";
+import {
+  GroqAuthorityResolver,
+  NullAuthorityResolver,
+} from "../infrastructure/search/groq.authority";
 import { SerperSearchProvider } from "../infrastructure/search/serper.search";
 import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
 import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gateway";
@@ -79,6 +84,7 @@ export interface Container {
   support: SupportRepository;
   checker: Checker;
   assistant: IntentAssistant;
+  authority: AuthorityResolver;
   notifier: Notifier;
   queue: JobQueue;
   auth: AuthVerifier;
@@ -118,6 +124,12 @@ function buildChecker(env: Env): Checker {
     return new LiveChecker(new FallbackSearchProvider(providers), reasoner);
   }
   return new StubChecker();
+}
+
+function buildAuthority(env: Env): AuthorityResolver {
+  return env.GROQ_API_KEY
+    ? new GroqAuthorityResolver(env.GROQ_API_KEY)
+    : new NullAuthorityResolver();
 }
 
 function buildAssistant(env: Env): IntentAssistant {
@@ -171,6 +183,7 @@ function adminIdsFromEnv(env: Env): ReadonlySet<string> {
 export function createContainer(env: Env): Container {
   const checker = buildChecker(env);
   const assistant = buildAssistant(env);
+  const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
   const auth = buildAuth(env);
   const payment = buildPayment(env);
@@ -200,6 +213,7 @@ export function createContainer(env: Env): Container {
       support: new SupabaseSupportRepository(db),
       checker,
       assistant,
+      authority,
       notifier,
       queue,
       auth,
@@ -225,6 +239,7 @@ export function createContainer(env: Env): Container {
     support: new InMemorySupportRepository(store),
     checker,
     assistant,
+    authority,
     notifier,
     queue,
     auth,

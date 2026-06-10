@@ -1,11 +1,16 @@
+import type { AuthorityResolver } from "../domain/authority";
 import type { CheckOutcome, Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { EventFacts } from "../domain/personal";
+import type { CanonicalTopicRepository } from "../domain/ports";
 import type { CanonicalTopic } from "../domain/topic";
 
 export interface RunTopicCheckDeps {
   checker: Checker;
   monitoring: MonitoringRepository;
+  /** Resmî kaynak çözümü (ADR-046) — opsiyonel: yoksa genel arama sürer. */
+  topics?: CanonicalTopicRepository | undefined;
+  authority?: AuthorityResolver | undefined;
 }
 
 export interface RunTopicCheckResult {
@@ -29,9 +34,27 @@ export async function runTopicCheck(
   const lastEvents = await deps.monitoring.listDetectionEvents(topic.id, 1);
   const lastEventDescription = lastEvents[0]?.description ?? null;
 
+  // Resmî kaynak (ADR-046): konu başına BİR KEZ çözülür, cache'lenir.
+  let authorityDomain: string | null = null;
+  if (deps.topics) {
+    try {
+      const auth = await deps.topics.getAuthority(topic.id);
+      if (auth.resolved) {
+        authorityDomain = auth.domain;
+      } else if (deps.authority) {
+        const info = await deps.authority.resolve(topic.canonicalQuery);
+        authorityDomain = info.domain;
+        await deps.topics.setAuthority(topic.id, info.domain);
+      }
+    } catch {
+      // Çözüm hatası kontrolü düşürmez; bir sonraki koşuda yeniden denenir.
+      authorityDomain = null;
+    }
+  }
+
   let outcome: CheckOutcome;
   try {
-    outcome = await deps.checker.check(topic, { lastEventDescription });
+    outcome = await deps.checker.check(topic, { lastEventDescription, authorityDomain });
   } catch (err) {
     // Checker hatası (örn. arama/LLM kotası): topic'i sonsuz "due" döngüsünde
     // bırakmamak için başarısız bir CheckRun kaydet + checked işaretle.

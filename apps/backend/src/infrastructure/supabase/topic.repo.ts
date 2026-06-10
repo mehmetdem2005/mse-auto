@@ -32,4 +32,22 @@ export class SupabaseCanonicalTopicRepository implements CanonicalTopicRepositor
     if (error || !data) throw new Error(`canonical_topics upsert: ${error?.message ?? "boş"}`);
     return toDomain(data);
   }
+
+  async getAuthority(topicId: string): Promise<{ domain: string | null; resolved: boolean }> {
+    const { data, error } = await this.db
+      .from("canonical_topics")
+      .select("authority_domain, authority_resolved")
+      .eq("id", topicId)
+      .maybeSingle();
+    if (error) throw new Error(`topic authority get: ${error.message}`);
+    return { domain: data?.authority_domain ?? null, resolved: data?.authority_resolved ?? false };
+  }
+
+  async setAuthority(topicId: string, domain: string | null): Promise<void> {
+    const { error } = await this.db
+      .from("canonical_topics")
+      .update({ authority_domain: domain, authority_resolved: true })
+      .eq("id", topicId);
+    if (error) throw new Error(`topic authority set: ${error.message}`);
+  }
 }

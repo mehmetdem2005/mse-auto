@@ -5,6 +5,7 @@ import type { Checker } from "../src/domain/checker";
 import type { Notifier, PushMessage } from "../src/domain/notifier";
 import { InMemoryMonitoringRepository } from "../src/infrastructure/in-memory/monitoring.repo";
 import { InMemoryStore } from "../src/infrastructure/in-memory/store";
+import { InMemoryCanonicalTopicRepository } from "../src/infrastructure/in-memory/topic.repo";
 
 function seed() {
   const store = new InMemoryStore();
@@ -58,6 +59,38 @@ const checker: Checker = {
   },
 };
 const topic = { id: "t1", canonicalQuery: "deprem türkiye", lastCheckedAt: null };
+
+describe("resmî kaynak çözümü + cache (ADR-046)", () => {
+  it("ilk koşuda çözer ve kaydeder; ikinci koşuda resolver ÇAĞRILMAZ; ctx'e domain gider", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const topics = new InMemoryCanonicalTopicRepository(store);
+    let resolveCalls = 0;
+    const authority = {
+      async resolve() {
+        resolveCalls += 1;
+        return { domain: "kurum.gov.tr", name: "Kurum" };
+      },
+    };
+    const seenDomains: (string | null | undefined)[] = [];
+    const capturing: Checker = {
+      async check(_t, ctx) {
+        seenDomains.push(ctx?.authorityDomain);
+        return {
+          detected: false,
+          description: null,
+          resultSummary: "x",
+          reasoning: "r",
+          confidence: 0.5,
+        };
+      },
+    };
+    await runTopicCheck({ checker: capturing, monitoring, topics, authority }, topic);
+    await runTopicCheck({ checker: capturing, monitoring, topics, authority }, topic);
+    expect(resolveCalls).toBe(1); // konu başına TEK çözüm (cache)
+    expect(seenDomains).toEqual(["kurum.gov.tr", "kurum.gov.tr"]);
+  });
+});
 
 describe("tekrar-bildirim bastırma (ADR-037)", () => {
   it("ikinci kontrolde checker'a son bildirilen olay verilir", async () => {

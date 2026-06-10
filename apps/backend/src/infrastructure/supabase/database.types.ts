@@ -20,6 +20,8 @@ export interface Database {
           check_state: string;
           last_checked_at: string | null;
           created_at: string;
+          authority_domain: string | null;
+          authority_resolved: boolean;
         };
         Insert: {
           canonical_query: string;
@@ -33,6 +35,8 @@ export interface Database {
           canonical_query?: string;
           search_params?: Json;
           check_state?: string;
+          authority_domain?: string | null;
+          authority_resolved?: boolean;
           last_checked_at?: string | null;
         };
         Relationships: [];

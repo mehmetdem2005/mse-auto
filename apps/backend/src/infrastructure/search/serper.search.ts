@@ -9,6 +9,9 @@ interface SerperOrganic {
 interface SerperResponse {
   organic?: SerperOrganic[];
 }
+interface SerperNewsResponse {
+  news?: SerperOrganic[];
+}
 
 /** Serper.dev (primary) — POST google.serper.dev/search, X-API-KEY. */
 export class SerperSearchProvider implements SearchProvider {
@@ -24,6 +27,23 @@ export class SerperSearchProvider implements SearchProvider {
     const recent = await this.doSearch(query, "qdr:w");
     if (recent.length > 0) return recent;
     return this.doSearch(query, null);
+  }
+
+  /** Haber araması: google.serper.dev/news, SON 24 SAAT (ADR-046 güncellik). */
+  async searchNews(query: string): Promise<SearchHit[]> {
+    const res = await this.fetchImpl("https://google.serper.dev/news", {
+      method: "POST",
+      headers: { "X-API-KEY": this.apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ q: query, num: 10, gl: "tr", hl: "tr", tbs: "qdr:d" }),
+    });
+    if (!res.ok) throw new Error(`serper news ${res.status}`);
+    const data = (await res.json()) as SerperNewsResponse;
+    return (data.news ?? []).map((o) => ({
+      title: o.title ?? "",
+      snippet: o.snippet ?? "",
+      url: o.link ?? "",
+      date: o.date ?? null,
+    }));
   }
 
   private async doSearch(query: string, tbs: string | null): Promise<SearchHit[]> {

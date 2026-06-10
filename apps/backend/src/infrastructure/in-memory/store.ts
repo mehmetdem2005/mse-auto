@@ -45,6 +45,7 @@ export class InMemoryStore {
   readonly topicIdByQuery = new Map<string, string>();
   readonly watches: Watch[] = [];
   readonly checkRuns: StoredCheckRun[] = [];
+  readonly topicAuthority = new Map<string, { domain: string | null; resolved: boolean }>();
   readonly supportTickets: {
     id: string;
     userId: string;

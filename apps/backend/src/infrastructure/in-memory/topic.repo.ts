@@ -24,4 +24,12 @@ export class InMemoryCanonicalTopicRepository implements CanonicalTopicRepositor
     this.store.topicIdByQuery.set(topic.canonicalQuery, topic.id);
     return topic;
   }
+
+  async getAuthority(topicId: string): Promise<{ domain: string | null; resolved: boolean }> {
+    return this.store.topicAuthority.get(topicId) ?? { domain: null, resolved: false };
+  }
+
+  async setAuthority(topicId: string, domain: string | null): Promise<void> {
+    this.store.topicAuthority.set(topicId, { domain, resolved: true });
+  }
 }

@@ -1,6 +1,8 @@
 import { composeEventAlert } from "../domain/alert-text";
+import type { AuthorityResolver } from "../domain/authority";
 import type { Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
+import type { CanonicalTopicRepository } from "../domain/ports";
 import type { JobQueue } from "../domain/queue";
 import { DELIVERY_QUEUE, type DeliveryJob } from "./delivery";
 import { runTopicCheck } from "./run-topic-check";
@@ -10,6 +12,8 @@ export interface MonitoringWorkerDeps {
   queue: JobQueue;
   monitoring: MonitoringRepository;
   checker: Checker;
+  topics?: CanonicalTopicRepository;
+  authority?: AuthorityResolver;
 }
 
 /** Worker: check job'larını işler; tespit varsa teslim job'u kuyruğa alır. */
@@ -21,7 +25,12 @@ export async function registerMonitoringWorker(deps: MonitoringWorkerDeps): Prom
       lastCheckedAt: job.lastCheckedAt,
     };
     const result = await runTopicCheck(
-      { checker: deps.checker, monitoring: deps.monitoring },
+      {
+        checker: deps.checker,
+        monitoring: deps.monitoring,
+        topics: deps.topics,
+        authority: deps.authority,
+      },
       topic,
     );
     if (result.detected && result.eventId !== null && result.description !== null) {

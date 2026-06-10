@@ -5,6 +5,9 @@ import type { Watch } from "./watch";
 export interface CanonicalTopicRepository {
   findByCanonicalQuery(canonicalQuery: string): Promise<CanonicalTopic | null>;
   create(input: { canonicalQuery: string }): Promise<CanonicalTopic>;
+  /** Konunun resmî kaynağı (ADR-046): resolved=false ise henüz çözülmedi. */
+  getAuthority(topicId: string): Promise<{ domain: string | null; resolved: boolean }>;
+  setAuthority(topicId: string, domain: string | null): Promise<void>;
 }
 
 export interface WatchRepository {

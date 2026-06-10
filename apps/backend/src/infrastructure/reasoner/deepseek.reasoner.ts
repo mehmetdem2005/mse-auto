@@ -27,6 +27,7 @@ export class DeepSeekEventReasoner implements EventReasoner {
       'Çıktıyı şu JSON şemasıyla ver: {"detected": boolean, "description": string|null, "reasoning": string, "confidence": number 0..1}.',
       "detected=true ise description olayın kısa, PII'siz açıklamasıdır; aksi halde null.",
       "ÖNEMLİ: 'Daha önce bildirilen olay' verilirse, yalnızca ondan FARKLI/YENİ bir gelişme tespittir; aynı olayın tekrarı/teyidi için detected=false ver ve reasoning'de 'daha önce bildirildi' de.",
+      "KAYNAK GÜVENİLİRLİĞİ: '[RESMÎ]' etiketli sonuçlar kurumun kendi sitesindendir — EN GÜÇLÜ kanıttır; haber siteleriyle çelişirse resmî kaynak esastır. Resmî kaynak yoksa en YENİ tarihli habere ağırlık ver.",
       "TARİH: Sana bugünün tarihi verilir. Sonuçların tarihlerini bugünle kıyasla — bugüne yakın tarihli kanıt olmadan detected=true verme; eski tarihli (geçen yıl/aylar önce) haber güncel olayın kanıtı DEĞİLDİR.",
     ].join(" ");
     const user = [

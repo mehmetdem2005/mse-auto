@@ -16,4 +16,19 @@ export class FallbackSearchProvider implements SearchProvider {
     }
     throw new Error(`tüm arama sağlayıcıları başarısız: ${String(lastError)}`);
   }
+
+  /** Haber araması: destekleyen ilk sağlayıcıdan; hiçbiri desteklemiyorsa boş. */
+  async searchNews(query: string): Promise<SearchHit[]> {
+    let lastError: unknown;
+    for (const provider of this.providers) {
+      if (!provider.searchNews) continue;
+      try {
+        return await provider.searchNews(query);
+      } catch (err) {
+        lastError = err;
+      }
+    }
+    if (lastError) throw new Error(`haber araması başarısız: ${String(lastError)}`);
+    return [];
+  }
 }

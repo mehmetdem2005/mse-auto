@@ -23,6 +23,8 @@ export async function startWorkers(
     queue: container.queue,
     monitoring: container.monitoring,
     checker: container.checker,
+    topics: container.topics,
+    authority: container.authority,
   });
   await registerDeliveryWorker({
     queue: container.queue,
