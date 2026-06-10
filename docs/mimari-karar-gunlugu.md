@@ -584,3 +584,11 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P2 ✓ (tercih DB→port→ctx zinciri) · P5 ✓ (menuitem rolleri; pasif kartlar `disabled` görünümlü) · P8 ✓ · P9 ✓.
 - **ISO:** 25010 *Functional Suitability* (tercih aramayı gerçekten etkiler — testli) · 25012 (sahte kanal/fatura yok; 'yakında' açık) · 9241 (menü deseni, aşamalı ifşa) · 42010.
 - **Doğrulama:** 2 yeni test (çoğunluk tercihi ctx'e gider · news tercihi sıralamayı değiştirir) — toplam 86.
+
+## ADR-051 — Faz 1/6: Akış ekranı maket-birebir hizalama
+- **Durum:** Kabul · TOGAF Phase C — ürün sahibi: "her yanıtta 1 sayfayı maketle birebir yapalım" (sayfa-sayfa parite turu, bu tur = Akış).
+- **Bağlam:** Konteyner sıfırlanınca yüklü maket görselleri silindi; önceki turlarda not edilen Akış düzenine göre hizalandı (piksel-ince-ayar için görsel tekrar gerekebilir — kullanıcıya belirtildi).
+- **Karar (Akış / feed.tsx):** (1) Ekran-içi **başlık bloğu**: "Akış" + sparkle + "Tüm watcher'larından canlı gelişmeler." (2) **4 özet kartı 2×2** (StatCard: renkli ikon dairesi + büyük sayı + etiket) — Toplam watcher / Tespit bugün / Tarama 24s / Bildirim; hepsi GERÇEK (`watchers`, bugünkü tespit, `meStats.checks24h`, feed uzunluğu). (3) **4 segment filtre** (Tümü/Tespitler/Uyarılar/Okunmamış) — maketteki Tespit/Uyarı/Bilgilendirme yerine **gerçek** anlamlandırma: severity niyetten türetiliyor (`severityOf`: afet/acil→Uyarı, diğer→Tespit; Bilgilendirme yerine Okunmamış — uydurma yok). (4) **Kart anatomisi**: kategori ikon-avatarı (10×10) + watcher adı + göreli zaman + **severity rozeti** (Uyarı turuncu / Tespit yeşil — Badge'e `warn` tonu eklendi) + açıklama + geri bildirim satırı + grup/yeni rozeti. (5) Tab header'a **sağ üst zil ikonu** (maket) → bildirim/destek.
+- **Yapılamayan/uyarlanan (dürüst):** maketteki "Bilgilendirme" severity'si veri modelinde yok → "Okunmamış" gerçek filtresiyle değiştirildi; kart "kaynak satırı" (ÖSYM·1sa) için feed item'da authority/frequency yok → severity rozetiyle karşılandı (feed'e authority taşımak ayrı backend işi). Stat delta'ları (+3/+2) tarihsel snapshot olmadığından yok.
+- **P1–P9:** P5 ✓ (tablist/tab rolleri, ≥44pt, rozet renk+metin) · P8 ✓ (25010 *Usability*) · P9 ✓.
+- **ISO:** 9241 (bilgi mimarisi: başlık+özet+filtre+liste) · 25010 · 25012 (severity gerçek niyetten; sahte tip yok) · 42010.

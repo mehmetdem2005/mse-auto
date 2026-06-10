@@ -7,6 +7,22 @@ export interface Category {
   bg: string;
 }
 
+/**
+ * Niyetten türetilen önem (severity) — afet/acil konular "Uyarı", diğer
+ * tespitler "Tespit". Uydurma değil: konunun doğasından (ADR-051).
+ */
+export interface Severity {
+  kind: "warning" | "detection";
+  label: string;
+  tone: "warn" | "pos";
+}
+export function severityOf(intent: string): Severity {
+  const t = intent.toLowerCase();
+  if (/deprem|yangın|sel|afet|fırtına|acil|kaza|patlama/.test(t))
+    return { kind: "warning", label: "Uyarı", tone: "warn" };
+  return { kind: "detection", label: "Tespit", tone: "pos" };
+}
+
 export function categoryOf(intent: string): Category {
   const t = intent.toLowerCase();
   if (/deprem|yangın|sel|afet|fırtına/.test(t))

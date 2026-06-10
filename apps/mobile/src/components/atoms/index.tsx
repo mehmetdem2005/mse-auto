@@ -97,12 +97,13 @@ export function Fab({
   );
 }
 
-type BadgeTone = "pos" | "neg" | "muted" | "accent";
+type BadgeTone = "pos" | "neg" | "muted" | "accent" | "warn";
 const BADGE: Record<BadgeTone, string> = {
   pos: "bg-pos/10 text-pos",
   neg: "bg-neg/10 text-neg",
   muted: "bg-panel2 text-muted",
   accent: "bg-accent/10 text-accent",
+  warn: "bg-amber-500/10 text-amber-600",
 };
 
 export function Badge({ tone = "muted", children }: { tone?: BadgeTone; children: ReactNode }) {
