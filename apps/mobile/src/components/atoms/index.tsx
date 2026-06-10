@@ -1,13 +1,25 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
-import type { ReactNode } from "react";
+import { type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
 import { Pressable, Text, View } from "react-native";
 
+/**
+ * Etiketli alan. RN `Text` web'de gerçek `<label htmlFor>` üretmediğinden,
+ * etiketi tek-kaynak olarak içteki kontrole `accessibilityLabel` (web'de aria-label)
+ * olarak enjekte eder → WCAG 2.2 "form alanı etiketli" kuralı tüm alanlarda sağlanır.
+ */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
+  const labelled =
+    isValidElement<{ accessibilityLabel?: string }>(children) &&
+    children.props.accessibilityLabel == null
+      ? cloneElement(children as ReactElement<{ accessibilityLabel?: string }>, {
+          accessibilityLabel: label,
+        })
+      : children;
   return (
     <View className="mb-3.5">
       <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">{label}</Text>
-      {children}
+      {labelled}
     </View>
   );
 }
