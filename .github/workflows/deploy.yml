@@ -59,9 +59,9 @@ jobs:
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
         run: npx --yes expo export --platform web
 
-      # SEO/a11y: tek-sayfa (single) export'ta +html.tsx onurlandırılmadığından,
-      # üretilen index.html'e meta description + lang'i deterministik enjekte ederiz.
-      - name: SEO meta enjekte (dist/index.html)
+      # SEO/a11y + TİPOGRAFİ (ADR-052): tek-sayfa export'ta +html.tsx onurlanmaz;
+      # index.html'e meta + lang + GERÇEK font (Inter) + tipografik cila enjekte edilir.
+      - name: SEO + tipografi enjekte (dist/index.html)
         working-directory: apps/mobile
         run: |
           node -e "
@@ -72,8 +72,13 @@ jobs:
             const t='<meta name=\"description\" content=\"'+d+'\"><meta name=\"theme-color\" content=\"#F5F7FB\"><meta property=\"og:title\" content=\"Whenly — akıllı izleyici\"><meta property=\"og:description\" content=\"'+d+'\"><meta property=\"og:type\" content=\"website\">';
             h=h.replace('</head>',t+'</head>');
           }
+          if(!/fonts.googleapis/.test(h)){
+            const font='<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\"><link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin><link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap\" rel=\"stylesheet\">';
+            const style='<style>:root{--whenly-font:\"Inter\",-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,sans-serif}html,body,#root,*{font-family:var(--whenly-font)!important}body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}</style>';
+            h=h.replace('</head>',font+style+'</head>');
+          }
           fs.writeFileSync(p,h);
-          console.log('SEO meta enjekte edildi; lang=tr');
+          console.log('SEO + Inter font + tipografi cilası enjekte edildi');
           "
 
       - name: Deploy mobil web → Vercel

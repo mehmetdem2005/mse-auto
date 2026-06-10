@@ -592,3 +592,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Yapılamayan/uyarlanan (dürüst):** maketteki "Bilgilendirme" severity'si veri modelinde yok → "Okunmamış" gerçek filtresiyle değiştirildi; kart "kaynak satırı" (ÖSYM·1sa) için feed item'da authority/frequency yok → severity rozetiyle karşılandı (feed'e authority taşımak ayrı backend işi). Stat delta'ları (+3/+2) tarihsel snapshot olmadığından yok.
 - **P1–P9:** P5 ✓ (tablist/tab rolleri, ≥44pt, rozet renk+metin) · P8 ✓ (25010 *Usability*) · P9 ✓.
 - **ISO:** 9241 (bilgi mimarisi: başlık+özet+filtre+liste) · 25010 · 25012 (severity gerçek niyetten; sahte tip yok) · 42010.
+
+## ADR-052 — Tasarım dili devrimi: gerçek tipografi (Inter) + premium giriş ekranı
+- **Durum:** Kabul · TOGAF Phase C — ürün sahibi: "daha kaliteli, gerçek web tasarımcı yaptı desinler; GitHub repolarını araştır".
+- **Araştırma:** react-native-reusables, nativecn-ui, gluestack v2 incelendi — hepsi NativeWind + shadcn copy-paste deseni (zaten bizim mimarimiz). Kalite farkının tipografi + derinlik + motion'da olduğu doğrulandı.
+- **Karar:** (1) **Gerçek font — Inter** (en güçlü "AI-işi değil" sinyali sistem fontundan kurtulmak): CI'da `dist/index.html`'e Google Fonts Inter (400-900) + `* { font-family: Inter !important }` + font-smoothing/optimizeLegibility enjekte edilir. Riskli native expo-font yerine kullanıcının baktığı **web**'e saf-CSS — build'i riske atmaz. (2) **Premium giriş ekranı** (ilk izlenim): derinlikli mor gradyan marka başlığı (LinearGradient, W logo + değer önermesi) + üstüne binen yükseltilmiş form kartı (24px blur gölge) + gradyan birincil buton (ArrowRight ikonu) + parola göster/gizle (Eye toggle) + stagger giriş animasyonu (FadeInDown springify, reduce-motion kapılı) + KeyboardAvoidingView. expo-linear-gradient eklendi.
+- **Sonuçlar:** Web'de tüm metin Inter; giriş ekranı "ürün" hissi. Ödün: Inter yalnız web'de (native expo-font ayrı tur); linear-gradient web export'ta CI doğrulaması gerekiyor (sorun çıkarsa graceful değil — build kırılır, izlenecek).
+- **P1–P9:** P5 ✓ (parola toggle/buton etiketli, ≥44pt) · P8 ✓ (25010 *Attractiveness*) · P9 ✓.
+- **ISO:** 9241 (tipografi okunabilirlik + giriş diyaloğu) · 25010 *Usability/Attractiveness* · 42010.
+- **Sıradaki turlar:** sayfa-sayfa parite sürüyor; native Inter (expo-font) + diğer ekranların gradyan/derinlik cilası ayrı turlarda.
