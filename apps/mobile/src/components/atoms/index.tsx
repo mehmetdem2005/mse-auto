@@ -67,14 +67,17 @@ export function Fab({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl bg-accent items-center justify-center active:opacity-80"
-      style={{
+      className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl bg-accent items-center justify-center"
+      // M3 bas-küçül geri bildirimi (state layer) + elevation
+      style={({ pressed }) => ({
         shadowColor: "#0F172A",
-        shadowOpacity: 0.22,
+        shadowOpacity: pressed ? 0.12 : 0.22,
         shadowRadius: 10,
         shadowOffset: { width: 0, height: 5 },
-        elevation: 6,
-      }}
+        elevation: pressed ? 3 : 6,
+        transform: [{ scale: pressed ? 0.92 : 1 }],
+        opacity: pressed ? 0.92 : 1,
+      })}
     >
       <Text
         className="text-white text-3xl leading-none"

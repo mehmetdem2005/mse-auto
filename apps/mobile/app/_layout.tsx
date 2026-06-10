@@ -23,7 +23,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <StatusBar style="dark" />
-        <Stack screenOptions={{ headerShown: false }}>
+        <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
           <Stack.Protected guard={isSignedIn}>
             <Stack.Screen name="(app)" />
             <Stack.Screen
@@ -34,6 +34,8 @@ export default function RootLayout() {
                 headerStyle: { backgroundColor: "#FFFFFF" },
                 headerTintColor: "#0F172A",
                 headerShadowVisible: false,
+                // M3 shared-axis benzeri yatay geçiş (detaya giriş)
+                animation: "slide_from_right",
               }}
             />
           </Stack.Protected>

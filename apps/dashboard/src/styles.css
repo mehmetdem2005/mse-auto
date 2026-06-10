@@ -966,3 +966,38 @@ body::after {
   filter: none;
   transform: none;
 }
+
+/* ====================== Material motion: ripple + görünüm geçişi ====================== */
+/* ripple hedefleri: dalgayı kırp + konumla */
+.nav button,
+.m3-icon-btn,
+.m3-menu-item,
+.tab {
+  position: relative;
+  overflow: hidden;
+}
+.ripple-ink {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.16;
+  transform: scale(0);
+  pointer-events: none;
+  animation: ripple-expand 0.5s cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes ripple-expand {
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+/* M3 fade-through görünüm geçişi (rota/sekme değişiminde) */
+.view-enter {
+  animation: view-in 0.32s cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes view-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

@@ -6,6 +6,7 @@ import { Login } from "./components/Login";
 import { Overview } from "./components/Overview";
 import { Shell } from "./components/Shell";
 import { api } from "./lib/api";
+import { installRipple } from "./lib/ripple";
 import { supabase } from "./lib/supabase";
 
 export interface Session {
@@ -53,6 +54,9 @@ export function App(): ReactNode {
   useEffect(() => {
     if (view === "admin" && me && !me.isAdmin) setView("overview");
   }, [view, me]);
+
+  // Material ripple — etkileşimli yüzeylere (tek delegasyon).
+  useEffect(() => installRipple(), []);
 
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut();

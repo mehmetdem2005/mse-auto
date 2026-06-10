@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…029 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
+**İlerleme:** ADR-001…030 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
 
 ---
 
@@ -389,3 +389,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓ (orantılı; "drawer gereksiz" kararı M3-uyumlu).
 - **ISO:** 25010 *Interaction Capability* (M3 gezinme/menü a11y) + *Maintainability* (token/bileşen tek-kaynak) · 9241-110 (öz-betimleyicilik/kullanıcı-kontrolü) · WCAG 2.2 (menü klavye+ARIA).
 - **Değerlendirilen alternatifler:** hazır M3 kütüphanesi (MUI/Material Web) — ek bağımlılık + bundle; mevcut token/CSS sistemine kendi ince M3 katmanı tercih edildi (ADR-008 ilkesi).
+
+## ADR-030 — Material motion katmanı + bağlam (context) menüsü
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — "üst düzey" hareket + önceki turda ertelenmeyen context menü.
+- **Karar (Dashboard):** (1) Gerçek **Material ripple** — pointer konumundan yayılan dalga, tek `document` delegasyonu (`lib/ripple.ts`), `.btn/.nav/.m3-icon-btn/.m3-menu-item/.tab` hedefleri; `prefers-reduced-motion`'da kapalı. (2) **Fade-through görünüm geçişi** (`view-enter`, view değişiminde remount + 0.32s emphasized easing). (3) **Context (sağ-tık) menü** — feed tablosu satırlarında imleç konumunda `role=menu` + kopyala eylemleri (açıklama/olgu-JSON/watchId), Esc + dışarı-tıkla kapat. **(Mobil):** FAB **bas-küçül** (scale 0.92 + elevation/opacity), **ekran geçişleri** (root fade + watcher detayı `slide_from_right` = M3 shared-axis benzeri).
+- **Sonuçlar:** Google-benzeri dokunsal his; dashboard typecheck+build+biome a11y temiz, mobil typecheck temiz.
+- **Dürüst sınır:** dashboard motion **tam** `prefers-reduced-motion` saygılı (global `@media` + ripple JS guard). **Mobil** FAB/ekran motion RN `AccessibilityInfo.isReduceMotionEnabled`'a henüz bağlı değil (küçük takip işi; abartılmıyor).
+- **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓.
+- **ISO:** 25010 *Interaction Capability* + *Performance Efficiency* (ripple delegasyon, GPU transform/opacity) · 9241-110 · WCAG 2.2 (reduced-motion).
+- **Değerlendirilen alternatifler:** ağır animasyon kütüphanesi (framer-motion/reanimated layout) — bundle/karmaşıklık; CSS keyframes + ince ripple tercih edildi (ADR-008 lean ilkesi).

@@ -108,7 +108,12 @@ export function Shell({
             />
           </div>
         </header>
-        <main className="main">{children}</main>
+        {/* M3 fade-through görünüm geçişi (view değişince yeniden mount + anim) */}
+        <main className="main">
+          <div className="view-enter" key={view}>
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

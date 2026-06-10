@@ -1,9 +1,61 @@
 import { useQuery } from "@tanstack/react-query";
 import type { FeedItem } from "@watcher/contracts";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import { qk } from "../lib/query";
 import { Banner, Panel, Stat } from "./ui";
+
+interface CtxState {
+  x: number;
+  y: number;
+  item: FeedItem;
+}
+
+/** Material bağlam (sağ-tık) menüsü — imleç konumunda; kopyala eylemleri. */
+function RowContextMenu({ ctx, onClose }: { ctx: CtxState; onClose: () => void }): ReactNode {
+  useEffect(() => {
+    const onDoc = (): void => onClose();
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("click", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  const copy = (text: string): void => {
+    void navigator.clipboard?.writeText(text);
+    onClose();
+  };
+  const items = [
+    { label: "Açıklamayı kopyala", v: ctx.item.description || "" },
+    { label: "Olgu (JSON) kopyala", v: JSON.stringify(ctx.item.facts ?? null) },
+    { label: "Watcher ID kopyala", v: ctx.item.watchId },
+  ];
+  return (
+    <div
+      className="m3-menu-list"
+      role="menu"
+      aria-label="Tespit işlemleri"
+      style={{ position: "fixed", left: ctx.x, top: ctx.y, right: "auto" }}
+    >
+      {items.map((it) => (
+        <button
+          key={it.label}
+          type="button"
+          role="menuitem"
+          className="m3-menu-item"
+          onClick={() => copy(it.v)}
+        >
+          {it.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 /** Güvenilmez facts'i kısa okunur özete çevirir. */
 function factSummary(raw: unknown): string {
@@ -80,6 +132,7 @@ function DayChart({ items }: { items: FeedItem[] }): ReactNode {
 }
 
 export function Feed({ token }: { token: string }): ReactNode {
+  const [ctx, setCtx] = useState<CtxState | null>(null);
   const { data, error, isLoading } = useQuery({
     queryKey: qk.feed,
     queryFn: () => api.feed(token),
@@ -135,7 +188,13 @@ export function Feed({ token }: { token: string }): ReactNode {
             </thead>
             <tbody>
               {list.slice(0, 50).map((it) => (
-                <tr key={it.deliveryId}>
+                <tr
+                  key={it.deliveryId}
+                  onContextMenu={(e) => {
+                    e.preventDefault();
+                    setCtx({ x: e.clientX, y: e.clientY, item: it });
+                  }}
+                >
                   <td className="tbl-strong">{it.watchIntent || "Watcher"}</td>
                   <td>{it.description || "Bir tespit oldu."}</td>
                   <td className="tbl-accent">{factSummary(it.facts)}</td>
@@ -149,6 +208,7 @@ export function Feed({ token }: { token: string }): ReactNode {
           </table>
         )}
       </Panel>
+      {ctx ? <RowContextMenu ctx={ctx} onClose={() => setCtx(null)} /> : null}
     </>
   );
 }
