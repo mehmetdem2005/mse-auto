@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…028 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
+**İlerleme:** ADR-001…029 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
 
 ---
 
@@ -378,3 +378,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓ (gerçek uygulama, ritüel değil).
 - **ISO:** 25010 *Interaction Capability* (a11y/WCAG) + *Maintainability* (react-query tek desen, atomic, token) · 9241-110 (öz-betimleyicilik/odak).
 - **Değerlendirilen alternatifler:** footer'ı kırpıp standartları uygulamamak (yanlış-beyanı sürdürür → reddedildi) · Admin'i elle-fetch bırakmak (kural ihlali → tümü çevrildi).
+
+## ADR-029 — Material Design 3 gezinme & bileşen sistemi (Google kalitesi)
+- **Durum:** Kabul · TOGAF Phase H (Artımlı) — design-standards skill §9–10 (Material gezinme/menü/buton + Button→Router→Endpoint katman sözleşmesi) eklendi ve uygulandı.
+- **Bağlam:** "Google kalitesinde" arayüz hedefi. Mevcut dashboard sidebar/buton'lar M3 imzasından (durum-katmanı, aktif gösterge, erişilebilir menü) yoksundu.
+- **Karar (Dalga 1 — dashboard + temeller):** (1) **M3 Navigation Rail** — ikon + etiket, **pill aktif gösterge** (secondary-container), `aria-current="page"`, hover/focus **state layer** (`color-mix`). (2) **Erişilebilir Overflow (⋮) menü** bileşeni (`Menu.tsx`): `aria-haspopup="menu"`/`aria-expanded`, `role=menu/menuitem`, **klavye** (↑↓ Home/End Enter **Esc**), dışarı-tıkla-kapat, açılışta menüye / kapanışta tetikleyiciye **odak iadesi**. (3) **Buton hiyerarşisi** filled/**tonal**/outlined/**text** + state layer + ≥40px (CSS). (4) Mobil `Btn` Material `tone` (filled/tonal/outlined/text, geriye-uyumlu). (5) M3 **emphasized easing** (`cubic-bezier(.2,0,0,1)`).
+- **Sonuçlar:** Google-benzeri etkileşim + tam erişilebilir menü. Dashboard build temiz; typecheck temiz.
+- **Bilinçli kalan (Dalga 2, abartılmaz):** mobil tam M3 (bottom-nav pill aktif gösterge, FAB, navigation drawer, cascading) + dashboard kademeli/context menüler. "Yapıldı" denmeyecek.
+- **P1–P9:** P8 ✓ (25010 Interaction Capability) · P9 ✓ (orantılı; dalga sınırı dürüst).
+- **ISO:** 25010 *Interaction Capability* (M3 gezinme/menü a11y) + *Maintainability* (token/bileşen tek-kaynak) · 9241-110 (öz-betimleyicilik/kullanıcı-kontrolü) · WCAG 2.2 (menü klavye+ARIA).
+- **Değerlendirilen alternatifler:** hazır M3 kütüphanesi (MUI/Material Web) — ek bağımlılık + bundle; mevcut token/CSS sistemine kendi ince M3 katmanı tercih edildi (ADR-008 ilkesi).

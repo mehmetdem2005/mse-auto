@@ -145,32 +145,53 @@ body::after {
   margin-top: 2px;
 }
 
+/* M3 Navigation Rail item: ikon-pill göstergesi + altında etiket */
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 .nav button {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 16px;
   color: var(--muted);
-  padding: 11px 13px;
-  border-left: 2px solid transparent;
-  border-radius: 0 6px 6px 0;
-  transition: all 0.16s ease;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: color 0.2s cubic-bezier(0.2, 0, 0, 1);
 }
-.nav button:hover {
-  color: var(--text);
-  background: var(--panel);
+.nav .nav-indicator {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 32px;
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+/* M3 state layer (hover/focus/pressed) */
+.nav button:hover .nav-indicator {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+.nav button:focus-visible .nav-indicator {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 .nav button.active {
   color: var(--accent);
-  border-left-color: var(--accent);
-  background: var(--panel);
+}
+.nav button.active .nav-indicator {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.nav button.active .nav-indicator svg {
+  opacity: 1;
 }
 .rail .foot {
   margin-top: auto;
@@ -217,14 +238,6 @@ body::after {
 .chip.admin {
   color: var(--accent);
   border-color: var(--accent-dim);
-}
-.signout {
-  all: unset;
-  cursor: pointer;
-  color: var(--muted);
-}
-.signout:hover {
-  color: var(--neg);
 }
 
 /* main */
@@ -713,15 +726,10 @@ body::after {
   }
 }
 
-/* rail nav ikonları */
-.nav button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* rail nav ikonları (M3 .nav button column düzeni §148'de) */
 .nav button svg {
-  width: 15px;
-  height: 15px;
+  width: 22px;
+  height: 22px;
   flex: none;
   opacity: 0.75;
   transition: opacity 0.16s ease;
@@ -764,14 +772,7 @@ body::after {
     margin-left: auto;
   }
   .nav button {
-    padding: 8px 11px;
-    border-left: none;
-    border-bottom: 2px solid transparent;
-    border-radius: 0;
-  }
-  .nav button.active {
-    border-left: none;
-    border-bottom-color: var(--accent);
+    padding: 6px 4px;
   }
   .rail .foot {
     display: none;
@@ -861,4 +862,107 @@ body::after {
   .tbl-strong {
     max-width: 130px;
   }
+}
+
+/* ====================== Material 3 — menü + buton hiyerarşisi ====================== */
+.m3-menu {
+  position: relative;
+}
+.m3-icon-btn {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+  transition: background 0.2s cubic-bezier(0.2, 0, 0, 1), color 0.2s;
+}
+.m3-icon-btn:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+.m3-icon-btn:focus-visible {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.m3-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 180px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1), 0 12px 28px -12px rgba(15, 23, 42, 0.28);
+  z-index: 30;
+  animation: m3-menu-in 0.16s cubic-bezier(0.2, 0, 0, 1);
+}
+@keyframes m3-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+}
+.m3-menu-item {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  transition: background 0.15s ease;
+}
+.m3-menu-item:hover,
+.m3-menu-item:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.m3-menu-item.danger {
+  color: var(--neg);
+}
+.m3-menu-item.danger:hover,
+.m3-menu-item.danger:focus-visible {
+  background: color-mix(in srgb, var(--neg) 12%, transparent);
+}
+
+/* M3 buton hiyerarşisi (filled/tonal/outlined/text) + state layer + dokunma hedefi */
+.btn {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn.tonal {
+  background: color-mix(in srgb, var(--accent) 16%, var(--panel));
+  color: var(--accent-dim);
+}
+.btn.outlined {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+.btn.outlined:hover {
+  border-color: var(--muted);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  filter: none;
+}
+.btn.text {
+  background: transparent;
+  color: var(--accent-dim);
+  box-shadow: none;
+}
+.btn.text:hover {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  filter: none;
+  transform: none;
 }

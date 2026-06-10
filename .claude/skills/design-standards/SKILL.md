@@ -84,6 +84,37 @@ ISO, TOGAF ile birlikte **yöneten kalite/güvenlik/mimari disiplinidir** (EA do
 - **ISO 9241-110/-210 — İnsan-Merkezli Etkileşim.** UI işlerinde WCAG'ı tamamlar: etkileşim ilkeleri (uygunluk, öz-betimleyicilik, hata-toleransı, kullanıcı-kontrolü) + insan-merkezli tasarım döngüsü.
 - **İşletilecek zorunlu sıra (her işte):** ① 25010'dan ilgili karakteristik(ler) + ölçülebilir NFR yaz ② veri dokunuşu varsa 25012 boyutları ③ güvenlik dokunuşu varsa 27002 kontrol(leri) ④ UI ise 9241 + WCAG ⑤ gereksinim değiştiyse 29148 izlenebilirlik ⑥ EA §10 Requirements Management'ı güncelle. **Atlanmaz**; ilgisizse "bu işte uygulanmaz" gerekçesi yazılır.
 
+## 9. Material Design — Gezinme & Bileşen Kalıpları (Google kalitesi)
+Arayüz "Google kalitesi" hedefler: M3 (Material 3) gezinme + bileşen + durum-katmanı (state layer) + hareket disiplini.
+
+**Gezinme (içeriğe/ekrana göre seç):**
+- **Bottom Navigation** (mobil, 3–5 ana hedef): alt çubuk; aktif öğe **pill (secondary-container) gösterge** + ikon dolu/boş; `accessibilityRole="tab"` + seçili durum.
+- **Navigation Rail** (web/tablet, geniş ekran): solda dikey, ikon + kısa etiket; **aktif gösterge** (pill arka plan); `<nav aria-label>` + `aria-current="page"`.
+- **Navigation Drawer** (çok sayıda hedef): kenardan kayan; modal (mobil) / kalıcı (geniş). Hamburger ile tetik.
+- **Tab'lar** (eş-düzey içerik): üst sekmeler; seçili alt-çizgi/gösterge.
+
+**Geçici menüler (eylem/seçim):**
+- **Dropdown / Exposed menu**: alan/buton altında liste (filtre, dil, seçim).
+- **Overflow (⋮) menü**: araç çubuğuna sığmayan ikincil eylemler (Paylaş/Sil/Çıkış).
+- **Context menü**: uzun-bas / sağ-tık; yalnız o öğeye özgü eylemler.
+- **Cascading (kademeli)**: masaüstü; üstüne gelince yana açılan alt menü.
+- **Menü erişilebilirliği (ZORUNLU):** tetikleyici `aria-haspopup="menu"` + `aria-expanded`; menü `role="menu"`, öğeler `role="menuitem"`; **klavye** (↑↓ gezin, Enter seç, **Esc kapat**), dışarı tıkla-kapat, açılışta ilk öğeye/menüye **odak**, kapanışta tetikleyiciye odak iadesi.
+
+**Butonlar (Material hiyerarşisi — `tone`/`variant`):**
+- **Filled/Contained** = birincil (Kaydet/Gönder). **Tonal** = vurgulu ama ikincil.
+- **Outlined** = ikincil (İptal/Alternatif). **Text** = düşük öncelik (Diyalog onayı/Daha fazla).
+- **FAB** = ekranın ana eylemi (Yeni …), bağımsız yüzen; tek ve net.
+- Her buton: **state layer** (hover/focus/pressed yarı-saydam katman) · ≥44–48px hedef · `type="button"` · görünür odak.
+
+**Durum katmanı & hareket (M3 imzası):** etkileşimli her yüzeyde hover/focus/pressed overlay; M3 **emphasized easing** (`cubic-bezier(0.2,0,0,1)`), kısa süre; `prefers-reduced-motion` saygısı; elevation = gölge + tonal yüzey.
+
+## 10. Katman Sözleşmesi: Button → Router → Endpoint
+Tetikleyici-yönlendirme-iş mantığı zinciri net ayrılır:
+- **Button (UI tetik):** `onClick/onPress` → fonksiyon / yönlendirme / HTTP isteği. Tek sorumluluk; iş mantığı içermez.
+- **Router:** *İstemci* (React Router / Expo Router) ekran geçişi (SPA, sayfa yenilemeden); *Sunucu* (Hono) path → controller, auth + sürümleme (`/v1/...`).
+- **Endpoint:** `METHOD /v1/path` → zod doğrulama → use-case (application) → domain + infra → contracts-tipli JSON + doğru HTTP kodu (200/201/4xx/5xx). PII dış hatta gitmez (P1).
+- Akış: Buton → (UI ise) istemci-router / (veri ise) HTTP → sunucu-router (auth) → endpoint (use-case) → yanıt → UI güncelle (react-query cache).
+
 ---
 
 ## Çıktı kuralı — "Standartlar" dipnotu

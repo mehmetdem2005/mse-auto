@@ -11,21 +11,32 @@ export function Field({ label, children }: { label: string; children: ReactNode 
   );
 }
 
+// Material 3 buton hiyerarşisi (geriye uyum: solid=filled, ghost=outlined).
+type BtnTone = "filled" | "tonal" | "outlined" | "text" | "danger" | "solid" | "ghost";
+const BTN_BG: Record<BtnTone, string> = {
+  filled: "bg-accent",
+  solid: "bg-accent",
+  tonal: "bg-accent/15",
+  outlined: "border border-line",
+  ghost: "border border-line",
+  text: "",
+  danger: "border border-neg",
+};
+
 export function Btn({
   children,
   onPress,
   disabled,
-  tone = "solid",
+  tone = "filled",
   accessibilityLabel,
 }: {
   children: ReactNode;
   onPress: () => void;
   disabled?: boolean;
-  tone?: "solid" | "ghost" | "danger";
+  tone?: BtnTone;
   accessibilityLabel?: string;
 }) {
-  const cls =
-    tone === "solid" ? "bg-accent" : tone === "danger" ? "border border-neg" : "border border-line";
+  const cls = BTN_BG[tone];
   return (
     <Pressable
       onPress={onPress}

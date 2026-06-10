@@ -1,6 +1,7 @@
 import type { Me } from "@watcher/contracts";
 import type { ReactNode } from "react";
 import type { View } from "../App";
+import { Menu } from "./Menu";
 
 // Lucide (ISC lisansı) ikon yolları — inline SVG, ek bağımlılık yok.
 function IconGrid(): ReactNode {
@@ -57,8 +58,15 @@ export function Shell({
   onSignOut: () => void;
   children: ReactNode;
 }): ReactNode {
+  const NAV: { id: View; label: string; icon: ReactNode; show: boolean }[] = [
+    { id: "feed", label: "Akış", icon: <IconActivity />, show: true },
+    { id: "overview", label: "Genel", icon: <IconGrid />, show: true },
+    { id: "admin", label: "Admin", icon: <IconShield />, show: !!me?.isAdmin },
+  ];
+
   return (
     <div className="app">
+      {/* M3 Navigation Rail */}
       <aside className="rail">
         <div className="brand">
           <span className="dot" />
@@ -67,36 +75,23 @@ export function Shell({
             <div className="sub">ops console</div>
           </div>
         </div>
-        <nav className="nav">
-          <button
-            type="button"
-            className={view === "feed" ? "active" : ""}
-            onClick={() => onNav("feed")}
-          >
-            <IconActivity />
-            Akış
-          </button>
-          <button
-            type="button"
-            className={view === "overview" ? "active" : ""}
-            onClick={() => onNav("overview")}
-          >
-            <IconGrid />
-            Genel
-          </button>
-          {me?.isAdmin ? (
+        <nav className="nav" aria-label="Ana gezinme">
+          {NAV.filter((n) => n.show).map((n) => (
             <button
+              key={n.id}
               type="button"
-              className={view === "admin" ? "active" : ""}
-              onClick={() => onNav("admin")}
+              className={view === n.id ? "active" : ""}
+              aria-current={view === n.id ? "page" : undefined}
+              onClick={() => onNav(n.id)}
             >
-              <IconShield />
-              Admin
+              <span className="nav-indicator">{n.icon}</span>
+              <span className="nav-label">{n.label}</span>
             </button>
-          ) : null}
+          ))}
         </nav>
       </aside>
       <div>
+        {/* M3 Top App Bar + Overflow menü */}
         <header className="topbar">
           <div className="live">
             <span className="d" /> MONITORING
@@ -106,9 +101,11 @@ export function Shell({
             <span className={`chip ${me?.isAdmin ? "admin" : ""}`}>
               {me?.isAdmin ? "admin" : "üye"}
             </span>
-            <button type="button" className="signout" onClick={onSignOut}>
-              çıkış
-            </button>
+            <Menu
+              label="Hesap işlemleri"
+              triggerLabel="Hesap menüsü"
+              items={[{ label: "Çıkış yap", danger: true, onSelect: onSignOut }]}
+            />
           </div>
         </header>
         <main className="main">{children}</main>
