@@ -1,5 +1,6 @@
 import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
+import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
@@ -56,37 +57,42 @@ export default function WatcherDetail(): ReactNode {
   const eventGroups = groupEvents(events);
 
   return (
-    <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
-      {/* Tespitler önce — en önemli sonuç */}
-      <SectionLabel>
-        {t("detail.detections")} ({eventGroups.length})
-      </SectionLabel>
-      {eventGroups.length > 0 ? (
-        eventGroups.map((g, i) => (
-          <EnterItem key={g.latest.id} index={i}>
-            <EventCard e={g.latest} times={g.times} canVote={!isAdmin} />
-          </EnterItem>
-        ))
-      ) : (
-        <Card>
-          <Text className="text-muted text-sm">{t("detail.noDetections")}</Text>
-        </Card>
-      )}
+    <View className="flex-1 bg-ink">
+      <GradientHero title={t("detail.title")} back compact />
+      <HeroOverlap>
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+          {/* Tespitler önce — en önemli sonuç */}
+          <SectionLabel>
+            {t("detail.detections")} ({eventGroups.length})
+          </SectionLabel>
+          {eventGroups.length > 0 ? (
+            eventGroups.map((g, i) => (
+              <EnterItem key={g.latest.id} index={i}>
+                <EventCard e={g.latest} times={g.times} canVote={!isAdmin} />
+              </EnterItem>
+            ))
+          ) : (
+            <Card>
+              <Text className="text-muted text-sm">{t("detail.noDetections")}</Text>
+            </Card>
+          )}
 
-      <View className="h-5" />
-      <SectionLabel>
-        {t("detail.history")} ({runs.length})
-      </SectionLabel>
-      {runs.length > 0 ? (
-        runs.map((r, i) => (
-          <EnterItem key={r.id} index={i}>
-            <RunCard r={r} />
-          </EnterItem>
-        ))
-      ) : (
-        <Text className="text-muted text-sm">{t("detail.noHistory")}</Text>
-      )}
-    </ScrollView>
+          <View className="h-5" />
+          <SectionLabel>
+            {t("detail.history")} ({runs.length})
+          </SectionLabel>
+          {runs.length > 0 ? (
+            runs.map((r, i) => (
+              <EnterItem key={r.id} index={i}>
+                <RunCard r={r} />
+              </EnterItem>
+            ))
+          ) : (
+            <Text className="text-muted text-sm">{t("detail.noHistory")}</Text>
+          )}
+        </ScrollView>
+      </HeroOverlap>
+    </View>
   );
 }
 

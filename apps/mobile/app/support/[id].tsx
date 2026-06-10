@@ -1,5 +1,6 @@
 // Canlı destek sohbeti (kullanıcı tarafı) — 5 sn'de bir yenilenir (ADR-044).
 import { EnterItem } from "@/components/motion";
+import { GradientHero } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
@@ -46,6 +47,7 @@ export default function SupportThread() {
 
   return (
     <View className="flex-1 bg-ink">
+      <GradientHero title={t("support.thread")} back compact />
       <ScrollView
         ref={scroll}
         className="flex-1 px-5 pt-4"

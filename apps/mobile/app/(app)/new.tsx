@@ -1,5 +1,6 @@
 import { EnterItem } from "@/components/motion";
 import { Btn, Card } from "@/components/ui";
+import { GradientHero } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
@@ -285,9 +286,15 @@ export default function NewWatcher() {
 
   return (
     <View className="flex-1 bg-ink">
+      <GradientHero
+        title={t(current.titleK)}
+        subtitle={`${step + 1} / ${STEPS.length}`}
+        back
+        compact
+      />
       {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
       <View
-        className="px-5 pt-4"
+        className="px-5 pt-4 -mt-10 bg-transparent"
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
         accessibilityLabel={`${step + 1} / ${STEPS.length}: ${t(current.titleK)}`}
@@ -334,7 +341,6 @@ export default function NewWatcher() {
           if (step === 0) chatScroll.current?.scrollToEnd({ animated: !reduce });
         }}
       >
-        <Text className="text-text text-xl font-bold mb-4">{t(current.titleK)}</Text>
         {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}
 
         {/* 1) Niyet — AI sohbeti (Gemini tarzı): muğlaksa asistan soruyla netleştirir */}

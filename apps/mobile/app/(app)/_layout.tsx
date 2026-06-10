@@ -121,7 +121,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="new"
         // "Yeni" birincil eylem → FAB ile (M3). Sekme gizli, rota /new'den erişilir.
-        options={{ href: null }}
+        options={{ href: null, headerShown: false }}
       />
       <Tabs.Screen
         name="subscription"

@@ -618,3 +618,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Sonraki fazlar:** ekran-içi yüzey/kart dilinin derinleştirilmesi (wizard, detay, destek), native Inter, koyu tema.
 - **P1–P9:** P5 ✓✓ (AAA kontrast + ≥48 hedef + erişilebilir hero) · P8 ✓ (25010 Attractiveness/Usability) · P9 ✓.
 - **ISO:** 9241-112 (görsel tutarlılık ilkesi: tek imza başlık) · 25010 · 42010.
+
+## ADR-055 — AAA Faz 2: yığın ekranları + sihirbaz imza kabuğa geçti
+- **Durum:** Kabul · Faz 1 (ADR-054) devamı.
+- **Karar:** GradientHero'ya `back` varyantı (geri oku + marka, ≥48px). Araştırma detayı, Destek & İletişim, Canlı Destek ve Sihirbaz native beyaz başlıklardan imza hero'ya geçti; kök Stack başlıkları kapatıldı. Yan kazanım: Stack'teki gömülü TR başlıklar ("Araştırma" vb.) i18n'e bağlandı (11 dil). Sihirbazda adım başlığı hero'da, "1/6" ilerleme alt metinde; stepper hero'ya biner.
+- **P5:** geri oku erişilebilir etiketli (common.back, 11 dilde) · ilerleme `progressbar` rolü korunur.
+- **ISO:** 9241-112 tutarlılık (tüm yüzeyler tek başlık dili) · 25010.

@@ -2,7 +2,7 @@
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { Bell } from "lucide-react-native";
+import { ArrowLeft, Bell } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Platform, Pressable, Text, View } from "react-native";
@@ -18,11 +18,14 @@ export function GradientHero({
   subtitle,
   right,
   compact,
+  back,
 }: {
   title: string;
   subtitle?: string;
   right?: ReactNode;
   compact?: boolean;
+  /** Yığın ekranı: sol başta geri oku (markanın önünde). */
+  back?: boolean;
 }) {
   const { t } = useTranslation();
   const reduce = useReduceMotion();
@@ -40,6 +43,16 @@ export function GradientHero({
     >
       <Animated.View entering={reduce ? undefined : FadeIn.duration(400)}>
         <View className="flex-row items-center">
+          {back ? (
+            <Pressable
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t("common.back")}
+              className="w-12 h-12 -ml-2 mr-1 rounded-full items-center justify-center active:bg-white/15"
+            >
+              <ArrowLeft size={22} color="#FFFFFF" />
+            </Pressable>
+          ) : null}
           <View
             className="w-9 h-9 rounded-xl bg-white/20 items-center justify-center"
             style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}

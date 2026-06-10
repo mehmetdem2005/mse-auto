@@ -1,6 +1,7 @@
 // Destek & İletişim (ADR-044): e-posta, sorun bildir, canlı destek talepleri.
 import { EnterItem } from "@/components/motion";
 import { Badge, Btn, Card, SectionLabel } from "@/components/ui";
+import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type SupportTicket, api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -43,89 +44,94 @@ export default function Support() {
   const problems = (tickets.data ?? []).filter((t) => t.kind === "problem");
 
   return (
-    <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
-      {/* İletişim */}
-      <SectionLabel>{t("support.contact")}</SectionLabel>
-      <Card
-        onPress={() => void Linking.openURL(`mailto:${CONTACT_EMAIL}`)}
-        accessibilityLabel={t("support.emailA11y", { mail: CONTACT_EMAIL })}
-      >
-        <View className="flex-row items-center gap-3">
-          <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-            <Mail size={18} color="#6366F1" />
-          </View>
-          <View className="flex-1">
-            <Text className="text-text text-sm font-semibold">{t("support.emailTitle")}</Text>
-            <Text className="text-muted text-xs mt-0.5">{CONTACT_EMAIL}</Text>
-          </View>
-          <ChevronRight size={16} color="#475569" />
-        </View>
-      </Card>
-
-      {/* Canlı destek */}
-      <View className="h-5" />
-      <SectionLabel>{t("support.live")}</SectionLabel>
-      <Card>
-        <View className="flex-row items-center gap-3 mb-3">
-          <View className="w-10 h-10 rounded-full bg-pos/10 items-center justify-center">
-            <MessageCircle size={18} color="#16A34A" />
-          </View>
-          <Text className="text-muted text-xs flex-1">{t("support.liveHint")}</Text>
-        </View>
-        <Btn onPress={() => startLive.mutate()} disabled={startLive.isPending}>
-          <Text className="text-white text-[13px] font-semibold">
-            {startLive.isPending ? t("support.liveOpening") : t("support.liveStart")}
-          </Text>
-        </Btn>
-      </Card>
-      {live.map((tk, i) => (
-        <EnterItem key={tk.id} index={i} className="mt-2.5">
-          <TicketRow t={tk} onPress={() => router.push(`/support/${tk.id}`)} />
-        </EnterItem>
-      ))}
-
-      {/* Sorun bildir */}
-      <View className="h-5" />
-      <SectionLabel>{t("support.report")}</SectionLabel>
-      <Card>
-        {sentProblem ? (
-          <Text className="text-pos text-sm">{t("support.reportSent")}</Text>
-        ) : (
-          <>
-            <TextInput
-              value={problem}
-              onChangeText={setProblem}
-              multiline
-              placeholder={t("support.reportPlaceholder")}
-              placeholderTextColor="#94A3B8"
-              accessibilityLabel={t("support.reportA11y")}
-              className="bg-ink border border-line rounded-xl px-3 py-3 text-text text-sm min-h-[88px]"
-              style={{ textAlignVertical: "top" }}
-            />
-            {report.error ? (
-              <Text className="text-neg text-xs mt-2">
-                {report.error instanceof Error ? report.error.message : t("support.sendFail")}
-              </Text>
-            ) : null}
-            <View className="mt-3">
-              <Btn
-                onPress={() => report.mutate()}
-                disabled={report.isPending || problem.trim().length < 3}
-              >
-                <Text className="text-white text-[13px] font-semibold">
-                  {report.isPending ? t("support.sending") : t("common.send")}
-                </Text>
-              </Btn>
+    <View className="flex-1 bg-ink">
+      <GradientHero title={t("support.title")} back compact />
+      <HeroOverlap>
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+          {/* İletişim */}
+          <SectionLabel>{t("support.contact")}</SectionLabel>
+          <Card
+            onPress={() => void Linking.openURL(`mailto:${CONTACT_EMAIL}`)}
+            accessibilityLabel={t("support.emailA11y", { mail: CONTACT_EMAIL })}
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <Mail size={18} color="#6366F1" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("support.emailTitle")}</Text>
+                <Text className="text-muted text-xs mt-0.5">{CONTACT_EMAIL}</Text>
+              </View>
+              <ChevronRight size={16} color="#475569" />
             </View>
-          </>
-        )}
-      </Card>
-      {problems.map((tk, i) => (
-        <EnterItem key={tk.id} index={i} className="mt-2.5">
-          <TicketRow t={tk} onPress={() => router.push(`/support/${tk.id}`)} />
-        </EnterItem>
-      ))}
-    </ScrollView>
+          </Card>
+
+          {/* Canlı destek */}
+          <View className="h-5" />
+          <SectionLabel>{t("support.live")}</SectionLabel>
+          <Card>
+            <View className="flex-row items-center gap-3 mb-3">
+              <View className="w-10 h-10 rounded-full bg-pos/10 items-center justify-center">
+                <MessageCircle size={18} color="#16A34A" />
+              </View>
+              <Text className="text-muted text-xs flex-1">{t("support.liveHint")}</Text>
+            </View>
+            <Btn onPress={() => startLive.mutate()} disabled={startLive.isPending}>
+              <Text className="text-white text-[13px] font-semibold">
+                {startLive.isPending ? t("support.liveOpening") : t("support.liveStart")}
+              </Text>
+            </Btn>
+          </Card>
+          {live.map((tk, i) => (
+            <EnterItem key={tk.id} index={i} className="mt-2.5">
+              <TicketRow t={tk} onPress={() => router.push(`/support/${tk.id}`)} />
+            </EnterItem>
+          ))}
+
+          {/* Sorun bildir */}
+          <View className="h-5" />
+          <SectionLabel>{t("support.report")}</SectionLabel>
+          <Card>
+            {sentProblem ? (
+              <Text className="text-pos text-sm">{t("support.reportSent")}</Text>
+            ) : (
+              <>
+                <TextInput
+                  value={problem}
+                  onChangeText={setProblem}
+                  multiline
+                  placeholder={t("support.reportPlaceholder")}
+                  placeholderTextColor="#94A3B8"
+                  accessibilityLabel={t("support.reportA11y")}
+                  className="bg-ink border border-line rounded-xl px-3 py-3 text-text text-sm min-h-[88px]"
+                  style={{ textAlignVertical: "top" }}
+                />
+                {report.error ? (
+                  <Text className="text-neg text-xs mt-2">
+                    {report.error instanceof Error ? report.error.message : t("support.sendFail")}
+                  </Text>
+                ) : null}
+                <View className="mt-3">
+                  <Btn
+                    onPress={() => report.mutate()}
+                    disabled={report.isPending || problem.trim().length < 3}
+                  >
+                    <Text className="text-white text-[13px] font-semibold">
+                      {report.isPending ? t("support.sending") : t("common.send")}
+                    </Text>
+                  </Btn>
+                </View>
+              </>
+            )}
+          </Card>
+          {problems.map((tk, i) => (
+            <EnterItem key={tk.id} index={i} className="mt-2.5">
+              <TicketRow t={tk} onPress={() => router.push(`/support/${tk.id}`)} />
+            </EnterItem>
+          ))}
+        </ScrollView>
+      </HeroOverlap>
+    </View>
   );
 }
 

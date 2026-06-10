@@ -31,37 +31,15 @@ export default function RootLayout() {
             <Stack.Screen name="(app)" />
             <Stack.Screen
               name="watcher/[id]"
-              options={{
-                headerShown: true,
-                title: "Araştırma",
-                headerStyle: { backgroundColor: "#FFFFFF" },
-                headerTintColor: "#0F172A",
-                headerShadowVisible: false,
-                // M3 shared-axis benzeri geçiş; reduce-motion'da kapalı.
-                animation: reduce ? "none" : "slide_from_right",
-              }}
+              options={{ animation: reduce ? "none" : "slide_from_right" }}
             />
             <Stack.Screen
               name="support/index"
-              options={{
-                headerShown: true,
-                title: "Destek & İletişim",
-                headerStyle: { backgroundColor: "#FFFFFF" },
-                headerTintColor: "#0F172A",
-                headerShadowVisible: false,
-                animation: reduce ? "none" : "slide_from_right",
-              }}
+              options={{ animation: reduce ? "none" : "slide_from_right" }}
             />
             <Stack.Screen
               name="support/[id]"
-              options={{
-                headerShown: true,
-                title: "Canlı Destek",
-                headerStyle: { backgroundColor: "#FFFFFF" },
-                headerTintColor: "#0F172A",
-                headerShadowVisible: false,
-                animation: reduce ? "none" : "slide_from_right",
-              }}
+              options={{ animation: reduce ? "none" : "slide_from_right" }}
             />
           </Stack.Protected>
           <Stack.Protected guard={!isSignedIn}>
