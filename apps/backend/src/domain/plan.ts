@@ -29,7 +29,8 @@ export const PLAN_ENTITLEMENTS: Record<Plan, PlanEntitlements> = {
   },
   pro: {
     maxActiveWatches: 100,
-    minFrequencyMinutes: 5,
+    // ADR-047: zaman-kritik konular için pratik alt sınır = zamanlayıcı turu (1 dk).
+    minFrequencyMinutes: 1,
     alarmChannel: true,
     allSounds: true,
     personalFilters: true,

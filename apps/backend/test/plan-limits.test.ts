@@ -51,11 +51,11 @@ describe("plan limitleri (free vs pro)", () => {
     );
   });
 
-  it("pro: limit 100 ve 5 dk açılır", async () => {
+  it("pro: limit 100 ve 1 dk açılır", async () => {
     const d = deps();
     await subscribeUser(d, "u", "pro", "month");
     for (const t of ["a", "b", "c", "d"]) {
-      await createWatcher(d, "u", { rawIntent: `${t} konu`, frequencyMinutes: 5 });
+      await createWatcher(d, "u", { rawIntent: `${t} konu`, frequencyMinutes: 1 });
     }
     const count = d.store.watches.filter((w) => w.userId === "u").length;
     expect(count).toBe(4);

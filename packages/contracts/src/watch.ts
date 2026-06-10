@@ -13,7 +13,7 @@ export type WatchStatus = z.infer<typeof watchStatusSchema>;
  */
 export const createWatchInputSchema = z.object({
   rawIntent: z.string().min(3).max(500),
-  frequencyMinutes: z.number().int().min(5).max(1440),
+  frequencyMinutes: z.number().int().min(1).max(1440),
 });
 export type CreateWatchInput = z.infer<typeof createWatchInputSchema>;
 

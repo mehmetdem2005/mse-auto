@@ -17,7 +17,7 @@ describe("plan entitlements (free vs pro)", () => {
     expect(e.allSounds).toBe(true);
     expect(e.personalFilters).toBe(true);
     expect(e.maxActiveWatches).toBe(100);
-    expect(e.minFrequencyMinutes).toBe(5);
+    expect(e.minFrequencyMinutes).toBe(1);
   });
 
   it("limitsFor, entitlements ile tutarlı", () => {

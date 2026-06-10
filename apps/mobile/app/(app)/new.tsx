@@ -14,12 +14,12 @@ import { Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
-const FREQ = [15, 60, 180, 360, 720, 1440];
+const FREQ = [1, 15, 60, 360, 720, 1440];
 /** Sıklık kartı metası: ad + açıklama (maket dili). */
 const FREQ_META: Record<number, { name: string; desc: string }> = {
-  15: { name: "15 dk", desc: "En hızlı" },
+  1: { name: "1 dk", desc: "Anında" },
+  15: { name: "15 dk", desc: "Çok hızlı" },
   60: { name: "1 saat", desc: "Dengeli" },
-  180: { name: "3 saat", desc: "Normal" },
   360: { name: "6 saat", desc: "Düşük" },
   720: { name: "12 saat", desc: "Çok düşük" },
   1440: { name: "Günlük", desc: "En düşük" },
