@@ -75,4 +75,9 @@ export class SupabaseWatchRepository implements WatchRepository {
     if (error || !data) throw new Error(`watches update: ${error?.message ?? "boş"}`);
     return toDomain(data);
   }
+
+  async delete(watchId: string): Promise<void> {
+    const { error } = await this.db.from("watches").delete().eq("id", watchId);
+    if (error) throw new Error(`watches delete: ${error.message}`);
+  }
 }

@@ -270,6 +270,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ messages }),
     }),
+  setMyWatchStatus: (id: string, status: "active" | "paused") =>
+    req<Watch>(`/v1/watchers/${id}/status`, {
+      method: "POST",
+      body: JSON.stringify({ status }),
+    }),
+  deleteMyWatch: (id: string) => req<{ ok: boolean }>(`/v1/watchers/${id}`, { method: "DELETE" }),
   watcherTimeline: (id: string) => req<WatchTimeline>(`/v1/watchers/${id}/timeline`),
   adminWatchTimeline: (id: string) => req<WatchTimeline>(`/v1/admin/watches/${id}/timeline`),
   feed: () => req<FeedItem[]>("/v1/feed"),

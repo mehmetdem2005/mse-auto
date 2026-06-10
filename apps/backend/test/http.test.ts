@@ -157,6 +157,54 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(sb.frequencyMinutes).toBeGreaterThan(0);
   });
 
+  it("watcher duraklat/sürdür + sil: sahip 200; başkası 404; limit dolarken sürdür 403", async () => {
+    const app = makeApp();
+    const mk = (intent: string) =>
+      app.request("/v1/watchers", post({ rawIntent: intent, frequencyMinutes: 60 }, "u1"));
+    const w1 = (await (await mk("birinci konu izle")).json()) as Watch;
+
+    // duraklat (sahip) → 200, status döner
+    const paused = await app.request(
+      `/v1/watchers/${w1.id}/status`,
+      post({ status: "paused" }, "u1"),
+    );
+    expect(paused.status).toBe(200);
+    expect(((await paused.json()) as Watch).status).toBe("paused");
+
+    // başkası dokunamaz → 404
+    const foreign = await app.request(
+      `/v1/watchers/${w1.id}/status`,
+      post({ status: "active" }, "u2"),
+    );
+    expect(foreign.status).toBe(404);
+    const foreignDel = await app.request(`/v1/watchers/${w1.id}`, {
+      method: "DELETE",
+      headers: bearer("u2"),
+    });
+    expect(foreignDel.status).toBe(404);
+
+    // free limiti (3) doluyken duraklatılmışı sürdürmek → 403
+    await mk("ikinci konu izle");
+    await mk("üçüncü konu izle");
+    await mk("dördüncü konu izle"); // w1 paused olduğundan 3 aktif olur
+    const resume = await app.request(
+      `/v1/watchers/${w1.id}/status`,
+      post({ status: "active" }, "u1"),
+    );
+    expect(resume.status).toBe(403);
+
+    // sil (sahip) → 200; listeden düşer
+    const del = await app.request(`/v1/watchers/${w1.id}`, {
+      method: "DELETE",
+      headers: bearer("u1"),
+    });
+    expect(del.status).toBe(200);
+    const list = (await (
+      await app.request("/v1/watchers", { headers: bearer("u1") })
+    ).json()) as Watch[];
+    expect(list.find((w) => w.id === w1.id)).toBeUndefined();
+  });
+
   it("assist rate-limit izolasyonu: createWatch kotası dolu olsa da /assist çalışır", async () => {
     // Hono use() exact-match regresyonu: /v1/watchers middleware'i /assist'e sızmamalı.
     const env: Env = {

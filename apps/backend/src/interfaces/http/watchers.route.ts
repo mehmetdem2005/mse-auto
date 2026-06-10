@@ -4,13 +4,16 @@ import {
   assistReplySchema,
   createWatchInputSchema,
   errorSchema,
+  setWatchStatusInputSchema,
   watchSchema,
   watchTimelineSchema,
 } from "@watcher/contracts";
 import { assistIntent } from "../../application/assist-intent";
 import { createWatcher } from "../../application/create-watcher";
 import type { Container } from "../../config/container";
+import { effectivePlan } from "../../domain/billing";
 import { PlanLimitError } from "../../domain/errors";
+import { limitsFor } from "../../domain/plan";
 import type { AuthVariables } from "./auth.middleware";
 
 export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: AuthVariables }> {
@@ -105,6 +108,96 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
       createdAt: w.createdAt,
     }));
     return c.json(dto, 200);
+  });
+
+  // ---- Kullanıcı-kapsamlı duraklat/sürdür + sil (ADR-040) ----
+  const setStatus = createRoute({
+    method: "post",
+    path: "/{id}/status",
+    tags: ["watchers"],
+    summary: "Watcher'ı duraklat/sürdür (sahip)",
+    request: {
+      params: z.object({ id: z.string().min(1) }),
+      body: { content: { "application/json": { schema: setWatchStatusInputSchema } } },
+    },
+    responses: {
+      200: {
+        content: { "application/json": { schema: watchSchema } },
+        description: "Güncel watcher",
+      },
+      403: {
+        content: { "application/json": { schema: errorSchema } },
+        description: "Plan limiti aşıldı",
+      },
+      404: {
+        content: { "application/json": { schema: errorSchema } },
+        description: "Bulunamadı",
+      },
+    },
+  });
+
+  app.openapi(setStatus, async (c) => {
+    const { id } = c.req.valid("param");
+    const { status } = c.req.valid("json");
+    const userId = c.get("userId");
+    const watch = await container.watches.findById(id);
+    if (!watch || watch.userId !== userId) return c.json({ error: "Watcher bulunamadı" }, 404);
+
+    // Sürdürürken plan limitini uygula (oluşturma ile aynı kural).
+    if (status === "active" && watch.status !== "active") {
+      const sub = await container.subscriptions.getByUser(userId);
+      const limits = limitsFor(effectivePlan(sub, new Date()));
+      const active = (await container.watches.listByUser(userId)).filter(
+        (w) => w.status === "active",
+      );
+      if (active.length >= limits.maxActiveWatches) {
+        return c.json(
+          { error: `Bu planda en fazla ${limits.maxActiveWatches} aktif watcher olabilir.` },
+          403,
+        );
+      }
+    }
+
+    const updated = await container.watches.update(id, { status });
+    return c.json(
+      {
+        id: updated.id,
+        rawIntent: updated.rawIntent,
+        archetype: updated.archetype,
+        frequencyMinutes: updated.frequencyMinutes,
+        status: updated.status,
+        createdAt: updated.createdAt,
+      },
+      200,
+    );
+  });
+
+  const removeWatch = createRoute({
+    method: "delete",
+    path: "/{id}",
+    tags: ["watchers"],
+    summary: "Watcher'ı sil (sahip)",
+    request: { params: z.object({ id: z.string().min(1) }) },
+    responses: {
+      200: {
+        content: { "application/json": { schema: z.object({ ok: z.boolean() }) } },
+        description: "Silindi",
+      },
+      404: {
+        content: { "application/json": { schema: errorSchema } },
+        description: "Bulunamadı",
+      },
+    },
+  });
+
+  app.openapi(removeWatch, async (c) => {
+    const { id } = c.req.valid("param");
+    const watch = await container.watches.findById(id);
+    if (!watch || watch.userId !== c.get("userId")) {
+      return c.json({ error: "Watcher bulunamadı" }, 404);
+    }
+    await container.watches.delete(id);
+    return c.json({ ok: true }, 200);
   });
 
   const timeline = createRoute({

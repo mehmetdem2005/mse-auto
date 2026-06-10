@@ -485,3 +485,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P1 ✓ (değişen yalnız sorgu parametreleri) · P8 ✓ (25010 *Functional Correctness* — tespit doğruluğu) · P9 ✓.
 - **ISO:** 25010 *Functional Correctness/Suitability* · 25012 *Currentness* (veri güncelliği — tam isabet bu boyut) · 29148 (gereksinim: "güncel tarihe göre ara" ölçülebilir kurala çevrildi).
 - **Değerlendirilen alternatifler:** `qdr:d` (24 saat — saatlik kontrolde çok dar, kaynak gecikmeleri kaçar → hafta seçildi) · yalnız istem kuralı (arama yine bayat getirirdi → iki katman birlikte) · sonuçları tarihe göre istemcide filtrelemek (Serper `date` alanı serbest metin "2 gün önce" — güvenilmez → sağlayıcı filtresi seçildi).
+
+## ADR-040 — Kullanıcı-kapsamlı watcher duraklat/sürdür + sil
+- **Durum:** Kabul · TOGAF Phase C (Application) — ürün sahibi: "alarm silme ve durdurma tuşu da ekle".
+- **Bağlam:** Duraklat/sil yalnız admin konsolunda vardı; kullanıcı kendi watcher'ını listeden yönetemiyordu (backend'de kullanıcı-kapsamlı endpoint de yoktu).
+- **Karar:** (1) `WatchRepository.delete` port'a eklendi (supabase + in-memory). (2) Route'lar: `POST /v1/watchers/{id}/status` + `DELETE /v1/watchers/{id}` — **sahiplik kontrolü** (başkasınınki → 404, varlık sızdırılmaz) + **sürdürürken plan limiti** (oluşturma ile aynı kural: free=3 aktif doluysa 403). (3) Mobil listede her kartta "❚❚ duraklat / ▶ sürdür" + "sil" (Alert onaylı, destructive); react-query mutation + watchers/subscription invalidation.
+- **Sonuçlar:** Kullanıcı kendi alarmlarını yönetir; limit kuralı sürdürmede de delinemez. Ödün: silme kalıcı (DB cascade: deliveries watch'a bağlı) — Alert onayı zorunlu kılındı.
+- **P1–P9:** P2 ✓ (port→impl→route) · P5 ✓ (≥44pt, etiketli butonlar, yıkıcı eylem onaylı) · P6 ✓ (sahiplik: yatay yetki kaçağı yok — 404) · P8 ✓ · P9 ✓.
+- **ISO:** 27001/27002 (erişim kontrolü: nesne-düzeyi yetkilendirme, varlık gizleme 404) · 25010 *Functional Suitability* + *Security* · 9241 (yıkıcı eylemde onay diyaloğu; durum görünür).
+- **Değerlendirilen alternatifler:** silme yerine arşivleme (şimdilik kapsam dışı; duraklatma zaten geri-dönüşlü yol → kalıcı silme + onay seçildi) · admin endpoint'lerini kullanıcıya açmak (yetki modeli karışır → ayrı kullanıcı-kapsamlı route).

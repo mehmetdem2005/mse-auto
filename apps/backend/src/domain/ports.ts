@@ -15,4 +15,5 @@ export interface WatchRepository {
     watchId: string,
     patch: Partial<Pick<Watch, "frequencyMinutes" | "status">>,
   ): Promise<Watch>;
+  delete(watchId: string): Promise<void>;
 }

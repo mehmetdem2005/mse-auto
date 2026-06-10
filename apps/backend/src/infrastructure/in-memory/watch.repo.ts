@@ -30,4 +30,9 @@ export class InMemoryWatchRepository implements WatchRepository {
     if (patch.status !== undefined) w.status = patch.status;
     return w;
   }
+
+  async delete(watchId: string): Promise<void> {
+    const i = this.store.watches.findIndex((x) => x.id === watchId);
+    if (i !== -1) this.store.watches.splice(i, 1);
+  }
 }
