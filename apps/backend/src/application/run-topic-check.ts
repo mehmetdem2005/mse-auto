@@ -36,6 +36,8 @@ export async function runTopicCheck(
       reasoning: err instanceof Error ? err.message : "bilinmeyen hata",
       decision: false,
       confidence: 0,
+      searchQuery: topic.canonicalQuery,
+      hits: null,
     });
     await deps.monitoring.markTopicChecked(topic.id, new Date().toISOString());
     return { detected: false, eventId: null, description: null, deliveries: 0, facts: null };
@@ -47,6 +49,8 @@ export async function runTopicCheck(
     reasoning: outcome.reasoning,
     decision: outcome.detected,
     confidence: outcome.confidence,
+    searchQuery: outcome.searchQuery ?? topic.canonicalQuery,
+    hits: outcome.hits ?? null,
   });
   await deps.monitoring.markTopicChecked(topic.id, new Date().toISOString());
 

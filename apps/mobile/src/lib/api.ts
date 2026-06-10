@@ -123,6 +123,12 @@ export interface AdminTimeseries {
 }
 
 // ---- Watcher "araştırma" geçmişi ----
+export interface SearchHitView {
+  title: string;
+  snippet: string;
+  url: string;
+  date: string | null;
+}
 export interface CheckRunView {
   id: string;
   ranAt: string;
@@ -130,6 +136,8 @@ export interface CheckRunView {
   confidence: number | null;
   summary: string | null;
   reasoning: string | null;
+  searchQuery: string | null;
+  hits: SearchHitView[] | null;
 }
 export interface DetectionEventView {
   id: string;

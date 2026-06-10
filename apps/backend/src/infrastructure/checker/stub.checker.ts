@@ -10,6 +10,8 @@ export class StubChecker implements Checker {
       resultSummary: `(stub) "${topic.canonicalQuery}" için arama yapılmadı`,
       reasoning: "(stub) Faz 6: DeepSeek + web araması",
       confidence: 0,
+      searchQuery: topic.canonicalQuery,
+      hits: [],
     };
   }
 }

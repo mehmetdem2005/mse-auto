@@ -93,6 +93,8 @@ export interface Database {
           reasoning: string | null;
           decision: boolean;
           confidence: number | null;
+          search_query: string | null;
+          search_hits: Json | null;
         };
         Insert: {
           topic_id: string;
@@ -102,6 +104,8 @@ export interface Database {
           reasoning?: string | null;
           decision?: boolean;
           confidence?: number | null;
+          search_query?: string | null;
+          search_hits?: Json | null;
         };
         Update: {
           result_summary?: string | null;

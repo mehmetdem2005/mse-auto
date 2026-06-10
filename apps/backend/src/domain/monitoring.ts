@@ -17,12 +17,22 @@ export interface PendingDelivery {
 
 export type DeliveryStatus = "pending" | "sent" | "delivered" | "failed";
 
+/** Saklanan arama sonucu (kamusal web verisi; ADR-036). */
+export interface StoredSearchHit {
+  title: string;
+  snippet: string;
+  url: string;
+  date: string | null;
+}
+
 export interface RecordCheckRunInput {
   topicId: string;
   resultSummary: string;
   reasoning: string;
   decision: boolean;
   confidence: number;
+  searchQuery?: string | null;
+  hits?: StoredSearchHit[] | null;
 }
 
 /** Kullanıcı/admin'in göreceği "araştırma" görünümleri (okuma). */
@@ -33,6 +43,8 @@ export interface CheckRunView {
   confidence: number | null;
   summary: string | null;
   reasoning: string | null;
+  searchQuery: string | null;
+  hits: StoredSearchHit[] | null;
 }
 export interface DetectionEventView {
   id: string;

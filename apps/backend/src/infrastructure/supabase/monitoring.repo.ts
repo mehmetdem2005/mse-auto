@@ -8,11 +8,12 @@ import type {
   MonitoringRepository,
   PendingDelivery,
   RecordCheckRunInput,
+  StoredSearchHit,
   Subscriber,
 } from "../../domain/monitoring";
 import type { EventFacts } from "../../domain/personal";
 import type { CanonicalTopic } from "../../domain/topic";
-import type { Database } from "./database.types";
+import type { Database, Json } from "./database.types";
 
 export class SupabaseMonitoringRepository implements MonitoringRepository {
   constructor(private readonly db: SupabaseClient<Database>) {}
@@ -44,6 +45,9 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
         reasoning: input.reasoning,
         decision: input.decision,
         confidence: input.confidence,
+        search_query: input.searchQuery ?? null,
+        // StoredSearchHit düz JSON-uyumlu nesnedir; jsonb kolonuna serbest tiple yazılır.
+        search_hits: (input.hits as unknown as Json) ?? null,
       })
       .select("id")
       .single();
@@ -130,7 +134,9 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
   async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
     const { data, error } = await this.db
       .from("check_runs")
-      .select("id, ran_at, decision, confidence, result_summary, reasoning")
+      .select(
+        "id, ran_at, decision, confidence, result_summary, reasoning, search_query, search_hits",
+      )
       .eq("topic_id", topicId)
       .order("ran_at", { ascending: false })
       .limit(limit);
@@ -142,6 +148,8 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
       confidence: r.confidence,
       summary: r.result_summary,
       reasoning: r.reasoning,
+      searchQuery: r.search_query,
+      hits: (r.search_hits as StoredSearchHit[] | null) ?? null,
     }));
   }
 

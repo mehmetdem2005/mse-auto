@@ -1,4 +1,5 @@
 import type { Price, Subscription } from "../../domain/billing";
+import type { StoredSearchHit } from "../../domain/monitoring";
 import type { CanonicalTopic } from "../../domain/topic";
 import type { Watch } from "../../domain/watch";
 
@@ -12,6 +13,8 @@ export interface StoredCheckRun {
   reasoning: string;
   decision: boolean;
   confidence: number;
+  searchQuery: string | null;
+  hits: StoredSearchHit[] | null;
 }
 export interface StoredEvent {
   id: string;

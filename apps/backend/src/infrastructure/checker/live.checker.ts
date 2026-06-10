@@ -19,6 +19,8 @@ export class LiveChecker implements Checker {
       resultSummary: `${hits.length} sonuç (${this.search.name})`,
       reasoning: r.reasoning,
       confidence: r.confidence,
+      searchQuery: topic.canonicalQuery,
+      hits,
     };
   }
 }

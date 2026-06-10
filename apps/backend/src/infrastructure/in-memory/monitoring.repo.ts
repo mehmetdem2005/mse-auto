@@ -50,6 +50,8 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
       reasoning: input.reasoning,
       decision: input.decision,
       confidence: input.confidence,
+      searchQuery: input.searchQuery ?? null,
+      hits: input.hits ?? null,
     });
     return { id };
   }
@@ -121,6 +123,8 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         confidence: r.confidence,
         summary: r.resultSummary,
         reasoning: r.reasoning,
+        searchQuery: r.searchQuery,
+        hits: r.hits,
       }));
   }
 

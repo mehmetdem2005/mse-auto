@@ -121,24 +121,88 @@ function Vote({
   );
 }
 
+/**
+ * Tek kontrol çalışması — dokununca AI'nın arama + düşünme süreci açılır
+ * (ADR-036: ne arandı, hangi sonuçlar görüldü, nasıl karar verildi).
+ */
 function RunCard({ r }: { r: CheckRunView }): ReactNode {
+  const [open, setOpen] = useState(false);
   const hit = r.decision;
   return (
     <View className="mb-2.5">
       <Card>
-        <View className="flex-row items-center gap-2">
-          <Text style={{ color: hit ? "#16A34A" : "#94A3B8" }}>{hit ? "●" : "○"}</Text>
-          <Text className="text-text text-xs">{hit ? "tespit var" : "değişiklik yok"}</Text>
-          {r.confidence !== null ? (
-            <Text className="text-muted text-[11px]">
-              · %{Math.round(r.confidence * 100)} güven
+        <Pressable
+          onPress={() => setOpen((o) => !o)}
+          accessibilityRole="button"
+          accessibilityState={{ expanded: open }}
+          accessibilityLabel={`${when(r.ranAt)} kontrolü — ${hit ? "tespit var" : "değişiklik yok"}. Arama ve düşünme sürecini ${open ? "gizle" : "göster"}`}
+          className="min-h-[44px] justify-center"
+        >
+          <View className="flex-row items-center gap-2">
+            <Text style={{ color: hit ? "#16A34A" : "#94A3B8" }}>{hit ? "●" : "○"}</Text>
+            <Text className="text-text text-xs">{hit ? "tespit var" : "değişiklik yok"}</Text>
+            {r.confidence !== null ? (
+              <Text className="text-muted text-[11px]">
+                · %{Math.round(r.confidence * 100)} güven
+              </Text>
+            ) : null}
+            <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
+            <Text className="text-muted text-xs">{open ? "▾" : "▸"}</Text>
+          </View>
+        </Pressable>
+
+        {open ? (
+          <View className="mt-2 pt-3 border-t border-line">
+            {/* 1) Arama süreci */}
+            <Text className="text-muted text-[10px] uppercase tracking-widest mb-1.5">
+              arama süreci
             </Text>
-          ) : null}
-          <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
-        </View>
-        {r.summary ? <Text className="text-muted text-xs mt-2">{r.summary}</Text> : null}
-        {r.reasoning ? (
-          <Text className="text-muted text-[11px] mt-1.5 italic">{r.reasoning}</Text>
+            {r.searchQuery ? (
+              <View className="bg-panel2 rounded-lg px-3 py-2 mb-2">
+                <Text className="text-text text-xs">🔍 “{r.searchQuery}”</Text>
+                {r.summary ? (
+                  <Text className="text-muted text-[11px] mt-1">{r.summary}</Text>
+                ) : null}
+              </View>
+            ) : null}
+            {r.hits && r.hits.length > 0 ? (
+              r.hits.map((h, i) => (
+                <View
+                  key={`${r.id}-h${i}`}
+                  className="border border-line rounded-lg px-3 py-2 mb-1.5"
+                >
+                  <Text className="text-text text-xs font-semibold" numberOfLines={2}>
+                    {h.title}
+                  </Text>
+                  <Text className="text-muted text-[11px] mt-0.5" numberOfLines={3}>
+                    {h.snippet}
+                  </Text>
+                  <Text className="text-muted text-[10px] mt-1" numberOfLines={1}>
+                    {h.date ? `${h.date} · ` : ""}
+                    {h.url}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text className="text-muted text-[11px] mb-1.5">
+                {r.searchQuery
+                  ? "Sonuç listesi kaydedilmedi."
+                  : "Bu kontrol için arama detayı kaydedilmedi (eski kayıt)."}
+              </Text>
+            )}
+
+            {/* 2) AI düşünme süreci */}
+            {r.reasoning ? (
+              <>
+                <Text className="text-muted text-[10px] uppercase tracking-widest mt-2 mb-1.5">
+                  yapay zekânın değerlendirmesi
+                </Text>
+                <View className="bg-panel2 rounded-lg px-3 py-2">
+                  <Text className="text-text text-xs leading-5">🧠 {r.reasoning}</Text>
+                </View>
+              </>
+            ) : null}
+          </View>
         ) : null}
       </Card>
     </View>

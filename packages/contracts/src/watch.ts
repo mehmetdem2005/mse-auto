@@ -28,6 +28,15 @@ export const watchSchema = z.object({
 });
 export type Watch = z.infer<typeof watchSchema>;
 
+/** Saklanan arama sonucu (kamusal web verisi; ADR-036). */
+export const searchHitViewSchema = z.object({
+  title: z.string(),
+  snippet: z.string(),
+  url: z.string(),
+  date: z.string().nullable(),
+});
+export type SearchHitView = z.infer<typeof searchHitViewSchema>;
+
 /** Watcher "araştırma" görünümü: kontrol çalışmaları + tespit olayları. */
 export const checkRunViewSchema = z.object({
   id: z.string(),
@@ -36,6 +45,8 @@ export const checkRunViewSchema = z.object({
   confidence: z.number().nullable(),
   summary: z.string().nullable(),
   reasoning: z.string().nullable(),
+  searchQuery: z.string().nullable(),
+  hits: z.array(searchHitViewSchema).nullable(),
 });
 export const detectionEventViewSchema = z.object({
   id: z.string(),
