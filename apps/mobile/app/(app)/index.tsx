@@ -1,4 +1,4 @@
-import { Badge, Card, EmptyState } from "@/components/ui";
+import { Badge, Card, EmptyState, Fab } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
@@ -36,7 +36,7 @@ export default function Watchers() {
           ListEmptyComponent={
             <EmptyState
               title="Henüz watcher yok"
-              hint="Alttaki “Yeni” sekmesinden ilk izleyicini oluştur."
+              hint="Sağ alttaki ＋ butonundan ilk izleyicini oluştur."
             />
           }
           renderItem={({ item }) => (
@@ -44,6 +44,7 @@ export default function Watchers() {
           )}
         />
       )}
+      <Fab accessibilityLabel="Yeni watcher oluştur" onPress={() => router.push("/new")} />
     </View>
   );
 }

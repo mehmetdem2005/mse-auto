@@ -1,4 +1,4 @@
-import { Badge, Card, EmptyState, FactChips } from "@/components/ui";
+import { Badge, Card, EmptyState, Fab, FactChips } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -115,6 +115,7 @@ export default function Feed() {
           />
         )}
       />
+      <Fab accessibilityLabel="Yeni watcher oluştur" onPress={() => router.push("/new")} />
     </View>
   );
 }

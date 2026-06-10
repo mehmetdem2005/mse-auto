@@ -6,8 +6,22 @@ import { Tabs } from "expo-router";
 import { useEffect } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 
-function Icon({ glyph, color }: { glyph: string; color: string }) {
-  return <Text style={{ color, fontSize: 16 }}>{glyph}</Text>;
+// M3 bottom-nav: aktif öğede pill (secondary-container) gösterge.
+function TabIcon({ glyph, color, focused }: { glyph: string; color: string; focused: boolean }) {
+  return (
+    <View
+      style={{
+        width: 56,
+        height: 30,
+        borderRadius: 15,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: focused ? "rgba(99,102,241,0.16)" : "transparent",
+      }}
+    >
+      <Text style={{ color, fontSize: 18 }}>{glyph}</Text>
+    </View>
+  );
 }
 
 export default function AppLayout() {
@@ -34,44 +48,57 @@ export default function AppLayout() {
         headerTitleStyle: { color: "#0F172A", fontWeight: "700" },
         headerShadowVisible: false,
         sceneStyle: { backgroundColor: "#F5F7FB" },
-        tabBarStyle: { backgroundColor: "#FFFFFF", borderTopColor: "#E2E8F0" },
+        tabBarStyle: {
+          backgroundColor: "#FFFFFF",
+          borderTopColor: "#E2E8F0",
+          height: 64,
+          paddingTop: 6,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
         tabBarActiveTintColor: "#6366F1",
-        tabBarInactiveTintColor: "#94A3B8",
+        tabBarInactiveTintColor: "#64748B",
       }}
     >
       <Tabs.Screen
         name="feed"
         options={{
           title: "Akış",
-          tabBarIcon: ({ color }) => <Icon glyph="✦" color={color} />,
+          tabBarIcon: ({ color, focused }) => <TabIcon glyph="✦" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
           title: "Watcher'lar",
-          tabBarIcon: ({ color }) => <Icon glyph="◉" color={color} />,
+          tabBarIcon: ({ color, focused }) => <TabIcon glyph="◉" color={color} focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="new"
-        options={{ title: "Yeni", tabBarIcon: ({ color }) => <Icon glyph="＋" color={color} /> }}
+        // "Yeni" birincil eylem → FAB ile (M3). Sekme gizli, rota /new'den erişilir.
+        options={{ href: null }}
       />
       <Tabs.Screen
         name="subscription"
-        options={{ title: "Abonelik", tabBarIcon: ({ color }) => <Icon glyph="★" color={color} /> }}
+        options={{
+          title: "Abonelik",
+          tabBarIcon: ({ color, focused }) => <TabIcon glyph="★" color={color} focused={focused} />,
+        }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: "Ayarlar", tabBarIcon: ({ color }) => <Icon glyph="⚙" color={color} /> }}
+        options={{
+          title: "Ayarlar",
+          tabBarIcon: ({ color, focused }) => <TabIcon glyph="⚙" color={color} focused={focused} />,
+        }}
       />
       <Tabs.Screen
         name="admin"
         options={{
           title: "Admin",
-          // Yalnız adminlere görünür; değilse sekme gizli ve rota erişilemez.
           href: isAdmin ? undefined : null,
-          tabBarIcon: ({ color }) => <Icon glyph="⛨" color={color} />,
+          tabBarIcon: ({ color, focused }) => <TabIcon glyph="⛨" color={color} focused={focused} />,
         }}
       />
     </Tabs>

@@ -52,6 +52,41 @@ export function Btn({
   );
 }
 
+/** Material 3 FAB — ekranın birincil eylemi (yüzen, sağ-alt). */
+export function Fab({
+  onPress,
+  accessibilityLabel,
+  glyph = "＋",
+}: {
+  onPress: () => void;
+  accessibilityLabel: string;
+  glyph?: string;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl bg-accent items-center justify-center active:opacity-80"
+      style={{
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.22,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
+        elevation: 6,
+      }}
+    >
+      <Text
+        className="text-white text-3xl leading-none"
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+      >
+        {glyph}
+      </Text>
+    </Pressable>
+  );
+}
+
 type BadgeTone = "pos" | "neg" | "muted" | "accent";
 const BADGE: Record<BadgeTone, string> = {
   pos: "bg-pos/10 text-pos",
