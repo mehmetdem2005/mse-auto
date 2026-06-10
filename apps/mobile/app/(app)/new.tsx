@@ -1,3 +1,4 @@
+import { EnterItem } from "@/components/motion";
 import { Btn, Card } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
@@ -9,6 +10,7 @@ import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { Send } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
@@ -285,21 +287,24 @@ export default function NewWatcher() {
         {current.key === "intent" ? (
           <View accessibilityLabel="Asistan sohbeti">
             {messages.map((m, i) => (
-              <View
+              <EnterItem
                 // Sohbet geçmişi yalnız sona eklenir → indeks anahtarı kararlı.
                 key={`${i}-${m.role}`}
+                index={0}
                 className={`max-w-[85%] rounded-2xl px-4 py-3 mb-2.5 ${
                   m.role === "user"
                     ? "self-end bg-accent rounded-br-md"
                     : "self-start bg-panel border border-line rounded-bl-md"
                 }`}
-                accessibilityRole="text"
-                accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${m.content}`}
               >
-                <Text className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}>
+                <Text
+                  accessibilityRole="text"
+                  accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${m.content}`}
+                  className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}
+                >
                   {m.content}
                 </Text>
-              </View>
+              </EnterItem>
             ))}
             {assist.isPending ? (
               <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
@@ -558,17 +563,11 @@ export default function NewWatcher() {
             disabled={!draft.trim() || assist.isPending}
             accessibilityRole="button"
             accessibilityLabel="Gönder"
-            className={`rounded-full px-5 py-3 min-h-[44px] justify-center ${
+            className={`rounded-full w-12 h-12 min-h-[44px] items-center justify-center ${
               !draft.trim() || assist.isPending ? "bg-line" : "bg-accent"
             }`}
           >
-            <Text
-              className={`text-xs font-semibold uppercase tracking-wider ${
-                !draft.trim() || assist.isPending ? "text-muted" : "text-white"
-              }`}
-            >
-              gönder
-            </Text>
+            <Send size={18} color={!draft.trim() || assist.isPending ? "#475569" : "#FFFFFF"} />
           </Pressable>
         </View>
       ) : null}

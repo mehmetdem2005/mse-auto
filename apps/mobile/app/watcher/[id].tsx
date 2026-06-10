@@ -1,7 +1,16 @@
+import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
+import {
+  ChevronDown,
+  ChevronRight,
+  RotateCw,
+  Search,
+  ThumbsDown,
+  ThumbsUp,
+} from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -49,8 +58,10 @@ export default function WatcherDetail(): ReactNode {
       {/* Tespitler önce — en önemli sonuç */}
       <SectionLabel>tespitler ({eventGroups.length})</SectionLabel>
       {eventGroups.length > 0 ? (
-        eventGroups.map((g) => (
-          <EventCard key={g.latest.id} e={g.latest} times={g.times} canVote={!isAdmin} />
+        eventGroups.map((g, i) => (
+          <EnterItem key={g.latest.id} index={i}>
+            <EventCard e={g.latest} times={g.times} canVote={!isAdmin} />
+          </EnterItem>
         ))
       ) : (
         <Card>
@@ -61,7 +72,11 @@ export default function WatcherDetail(): ReactNode {
       <View className="h-5" />
       <SectionLabel>kontrol geçmişi ({runs.length})</SectionLabel>
       {runs.length > 0 ? (
-        runs.map((r) => <RunCard key={r.id} r={r} />)
+        runs.map((r, i) => (
+          <EnterItem key={r.id} index={i}>
+            <RunCard r={r} />
+          </EnterItem>
+        ))
       ) : (
         <Text className="text-muted text-sm">Henüz kontrol çalışması yok.</Text>
       )}
@@ -106,23 +121,26 @@ function EventCard({
         </View>
         <Text className="text-text text-[15px] leading-5">{e.description}</Text>
         {times.length > 1 ? (
-          <Text className="text-muted text-[11px] mt-1.5">
-            ⟳ {times.length} kez bildirildi · ilki {when(times[times.length - 1] ?? "")}
-          </Text>
+          <View className="flex-row items-center gap-1 mt-1.5">
+            <RotateCw size={11} color="#475569" />
+            <Text className="text-muted text-[11px]">
+              {times.length} kez bildirildi · ilki {when(times[times.length - 1] ?? "")}
+            </Text>
+          </View>
         ) : null}
         <FactChips raw={e.facts} />
         {canVote ? (
           <View className="flex-row items-center mt-3 pt-3 border-t border-line">
             {voted ? (
               <Text className="text-muted text-xs">
-                {voted === "correct" ? "👍 Teşekkürler!" : "👎 Not edildi."}
+                {voted === "correct" ? "Teşekkürler!" : "Not edildi."}
               </Text>
             ) : (
               <>
                 <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-                <Vote glyph="👍" label="Doğru" onPress={() => mutation.mutate("correct")} />
+                <Vote kind="up" label="Doğru" onPress={() => mutation.mutate("correct")} />
                 <View className="w-2" />
-                <Vote glyph="👎" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
+                <Vote kind="down" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
               </>
             )}
           </View>
@@ -133,10 +151,10 @@ function EventCard({
 }
 
 function Vote({
-  glyph,
+  kind,
   label,
   onPress,
-}: { glyph: string; label: string; onPress: () => void }): ReactNode {
+}: { kind: "up" | "down"; label: string; onPress: () => void }): ReactNode {
   return (
     <Pressable
       onPress={onPress}
@@ -144,9 +162,11 @@ function Vote({
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Text className="text-base" accessibilityElementsHidden importantForAccessibility="no">
-        {glyph}
-      </Text>
+      {kind === "up" ? (
+        <ThumbsUp size={18} color="#16A34A" />
+      ) : (
+        <ThumbsDown size={18} color="#475569" />
+      )}
     </Pressable>
   );
 }
@@ -177,12 +197,16 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
               </Text>
             ) : null}
             <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt)}</Text>
-            <Text className="text-muted text-xs">{open ? "▾" : "▸"}</Text>
+            {open ? (
+              <ChevronDown size={15} color="#475569" />
+            ) : (
+              <ChevronRight size={15} color="#475569" />
+            )}
           </View>
         </Pressable>
 
         {open ? (
-          <View className="mt-2 pt-3 border-t border-line">
+          <ExpandIn className="mt-2 pt-3 border-t border-line">
             {/* Gerçek LLM konuşması — kontrol anında saklanan girdi/çıktı dökümü (ADR-038) */}
             <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
               modelle konuşma · {when(r.ranAt)}
@@ -193,9 +217,12 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
               <Text className="text-muted text-[10px] uppercase tracking-wider mb-1">
                 watcher → modele
               </Text>
-              <Text className="text-text text-xs leading-5">
-                İzlenen konu: “{r.searchQuery ?? "—"}”
-              </Text>
+              <View className="flex-row items-center gap-1.5">
+                <Search size={12} color="#0F172A" />
+                <Text className="text-text text-xs leading-5 flex-1">
+                  İzlenen konu: “{r.searchQuery ?? "—"}”
+                </Text>
+              </View>
               {r.hits && r.hits.length > 0 ? (
                 <View className="mt-2">
                   <Text className="text-muted text-[11px] mb-1">
@@ -237,7 +264,7 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
                 <Text className="text-muted text-[11px] mt-1.5 italic">gerekçe kaydedilmemiş</Text>
               )}
             </View>
-          </View>
+          </ExpandIn>
         ) : null}
       </Card>
     </View>

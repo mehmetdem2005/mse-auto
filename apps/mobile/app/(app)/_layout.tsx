@@ -3,11 +3,12 @@ import { configureNotificationHandler, registerForegroundListener } from "@/lib/
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
+import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
 import { useEffect } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
-// M3 bottom-nav: aktif öğede pill (secondary-container) gösterge.
-function TabIcon({ glyph, color, focused }: { glyph: string; color: string; focused: boolean }) {
+// M3 bottom-nav: aktif öğede pill (secondary-container) gösterge + vektör ikon.
+function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; focused: boolean }) {
   return (
     <View
       style={{
@@ -19,7 +20,7 @@ function TabIcon({ glyph, color, focused }: { glyph: string; color: string; focu
         backgroundColor: focused ? "rgba(99,102,241,0.16)" : "transparent",
       }}
     >
-      <Text style={{ color, fontSize: 18 }}>{glyph}</Text>
+      <Icon size={19} color={color} strokeWidth={focused ? 2.4 : 2} />
     </View>
   );
 }
@@ -64,14 +65,18 @@ export default function AppLayout() {
         name="feed"
         options={{
           title: "Akış",
-          tabBarIcon: ({ color, focused }) => <TabIcon glyph="✦" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Sparkles} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="index"
         options={{
           title: "Watcher'lar",
-          tabBarIcon: ({ color, focused }) => <TabIcon glyph="◉" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Bell} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -83,14 +88,18 @@ export default function AppLayout() {
         name="subscription"
         options={{
           title: "Abonelik",
-          tabBarIcon: ({ color, focused }) => <TabIcon glyph="★" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Star} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
           title: "Ayarlar",
-          tabBarIcon: ({ color, focused }) => <TabIcon glyph="⚙" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Settings} color={color} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -98,7 +107,9 @@ export default function AppLayout() {
         options={{
           title: "Admin",
           href: isAdmin ? undefined : null,
-          tabBarIcon: ({ color, focused }) => <TabIcon glyph="⛨" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon Icon={Shield} color={color} focused={focused} />
+          ),
         }}
       />
     </Tabs>

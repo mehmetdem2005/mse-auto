@@ -1,8 +1,10 @@
+import { EnterItem } from "@/components/motion";
 import { Badge, Card, EmptyState, Fab } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { ChevronRight, Pause, Play, Trash2 } from "lucide-react-native";
 import { ActivityIndicator, Alert, FlatList, Pressable, Text, View } from "react-native";
 
 function labelFreq(m: number): string {
@@ -60,22 +62,24 @@ export default function Watchers() {
           ListEmptyComponent={
             <EmptyState
               title="Henüz watcher yok"
-              hint="Sağ alttaki ＋ butonundan ilk izleyicini oluştur."
+              hint="Sağ alttaki artı butonundan ilk izleyicini oluştur."
             />
           }
-          renderItem={({ item }) => (
-            <WatchRow
-              item={item}
-              busy={setStatus.isPending || del.isPending}
-              onPress={() => router.push(`/watcher/${item.id}`)}
-              onToggle={() =>
-                setStatus.mutate({
-                  id: item.id,
-                  status: item.status === "active" ? "paused" : "active",
-                })
-              }
-              onDelete={() => confirmDelete(item)}
-            />
+          renderItem={({ item, index }) => (
+            <EnterItem index={index}>
+              <WatchRow
+                item={item}
+                busy={setStatus.isPending || del.isPending}
+                onPress={() => router.push(`/watcher/${item.id}`)}
+                onToggle={() =>
+                  setStatus.mutate({
+                    id: item.id,
+                    status: item.status === "active" ? "paused" : "active",
+                  })
+                }
+                onDelete={() => confirmDelete(item)}
+              />
+            </EnterItem>
           )}
         />
       )}
@@ -104,25 +108,29 @@ function WatchRow({
         {item.rawIntent}
       </Text>
       <View className="flex-row items-center gap-2 mt-3">
-        <Badge tone={active ? "pos" : "muted"}>{active ? "● aktif" : "❚❚ duraklatıldı"}</Badge>
+        <Badge tone={active ? "pos" : "muted"}>{active ? "aktif" : "duraklatıldı"}</Badge>
         <Badge tone="accent">{item.archetype === "shared" ? "paylaşılan" : "kişisel"}</Badge>
         <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
-        <Text className="text-muted text-xs ml-auto">araştırma ›</Text>
+        <View className="flex-row items-center ml-auto">
+          <Text className="text-muted text-xs">araştırma</Text>
+          <ChevronRight size={14} color="#475569" />
+        </View>
       </View>
 
-      {/* Duraklat/Sürdür + Sil (HIG ≥44pt) */}
+      {/* Duraklat/Sürdür + Sil (HIG ≥44pt; vektör ikon + metin) */}
       <View className="flex-row gap-2 mt-3 pt-3 border-t border-line">
         <Pressable
           onPress={onToggle}
           disabled={busy}
           accessibilityRole="button"
           accessibilityLabel={active ? "Watcher'ı duraklat" : "Watcher'ı sürdür"}
-          className={`flex-1 min-h-[44px] justify-center items-center rounded-xl border ${
-            busy ? "opacity-40 border-line" : "border-line"
+          className={`flex-1 min-h-[44px] flex-row gap-1.5 justify-center items-center rounded-xl border border-line active:bg-panel2 ${
+            busy ? "opacity-40" : ""
           }`}
         >
-          <Text className="text-text text-xs font-semibold uppercase tracking-wider">
-            {active ? "❚❚ duraklat" : "▶ sürdür"}
+          {active ? <Pause size={15} color="#0F172A" /> : <Play size={15} color="#0F172A" />}
+          <Text className="text-text text-[13px] font-semibold">
+            {active ? "Duraklat" : "Sürdür"}
           </Text>
         </Pressable>
         <Pressable
@@ -130,11 +138,12 @@ function WatchRow({
           disabled={busy}
           accessibilityRole="button"
           accessibilityLabel="Watcher'ı sil"
-          className={`flex-1 min-h-[44px] justify-center items-center rounded-xl border border-neg ${
+          className={`flex-1 min-h-[44px] flex-row gap-1.5 justify-center items-center rounded-xl border border-neg/40 active:bg-neg/5 ${
             busy ? "opacity-40" : ""
           }`}
         >
-          <Text className="text-neg text-xs font-semibold uppercase tracking-wider">sil</Text>
+          <Trash2 size={15} color="#DC2626" />
+          <Text className="text-neg text-[13px] font-semibold">Sil</Text>
         </Pressable>
       </View>
     </Card>

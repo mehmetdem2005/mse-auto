@@ -1,6 +1,10 @@
 # Watcher — Proje Kuralları
 
 ## ZORUNLU: Design & Engineering Standards
+**Her UI işinde DÖRT skill birlikte uygulanır:** `design-standards` + `web-design-advanced`
+(görsel hiyerarşi/tipografi/**EMOJİ-İKON YASAĞI** — lucide vektör ikon) + `ui-ux-advanced`
+(progressive disclosure/mikro-etkileşim/4-durum kuralı) + `motion-design` (reanimated
+kalıpları + reduce-motion; **"animasyon yok" = iş bitmemiş**).
 **Her kodlama/UI işinde** `.claude/skills/design-standards/SKILL.md` skill'indeki standartlara uy:
 Atomic Design · Material/HIG/Fluent/Carbon · 8pt grid · App Shell/PRPL/SPA · ITCSS/CUBE/BEM/OOCSS ·
 WCAG 2.2 AA + WAI-ARIA + Semantic HTML5 · tek-yönlü state (react-query/zustand) + FSM · Core Web Vitals + RAIL ·

@@ -1,5 +1,6 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { Plus } from "lucide-react-native";
 import { type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
 import { Pressable, Text, View } from "react-native";
 
@@ -65,15 +66,13 @@ export function Btn({
   );
 }
 
-/** Material 3 FAB — ekranın birincil eylemi (yüzen, sağ-alt). */
+/** Material 3 FAB — ekranın birincil eylemi (yüzen, sağ-alt). Vektör ikon (emoji yasak). */
 export function Fab({
   onPress,
   accessibilityLabel,
-  glyph = "＋",
 }: {
   onPress: () => void;
   accessibilityLabel: string;
-  glyph?: string;
 }) {
   const reduce = useReduceMotion();
   return (
@@ -93,13 +92,7 @@ export function Fab({
         opacity: pressed ? 0.92 : 1,
       })}
     >
-      <Text
-        className="text-white text-3xl leading-none"
-        accessibilityElementsHidden
-        importantForAccessibility="no"
-      >
-        {glyph}
-      </Text>
+      <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
     </Pressable>
   );
 }

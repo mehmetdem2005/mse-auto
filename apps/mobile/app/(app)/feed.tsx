@@ -1,8 +1,10 @@
+import { EnterItem } from "@/components/motion";
 import { Badge, Card, EmptyState, Fab, FactChips } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
 
@@ -149,12 +151,14 @@ export default function Feed() {
             hint="Watcher'ların bir şey yakaladığında burada görünür."
           />
         }
-        renderItem={({ item: g }) => (
-          <FeedCard
-            group={g}
-            onOpen={() => open(g)}
-            onVote={() => markRead.mutate(g.latest.deliveryId)}
-          />
+        renderItem={({ item: g, index }) => (
+          <EnterItem index={index}>
+            <FeedCard
+              group={g}
+              onOpen={() => open(g)}
+              onVote={() => markRead.mutate(g.latest.deliveryId)}
+            />
+          </EnterItem>
         )}
       />
       <Fab accessibilityLabel="Yeni watcher oluştur" onPress={() => router.push("/new")} />
@@ -206,14 +210,14 @@ function FeedCard({
       <View className="flex-row items-center mt-3 pt-3 border-t border-line">
         {voted ? (
           <Text className="text-muted text-xs">
-            {voted === "correct" ? "👍 Teşekkürler!" : "👎 Not edildi, geliştireceğiz."}
+            {voted === "correct" ? "Teşekkürler!" : "Not edildi, geliştireceğiz."}
           </Text>
         ) : (
           <>
             <Text className="text-muted text-xs mr-3">Doğru muydu?</Text>
-            <Vote glyph="👍" label="Doğru" onPress={() => mutation.mutate("correct")} />
+            <Vote kind="up" label="Doğru" onPress={() => mutation.mutate("correct")} />
             <View className="w-2" />
-            <Vote glyph="👎" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
+            <Vote kind="down" label="Yanlış" onPress={() => mutation.mutate("incorrect")} />
           </>
         )}
         <View className="ml-auto">
@@ -228,18 +232,24 @@ function FeedCard({
   );
 }
 
-function Vote({ glyph, label, onPress }: { glyph: string; label: string; onPress: () => void }) {
+function Vote({
+  kind,
+  label,
+  onPress,
+}: { kind: "up" | "down"; label: string; onPress: () => void }) {
   return (
     <Pressable
       onPress={onPress}
-      // HIG dokunma hedefi ≥44pt
+      // HIG dokunma hedefi ≥44pt; vektör ikon (emoji yasak)
       className="w-11 h-11 rounded-full bg-panel2 items-center justify-center active:opacity-60"
       accessibilityRole="button"
       accessibilityLabel={label}
     >
-      <Text className="text-base" accessibilityElementsHidden importantForAccessibility="no">
-        {glyph}
-      </Text>
+      {kind === "up" ? (
+        <ThumbsUp size={18} color="#16A34A" />
+      ) : (
+        <ThumbsDown size={18} color="#475569" />
+      )}
     </Pressable>
   );
 }

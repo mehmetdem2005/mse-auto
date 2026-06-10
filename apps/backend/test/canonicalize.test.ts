@@ -24,4 +24,16 @@ describe("canonicalize (dedup + PII + arketip)", () => {
     expect(r.canonicalQuery).not.toContain("98765");
     expect(r.canonicalQuery).toBe("bilet nerede");
   });
+
+  it("paylaşılan konular birebir metin ister; sayılar korunur (ADR-042)", () => {
+    const c = canonicalize("yks 2026 sonuçları açıklanınca");
+    const d = canonicalize("kpss 2026 sonuçları açıklanınca");
+    expect(c.archetype).toBe("shared");
+    expect(c.canonicalQuery).not.toBe(d.canonicalQuery); // farklı konu = farklı topic
+    expect(c.canonicalQuery).toContain("2026"); // kayıpsız: sayı paylaşılanda sıyrılmaz
+    // Kişisel arketipte sayı (PII) yine sıyrılır; arama sorgusu kimlik taşımaz.
+    const e = canonicalize("iphone 17 fiyatı 50000 altına inince");
+    expect(e.archetype).toBe("personal");
+    expect(e.canonicalQuery).not.toContain("50000");
+  });
 });

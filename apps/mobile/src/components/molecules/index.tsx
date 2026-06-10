@@ -1,5 +1,6 @@
 // Molecules — atom + primitive bileşimleri (Atomic Design).
 import { type EventFacts, parseEventFacts } from "@/domain/personal";
+import { Eye, MapPin } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 
@@ -50,9 +51,7 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <View className="items-center py-16 px-6">
       <View className="w-14 h-14 rounded-full bg-panel2 items-center justify-center mb-4">
-        <Text className="text-2xl" accessibilityElementsHidden importantForAccessibility="no">
-          👀
-        </Text>
+        <Eye size={24} color="#475569" />
       </View>
       <Text className="text-text text-base font-semibold text-center">{title}</Text>
       {hint ? <Text className="text-muted text-sm text-center mt-1.5">{hint}</Text> : null}
@@ -99,8 +98,9 @@ function GeoChip({ geo }: { geo: NonNullable<EventFacts["geo"]> }) {
       accessibilityRole="link"
       accessibilityLabel={`Konumu haritada aç: ${geo.lat.toFixed(3)}, ${geo.lng.toFixed(3)}`}
     >
+      <MapPin size={14} color="#16A34A" />
       <Text className="text-pos text-xs font-semibold">
-        📍 {geo.lat.toFixed(3)}, {geo.lng.toFixed(3)} · haritada aç
+        {geo.lat.toFixed(3)}, {geo.lng.toFixed(3)} · haritada aç
       </Text>
     </Pressable>
   );
