@@ -16,7 +16,7 @@
 ## Yol Haritası (özet)
 Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4 Gizlilik · 5 Native · 6 AI Karar · 7 Monetizasyon · 8 Test · 9 CI/CD · 10 Observability · 11 Yayın.
 
-**İlerleme:** ADR-001…031 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
+**İlerleme:** ADR-001…032 kayıtlı. **Not:** Mimari çalışma `EA-TOGAF-mimari.md` (TOGAF ADM ana süreç) tarafından yönetiliyor; Faz 0–11 yol haritası onun Phase F (Migration Plan) artifact'ı. Bu dosya = Architecture Decision Record (governance altında). Son: ADR-028 (Phase H — standart uyum düzeltmeleri).
 
 ---
 
@@ -408,3 +408,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P8 ✓ (25010 Maintainability + Reliability — regresyon koruması UI'a indi).
 - **ISO:** 25010 *Maintainability* + *Functional Suitability* (menü davranışı + ripple test-korumalı) · WCAG (menü a11y testle sabitlendi).
 - **Bilinçli kalan:** mobil (RN) UI testi — RN test kurulumu ayrı (jest-native); henüz yok, abartmıyorum.
+
+## ADR-032 — Tek ürün: dashboard kaldırıldı, her şey mobil uygulamada
+- **Durum:** Kabul · TOGAF Phase H (Yeniden-mimari/Artımlı — bir deployable elendi) — ürün sahibi kararı.
+- **Bağlam:** İki ayrı web/uygulama vardı: `apps/mobile` (Expo/RN — asıl ürün, Android + mobil-web aynı koddan) ve `apps/dashboard` (Vite/React — ayrı web paneli). **İkisinde de Akış + admin** vardı → tam duplikasyon (DRY/Maintainability ihlali). Ürün sahibi: "asıl ürün mobil (Android olacak olan); admin de orada olsun; dashboard'ı mobile taşı." Mobil zaten admin dahil tüm ekranlara sahip (react-query + tam özellik) → dashboard işlevsel olarak gereksiz; mobil-web (Expo export) tarayıcı erişimini zaten karşılıyor.
+- **Karar:** **`apps/dashboard` tamamen kaldırıldı** (kod + Vercel deploy adımları). Tek istemci ürün = **mobil** (Android via EAS + mobil-web via Expo export). Backend/contracts değişmedi. `pnpm-lock` güncellendi (frozen-install temiz). Admin **yalnız mobilde** (`app/(app)/admin.tsx`, react-query, 5 sekme).
+- **Sonuçlar:** Duplikasyon bitti; bakım tek yerde; tek istemci kod tabanı. Ödün: dashboard'a özgü web cilaları (M3 nav-rail, erişilebilir overflow/cascading menü, ripple, UI testleri) elendi — git geçmişinde duruyor; mobil tarafta gerektiğinde RN karşılıkları yapılır. Doğrulama: biome 179 + typecheck 3 paket + test (backend 60) temiz; `pnpm install --frozen-lockfile` temiz.
+- **P1–P9:** P3 ✓ (gereksiz yüzey elendi) · P7 ✓ (git geçmişinden geri alınabilir) · P8 ✓ (25010 *Maintainability* — tek admin/tek istemci) · P9 ✓ (sağ-boyut).
+- **ISO:** 25010 *Maintainability* (duplikasyon kaldırıldı) · 42010 (uygulama bileşeni envanteri sadeleşti).
+- **Değerlendirilen alternatifler:** dashboard'da admin tutup mobilden kaldırmak (ürün sahibi mobil-merkezli istedi → reddedildi) · iki admin'i de bırakmak (DRY ihlali sürer → reddedildi).

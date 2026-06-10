@@ -17,12 +17,12 @@ Kanonik dokümanlar: `docs/EA-TOGAF-mimari.md` (ADM+Requirements Mgmt) · `docs/
 - **Makinece denetlenemeyen** (TOGAF P1–P9, ISO, Atomic, react-query): hatırlatıcı + bu dosya + footer disipliniyle; bilinçli atlanan gerekçesiyle yazılır, "yapıldı" diye ABARTILMAZ.
 
 ## Mimari
-- **Monorepo (pnpm):** `apps/backend` (Hono, hexagonal), `apps/dashboard` (Vite/React), `apps/mobile` (Expo/expo-router, nativewind), `packages/contracts` (zod).
+- **Monorepo (pnpm):** `apps/backend` (Hono, hexagonal), `apps/mobile` (Expo/expo-router, nativewind — **tek/asıl ürün; Android + mobil-web aynı koddan**), `packages/contracts` (zod). (Dashboard kaldırıldı; admin dahil her şey mobil uygulamada — ADR-032.)
 - Backend: domain port → application → infrastructure (supabase/in-memory) → interfaces/http route; sözleşmeler `@watcher/contracts`.
 - Gizlilik zonları: PII (profiles, watches.raw_intent, personal_criteria, deliveries) vs paylaşılan (canonical_topics, check_runs, detection_events). Backend service-role; istemci anon + RLS.
 
 ## Geliştirme akışı
-- `claude/watcher-free`'de geliştir → **main'e merge** → otomatik deploy (Render backend + GitHub Actions→Vercel: dashboard & mobil-web).
+- `claude/watcher-free`'de geliştir → **main'e merge** → otomatik deploy (Render backend + GitHub Actions→Vercel: mobil-web). Android: `eas build -p android` (aynı RN kodu).
 - Commit öncesi `pnpm -r typecheck` + biome temiz olmalı (lefthook pre-commit biome çalıştırır).
 - DB migration'ları yalnız **açık kullanıcı izniyle** canlıya uygulanır.
 - Mobilin web build'i için web bağımlılıkları **yalnız CI'da** kurulur; native/Android kaynağına yazılmaz.

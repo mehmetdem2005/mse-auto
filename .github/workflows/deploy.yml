@@ -1,6 +1,7 @@
 name: Deploy (Vercel)
 
-# main'e her push'ta dashboard + mobil-web sitelerini Vercel'e otomatik deploy eder.
+# main'e her push'ta mobil-web sitesini Vercel'e otomatik deploy eder.
+# (Dashboard kaldırıldı — admin dahil her şey mobil uygulamada; mobil-web tarayıcı erişimini karşılar.)
 # Backend (Render) ayrıca main'i izleyip kendi otomatik deploy'unu yapar.
 # Tek gereken secret: VERCEL_TOKEN. Diğer değerler public istemci değerleridir
 # (Supabase anon key ve URL'ler zaten dağıtılan JS paketinde görünür).
@@ -40,36 +41,6 @@ jobs:
 
       - name: Vercel CLI
         run: pnpm add -g vercel@latest
-
-      # ---------------- Dashboard (Vite) ----------------
-      - name: Build dashboard
-        env:
-          VITE_API_BASE_URL: ${{ env.API_BASE }}
-          VITE_SUPABASE_URL: ${{ env.SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
-        run: pnpm --filter @watcher/dashboard build
-
-      - name: Deploy dashboard → Vercel
-        env:
-          VERCEL_PROJECT_ID: prj_mUSqTFUVczjwuGfUpCLaJ0zRne1M
-        run: |
-          cd apps/dashboard/dist
-          cat > vercel.json <<'JSON'
-          {
-            "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-            "headers": [{
-              "source": "/(.*)",
-              "headers": [
-                { "key": "X-Content-Type-Options", "value": "nosniff" },
-                { "key": "X-Frame-Options", "value": "DENY" },
-                { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-                { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
-                { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
-              ]
-            }]
-          }
-          JSON
-          vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
 
       # ---------------- Mobil web (Expo export) ----------------
       # Web bağımlılıkları yalnız CI'da kurulur; repo'ya (Android kaynağına) yazılmaz.
