@@ -294,7 +294,14 @@ export default function NewWatcher() {
       />
       {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
       <View
-        className="px-5 pt-4 -mt-10 bg-transparent"
+        className="mx-5 -mt-10 bg-panel border border-line rounded-2xl px-4 py-3"
+        style={{
+          shadowColor: "#0F172A",
+          shadowOpacity: 0.06,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 2,
+        }}
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
         accessibilityLabel={`${step + 1} / ${STEPS.length}: ${t(current.titleK)}`}
