@@ -41,13 +41,17 @@ export default function WatcherDetail(): ReactNode {
 
   const runs = q.data?.checkRuns ?? [];
   const events = q.data?.events ?? [];
+  // Aynı olayın kopyaları (bastırma öncesi birikmiş) tek karta katlanır (ADR-038).
+  const eventGroups = groupEvents(events);
 
   return (
     <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
       {/* Tespitler önce — en önemli sonuç */}
-      <SectionLabel>tespitler ({events.length})</SectionLabel>
-      {events.length > 0 ? (
-        events.map((e) => <EventCard key={e.id} e={e} canVote={!isAdmin} />)
+      <SectionLabel>tespitler ({eventGroups.length})</SectionLabel>
+      {eventGroups.length > 0 ? (
+        eventGroups.map((g) => (
+          <EventCard key={g.latest.id} e={g.latest} times={g.times} canVote={!isAdmin} />
+        ))
       ) : (
         <Card>
           <Text className="text-muted text-sm">Henüz bir tespit yok. İzleme sürüyor.</Text>
@@ -65,7 +69,28 @@ export default function WatcherDetail(): ReactNode {
   );
 }
 
-function EventCard({ e, canVote }: { e: DetectionEventView; canVote: boolean }): ReactNode {
+/** Aynı açıklamalı tespitleri tek grupta toplar (en yenisi gösterilir). */
+interface EventGroup {
+  latest: DetectionEventView;
+  times: string[];
+}
+function groupEvents(events: DetectionEventView[]): EventGroup[] {
+  const map = new Map<string, EventGroup>();
+  for (const e of events) {
+    // liste en-yeniden-eskiye gelir → ilk görülen en yenisidir
+    const key = e.description.trim();
+    const g = map.get(key);
+    if (!g) map.set(key, { latest: e, times: [e.detectedAt] });
+    else g.times.push(e.detectedAt);
+  }
+  return [...map.values()];
+}
+
+function EventCard({
+  e,
+  times,
+  canVote,
+}: { e: DetectionEventView; times: string[]; canVote: boolean }): ReactNode {
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
   const mutation = useMutation({
     mutationFn: (verdict: FeedbackVerdict) => api.feedback(e.id, verdict),
@@ -80,6 +105,11 @@ function EventCard({ e, canVote }: { e: DetectionEventView; canVote: boolean }):
           <Text className="text-muted text-[11px] ml-auto">{when(e.detectedAt)}</Text>
         </View>
         <Text className="text-text text-[15px] leading-5">{e.description}</Text>
+        {times.length > 1 ? (
+          <Text className="text-muted text-[11px] mt-1.5">
+            ⟳ {times.length} kez bildirildi · ilki {when(times[times.length - 1] ?? "")}
+          </Text>
+        ) : null}
         <FactChips raw={e.facts} />
         {canVote ? (
           <View className="flex-row items-center mt-3 pt-3 border-t border-line">
@@ -153,55 +183,60 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
 
         {open ? (
           <View className="mt-2 pt-3 border-t border-line">
-            {/* 1) Arama süreci */}
-            <Text className="text-muted text-[10px] uppercase tracking-widest mb-1.5">
-              arama süreci
+            {/* Gerçek LLM konuşması — kontrol anında saklanan girdi/çıktı dökümü (ADR-038) */}
+            <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
+              modelle konuşma · {when(r.ranAt)}
             </Text>
-            {r.searchQuery ? (
-              <View className="bg-panel2 rounded-lg px-3 py-2 mb-2">
-                <Text className="text-text text-xs">🔍 “{r.searchQuery}”</Text>
-                {r.summary ? (
-                  <Text className="text-muted text-[11px] mt-1">{r.summary}</Text>
-                ) : null}
-              </View>
-            ) : null}
-            {r.hits && r.hits.length > 0 ? (
-              r.hits.map((h, i) => (
-                <View
-                  key={`${r.id}-h${i}`}
-                  className="border border-line rounded-lg px-3 py-2 mb-1.5"
-                >
-                  <Text className="text-text text-xs font-semibold" numberOfLines={2}>
-                    {h.title}
-                  </Text>
-                  <Text className="text-muted text-[11px] mt-0.5" numberOfLines={3}>
-                    {h.snippet}
-                  </Text>
-                  <Text className="text-muted text-[10px] mt-1" numberOfLines={1}>
-                    {h.date ? `${h.date} · ` : ""}
-                    {h.url}
-                  </Text>
-                </View>
-              ))
-            ) : (
-              <Text className="text-muted text-[11px] mb-1.5">
-                {r.searchQuery
-                  ? "Sonuç listesi kaydedilmedi."
-                  : "Bu kontrol için arama detayı kaydedilmedi (eski kayıt)."}
-              </Text>
-            )}
 
-            {/* 2) AI düşünme süreci */}
-            {r.reasoning ? (
-              <>
-                <Text className="text-muted text-[10px] uppercase tracking-widest mt-2 mb-1.5">
-                  yapay zekânın değerlendirmesi
-                </Text>
-                <View className="bg-panel2 rounded-lg px-3 py-2">
-                  <Text className="text-text text-xs leading-5">🧠 {r.reasoning}</Text>
+            {/* 1) Modele giden istek (birebir: konu + gördüğü sonuçlar) */}
+            <View className="self-start max-w-[94%] bg-panel2 rounded-2xl rounded-bl-md px-3.5 py-3 mb-2">
+              <Text className="text-muted text-[10px] uppercase tracking-wider mb-1">
+                watcher → modele
+              </Text>
+              <Text className="text-text text-xs leading-5">
+                İzlenen konu: “{r.searchQuery ?? "—"}”
+              </Text>
+              {r.hits && r.hits.length > 0 ? (
+                <View className="mt-2">
+                  <Text className="text-muted text-[11px] mb-1">
+                    Arama sonuçları ({r.hits.length}):
+                  </Text>
+                  {r.hits.map((h, i) => (
+                    <View key={`${r.id}-h${i}`} className="mb-1.5">
+                      <Text className="text-text text-[11px] leading-4">
+                        {i + 1}. {h.title} — {h.snippet}
+                        {h.date ? ` (${h.date})` : ""}
+                      </Text>
+                      <Text className="text-muted text-[10px]" numberOfLines={1}>
+                        {h.url}
+                      </Text>
+                    </View>
+                  ))}
                 </View>
-              </>
-            ) : null}
+              ) : (
+                <Text className="text-muted text-[11px] mt-1.5 italic">
+                  {r.searchQuery
+                    ? `Arama yapıldı (${r.summary ?? "özet yok"}); sonuç listesi bu kayıtta yok.`
+                    : "Bu kontrol, arama dökümü kaydedilmeye başlanmadan önce çalıştı — yalnız modelin yanıtı saklı."}
+                </Text>
+              )}
+            </View>
+
+            {/* 2) Modelin tam yanıtı (karar + güven + tam gerekçe) */}
+            <View className="self-start max-w-[94%] bg-accent/10 border border-accent/30 rounded-2xl rounded-bl-md px-3.5 py-3">
+              <Text className="text-accent text-[10px] uppercase tracking-wider mb-1">
+                model → karar
+              </Text>
+              <Text className="text-text text-xs font-semibold">
+                {hit ? "● TESPİT VAR" : "○ Tespit yok"}
+                {r.confidence !== null ? ` · güven %${Math.round(r.confidence * 100)}` : ""}
+              </Text>
+              {r.reasoning ? (
+                <Text className="text-text text-xs leading-5 mt-1.5">{r.reasoning}</Text>
+              ) : (
+                <Text className="text-muted text-[11px] mt-1.5 italic">gerekçe kaydedilmemiş</Text>
+              )}
+            </View>
           </View>
         ) : null}
       </Card>
