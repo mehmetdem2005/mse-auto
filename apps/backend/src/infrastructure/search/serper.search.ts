@@ -19,10 +19,18 @@ export class SerperSearchProvider implements SearchProvider {
   ) {}
 
   async search(query: string): Promise<SearchHit[]> {
+    // Güncellik (ADR-039): önce SON 1 HAFTA içinde ara (tbs=qdr:w);
+    // hiç sonuç yoksa bağlam için filtresiz tekrar dene.
+    const recent = await this.doSearch(query, "qdr:w");
+    if (recent.length > 0) return recent;
+    return this.doSearch(query, null);
+  }
+
+  private async doSearch(query: string, tbs: string | null): Promise<SearchHit[]> {
     const res = await this.fetchImpl("https://google.serper.dev/search", {
       method: "POST",
       headers: { "X-API-KEY": this.apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ q: query, num: 10, gl: "tr", hl: "tr" }),
+      body: JSON.stringify({ q: query, num: 10, gl: "tr", hl: "tr", ...(tbs ? { tbs } : {}) }),
     });
     if (!res.ok) throw new Error(`serper ${res.status}`);
     const data = (await res.json()) as SerperResponse;

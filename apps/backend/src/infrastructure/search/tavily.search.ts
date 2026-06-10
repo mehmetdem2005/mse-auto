@@ -21,7 +21,14 @@ export class TavilySearchProvider implements SearchProvider {
     const res = await this.fetchImpl("https://api.tavily.com/search", {
       method: "POST",
       headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ query, max_results: 10, search_depth: "basic", topic: "news" }),
+      // Güncellik (ADR-039): yalnız son 7 günün haberleri.
+      body: JSON.stringify({
+        query,
+        max_results: 10,
+        search_depth: "basic",
+        topic: "news",
+        days: 7,
+      }),
     });
     if (!res.ok) throw new Error(`tavily ${res.status}`);
     const data = (await res.json()) as TavilyResponse;

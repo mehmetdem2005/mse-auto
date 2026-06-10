@@ -476,3 +476,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **P1–P9:** P1 ✓ (gösterilen veri PII'siz paylaşılan zon) · P5 ✓ (balonlar metin etiketli) · P7 ✓ (yalnız görünüm; veri silinmedi) · P8 ✓ (25010 *Transparency*).
 - **ISO:** 25010 şeffaflık/güven · 25012 (kopyalar veri olarak korunur, görünümde katlanır) · 9241 (diyalog dökümü zihinsel modeli — sohbet metaforu).
 - **Değerlendirilen alternatifler:** kopya event'leri DB'den silmek (geri alınamaz; deliveries/feedback FK'leri; görünüm katlaması yeterli → şimdilik reddedildi, istenirse ayrı izinli temizlik) · ham JSON göstermek (okunmaz → balon dökümü seçildi).
+
+## ADR-039 — Güncellik: tarihe duyarlı arama + tarih-farkında muhakeme
+- **Durum:** Kabul · TOGAF Phase C (Application) — ürün sahibi: "güncel tarihlere göre araması gerekiyor".
+- **Bağlam:** Arama eski tarihli haberleri getiriyordu (canlı gerekçede görüldü: "geçmiş tarihli haberler yer alıyor"); ayrıca LLM **bugünün tarihini bilmediğinden** sonuç tarihlerini "şimdi" ile kıyaslayamıyordu — bayat habere yanlış tespit verme riski.
+- **Karar:** (1) **Serper**: önce `tbs=qdr:w` (son 1 hafta) ile arama; 0 sonuçsa bağlam için filtresiz yedek arama. (2) **Tavily**: `days:7` + `topic:news`. (3) **Üç muhakeme istemine** (Groq/DeepSeek/OpenAI) `Bugünün tarihi: YYYY-MM-DD` satırı + kural: "bugüne yakın tarihli kanıt olmadan detected=true verme; eski tarihli haber kanıt DEĞİLDİR".
+- **Sonuçlar:** Model artık taze sonuçlarla ve tarih bilinciyle karar verir → bayat-haber kaynaklı yanlış tespit riski düşer. Ödün: haftadan eski ama hâlâ geçerli tek-seferlik duyurular filtreli aramada görünmez — filtresiz yedek bu boşluğu kapatır (0-sonuç durumunda). Doğrulama: 3 yeni regresyon testi (qdr:w gönderimi · boşsa filtresiz yedek · isteme bugünün tarihi + önceki olay gider) — toplam 68 test.
+- **P1–P9:** P1 ✓ (değişen yalnız sorgu parametreleri) · P8 ✓ (25010 *Functional Correctness* — tespit doğruluğu) · P9 ✓.
+- **ISO:** 25010 *Functional Correctness/Suitability* · 25012 *Currentness* (veri güncelliği — tam isabet bu boyut) · 29148 (gereksinim: "güncel tarihe göre ara" ölçülebilir kurala çevrildi).
+- **Değerlendirilen alternatifler:** `qdr:d` (24 saat — saatlik kontrolde çok dar, kaynak gecikmeleri kaçar → hafta seçildi) · yalnız istem kuralı (arama yine bayat getirirdi → iki katman birlikte) · sonuçları tarihe göre istemcide filtrelemek (Serper `date` alanı serbest metin "2 gün önce" — güvenilmez → sağlayıcı filtresi seçildi).

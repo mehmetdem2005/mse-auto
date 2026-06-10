@@ -36,6 +36,7 @@ export class OpenAiChecker implements Checker {
   async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
     const input = [
       "Bir olay-tespit asistanısın. Web'de ara ve YALNIZ bulduğun güncel kaynaklara dayan; tahmin yürütme.",
+      `Bugünün tarihi: ${new Date().toISOString().slice(0, 10)}. Eski tarihli haber güncel olayın kanıtı DEĞİLDİR.`,
       `İzlenen konu: "${topic.canonicalQuery}". Bu olay GERÇEKLEŞTİ mi?`,
       ...(ctx?.lastEventDescription
         ? [
