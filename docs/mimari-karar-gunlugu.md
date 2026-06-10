@@ -610,3 +610,11 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Kalite notu:** 8 makine-çevirili katalog UI-kısa-metin düzeyinde; anadil düzeltmeleri tek dosyada yapılabilir (locales/*.ts). Tip güvenliği yapıyı garanti eder, çeviri kalitesini değil — abartılmıyor.
 - **P1–P9:** P5 ✓ (dil seçici erişilebilir; a11y etiketleri de çevrildi) · P7 ✓ (dil başına tek dosya, geri alınabilir) · P8 ✓.
 - **ISO:** 9241 (dil/yerelleştirme erişilebilirliği) · 25010 *Usability/Flexibility* · 25012 (tip-doğrulamalı katalog bütünlüğü) · 42010.
+
+## ADR-054 — AAA yeniden inşa, Faz 1: imza kabuk (GradientHero) + AAA erişilebilirlik tabanı
+- **Durum:** Kabul · TOGAF Phase C — ürün sahibi: "uygulamamı en baştan yeniden yap, AAA olarak".
+- **Yorum (kayıtlı):** "AAA" çift hedef: (1) AAA görsel kalite (en üst ürün cilası), (2) WCAG 2.2 AAA erişilebilirlik. Backend/testler/i18n ÇÖPE ATILMADI (çalışan sistemi yıkmak değer yakar) — görünen katman baştan inşa ediliyor, fazlı.
+- **Faz 1 kararları:** (1) **GradientHero organizması**: indigo→mor gradyan, W monogram + Whenly + büyük başlık + alt metin + zil (destek kapısı) — login'deki imza dil artık TÜM sekmelerde (Akış/Watcher'lar/Abonelik/Ayarlar; native header kapatıldı, hero geçti). HeroOverlap ile içerik -mt bindirme (yükseltilmiş yüzey hissi). (2) **PrimaryButton atomu**: login'deki gradyan buton paylaşılana taşındı (≥52px). (3) **AAA taban**: Btn min-h 48px (2.5.5 Enhanced 44px'i aşar); muted #475569 zaten 7.5:1 (1.4.6 AAA normal metin); reduce-motion tüm hero animasyonlarında.
+- **Sonraki fazlar:** ekran-içi yüzey/kart dilinin derinleştirilmesi (wizard, detay, destek), native Inter, koyu tema.
+- **P1–P9:** P5 ✓✓ (AAA kontrast + ≥48 hedef + erişilebilir hero) · P8 ✓ (25010 Attractiveness/Usability) · P9 ✓.
+- **ISO:** 9241-112 (görsel tutarlılık ilkesi: tek imza başlık) · 25010 · 42010.

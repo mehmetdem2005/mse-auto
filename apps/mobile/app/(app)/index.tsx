@@ -1,5 +1,5 @@
 import { EnterItem } from "@/components/motion";
-import { Badge, Card, EmptyState, Fab } from "@/components/ui";
+import { Badge, Card, EmptyState, Fab, GradientHero, HeroOverlap } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
@@ -64,82 +64,81 @@ export default function Watchers() {
     ]);
   }
 
+  const activeCount = (data ?? []).filter((w) => w.status === "active").length;
   return (
-    <View className="flex-1 bg-ink px-5 pt-4">
-      {isLoading ? (
-        <ActivityIndicator color="#6366F1" className="mt-10" />
-      ) : error ? (
-        <Text className="text-neg mt-6">
-          {error instanceof Error ? error.message : "yüklenemedi"}
-        </Text>
-      ) : (
-        <FlatList
-          data={(data ?? []).filter((w) => filter === "all" || w.status === filter)}
-          keyExtractor={(w) => w.id}
-          ListHeaderComponent={
-            (data ?? []).length > 0 ? (
-              <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
-                {(
-                  [
-                    ["all", t("watchers.filterAll")],
-                    ["active", t("watchers.filterActive")],
-                    ["paused", t("watchers.filterPaused")],
-                  ] as const
-                ).map(([v, l]) => (
-                  <Pressable
-                    key={v}
-                    onPress={() => setFilter(v)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: filter === v }}
-                    className={`rounded-full px-4 py-2 min-h-[36px] ${
-                      filter === v ? "bg-accent" : "bg-panel border border-line"
-                    }`}
-                  >
-                    <Text
-                      className="text-xs font-semibold"
-                      style={{ color: filter === v ? "#FFFFFF" : "#475569" }}
+    <View className="flex-1 bg-ink">
+      <GradientHero
+        title={t("tabs.watchers")}
+        subtitle={t("watchers.footer", { n: activeCount })}
+      />
+      <HeroOverlap>
+        {isLoading ? (
+          <ActivityIndicator color="#6366F1" className="mt-10" />
+        ) : error ? (
+          <Text className="text-neg mt-6 px-5">
+            {error instanceof Error ? error.message : t("common.loadError")}
+          </Text>
+        ) : (
+          <FlatList
+            data={(data ?? []).filter((w) => filter === "all" || w.status === filter)}
+            keyExtractor={(w) => w.id}
+            contentContainerClassName="px-5 pb-10"
+            ListHeaderComponent={
+              (data ?? []).length > 0 ? (
+                <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
+                  {(
+                    [
+                      ["all", t("watchers.filterAll")],
+                      ["active", t("watchers.filterActive")],
+                      ["paused", t("watchers.filterPaused")],
+                    ] as const
+                  ).map(([v, l]) => (
+                    <Pressable
+                      key={v}
+                      onPress={() => setFilter(v)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: filter === v }}
+                      className={`rounded-full px-4 py-2 min-h-[36px] ${
+                        filter === v ? "bg-accent" : "bg-panel border border-line"
+                      }`}
                     >
-                      {l}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            ) : null
-          }
-          ListFooterComponent={
-            (data ?? []).length > 0 ? (
-              <Text className="text-muted text-[11px] text-center mt-4">
-                {t("watchers.footer", {
-                  n: (data ?? []).filter((w) => w.status === "active").length,
-                })}
-              </Text>
-            ) : null
-          }
-          onRefresh={() => void refetch()}
-          refreshing={isRefetching}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={
-            <EmptyState title={t("watchers.emptyTitle")} hint={t("watchers.emptyHint")} />
-          }
-          renderItem={({ item, index }) => (
-            <EnterItem index={index}>
-              <WatchRow
-                item={item}
-                hasAlert={unreadWatchIds.has(item.id)}
-                busy={setStatus.isPending || del.isPending}
-                onPress={() => router.push(`/watcher/${item.id}`)}
-                onToggle={() =>
-                  setStatus.mutate({
-                    id: item.id,
-                    status: item.status === "active" ? "paused" : "active",
-                  })
-                }
-                onDelete={() => confirmDelete(item)}
-              />
-            </EnterItem>
-          )}
-        />
-      )}
+                      <Text
+                        className="text-xs font-semibold"
+                        style={{ color: filter === v ? "#FFFFFF" : "#475569" }}
+                      >
+                        {l}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : null
+            }
+            onRefresh={() => void refetch()}
+            refreshing={isRefetching}
+            ItemSeparatorComponent={() => <View className="h-3" />}
+            ListEmptyComponent={
+              <EmptyState title={t("watchers.emptyTitle")} hint={t("watchers.emptyHint")} />
+            }
+            renderItem={({ item, index }) => (
+              <EnterItem index={index}>
+                <WatchRow
+                  item={item}
+                  hasAlert={unreadWatchIds.has(item.id)}
+                  busy={setStatus.isPending || del.isPending}
+                  onPress={() => router.push(`/watcher/${item.id}`)}
+                  onToggle={() =>
+                    setStatus.mutate({
+                      id: item.id,
+                      status: item.status === "active" ? "paused" : "active",
+                    })
+                  }
+                  onDelete={() => confirmDelete(item)}
+                />
+              </EnterItem>
+            )}
+          />
+        )}
+      </HeroOverlap>
       <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
     </View>
   );

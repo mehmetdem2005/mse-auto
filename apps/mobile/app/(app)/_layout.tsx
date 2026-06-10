@@ -101,6 +101,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="feed"
         options={{
+          headerShown: false,
           title: t("tabs.feed"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Sparkles} color={color} focused={focused} />
@@ -110,6 +111,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          headerShown: false,
           title: t("tabs.watchers"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Bell} color={color} focused={focused} />
@@ -124,6 +126,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="subscription"
         options={{
+          headerShown: false,
           title: t("tabs.subscription"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Star} color={color} focused={focused} />
@@ -133,6 +136,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="settings"
         options={{
+          headerShown: false,
           title: t("tabs.settings"),
           tabBarIcon: ({ color, focused }) => (
             <TabIcon Icon={Settings} color={color} focused={focused} />

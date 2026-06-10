@@ -1,6 +1,7 @@
 // Abonelik — maket düzeni (hero plan kartı + kullanım barı + faturalama), gerçek veri.
 import { EnterItem } from "@/components/motion";
 import { Badge, Btn } from "@/components/ui";
+import { GradientHero, HeroOverlap } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -54,170 +55,188 @@ export default function SubscriptionScreen() {
   const pct = Math.min(100, Math.round((used / Math.max(1, max)) * 100));
 
   return (
-    <ScrollView className="flex-1 bg-ink px-5" contentContainerClassName="pt-4 pb-10">
-      {/* Hero plan kartı */}
-      <EnterItem index={0}>
-        <View
-          className={`rounded-2xl p-5 border ${
-            isPro ? "bg-accent/10 border-accent/30" : "bg-panel border-line"
-          }`}
-          style={{
-            shadowColor: "#6366F1",
-            shadowOpacity: isPro ? 0.15 : 0.05,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: 6 },
-            elevation: 3,
-          }}
-        >
-          <View className="flex-row items-center justify-between">
-            <Badge tone="accent">{t("sub.currentPlan")}</Badge>
+    <View className="flex-1 bg-ink">
+      <GradientHero
+        title={t("tabs.subscription")}
+        subtitle={isPro ? t("sub.proName") : t("sub.freeName")}
+        compact
+      />
+      <HeroOverlap>
+        <ScrollView className="flex-1 px-5" contentContainerClassName="pb-10">
+          {/* Hero plan kartı */}
+          <EnterItem index={0}>
             <View
-              className={`w-12 h-12 rounded-2xl items-center justify-center ${
-                isPro ? "bg-accent" : "bg-panel2"
+              className={`rounded-2xl p-5 border ${
+                isPro ? "bg-accent/10 border-accent/30" : "bg-panel border-line"
               }`}
+              style={{
+                shadowColor: "#6366F1",
+                shadowOpacity: isPro ? 0.15 : 0.05,
+                shadowRadius: 16,
+                shadowOffset: { width: 0, height: 6 },
+                elevation: 3,
+              }}
             >
-              <Crown size={22} color={isPro ? "#FFFFFF" : "#94A3B8"} />
-            </View>
-          </View>
-          <Text
-            className="text-4xl font-extrabold mt-1"
-            style={{ color: isPro ? "#6366F1" : "#0F172A" }}
-          >
-            {isPro ? "PRO" : "FREE"}
-          </Text>
-          <Text className="text-muted text-xs mt-0.5">
-            {isPro ? t("sub.proName") : t("sub.freeName")}
-          </Text>
+              <View className="flex-row items-center justify-between">
+                <Badge tone="accent">{t("sub.currentPlan")}</Badge>
+                <View
+                  className={`w-12 h-12 rounded-2xl items-center justify-center ${
+                    isPro ? "bg-accent" : "bg-panel2"
+                  }`}
+                >
+                  <Crown size={22} color={isPro ? "#FFFFFF" : "#94A3B8"} />
+                </View>
+              </View>
+              <Text
+                className="text-4xl font-extrabold mt-1"
+                style={{ color: isPro ? "#6366F1" : "#0F172A" }}
+              >
+                {isPro ? "PRO" : "FREE"}
+              </Text>
+              <Text className="text-muted text-xs mt-0.5">
+                {isPro ? t("sub.proName") : t("sub.freeName")}
+              </Text>
 
-          {/* Gerçek haklar */}
-          {s ? (
-            <View className="flex-row flex-wrap gap-2 mt-4">
-              <Feature Icon={Gauge} label={t("sub.minFreq", { n: s.limits.minFrequencyMinutes })} />
-              <Feature
-                Icon={BellRing}
-                label={s.entitlements.alarmChannel ? t("sub.alarmOn") : t("sub.alarmPro")}
-                on={s.entitlements.alarmChannel}
-              />
-              <Feature
-                Icon={Music}
-                label={s.entitlements.allSounds ? t("sub.soundsOn") : t("sub.soundsPro")}
-                on={s.entitlements.allSounds}
-              />
-              <Feature
-                Icon={SlidersHorizontal}
-                label={s.entitlements.personalFilters ? t("sub.filtersOn") : t("sub.filtersPro")}
-                on={s.entitlements.personalFilters}
-              />
+              {/* Gerçek haklar */}
+              {s ? (
+                <View className="flex-row flex-wrap gap-2 mt-4">
+                  <Feature
+                    Icon={Gauge}
+                    label={t("sub.minFreq", { n: s.limits.minFrequencyMinutes })}
+                  />
+                  <Feature
+                    Icon={BellRing}
+                    label={s.entitlements.alarmChannel ? t("sub.alarmOn") : t("sub.alarmPro")}
+                    on={s.entitlements.alarmChannel}
+                  />
+                  <Feature
+                    Icon={Music}
+                    label={s.entitlements.allSounds ? t("sub.soundsOn") : t("sub.soundsPro")}
+                    on={s.entitlements.allSounds}
+                  />
+                  <Feature
+                    Icon={SlidersHorizontal}
+                    label={
+                      s.entitlements.personalFilters ? t("sub.filtersOn") : t("sub.filtersPro")
+                    }
+                    on={s.entitlements.personalFilters}
+                  />
+                </View>
+              ) : null}
+
+              {/* Kullanım barı */}
+              <View className="mt-5">
+                <View className="flex-row justify-between mb-1.5">
+                  <Text className="text-muted text-[11px]">{t("sub.usage")}</Text>
+                  <Text className="text-text text-[11px] font-semibold">
+                    {used} / {max}
+                  </Text>
+                </View>
+                <View
+                  className="h-2 bg-line rounded-full overflow-hidden"
+                  accessibilityRole="progressbar"
+                  accessibilityValue={{ min: 0, max, now: used }}
+                >
+                  <View className="h-full bg-accent rounded-full" style={{ width: `${pct}%` }} />
+                </View>
+              </View>
+            </View>
+          </EnterItem>
+
+          {/* Birincil CTA (maket: Planı Yükselt) — ödeme kapalıyken dürüst uyarı */}
+          {!isPro ? (
+            <View className="mt-4">
+              <Btn onPress={() => Alert.alert(t("sub.upgrade"), t("sub.upgradeMsg"))}>
+                <Text className="text-white text-[14px] font-semibold">{t("sub.upgrade")}</Text>
+              </Btn>
             </View>
           ) : null}
 
-          {/* Kullanım barı */}
-          <View className="mt-5">
-            <View className="flex-row justify-between mb-1.5">
-              <Text className="text-muted text-[11px]">{t("sub.usage")}</Text>
-              <Text className="text-text text-[11px] font-semibold">
-                {used} / {max}
-              </Text>
-            </View>
-            <View
-              className="h-2 bg-line rounded-full overflow-hidden"
-              accessibilityRole="progressbar"
-              accessibilityValue={{ min: 0, max, now: used }}
-            >
-              <View className="h-full bg-accent rounded-full" style={{ width: `${pct}%` }} />
-            </View>
-          </View>
-        </View>
-      </EnterItem>
-
-      {/* Birincil CTA (maket: Planı Yükselt) — ödeme kapalıyken dürüst uyarı */}
-      {!isPro ? (
-        <View className="mt-4">
-          <Btn onPress={() => Alert.alert(t("sub.upgrade"), t("sub.upgradeMsg"))}>
-            <Text className="text-white text-[14px] font-semibold">{t("sub.upgrade")}</Text>
-          </Btn>
-        </View>
-      ) : null}
-
-      {/* Faturalama (gerçek abonelik varsa) */}
-      {d ? (
-        <EnterItem index={1} className="mt-4">
-          <View className="bg-panel border border-line rounded-2xl p-5">
-            <Text className="text-muted text-[10px] tracking-widest uppercase mb-1">
-              {t("sub.billing")}
-            </Text>
-            <Row
-              k={t("sub.period")}
-              v={d.interval === "month" ? t("sub.monthly") : t("sub.yearly")}
-            />
-            <Row k={t("sub.amount")} v={money(d.amountCents, d.currency)} />
-            <Row
-              k={t("sub.status")}
-              v={
-                d.status === "active"
-                  ? d.cancelAtPeriodEnd
-                    ? t("sub.stPeriodEnd")
-                    : t("sub.stActive")
-                  : t("sub.stCancel")
-              }
-              tone={d.status === "active" && !d.cancelAtPeriodEnd ? "pos" : "neg"}
-            />
-            <Row
-              k={t("sub.renewal")}
-              v={new Date(d.currentPeriodEnd).toLocaleDateString(i18n.language)}
-            />
-            {d.status === "active" && !d.cancelAtPeriodEnd ? (
-              <View className="mt-4">
-                <Btn tone="danger" onPress={() => cancel.mutate()} disabled={cancel.isPending}>
-                  <Text className="text-neg text-[13px] font-semibold">Dönem sonunda iptal et</Text>
-                </Btn>
+          {/* Faturalama (gerçek abonelik varsa) */}
+          {d ? (
+            <EnterItem index={1} className="mt-4">
+              <View className="bg-panel border border-line rounded-2xl p-5">
+                <Text className="text-muted text-[10px] tracking-widest uppercase mb-1">
+                  {t("sub.billing")}
+                </Text>
+                <Row
+                  k={t("sub.period")}
+                  v={d.interval === "month" ? t("sub.monthly") : t("sub.yearly")}
+                />
+                <Row k={t("sub.amount")} v={money(d.amountCents, d.currency)} />
+                <Row
+                  k={t("sub.status")}
+                  v={
+                    d.status === "active"
+                      ? d.cancelAtPeriodEnd
+                        ? t("sub.stPeriodEnd")
+                        : t("sub.stActive")
+                      : t("sub.stCancel")
+                  }
+                  tone={d.status === "active" && !d.cancelAtPeriodEnd ? "pos" : "neg"}
+                />
+                <Row
+                  k={t("sub.renewal")}
+                  v={new Date(d.currentPeriodEnd).toLocaleDateString(i18n.language)}
+                />
+                {d.status === "active" && !d.cancelAtPeriodEnd ? (
+                  <View className="mt-4">
+                    <Btn tone="danger" onPress={() => cancel.mutate()} disabled={cancel.isPending}>
+                      <Text className="text-neg text-[13px] font-semibold">
+                        Dönem sonunda iptal et
+                      </Text>
+                    </Btn>
+                  </View>
+                ) : null}
               </View>
-            ) : null}
-          </View>
-        </EnterItem>
-      ) : (
-        <EnterItem index={1} className="mt-4">
-          <View className="bg-panel border border-line rounded-2xl p-5">
-            <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">
-              {t("sub.plans")}
-            </Text>
-            <Text className="text-muted text-xs mb-3">{t("sub.plansNote")}</Text>
-            {plans.data?.prices.map((p) => (
-              <View
-                key={`${p.plan}-${p.interval}`}
-                className="flex-row items-center justify-between border border-line rounded-xl p-4 mb-2"
-              >
-                <View>
-                  <Text className="text-accent text-sm font-semibold uppercase">
-                    {p.plan} · {p.interval === "month" ? "Aylık" : "Yıllık"}
-                  </Text>
-                  <Text className="text-muted text-xs mt-0.5">
-                    {money(p.amountCents, p.currency)} /{" "}
-                    {p.interval === "month" ? t("sub.perMonth") : t("sub.perYear")}
-                  </Text>
+            </EnterItem>
+          ) : (
+            <EnterItem index={1} className="mt-4">
+              <View className="bg-panel border border-line rounded-2xl p-5">
+                <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">
+                  {t("sub.plans")}
+                </Text>
+                <Text className="text-muted text-xs mb-3">{t("sub.plansNote")}</Text>
+                {plans.data?.prices.map((p) => (
+                  <View
+                    key={`${p.plan}-${p.interval}`}
+                    className="flex-row items-center justify-between border border-line rounded-xl p-4 mb-2"
+                  >
+                    <View>
+                      <Text className="text-accent text-sm font-semibold uppercase">
+                        {p.plan} · {p.interval === "month" ? "Aylık" : "Yıllık"}
+                      </Text>
+                      <Text className="text-muted text-xs mt-0.5">
+                        {money(p.amountCents, p.currency)} /{" "}
+                        {p.interval === "month" ? t("sub.perMonth") : t("sub.perYear")}
+                      </Text>
+                    </View>
+                    <Badge tone="muted">{t("common.soon")}</Badge>
+                  </View>
+                ))}
+              </View>
+            </EnterItem>
+          )}
+          {/* Fatura geçmişi (maket) — gerçek fatura oluştukça burada listelenir */}
+          <EnterItem index={2} className="mt-4">
+            <View className="bg-panel border border-line rounded-2xl p-5">
+              <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-muted text-[10px] tracking-widest uppercase">
+                  fatura geçmişi
+                </Text>
+              </View>
+              <View className="items-center py-6">
+                <View className="w-11 h-11 rounded-full bg-panel2 items-center justify-center mb-3">
+                  <FileText size={18} color="#475569" />
                 </View>
-                <Badge tone="muted">{t("common.soon")}</Badge>
+                <Text className="text-text text-sm font-medium">{t("sub.invoicesEmpty")}</Text>
+                <Text className="text-muted text-xs text-center mt-1">{t("sub.invoicesHint")}</Text>
               </View>
-            ))}
-          </View>
-        </EnterItem>
-      )}
-      {/* Fatura geçmişi (maket) — gerçek fatura oluştukça burada listelenir */}
-      <EnterItem index={2} className="mt-4">
-        <View className="bg-panel border border-line rounded-2xl p-5">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-muted text-[10px] tracking-widest uppercase">fatura geçmişi</Text>
-          </View>
-          <View className="items-center py-6">
-            <View className="w-11 h-11 rounded-full bg-panel2 items-center justify-center mb-3">
-              <FileText size={18} color="#475569" />
             </View>
-            <Text className="text-text text-sm font-medium">{t("sub.invoicesEmpty")}</Text>
-            <Text className="text-muted text-xs text-center mt-1">{t("sub.invoicesHint")}</Text>
-          </View>
-        </View>
-      </EnterItem>
-    </ScrollView>
+          </EnterItem>
+        </ScrollView>
+      </HeroOverlap>
+    </View>
   );
 }
 

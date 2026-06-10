@@ -1,9 +1,9 @@
-import { Field } from "@/components/ui";
+import { Field, PrimaryButton } from "@/components/ui";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import { LinearGradient } from "expo-linear-gradient";
-import { ArrowRight, Eye, EyeOff } from "lucide-react-native";
+import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -189,46 +189,5 @@ export default function Login() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
-  );
-}
-
-/** Birincil eylem — gradyan dolgu + ikon + bası geri bildirimi. */
-function PrimaryButton({
-  label,
-  busy,
-  disabled,
-  onPress,
-}: { label: string; busy: boolean; disabled?: boolean; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ disabled: !!disabled, busy }}
-      className={`mt-2 rounded-xl overflow-hidden ${disabled ? "opacity-50" : ""}`}
-    >
-      <LinearGradient
-        colors={["#6366F1", "#7C3AED"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={{
-          minHeight: 52,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-        }}
-      >
-        {busy ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <>
-            <Text className="text-white font-semibold text-[15px]">{label}</Text>
-            <ArrowRight size={18} color="#FFFFFF" />
-          </>
-        )}
-      </LinearGradient>
-    </Pressable>
   );
 }

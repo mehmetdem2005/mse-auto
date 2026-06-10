@@ -1,5 +1,13 @@
 import { EnterItem } from "@/components/motion";
-import { Badge, Card, EmptyState, Fab, FactChips } from "@/components/ui";
+import {
+  Badge,
+  Card,
+  EmptyState,
+  Fab,
+  FactChips,
+  GradientHero,
+  HeroOverlap,
+} from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
 import { qk } from "@/lib/query";
@@ -150,111 +158,107 @@ export default function Feed() {
 
   return (
     <View className="flex-1 bg-ink">
-      <FlatList
-        data={groups}
-        keyExtractor={(g) => g.watchId}
-        contentContainerClassName="px-5 pt-4 pb-10"
-        onRefresh={() => void refetch()}
-        refreshing={isRefetching}
-        ItemSeparatorComponent={() => <View className="h-3" />}
-        ListHeaderComponent={
-          <View>
-            {/* Başlık bloğu (maket) */}
-            <View className="flex-row items-center gap-2 mb-1">
-              <Text className="text-text text-2xl font-extrabold">{t("feed.title")}</Text>
-              <Sparkles size={18} color={ACCENT} />
-            </View>
-            <Text className="text-muted text-[13px] mb-4">{t("feed.subtitle")}</Text>
-
-            {/* 4 özet kartı — 2x2 (gerçek veriden) */}
-            <View className="flex-row gap-2.5 mb-2.5">
-              <StatCard
-                Icon={Eye}
-                n={watchers.data?.length ?? 0}
-                label={t("feed.statWatchers")}
-                tint="#6366F1"
-              />
-              <StatCard
-                Icon={Sparkles}
-                n={detectionsToday}
-                label={t("feed.statToday")}
-                tint="#16A34A"
-              />
-            </View>
-            <View className="flex-row gap-2.5 mb-4">
-              <StatCard
-                Icon={Radar}
-                n={stats.data?.checks24h ?? 0}
-                label={t("feed.statScans")}
-                tint="#7C3AED"
-              />
-              <StatCard
-                Icon={BellRing}
-                n={list.length}
-                label={t("feed.statNotifs")}
-                tint="#D97706"
-              />
-            </View>
-
-            {/* Segment filtre (maket) */}
-            <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
-              {FILTER_IDS.map((id) => {
-                const on = filter === id;
-                return (
-                  <Pressable
-                    key={id}
-                    onPress={() => setFilter(id)}
-                    accessibilityRole="tab"
-                    accessibilityState={{ selected: on }}
-                    accessibilityLabel={t(FILTER_KEYS[id])}
-                    className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
-                      on ? "bg-accent" : "bg-panel border border-line"
-                    }`}
-                  >
-                    <Text
-                      className="text-[12px] font-semibold"
-                      style={{ color: on ? "#FFFFFF" : "#475569" }}
-                    >
-                      {t(FILTER_KEYS[id])}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-
-            {unread > 0 ? (
-              <View className="flex-row items-center mb-3">
-                <Text className="text-muted text-[11px] uppercase tracking-widest">
-                  {t("feed.newCount", { n: unread })}
-                </Text>
-                <Pressable
-                  onPress={() => markAll.mutate()}
-                  className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
-                  accessibilityRole="button"
-                  accessibilityLabel={t("feed.markAllA11y")}
-                >
-                  <Text className="text-accent text-xs font-semibold">{t("feed.markAll")}</Text>
-                </Pressable>
+      <GradientHero title={t("feed.title")} subtitle={t("feed.subtitle")} />
+      <HeroOverlap>
+        <FlatList
+          data={groups}
+          keyExtractor={(g) => g.watchId}
+          contentContainerClassName="px-5 pt-0 pb-10"
+          onRefresh={() => void refetch()}
+          refreshing={isRefetching}
+          ItemSeparatorComponent={() => <View className="h-3" />}
+          ListHeaderComponent={
+            <View>
+              {/* 4 özet kartı — 2x2 (gerçek veriden) */}
+              <View className="flex-row gap-2.5 mb-2.5">
+                <StatCard
+                  Icon={Eye}
+                  n={watchers.data?.length ?? 0}
+                  label={t("feed.statWatchers")}
+                  tint="#6366F1"
+                />
+                <StatCard
+                  Icon={Sparkles}
+                  n={detectionsToday}
+                  label={t("feed.statToday")}
+                  tint="#16A34A"
+                />
               </View>
-            ) : null}
-          </View>
-        }
-        ListEmptyComponent={
-          <EmptyState
-            title={filter === "all" ? t("feed.emptyTitle") : t("feed.emptyFilterTitle")}
-            hint={filter === "all" ? t("feed.emptyHint") : t("feed.emptyFilterHint")}
-          />
-        }
-        renderItem={({ item: g, index }) => (
-          <EnterItem index={index}>
-            <FeedCard
-              group={g}
-              onOpen={() => open(g)}
-              onVote={() => markRead.mutate(g.latest.deliveryId)}
+              <View className="flex-row gap-2.5 mb-4">
+                <StatCard
+                  Icon={Radar}
+                  n={stats.data?.checks24h ?? 0}
+                  label={t("feed.statScans")}
+                  tint="#7C3AED"
+                />
+                <StatCard
+                  Icon={BellRing}
+                  n={list.length}
+                  label={t("feed.statNotifs")}
+                  tint="#D97706"
+                />
+              </View>
+
+              {/* Segment filtre (maket) */}
+              <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">
+                {FILTER_IDS.map((id) => {
+                  const on = filter === id;
+                  return (
+                    <Pressable
+                      key={id}
+                      onPress={() => setFilter(id)}
+                      accessibilityRole="tab"
+                      accessibilityState={{ selected: on }}
+                      accessibilityLabel={t(FILTER_KEYS[id])}
+                      className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
+                        on ? "bg-accent" : "bg-panel border border-line"
+                      }`}
+                    >
+                      <Text
+                        className="text-[12px] font-semibold"
+                        style={{ color: on ? "#FFFFFF" : "#475569" }}
+                      >
+                        {t(FILTER_KEYS[id])}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {unread > 0 ? (
+                <View className="flex-row items-center mb-3">
+                  <Text className="text-muted text-[11px] uppercase tracking-widest">
+                    {t("feed.newCount", { n: unread })}
+                  </Text>
+                  <Pressable
+                    onPress={() => markAll.mutate()}
+                    className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
+                    accessibilityRole="button"
+                    accessibilityLabel={t("feed.markAllA11y")}
+                  >
+                    <Text className="text-accent text-xs font-semibold">{t("feed.markAll")}</Text>
+                  </Pressable>
+                </View>
+              ) : null}
+            </View>
+          }
+          ListEmptyComponent={
+            <EmptyState
+              title={filter === "all" ? t("feed.emptyTitle") : t("feed.emptyFilterTitle")}
+              hint={filter === "all" ? t("feed.emptyHint") : t("feed.emptyFilterHint")}
             />
-          </EnterItem>
-        )}
-      />
+          }
+          renderItem={({ item: g, index }) => (
+            <EnterItem index={index}>
+              <FeedCard
+                group={g}
+                onOpen={() => open(g)}
+                onVote={() => markRead.mutate(g.latest.deliveryId)}
+              />
+            </EnterItem>
+          )}
+        />
+      </HeroOverlap>
       <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
     </View>
   );

@@ -1,8 +1,9 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { Plus } from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { ArrowRight, Plus } from "lucide-react-native";
 import { type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
-import { Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, Text, View } from "react-native";
 
 /**
  * Etiketli alan. RN `Text` web'de gerçek `<label htmlFor>` üretmediğinden,
@@ -55,8 +56,8 @@ export function Btn({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      // HIG: dokunma hedefi ≥44pt (min-h-[44px])
-      className={`rounded-xl px-4 py-3 min-h-[44px] items-center justify-center ${cls} ${disabled ? "opacity-50" : ""}`}
+      // WCAG 2.5.5 AAA: dokunma hedefi ≥48px
+      className={`rounded-xl px-4 py-3 min-h-[48px] items-center justify-center ${cls} ${disabled ? "opacity-50" : ""}`}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
       accessibilityLabel={accessibilityLabel}
@@ -112,5 +113,53 @@ export function Badge({ tone = "muted", children }: { tone?: BadgeTone; children
     <View className={`${bg} px-2 py-1 rounded-full self-start`}>
       <Text className={`${fg} text-[11px] font-medium`}>{children}</Text>
     </View>
+  );
+}
+
+/** Birincil eylem — gradyan dolgu + ok ikonu + ≥52px hedef (AAA imza butonu). */
+export function PrimaryButton({
+  label,
+  busy,
+  disabled,
+  onPress,
+  icon = true,
+}: {
+  label: string;
+  busy?: boolean;
+  disabled?: boolean;
+  onPress: () => void;
+  icon?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled || busy}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: !!disabled, busy: !!busy }}
+      className={`mt-2 rounded-xl overflow-hidden ${disabled ? "opacity-50" : "active:opacity-90"}`}
+    >
+      <LinearGradient
+        colors={["#6366F1", "#7C3AED"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={{
+          minHeight: 52,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+        }}
+      >
+        {busy ? (
+          <ActivityIndicator color="#FFFFFF" />
+        ) : (
+          <>
+            <Text className="text-white font-semibold text-[15px]">{label}</Text>
+            {icon ? <ArrowRight size={18} color="#FFFFFF" /> : null}
+          </>
+        )}
+      </LinearGradient>
+    </Pressable>
   );
 }
