@@ -7,12 +7,13 @@ import {
   api,
 } from "@/lib/api";
 import { qk } from "@/lib/query";
+import { useReduceMotion } from "@/lib/reduce-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
+  Animated,
   FlatList,
   Pressable,
   ScrollView,
@@ -39,7 +40,57 @@ function money(cents: number, currency = "usd"): string {
 const day = (iso: string): string => new Date(iso).toLocaleDateString("tr-TR");
 
 function Loading(): ReactNode {
-  return <ActivityIndicator color="#6366F1" className="mt-10" />;
+  return <Skeleton rows={4} />;
+}
+
+/** M3 skeleton (shimmer/pulse) yükleme — reduce-motion'da sabit. */
+function Skeleton({ rows = 3 }: { rows?: number }): ReactNode {
+  const reduce = useReduceMotion();
+  const opacity = useRef(new Animated.Value(0.45)).current;
+  useEffect(() => {
+    if (reduce) return;
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.45, duration: 700, useNativeDriver: true }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [reduce, opacity]);
+  return (
+    <View className="px-5 mt-4">
+      {Array.from({ length: rows }, (_, i) => i).map((i) => (
+        <Animated.View
+          key={i}
+          style={{ opacity: reduce ? 0.6 : opacity }}
+          className="h-16 bg-panel2 rounded-2xl mb-3"
+        />
+      ))}
+    </View>
+  );
+}
+
+/** Tamsayıyı yumuşakça sayar (reduce-motion'da anında). */
+function useCountUp(target: number, reduce: boolean): number {
+  const [val, setVal] = useState(reduce ? target : 0);
+  useEffect(() => {
+    if (reduce || target <= 0) {
+      setVal(target);
+      return;
+    }
+    const dur = 700;
+    const t0 = Date.now();
+    let raf = 0;
+    const tick = (): void => {
+      const p = Math.min(1, (Date.now() - t0) / dur);
+      setVal(Math.round(target * (1 - (1 - p) ** 3)));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, reduce]);
+  return val;
 }
 function ErrText({ e }: { e: unknown }): ReactNode {
   return (
@@ -116,9 +167,9 @@ function AnalyticsTab(): ReactNode {
     <ScrollView className="flex-1 px-5" contentContainerClassName="pb-8">
       <View className="flex-row flex-wrap gap-2.5">
         <Stat n={s.totalUsers} l="kullanıcı" />
-        <Stat n={s.proUsers} l="pro abone" />
+        <Stat n={s.proUsers} l="pro abone" tone="accent" />
         <Stat n={s.freeUsers} l="ücretsiz" />
-        <Stat n={s.activeWatchers} l="aktif watcher" />
+        <Stat n={s.activeWatchers} l="aktif watcher" tone="pos" />
       </View>
       <View className="bg-panel border border-line rounded-xl p-4 mt-3">
         <Text className="text-muted text-[10px] uppercase tracking-widest">MRR · aylık gelir</Text>
@@ -379,11 +430,29 @@ function SubsTab(): ReactNode {
 
 // ----------------------------- Sistem -----------------------------
 
-function Stat({ n, l }: { n: number; l: string }): ReactNode {
+function Stat({
+  n,
+  l,
+  tone,
+  sub,
+}: { n: number; l: string; tone?: "accent" | "pos"; sub?: string }): ReactNode {
+  const reduce = useReduceMotion();
+  const shown = useCountUp(n, reduce);
+  const color = tone === "accent" ? "text-accent" : tone === "pos" ? "text-pos" : "text-text";
   return (
-    <View className="bg-panel border border-line rounded-xl p-4 flex-1 min-w-[44%]">
-      <Text className="text-text text-2xl font-extrabold">{n}</Text>
+    <View
+      className="bg-panel border border-line rounded-2xl p-4 flex-1 min-w-[44%]"
+      style={{
+        shadowColor: "#0F172A",
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 3 },
+        elevation: 1,
+      }}
+    >
+      <Text className={`${color} text-2xl font-extrabold`}>{shown.toLocaleString("tr-TR")}</Text>
       <Text className="text-muted text-[10px] uppercase tracking-widest mt-1">{l}</Text>
+      {sub ? <Text className="text-muted text-[11px] mt-0.5">{sub}</Text> : null}
     </View>
   );
 }
@@ -402,10 +471,10 @@ function SystemTab(): ReactNode {
       <View className="flex-row flex-wrap gap-2.5">
         <Stat n={s.counts.users} l="kullanıcı" />
         <Stat n={s.counts.watches} l="watcher" />
-        <Stat n={s.counts.activeWatches} l="aktif watcher" />
+        <Stat n={s.counts.activeWatches} l="aktif watcher" tone="pos" />
         <Stat n={s.counts.subscriptions} l="abonelik" />
         <Stat n={s.counts.deliveries} l="teslimat" />
-        <Stat n={s.counts.checkRuns} l="kontrol" />
+        <Stat n={s.counts.checkRuns} l="kontrol" tone="accent" />
       </View>
 
       <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
