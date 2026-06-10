@@ -105,3 +105,20 @@ function GeoChip({ geo }: { geo: NonNullable<EventFacts["geo"]> }) {
     </Pressable>
   );
 }
+
+/** İskelet yükleme — kart silüeti (algılanan performans; spinner yerine). */
+export function SkeletonCard() {
+  return (
+    <View className="bg-panel border border-line rounded-2xl p-4 mb-3">
+      <View className="flex-row items-center gap-2.5">
+        <View className="w-10 h-10 rounded-xl bg-panel2" />
+        <View className="flex-1 gap-2">
+          <View className="h-3 rounded-full bg-panel2 w-3/5" />
+          <View className="h-2.5 rounded-full bg-panel2 w-2/5" />
+        </View>
+      </View>
+      <View className="h-3 rounded-full bg-panel2 mt-4 w-11/12" />
+      <View className="h-3 rounded-full bg-panel2 mt-2 w-4/5" />
+    </View>
+  );
+}

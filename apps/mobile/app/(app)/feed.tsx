@@ -7,6 +7,7 @@ import {
   FactChips,
   GradientHero,
   HeroOverlap,
+  SkeletonCard,
 } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
@@ -128,8 +129,15 @@ export default function Feed() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-ink justify-center">
-        <ActivityIndicator color={ACCENT} />
+      <View className="flex-1 bg-ink">
+        <GradientHero title={t("feed.title")} subtitle={t("feed.subtitle")} />
+        <HeroOverlap>
+          <View className="px-5">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+        </HeroOverlap>
       </View>
     );
   }
