@@ -18,6 +18,7 @@ export interface Watch {
   status: "active" | "paused";
   createdAt: string;
   authorityDomain?: string | null;
+  lastCheckedAt?: string | null;
 }
 export interface MeStats {
   watchers: number;

@@ -13,6 +13,7 @@ import {
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
 import { qk } from "@/lib/query";
+import { useAgo } from "@/lib/time";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -39,23 +40,6 @@ const FILTER_KEYS: Record<Filter, string> = {
   warning: "feed.filterWarnings",
   unread: "feed.filterUnread",
 };
-
-/** Göreli zaman — aktif dilde (i18n). */
-function useAgo(): (iso: string) => string {
-  const { t, i18n } = useTranslation();
-  return (iso: string) => {
-    if (!iso) return "";
-    const diff = Date.now() - new Date(iso).getTime();
-    const m = Math.floor(diff / 60000);
-    if (m < 1) return t("common.justNow");
-    if (m < 60) return t("common.minAgo", { n: m });
-    const h = Math.floor(m / 60);
-    if (h < 24) return t("common.hourAgo", { n: h });
-    const d = Math.floor(h / 24);
-    if (d < 7) return t("common.dayAgo", { n: d });
-    return new Date(iso).toLocaleDateString(i18n.language);
-  };
-}
 
 /** Watcher başına TEK kart (ADR-037): tespitleri gruplanır, en yenisi gösterilir. */
 interface FeedGroup {

@@ -22,6 +22,16 @@ export class SupabaseCanonicalTopicRepository implements CanonicalTopicRepositor
     return data ? toDomain(data) : null;
   }
 
+  async getById(topicId: string): Promise<CanonicalTopic | null> {
+    const { data, error } = await this.db
+      .from("canonical_topics")
+      .select("*")
+      .eq("id", topicId)
+      .maybeSingle();
+    if (error) throw new Error(`canonical_topics getById: ${error.message}`);
+    return data ? toDomain(data) : null;
+  }
+
   /** Upsert (unique canonical_query) → dedup yarışına karşı DB seviyesinde güvenli. */
   async create(input: { canonicalQuery: string }): Promise<CanonicalTopic> {
     const { data, error } = await this.db

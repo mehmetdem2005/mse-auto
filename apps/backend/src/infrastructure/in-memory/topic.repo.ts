@@ -11,6 +11,10 @@ export class InMemoryCanonicalTopicRepository implements CanonicalTopicRepositor
     return id ? (this.store.topics.get(id) ?? null) : null;
   }
 
+  async getById(topicId: string): Promise<CanonicalTopic | null> {
+    return this.store.topics.get(topicId) ?? null;
+  }
+
   async create(input: { canonicalQuery: string }): Promise<CanonicalTopic> {
     const existingId = this.store.topicIdByQuery.get(input.canonicalQuery);
     const existing = existingId ? this.store.topics.get(existingId) : undefined;

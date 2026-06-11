@@ -10,7 +10,7 @@ import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
+import { SUGGESTION_ICONS, SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -413,8 +413,12 @@ export default function NewWatcher() {
                         }}
                         accessibilityRole="button"
                         accessibilityLabel={sentence}
-                        className="border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] justify-center active:bg-accent/15"
+                        className="flex-row items-center gap-1.5 border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] active:bg-accent/15"
                       >
+                        {(() => {
+                          const Icon = SUGGESTION_ICONS[key];
+                          return Icon ? <Icon size={13} color="#6366F1" /> : null;
+                        })()}
                         <Text className="text-accent text-xs">{t(`suggest.${key}.label`)}</Text>
                       </Pressable>
                     );

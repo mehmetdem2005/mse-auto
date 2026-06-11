@@ -3,7 +3,43 @@
 // kurum gömülmez; metinler 11 dilde i18n kataloğunda (suggest.*). Kod yalnız anahtar
 // listesi tutar → evrensel (her ülke/dil) + bakımı tek noktadan.
 
+import {
+  BadgeAlert,
+  CalendarClock,
+  Coins,
+  FileText,
+  Gavel,
+  GraduationCap,
+  Home,
+  type LucideIcon,
+  Package,
+  Pill,
+  Scale,
+  Stethoscope,
+  Ticket,
+  TimerReset,
+  TrendingDown,
+} from "lucide-react-native";
+
 export type SuggestionScope = "personal" | "business";
+
+/** Anahtar → kategori ikonu (saha araştırmasındaki talep kümelerinin görsel dili). */
+export const SUGGESTION_ICONS: Record<string, LucideIcon> = {
+  appointment: CalendarClock,
+  doctor: Stethoscope,
+  medicine: Pill,
+  rental: Home,
+  restock: Package,
+  tickets: Ticket,
+  priceDrop: TrendingDown,
+  result: GraduationCap,
+  tender: Gavel,
+  regulation: Scale,
+  grant: Coins,
+  competitor: FileText,
+  brand: BadgeAlert,
+  expiry: TimerReset,
+};
 
 /** Öneri anahtarları; metin/etiket i18n'de `suggest.<key>.label|sentence`. */
 export const SUGGESTION_KEYS: Record<SuggestionScope, string[]> = {

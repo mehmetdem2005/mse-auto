@@ -102,10 +102,16 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
     // Kaynak etiketi (ADR-049): konunun çözülmüş resmî alanı listede gösterilir.
     const dto = await Promise.all(
       watches.map(async (w) => {
-        const auth = await container.topics.getAuthority(w.canonicalTopicId).catch(() => ({
-          domain: null,
-          resolved: false,
-        }));
+        const [auth, topic] = await Promise.all([
+          container.topics.getAuthority(w.canonicalTopicId).catch(() => ({
+            domain: null,
+            resolved: false,
+          })),
+          // "Son kontrol" nabzı (ADR-072): hız/güven hissinin arayüz karşılığı.
+          container.topics
+            .getById(w.canonicalTopicId)
+            .catch(() => null),
+        ]);
         return {
           id: w.id,
           rawIntent: w.rawIntent,
@@ -114,6 +120,7 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
           status: w.status,
           createdAt: w.createdAt,
           authorityDomain: auth.domain,
+          lastCheckedAt: topic?.lastCheckedAt ?? null,
         };
       }),
     );

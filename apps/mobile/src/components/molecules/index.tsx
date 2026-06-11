@@ -6,6 +6,7 @@ import { useReduceMotion } from "@/lib/reduce-motion";
 import { LinearGradient } from "expo-linear-gradient";
 import { type LucideIcon, MapPin, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { type ReactNode, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Linking, Pressable, Text, View } from "react-native";
 import Animated, {
   Easing,
@@ -107,6 +108,7 @@ export function EmptyState({
 
 /** EventFacts'i okunur "olgu" rozetlerine çevirir; konum için haritada-aç bağlantısı. */
 export function FactChips({ raw }: { raw: unknown }) {
+  const { i18n } = useTranslation();
   const facts = parseEventFacts(raw);
   if (!facts || (!facts.geo && facts.numeric === undefined && !facts.text)) return null;
   return (
@@ -116,7 +118,7 @@ export function FactChips({ raw }: { raw: unknown }) {
         <View className="bg-accent/10 px-3 py-2 rounded-lg flex-row items-center gap-1.5">
           <Text className="text-accent text-xs font-semibold">
             {facts.numericKind ? `${facts.numericKind}: ` : ""}
-            {facts.numeric.toLocaleString("tr-TR")}
+            {facts.numeric.toLocaleString(i18n.language)}
             {facts.currency ? ` ${facts.currency}` : ""}
           </Text>
         </View>

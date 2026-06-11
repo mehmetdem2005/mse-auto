@@ -13,6 +13,7 @@ import {
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
+import { useAgo } from "@/lib/time";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
@@ -182,6 +183,7 @@ function WatchRow({
   const theme = useTheme();
   const mutedHex = theme.colors.mutedIcon;
   const labelFreq = useLabelFreq();
+  const ago = useAgo();
   const [menu, setMenu] = useState(false);
   const active = item.status === "active";
   const cat = categoryOf(item.rawIntent);
@@ -247,9 +249,16 @@ function WatchRow({
       </View>
       {/* Meta — tek satır; frekans sabit, domain esner+kırpılır, research sağda sabit */}
       <View className="flex-row items-center gap-2 mt-2">
-        <Text className="text-muted text-xs shrink-0" numberOfLines={1}>
-          {labelFreq(item.frequencyMinutes)}
-        </Text>
+        <View className="flex-row items-center gap-1 shrink-0">
+          {/* Nabız (ADR-072): canlılık/güven hissi — son kontrol gerçek veriden */}
+          {active && item.lastCheckedAt ? (
+            <View className="w-1.5 h-1.5 rounded-full bg-pos" />
+          ) : null}
+          <Text className="text-muted text-xs" numberOfLines={1}>
+            {labelFreq(item.frequencyMinutes)}
+            {active && item.lastCheckedAt ? ` · ${ago(item.lastCheckedAt)}` : ""}
+          </Text>
+        </View>
         {item.authorityDomain ? (
           <View className="flex-row items-center gap-1 flex-1 min-w-0">
             <Globe size={11} color={mutedHex} />

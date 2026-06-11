@@ -31,6 +31,8 @@ export const watchSchema = z.object({
   createdAt: z.iso.datetime(),
   /** Konunun resmî kaynak alanı (liste görünümünde kaynak etiketi; ADR-049). */
   authorityDomain: z.string().nullable().optional(),
+  /** Konunun son kontrol zamanı (ADR-072) — kartta "son kontrol" nabzı. */
+  lastCheckedAt: z.string().nullable().optional(),
   sourcePref: watchSourcePrefSchema.optional(),
 });
 export type Watch = z.infer<typeof watchSchema>;
