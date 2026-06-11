@@ -743,3 +743,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Doğrulama:** 3 yeni test — belirsiz→2 çağrı+işaret+2. karar geçerli; yüksek güven→tek çağrı; yeni-kaynak-yoksa→tek çağrı. 93→96 test.
 - **Akış sırası:** gather → reason → (belirsizse: gather+ → reason²) → verify (A1) → commit — ADR-060 döngüsüyle birebir.
 - **ISO:** 25010 *Functional Suitability/Efficiency* (koşullu maliyet) · 42010 · 29148 (izlenebilir guardrail).
+
+## ADR-074 — Asistan dürüstlüğü: uydurma-yasağı + yapabilirlik şeffaflığı
+- **Durum:** Kabul · ürün sahibi: "AI bana Kadıköy diyor, direkt; oysa soru sormalı; hazır cevaplar düzgün olmalı; bu özellikleri gerçekten yapabilir mi".
+- **Kök neden:** Niyet asistanı (groq.assistant) belirsiz girdide (ör. "doktor randevusu açılınca") eksik detayı (şehir/kurum) SORMAK yerine "Kadıköy" gibi tipik bir örnekle UYDURUYORDU. Ayrıca login/portal arkası (randevu/stok) işlerini "yaparım" gibi sunuyordu.
+- **Karar:** (1) **RULE #1 — NEVER INVENT DETAILS** (mutlak, her şeyi ezer): final intent yalnız kullanıcının BU sohbette söylediği somutları içerebilir; eksik+arama-değiştiren detay → SOR, asla doldurma/tahmin etme. (2) **Generic OK, fabricated değil**: "genel/farketmez" denirse intent ülke-geneli/jenerik kalır, uydurma şehir konmaz. (3) **CAPABILITY HONESTY**: sistem kamusal web'i izler, login portallarına giremez, saniye-garantisi yok; portal-arkası talepte intent kamusal sinyale ("X açıldığına dair duyuru/haber") çevrilir + message'da bir dürüst cümle. (4) Sıcaklık 0.3→0.1 (kural-sadakati). Örnekler uydurma-yasağını gösterecek şekilde yenilendi.
+- **Yapamadığım/dürüst sınır:** Kod tarafı "uydurma somut tespiti" eklenMEDİ — güvenilir varlık/şehir listesi gerektirir (yeni hardcode + eksik kapsam, yanlış-pozitif). Savunma prompt-kuralı + düşük sıcaklıkla; LLM nadiren kuralı çiğneyebilir (dürüstçe: %100 garanti değil, ama uydurma davranışı belirgin azalır). Öneri çipleri zaten kasıtlı belirsiz (yer/kurum yok) → çipe basınca asistan soruyu tetikler.
+- **ISO:** 9241 (kullanıcı kontrolü — eksikte sorar, varsaymaz) · 25012 (uydurma veri yasağı) · 25010 *Functional Correctness* + dürüst yapabilirlik beyanı.
