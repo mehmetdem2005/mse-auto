@@ -34,6 +34,8 @@ export interface RecordCheckRunInput {
   confidence: number;
   searchQuery?: string | null;
   hits?: StoredSearchHit[] | null;
+  /** Kontrolün LLM token maliyeti (ADR-077/A3). */
+  tokensUsed?: number | null;
 }
 
 /** Kullanıcı/admin'in göreceği "araştırma" görünümleri (okuma). */
@@ -46,6 +48,7 @@ export interface CheckRunView {
   reasoning: string | null;
   searchQuery: string | null;
   hits: StoredSearchHit[] | null;
+  tokensUsed: number | null;
 }
 export interface DetectionEventView {
   id: string;

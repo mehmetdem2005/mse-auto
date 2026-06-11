@@ -13,6 +13,8 @@ export interface CheckOutcome {
   // Arama süreci şeffaflığı (ADR-036): ne arandı + hangi sonuçlar görüldü.
   searchQuery?: string | null;
   hits?: SearchHit[] | null;
+  /** Kontrolün toplam LLM token maliyeti (ADR-077/A3); bilinmiyorsa null. */
+  tokensUsed?: number | null;
 }
 
 /** Kontrol bağlamı: tekrar-bildirim bastırma için son bildirilen olay (ADR-037). */

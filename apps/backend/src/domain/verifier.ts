@@ -16,6 +16,8 @@ export interface VerifyResult {
   confirmed: boolean;
   /** Kısa gerekçe (iz kaydına yazılır). */
   reason: string;
+  /** Doğrulamanın LLM token maliyeti (ADR-077/A3); bilinmiyorsa null. */
+  tokensUsed?: number | null;
 }
 
 /**

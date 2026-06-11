@@ -140,6 +140,7 @@ export interface Database {
           confidence: number | null;
           search_query: string | null;
           search_hits: Json | null;
+          tokens_used: number | null;
         };
         Insert: {
           topic_id: string;
@@ -151,6 +152,7 @@ export interface Database {
           confidence?: number | null;
           search_query?: string | null;
           search_hits?: Json | null;
+          tokens_used?: number | null;
         };
         Update: {
           result_summary?: string | null;

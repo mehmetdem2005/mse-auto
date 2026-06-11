@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { EventVerifier, VerifyInput, VerifyResult } from "../../domain/verifier";
-import { groqJsonChat } from "../groq/groq-json";
+import { groqJsonChatWithUsage } from "../groq/groq-json";
 
 const VerifySchema = z.object({
   confirmed: z.boolean(),
@@ -39,7 +39,7 @@ export class GroqEventVerifier implements EventVerifier {
       ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
     ].join("\n");
 
-    const content = await groqJsonChat({
+    const { content, tokensUsed } = await groqJsonChatWithUsage({
       apiKey: this.apiKey,
       model: this.model,
       messages: [
@@ -50,6 +50,6 @@ export class GroqEventVerifier implements EventVerifier {
       maxTokens: 512,
       fetchImpl: this.fetchImpl,
     });
-    return VerifySchema.parse(JSON.parse(content));
+    return { ...VerifySchema.parse(JSON.parse(content)), tokensUsed };
   }
 }

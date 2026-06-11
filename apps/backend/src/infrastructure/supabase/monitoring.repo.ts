@@ -37,20 +37,26 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
   }
 
   async recordCheckRun(input: RecordCheckRunInput): Promise<{ id: string }> {
-    const { data, error } = await this.db
+    const base = {
+      topic_id: input.topicId,
+      result_summary: input.resultSummary,
+      reasoning: input.reasoning,
+      decision: input.decision,
+      confidence: input.confidence,
+      search_query: input.searchQuery ?? null,
+      // StoredSearchHit düz JSON-uyumlu nesnedir; jsonb kolonuna serbest tiple yazılır.
+      search_hits: (input.hits as unknown as Json) ?? null,
+    };
+    let { data, error } = await this.db
       .from("check_runs")
-      .insert({
-        topic_id: input.topicId,
-        result_summary: input.resultSummary,
-        reasoning: input.reasoning,
-        decision: input.decision,
-        confidence: input.confidence,
-        search_query: input.searchQuery ?? null,
-        // StoredSearchHit düz JSON-uyumlu nesnedir; jsonb kolonuna serbest tiple yazılır.
-        search_hits: (input.hits as unknown as Json) ?? null,
-      })
+      .insert({ ...base, tokens_used: input.tokensUsed ?? null })
       .select("id")
       .single();
+    // Migration 0010 henüz uygulanmadıysa (tokens_used kolonu yok) tokens'sız dene —
+    // deploy sıralaması canlıyı KIRMAZ; migration sonrası izler otomatik akar (ADR-077).
+    if (error && /tokens_used/.test(error.message)) {
+      ({ data, error } = await this.db.from("check_runs").insert(base).select("id").single());
+    }
     if (error || !data) throw new Error(`recordCheckRun: ${error?.message ?? "boş"}`);
     return { id: data.id };
   }
@@ -150,9 +156,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
   async listCheckRuns(topicId: string, limit: number): Promise<CheckRunView[]> {
     const { data, error } = await this.db
       .from("check_runs")
-      .select(
-        "id, ran_at, decision, confidence, result_summary, reasoning, search_query, search_hits",
-      )
+      .select("*")
       .eq("topic_id", topicId)
       .order("ran_at", { ascending: false })
       .limit(limit);
@@ -165,6 +169,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
       summary: r.result_summary,
       reasoning: r.reasoning,
       searchQuery: r.search_query,
+      tokensUsed: r.tokens_used ?? null,
       hits: (r.search_hits as StoredSearchHit[] | null) ?? null,
     }));
   }

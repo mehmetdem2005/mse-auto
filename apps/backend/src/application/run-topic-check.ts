@@ -105,6 +105,7 @@ export async function runTopicCheck(
   // GİTMEZ; gerekçe iz kaydına yazılır (sessiz düşürme değil, şeffaf).
   let decision = outcome.detected;
   let reasoning = outcome.reasoning;
+  let tokensUsed = outcome.tokensUsed ?? null;
   if (outcome.detected && outcome.description !== null && deps.verifier) {
     try {
       const v = await deps.verifier.verify({
@@ -112,6 +113,7 @@ export async function runTopicCheck(
         claim: outcome.description,
         hits: outcome.hits ?? [],
       });
+      if (v.tokensUsed != null) tokensUsed = (tokensUsed ?? 0) + v.tokensUsed;
       if (!v.confirmed) {
         decision = false;
         reasoning = `${outcome.reasoning}\n[DOĞRULAYICI REDDETTİ] ${v.reason}`;
@@ -133,6 +135,7 @@ export async function runTopicCheck(
     confidence: outcome.confidence,
     searchQuery: outcome.searchQuery ?? topic.canonicalQuery,
     hits: outcome.hits ?? null,
+    tokensUsed,
   });
   await deps.monitoring.markTopicChecked(topic.id, new Date().toISOString());
 

@@ -217,6 +217,7 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
             {r.confidence !== null ? (
               <Text className="text-muted text-[11px]">
                 · {t("detail.confidence", { n: Math.round(r.confidence * 100) })}
+                {r.tokensUsed != null ? ` · ${r.tokensUsed} tok` : ""}
               </Text>
             ) : null}
             <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt, i18n.language)}</Text>

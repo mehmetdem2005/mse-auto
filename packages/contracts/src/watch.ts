@@ -56,6 +56,8 @@ export const checkRunViewSchema = z.object({
   reasoning: z.string().nullable(),
   searchQuery: z.string().nullable(),
   hits: z.array(searchHitViewSchema).nullable(),
+  /** Kontrolün LLM token maliyeti (ADR-077/A3); eski kayıtlarda null. */
+  tokensUsed: z.number().nullable().optional(),
 });
 export const detectionEventViewSchema = z.object({
   id: z.string(),

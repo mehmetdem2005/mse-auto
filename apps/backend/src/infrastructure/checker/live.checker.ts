@@ -67,6 +67,7 @@ export class LiveChecker implements Checker {
       hits: finalHits,
       lastEventDescription: ctx?.lastEventDescription ?? null,
     });
+    let tokensUsed = r.tokensUsed ?? null;
 
     // ESKALASYON (ADR-073/A2 — effort scaling): ilk karar BELİRSİZ güven bandındaysa
     // genel arama varyantıyla derin 2. tur + yeniden muhakeme. Net kararlar (yüksek/
@@ -86,6 +87,7 @@ export class LiveChecker implements Checker {
           hits: finalHits,
           lastEventDescription: ctx?.lastEventDescription ?? null,
         });
+        if (r.tokensUsed != null) tokensUsed = (tokensUsed ?? 0) + r.tokensUsed;
       }
     }
 
@@ -97,6 +99,7 @@ export class LiveChecker implements Checker {
       confidence: r.confidence,
       searchQuery: ctx?.authorityDomain ? `${q} (+ site:${ctx.authorityDomain})` : q,
       hits: finalHits,
+      tokensUsed,
     };
   }
 }

@@ -146,6 +146,7 @@ export interface CheckRunView {
   reasoning: string | null;
   searchQuery: string | null;
   hits: SearchHitView[] | null;
+  tokensUsed?: number | null;
 }
 export interface DetectionEventView {
   id: string;

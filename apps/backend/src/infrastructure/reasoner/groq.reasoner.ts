@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
-import { groqJsonChat } from "../groq/groq-json";
+import { groqJsonChatWithUsage } from "../groq/groq-json";
 
 const ReasonSchema = z.object({
   detected: z.boolean(),
@@ -40,7 +40,7 @@ export class GroqEventReasoner implements EventReasoner {
       ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
     ].join("\n");
 
-    const content = await groqJsonChat({
+    const { content, tokensUsed } = await groqJsonChatWithUsage({
       apiKey: this.apiKey,
       model: this.model,
       messages: [
@@ -51,6 +51,6 @@ export class GroqEventReasoner implements EventReasoner {
       maxTokens: 1024,
       fetchImpl: this.fetchImpl,
     });
-    return ReasonSchema.parse(JSON.parse(content));
+    return { ...ReasonSchema.parse(JSON.parse(content)), tokensUsed };
   }
 }

@@ -764,3 +764,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Kapsam dürüstlüğü:** A0'ın 4 guardrail'inden bu turda **timeout** uygulandı; **tur limiti** zaten LiveChecker'da maks 2 (ADR-073); **token bütçesi** A3 (token izleri) gerektirir → henüz YOK, A3 sonrası; **ilerleme-yok** tek-geçişli akışta gereksiz (tur limiti kapsıyor). Abartı yok.
 - **Doğrulama:** 3 guardrail birim testi + 1 timeout entegrasyon testi (105 test).
 - **ISO:** 25010 *Reliability/Time-behaviour* (ölçülebilir: ≤timeout) · 27002 (kaynak tükenme koruması) · 42010.
+
+## ADR-077 — Ajan mimarisi A3: token maliyet izleri (uçtan uca)
+- **Durum:** Kabul · ADR-060 A3; token-bütçesi guardrail'inin (A0 kalan parçası) önkoşulu.
+- **Karar:** LLM token kullanımı uçtan uca akar: `groqJsonChatWithUsage` (usage.total_tokens) → ReasonResult/VerifyResult/CheckOutcome `tokensUsed` → LiveChecker toplar (eskalasyonda 2. tur eklenir) → run-topic-check doğrulayıcı token'ını da ekler → `check_runs.tokens_used` (migration 0010, ek/nullable) → CheckRunView → kontrat → mobil detayda "· N tok". DeepSeek reasoner'da şimdilik null (yalnız Groq enstrümante — dürüst).
+- **Dağıtım güvenliği:** Sınıflandırıcı canlı-migration'ı doğru şekilde engelledi (CLAUDE.md: açık izin şart). Supabase repo'ya **zarif geri-düşüş** eklendi: `tokens_used` kolonu yoksa insert tokens'sız yeniden denenir, list `select("*")` — migration uygulanmadan deploy CANLIYI KIRMAZ; izin sonrası izler otomatik akar. **Migration 0010 canlıya UYGULANMADI — kullanıcı izni bekliyor.**
+- **Doğrulama:** 2 yeni test (checker+verifier toplama=1000; bilgi yoksa null) → 107 test.
+- **ISO:** 25010 *ölçülebilir maliyet NFR* · 25012 (gerçek usage verisi) · 27002 (kaynak görünürlüğü) · 42010.

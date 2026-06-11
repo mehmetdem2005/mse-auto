@@ -15,6 +15,7 @@ export interface StoredCheckRun {
   confidence: number;
   searchQuery: string | null;
   hits: StoredSearchHit[] | null;
+  tokensUsed?: number | null;
 }
 export interface StoredEvent {
   id: string;

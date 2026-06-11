@@ -276,3 +276,47 @@ describe("A0 timeout guardrail (ADR-076)", () => {
     expect(runs[0]?.summary).toBe("zaman aşımı");
   });
 });
+
+describe("A3 token izi (ADR-077)", () => {
+  it("checker+doğrulayıcı token'ları toplanıp CheckRun'a yazılır", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const tokenChecker: Checker = {
+      async check() {
+        return {
+          detected: true,
+          description: "olay",
+          resultSummary: "x",
+          reasoning: "r",
+          confidence: 0.9,
+          tokensUsed: 700,
+        };
+      },
+    };
+    const verifier = {
+      verify: async () => ({ confirmed: true, reason: "ok", tokensUsed: 300 }),
+    };
+    await runTopicCheck({ checker: tokenChecker, monitoring, verifier }, topic);
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.tokensUsed).toBe(1000);
+  });
+
+  it("token bilgisi yoksa null kalır (eski davranış bozulmaz)", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const plainChecker: Checker = {
+      async check() {
+        return {
+          detected: false,
+          description: null,
+          resultSummary: "x",
+          reasoning: "r",
+          confidence: 0.9,
+        };
+      },
+    };
+    await runTopicCheck({ checker: plainChecker, monitoring }, topic);
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.tokensUsed).toBeNull();
+  });
+});

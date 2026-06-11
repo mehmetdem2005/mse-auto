@@ -14,6 +14,8 @@ export interface ReasonResult {
   reasoning: string;
   confidence: number; // 0..1
   facts?: EventFacts | null; // arketip-B: yapılı kamusal veri
+  /** Bu muhakemenin LLM token maliyeti (ADR-077/A3); bilinmiyorsa null. */
+  tokensUsed?: number | null;
 }
 
 /** Olay muhakemesi port'u (DeepSeek). Sadece PII'siz girdi alır. */

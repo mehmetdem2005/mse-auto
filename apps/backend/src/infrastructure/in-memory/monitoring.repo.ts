@@ -52,6 +52,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
       confidence: input.confidence,
       searchQuery: input.searchQuery ?? null,
       hits: input.hits ?? null,
+      tokensUsed: input.tokensUsed ?? null,
     });
     return { id };
   }
@@ -135,6 +136,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         reasoning: r.reasoning,
         searchQuery: r.searchQuery,
         hits: r.hits,
+        tokensUsed: r.tokensUsed ?? null,
       }));
   }
 

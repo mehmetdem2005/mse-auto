@@ -11,16 +11,22 @@ export interface GroqChatMessage {
 
 interface GroqResponse {
   choices?: Array<{ message?: { content?: string } }>;
+  usage?: { total_tokens?: number };
 }
 
-export async function groqJsonChat(opts: {
+export interface GroqChatOpts {
   apiKey: string;
   model: string;
   messages: GroqChatMessage[];
   temperature: number;
   maxTokens: number;
   fetchImpl?: typeof fetch;
-}): Promise<string> {
+}
+
+/** İçerik + token kullanımı (ADR-077/A3 — maliyet izi). */
+export async function groqJsonChatWithUsage(
+  opts: GroqChatOpts,
+): Promise<{ content: string; tokensUsed: number | null }> {
   const fetchImpl = opts.fetchImpl ?? fetch;
   const res = await fetchImpl("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -37,5 +43,10 @@ export async function groqJsonChat(opts: {
   const data = (await res.json()) as GroqResponse;
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error("groq boş içerik");
-  return content;
+  return { content, tokensUsed: data.usage?.total_tokens ?? null };
+}
+
+/** Geriye uyum: yalnız içerik. */
+export async function groqJsonChat(opts: GroqChatOpts): Promise<string> {
+  return (await groqJsonChatWithUsage(opts)).content;
 }
