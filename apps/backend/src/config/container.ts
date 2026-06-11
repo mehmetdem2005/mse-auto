@@ -19,6 +19,7 @@ import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
 import type { SubscriptionRepository } from "../domain/subscription";
 import type { SupportRepository } from "../domain/support";
+import type { EventVerifier } from "../domain/verifier";
 import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
@@ -68,6 +69,7 @@ import { SupabaseSubscriptionRepository } from "../infrastructure/supabase/subsc
 import { SupabaseSupportRepository } from "../infrastructure/supabase/support.repo";
 import { SupabaseCanonicalTopicRepository } from "../infrastructure/supabase/topic.repo";
 import { SupabaseWatchRepository } from "../infrastructure/supabase/watch.repo";
+import { GroqEventVerifier } from "../infrastructure/verifier/groq.verifier";
 import type { Env } from "./env";
 
 export interface Container {
@@ -83,6 +85,7 @@ export interface Container {
   analytics: AnalyticsRepository;
   support: SupportRepository;
   checker: Checker;
+  verifier: EventVerifier | undefined;
   assistant: IntentAssistant;
   authority: AuthorityResolver;
   notifier: Notifier;
@@ -182,6 +185,8 @@ function adminIdsFromEnv(env: Env): ReadonlySet<string> {
  */
 export function createContainer(env: Env): Container {
   const checker = buildChecker(env);
+  // Doğrulayıcı (ADR-060 A1): GROQ varsa kur; yoksa undefined → doğrulama atlanır.
+  const verifier = env.GROQ_API_KEY ? new GroqEventVerifier(env.GROQ_API_KEY) : undefined;
   const assistant = buildAssistant(env);
   const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
@@ -212,6 +217,7 @@ export function createContainer(env: Env): Container {
       analytics: new SupabaseAnalyticsRepository(db),
       support: new SupabaseSupportRepository(db),
       checker,
+      verifier,
       assistant,
       authority,
       notifier,
@@ -238,6 +244,7 @@ export function createContainer(env: Env): Container {
     analytics: new InMemoryAnalyticsRepository(store),
     support: new InMemorySupportRepository(store),
     checker,
+    verifier,
     assistant,
     authority,
     notifier,

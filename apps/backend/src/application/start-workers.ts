@@ -23,6 +23,7 @@ export async function startWorkers(
     queue: container.queue,
     monitoring: container.monitoring,
     checker: container.checker,
+    verifier: container.verifier,
     topics: container.topics,
     authority: container.authority,
   });

@@ -4,6 +4,7 @@ import type { MonitoringRepository } from "../domain/monitoring";
 import type { EventFacts } from "../domain/personal";
 import type { CanonicalTopicRepository } from "../domain/ports";
 import type { CanonicalTopic } from "../domain/topic";
+import type { EventVerifier } from "../domain/verifier";
 
 export interface RunTopicCheckDeps {
   checker: Checker;
@@ -11,6 +12,8 @@ export interface RunTopicCheckDeps {
   /** Resmî kaynak çözümü (ADR-046) — opsiyonel: yoksa genel arama sürer. */
   topics?: CanonicalTopicRepository | undefined;
   authority?: AuthorityResolver | undefined;
+  /** Bağımsız doğrulayıcı (ADR-060 A1) — opsiyonel: yoksa tespit doğrudan geçer. */
+  verifier?: EventVerifier | undefined;
 }
 
 export interface RunTopicCheckResult {
@@ -92,18 +95,43 @@ export async function runTopicCheck(
     return { detected: false, eventId: null, description: null, deliveries: 0, facts: null };
   }
 
+  // Bağımsız doğrulama (ADR-060 A1): yalnız tespit-pozitif vakada, taze bağlamlı
+  // şüpheci ikinci bakış. Reddederse karar false'a çevrilir → kullanıcıya bildirim
+  // GİTMEZ; gerekçe iz kaydına yazılır (sessiz düşürme değil, şeffaf).
+  let decision = outcome.detected;
+  let reasoning = outcome.reasoning;
+  if (outcome.detected && outcome.description !== null && deps.verifier) {
+    try {
+      const v = await deps.verifier.verify({
+        canonicalQuery: topic.canonicalQuery,
+        claim: outcome.description,
+        hits: outcome.hits ?? [],
+      });
+      if (!v.confirmed) {
+        decision = false;
+        reasoning = `${outcome.reasoning}\n[DOĞRULAYICI REDDETTİ] ${v.reason}`;
+      } else {
+        reasoning = `${outcome.reasoning}\n[DOĞRULANDI] ${v.reason}`;
+      }
+    } catch {
+      // Doğrulayıcı hatası tespiti DÜŞÜRMEZ (fail-open): yanlış-negatif
+      // (kaçırılan gerçek olay) maliyeti, doğrulayıcı arızasında daha ağırdır.
+      reasoning = `${outcome.reasoning}\n[DOĞRULAYICI ATLANDI] hata`;
+    }
+  }
+
   const run = await deps.monitoring.recordCheckRun({
     topicId: topic.id,
     resultSummary: outcome.resultSummary,
-    reasoning: outcome.reasoning,
-    decision: outcome.detected,
+    reasoning,
+    decision,
     confidence: outcome.confidence,
     searchQuery: outcome.searchQuery ?? topic.canonicalQuery,
     hits: outcome.hits ?? null,
   });
   await deps.monitoring.markTopicChecked(topic.id, new Date().toISOString());
 
-  if (!outcome.detected || outcome.description === null) {
+  if (!decision || outcome.description === null) {
     return { detected: false, eventId: null, description: null, deliveries: 0, facts: null };
   }
 

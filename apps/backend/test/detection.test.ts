@@ -186,3 +186,78 @@ describe("tespit → facts kalıcılığı + arketip-farkında fan-out", () => {
     expect(byToken.get("tok-u2")?.data?.title).toBeTruthy();
   });
 });
+
+describe("bağımsız doğrulayıcı (ADR-060 A1)", () => {
+  const detectingChecker: Checker = {
+    async check() {
+      return {
+        detected: true,
+        description: "YKS sonuçları açıklandı",
+        resultSummary: "3 sonuç",
+        reasoning: "kaynaklar açıklamayı gösteriyor",
+        confidence: 0.8,
+        searchQuery: "yks",
+        hits: [
+          {
+            title: "ÖSYM",
+            snippet: "sonuçlar açıklandı",
+            url: "https://osym.gov.tr",
+            date: "bugün",
+          },
+        ],
+      };
+    },
+  };
+
+  it("doğrulayıcı REDDEDİNCE bildirim gitmez, karar false, gerekçe iz kaydında", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const verifier = {
+      verify: async () => ({ confirmed: false, reason: "kaynak iddiayı kanıtlamıyor" }),
+    };
+    const res = await runTopicCheck({ checker: detectingChecker, monitoring, verifier }, topic);
+    expect(res.detected).toBe(false);
+    expect(res.deliveries).toBe(0);
+    expect(res.eventId).toBeNull();
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.decision).toBe(false);
+    expect(runs[0]?.reasoning).toContain("DOĞRULAYICI REDDETTİ");
+  });
+
+  it("doğrulayıcı ONAYLAYINCA tespit geçer, abonelere teslim oluşur", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const verifier = {
+      verify: async () => ({ confirmed: true, reason: "resmî kaynak doğruluyor" }),
+    };
+    const res = await runTopicCheck({ checker: detectingChecker, monitoring, verifier }, topic);
+    expect(res.detected).toBe(true);
+    expect(res.deliveries).toBeGreaterThan(0);
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.decision).toBe(true);
+    expect(runs[0]?.reasoning).toContain("DOĞRULANDI");
+  });
+
+  it("doğrulayıcı HATA verirse tespit DÜŞMEZ (fail-open)", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const verifier = {
+      verify: async () => {
+        throw new Error("groq down");
+      },
+    };
+    const res = await runTopicCheck({ checker: detectingChecker, monitoring, verifier }, topic);
+    expect(res.detected).toBe(true);
+    expect(res.deliveries).toBeGreaterThan(0);
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.reasoning).toContain("DOĞRULAYICI ATLANDI");
+  });
+
+  it("doğrulayıcı YOKSA (opsiyonel) tespit doğrudan geçer — geriye uyum", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const res = await runTopicCheck({ checker: detectingChecker, monitoring }, topic);
+    expect(res.detected).toBe(true);
+    expect(res.deliveries).toBeGreaterThan(0);
+  });
+});

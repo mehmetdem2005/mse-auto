@@ -4,6 +4,7 @@ import type { Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { CanonicalTopicRepository } from "../domain/ports";
 import type { JobQueue } from "../domain/queue";
+import type { EventVerifier } from "../domain/verifier";
 import { DELIVERY_QUEUE, type DeliveryJob } from "./delivery";
 import { runTopicCheck } from "./run-topic-check";
 import { CHECK_QUEUE, type TopicCheckJob } from "./scheduler";
@@ -12,6 +13,7 @@ export interface MonitoringWorkerDeps {
   queue: JobQueue;
   monitoring: MonitoringRepository;
   checker: Checker;
+  verifier?: EventVerifier | undefined;
   topics?: CanonicalTopicRepository;
   authority?: AuthorityResolver;
 }
@@ -30,6 +32,7 @@ export async function registerMonitoringWorker(deps: MonitoringWorkerDeps): Prom
         monitoring: deps.monitoring,
         topics: deps.topics,
         authority: deps.authority,
+        verifier: deps.verifier,
       },
       topic,
     );
