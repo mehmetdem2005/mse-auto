@@ -221,6 +221,34 @@ export const ja: Catalog = {
     invoicesEmpty: "パックターターを表示した。",
     invoicesHint: "パックターターを表示した。パックターターを表示した。",
   },
+  suggest: {
+    appointment: {
+      label: "予約",
+      sentence: "必要な公的予約（ビザ・領事館など）が開いたら通知して",
+    },
+    doctor: { label: "診察予約", sentence: "必要な医師・病院の予約が開いたら通知して" },
+    medicine: { label: "薬・在庫", sentence: "探している薬や商品が再入荷したら通知して" },
+    rental: {
+      label: "物件情報",
+      sentence: "エリアと予算に合う新しい賃貸・売買物件が出たら通知して",
+    },
+    restock: { label: "再入荷", sentence: "追っている商品が再入荷したら即通知して" },
+    tickets: {
+      label: "チケット",
+      sentence: "追っているイベントのチケット販売が始まったら通知して",
+    },
+    priceDrop: { label: "値下がり", sentence: "商品の価格が目標額を下回ったら通知して" },
+    result: { label: "結果発表", sentence: "待っている試験・応募の結果が発表されたら通知して" },
+    tender: { label: "入札", sentence: "自分の分野で新しい入札・RFPが公示されたら通知して" },
+    regulation: { label: "規制", sentence: "業界に影響する新しい規制が公布されたら通知して" },
+    grant: { label: "助成・支援", sentence: "新しい助成・支援の公募が開いたら通知して" },
+    competitor: { label: "競合", sentence: "競合の価格やサイトが変わったら通知して" },
+    brand: {
+      label: "ブランド監視",
+      sentence: "自社ブランドがネットで否定的に言及されたら通知して",
+    },
+    expiry: { label: "期限・更新", sentence: "ドメイン・証明書・サブスクの期限切れ前に通知して" },
+  },
   settings: {
     account: "あなたのWhenlyアカウント",
     language: "言語",

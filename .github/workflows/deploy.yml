@@ -66,10 +66,9 @@ jobs:
         run: |
           node -e "
           const fs=require('fs');const p='dist/index.html';let h=fs.readFileSync(p,'utf8');
-          h=h.replace(/<html lang=\"en\"/i,'<html lang=\"tr\"');
           if(!/name=\"description\"/.test(h)){
-            const d='Whenly — istediğin konuyu yapay zekâ ile sürekli izle; gelişme olduğunda anında bildirim al. Akıllı izleyici uygulaması.';
-            const t='<meta name=\"description\" content=\"'+d+'\"><meta name=\"theme-color\" content=\"#F5F7FB\"><meta property=\"og:title\" content=\"Whenly — akıllı izleyici\"><meta property=\"og:description\" content=\"'+d+'\"><meta property=\"og:type\" content=\"website\">';
+            const d='Whenly — track anything with AI and get notified the moment it happens. Visas, stock, tenders, regulations, prices and more, in your language.';
+            const t='<meta name=\"description\" content=\"'+d+'\"><meta name=\"theme-color\" content=\"#F5F7FB\"><meta property=\"og:title\" content=\"Whenly — AI watcher\"><meta property=\"og:description\" content=\"'+d+'\"><meta property=\"og:type\" content=\"website\">';
             h=h.replace('</head>',t+'</head>');
           }
           if(!/fonts.googleapis/.test(h)){

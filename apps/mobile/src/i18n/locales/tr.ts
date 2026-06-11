@@ -222,6 +222,61 @@ export const tr = {
     invoicesHint:
       "Ödeme entegrasyonu açıldığında faturaların burada listelenecek ve indirilebilecek.",
   },
+  suggest: {
+    appointment: {
+      label: "Randevu",
+      sentence: "İstediğim resmî randevu (vize, konsolosluk vb.) açılınca haber ver",
+    },
+    doctor: {
+      label: "Doktor randevusu",
+      sentence: "İhtiyacım olan doktor/hastane randevusu açılınca haber ver",
+    },
+    medicine: {
+      label: "İlaç / stok",
+      sentence: "Aradığım ilaç veya ürün eczanede/mağazada stoğa girince haber ver",
+    },
+    rental: {
+      label: "Kiralık ilan",
+      sentence: "Aradığım bölge ve bütçede yeni kiralık/satılık ilan çıkınca haber ver",
+    },
+    restock: { label: "Ürün stoğu", sentence: "Takip ettiğim ürün stoğa girince anında haber ver" },
+    tickets: {
+      label: "Bilet",
+      sentence: "Takip ettiğim etkinliğin biletleri satışa çıkınca haber ver",
+    },
+    priceDrop: {
+      label: "Fiyat düşüşü",
+      sentence: "Bir ürünün fiyatı belirlediğim seviyenin altına inince haber ver",
+    },
+    result: {
+      label: "Sonuç açıklanması",
+      sentence: "Beklediğim sınav/başvuru sonucu açıklanınca haber ver",
+    },
+    tender: {
+      label: "İhale",
+      sentence: "İlgilendiğim alanda yeni ihale/teklif çağrısı yayınlanınca haber ver",
+    },
+    regulation: {
+      label: "Mevzuat",
+      sentence: "Sektörümle ilgili yeni mevzuat/yönetmelik yayınlanınca haber ver",
+    },
+    grant: {
+      label: "Hibe / destek",
+      sentence: "Yeni hibe, destek veya fon çağrısı açılınca haber ver",
+    },
+    competitor: {
+      label: "Rakip takibi",
+      sentence: "Rakibimin fiyatı veya web sayfası değişince haber ver",
+    },
+    brand: {
+      label: "Marka takibi",
+      sentence: "Markam internette olumsuz şekilde anılınca haber ver",
+    },
+    expiry: {
+      label: "Süre / yenileme",
+      sentence: "Alan adımın, sertifikamın veya aboneliğimin süresi dolmadan haber ver",
+    },
+  },
   settings: {
     account: "Whenly hesabın",
     language: "Dil",

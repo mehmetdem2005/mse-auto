@@ -225,6 +225,66 @@ export const fr: Catalog = {
     invoicesHint:
       "Une fois les paiements opérationnels, votre historique des factures sera listé et téléchargeable ici.",
   },
+  suggest: {
+    appointment: {
+      label: "Rendez-vous",
+      sentence:
+        "Préviens-moi quand le rendez-vous officiel dont j'ai besoin (visa, consulat, etc.) s'ouvre",
+    },
+    doctor: {
+      label: "Rendez-vous médical",
+      sentence: "Préviens-moi quand le rendez-vous médical dont j'ai besoin s'ouvre",
+    },
+    medicine: {
+      label: "Médicament / stock",
+      sentence: "Préviens-moi quand le médicament ou l'article recherché est de nouveau disponible",
+    },
+    rental: {
+      label: "Annonce immobilière",
+      sentence:
+        "Préviens-moi quand une nouvelle annonce de location/vente paraît dans ma zone et mon budget",
+    },
+    restock: {
+      label: "Réassort",
+      sentence: "Préviens-moi dès que le produit que je suis est de nouveau en stock",
+    },
+    tickets: {
+      label: "Billets",
+      sentence: "Préviens-moi quand les billets de l'événement que je suis sont mis en vente",
+    },
+    priceDrop: {
+      label: "Baisse de prix",
+      sentence: "Préviens-moi quand le prix d'un produit passe sous mon objectif",
+    },
+    result: {
+      label: "Résultats",
+      sentence: "Préviens-moi quand le résultat d'examen ou de candidature attendu est annoncé",
+    },
+    tender: {
+      label: "Appel d'offres",
+      sentence: "Préviens-moi quand un nouvel appel d'offres ou RFP est publié dans mon domaine",
+    },
+    regulation: {
+      label: "Réglementation",
+      sentence: "Préviens-moi quand une nouvelle réglementation concernant mon secteur paraît",
+    },
+    grant: {
+      label: "Subvention",
+      sentence: "Préviens-moi quand un nouvel appel à subvention ou aide s'ouvre",
+    },
+    competitor: {
+      label: "Concurrent",
+      sentence: "Préviens-moi quand le prix ou le site de mon concurrent change",
+    },
+    brand: {
+      label: "Suivi de marque",
+      sentence: "Préviens-moi quand ma marque est citée négativement en ligne",
+    },
+    expiry: {
+      label: "Expiration",
+      sentence: "Préviens-moi avant l'expiration de mon domaine, certificat ou abonnement",
+    },
+  },
   settings: {
     account: "Votre compte Whenly",
     language: "Langue",

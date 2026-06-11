@@ -227,6 +227,68 @@ export const de: Catalog = {
     invoicesHint:
       "Sobald Zahlungen live sind, werden deine Rechnungen hier aufgelistet und können heruntergeladen werden.",
   },
+  suggest: {
+    appointment: {
+      label: "Termin",
+      sentence:
+        "Benachrichtige mich, wenn der benötigte offizielle Termin (Visum, Konsulat usw.) frei wird",
+    },
+    doctor: {
+      label: "Arzttermin",
+      sentence: "Benachrichtige mich, wenn der benötigte Arzttermin frei wird",
+    },
+    medicine: {
+      label: "Medikament / Lager",
+      sentence:
+        "Benachrichtige mich, wenn das gesuchte Medikament oder Produkt wieder verfügbar ist",
+    },
+    rental: {
+      label: "Immobilie",
+      sentence:
+        "Benachrichtige mich bei einer neuen Miet-/Kaufanzeige in meiner Gegend und meinem Budget",
+    },
+    restock: {
+      label: "Wieder verfügbar",
+      sentence: "Benachrichtige mich sofort, wenn das verfolgte Produkt wieder auf Lager ist",
+    },
+    tickets: {
+      label: "Tickets",
+      sentence: "Benachrichtige mich, wenn Tickets für mein Event in den Verkauf gehen",
+    },
+    priceDrop: {
+      label: "Preisalarm",
+      sentence: "Benachrichtige mich, wenn ein Preis unter mein Ziel fällt",
+    },
+    result: {
+      label: "Ergebnisse",
+      sentence:
+        "Benachrichtige mich, wenn das erwartete Prüfungs-/Bewerbungsergebnis veröffentlicht wird",
+    },
+    tender: {
+      label: "Ausschreibung",
+      sentence: "Benachrichtige mich bei einer neuen Ausschreibung oder RFP in meinem Bereich",
+    },
+    regulation: {
+      label: "Vorschrift",
+      sentence: "Benachrichtige mich bei einer neuen Vorschrift, die meine Branche betrifft",
+    },
+    grant: {
+      label: "Förderung",
+      sentence: "Benachrichtige mich, wenn eine neue Förder- oder Zuschussausschreibung öffnet",
+    },
+    competitor: {
+      label: "Wettbewerber",
+      sentence: "Benachrichtige mich, wenn sich Preis oder Website meines Wettbewerbers ändert",
+    },
+    brand: {
+      label: "Markenmonitoring",
+      sentence: "Benachrichtige mich, wenn meine Marke online negativ erwähnt wird",
+    },
+    expiry: {
+      label: "Ablauf / Erneuerung",
+      sentence: "Benachrichtige mich, bevor Domain, Zertifikat oder Abo abläuft",
+    },
+  },
   settings: {
     account: "Dein Whenly-Konto",
     language: "Sprache",

@@ -16,7 +16,9 @@ const MIN_USEFUL_CHARS = 80;
 /** Yaygın duyuru/haber yolları (TR + EN) — asıl içerik genelde burada. */
 const PATHS = ["/", "/duyurular", "/haberler", "/announcements", "/news"];
 /** Çerez/gizlilik bandı imzaları — metin bunlardan ibaretse değersizdir. */
-const NOISE = /çerez|cookie|gizlilik politikas|kvkk|aydınlatma metni|privacy policy/gi;
+// Çok-dilli çerez/gizlilik bandı imzaları (TR/EN/DE/FR/ES) — evrensel çöp filtresi.
+const NOISE =
+  /çerez|cookie|gizlilik politikas|kvkk|aydınlatma metni|privacy policy|datenschutz|cookies?\b|consentement|politique de confidentialité|política de privacidad/gi;
 
 /**
  * Render-proxy URL'i kurar (ADR-070): JS-render gerektiren dinamik sayfalar için.

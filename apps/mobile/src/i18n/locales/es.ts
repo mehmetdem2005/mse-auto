@@ -222,6 +222,65 @@ export const es: Catalog = {
     invoicesEmpty: "Aún no hay facturas",
     invoicesHint: "Cuando los pagos estén activos, tus facturas se listarán y descargarán aquí.",
   },
+  suggest: {
+    appointment: {
+      label: "Cita",
+      sentence: "Avísame cuando se abra la cita oficial que necesito (visa, consulado, etc.)",
+    },
+    doctor: {
+      label: "Cita médica",
+      sentence: "Avísame cuando se abra la cita médica que necesito",
+    },
+    medicine: {
+      label: "Medicina / stock",
+      sentence: "Avísame cuando el medicamento o artículo que busco vuelva a estar disponible",
+    },
+    rental: {
+      label: "Anuncio inmueble",
+      sentence:
+        "Avísame cuando aparezca un nuevo anuncio de alquiler/venta en mi zona y presupuesto",
+    },
+    restock: {
+      label: "Reposición",
+      sentence: "Avísame al instante cuando el producto que sigo vuelva a estar en stock",
+    },
+    tickets: {
+      label: "Entradas",
+      sentence: "Avísame cuando salgan a la venta las entradas del evento que sigo",
+    },
+    priceDrop: {
+      label: "Bajada de precio",
+      sentence: "Avísame cuando el precio de un producto baje de mi objetivo",
+    },
+    result: {
+      label: "Resultados",
+      sentence: "Avísame cuando se anuncie el resultado de examen o solicitud que espero",
+    },
+    tender: {
+      label: "Licitación",
+      sentence: "Avísame cuando se publique una nueva licitación o RFP en mi sector",
+    },
+    regulation: {
+      label: "Normativa",
+      sentence: "Avísame cuando se publique una nueva normativa que afecte a mi sector",
+    },
+    grant: {
+      label: "Subvención",
+      sentence: "Avísame cuando se abra una nueva convocatoria de subvención o ayuda",
+    },
+    competitor: {
+      label: "Competidor",
+      sentence: "Avísame cuando cambie el precio o la web de mi competidor",
+    },
+    brand: {
+      label: "Marca",
+      sentence: "Avísame cuando mi marca se mencione negativamente en internet",
+    },
+    expiry: {
+      label: "Vencimiento",
+      sentence: "Avísame antes de que caduque mi dominio, certificado o suscripción",
+    },
+  },
   settings: {
     account: "Tu cuenta Whenly",
     language: "Idioma",

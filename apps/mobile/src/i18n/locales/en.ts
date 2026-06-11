@@ -222,6 +222,64 @@ export const en: Catalog = {
     invoicesEmpty: "No invoices yet",
     invoicesHint: "Once payments are live, your invoices will be listed and downloadable here.",
   },
+  suggest: {
+    appointment: {
+      label: "Appointment",
+      sentence: "Notify me when the official appointment I need (visa, consulate, etc.) opens",
+    },
+    doctor: {
+      label: "Doctor visit",
+      sentence: "Notify me when the doctor or clinic appointment I need opens up",
+    },
+    medicine: {
+      label: "Medicine / stock",
+      sentence: "Notify me when the medicine or item I need is back in stock",
+    },
+    rental: {
+      label: "Property listing",
+      sentence: "Notify me when a new rental/sale listing appears in my area and budget",
+    },
+    restock: {
+      label: "Product restock",
+      sentence: "Notify me the instant the product I follow is back in stock",
+    },
+    tickets: {
+      label: "Tickets",
+      sentence: "Notify me when tickets for the event I follow go on sale",
+    },
+    priceDrop: {
+      label: "Price drop",
+      sentence: "Notify me when a product's price falls below my target",
+    },
+    result: {
+      label: "Results",
+      sentence: "Notify me when the exam or application result I'm waiting for is announced",
+    },
+    tender: {
+      label: "Tender",
+      sentence: "Notify me when a new tender or RFP is published in my field",
+    },
+    regulation: {
+      label: "Regulation",
+      sentence: "Notify me when a new regulation affecting my industry is published",
+    },
+    grant: {
+      label: "Grant / funding",
+      sentence: "Notify me when a new grant, subsidy or funding call opens",
+    },
+    competitor: {
+      label: "Competitor",
+      sentence: "Notify me when my competitor's price or web page changes",
+    },
+    brand: {
+      label: "Brand monitoring",
+      sentence: "Notify me when my brand is mentioned negatively online",
+    },
+    expiry: {
+      label: "Expiry / renewal",
+      sentence: "Notify me before my domain, certificate or subscription expires",
+    },
+  },
   settings: {
     account: "Your Whenly account",
     language: "Language",

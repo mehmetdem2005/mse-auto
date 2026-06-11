@@ -10,7 +10,7 @@ import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { type SuggestionScope, suggestionsFor } from "@/lib/suggestions";
+import { SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -101,7 +101,7 @@ function CInput(props: {
 }
 
 export default function NewWatcher() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const reduce = useReduceMotion();
@@ -397,27 +397,28 @@ export default function NewWatcher() {
                   })}
                 </View>
                 <View className="flex-row flex-wrap gap-2">
-                  {suggestionsFor(i18n.language)
-                    .find((g) => g.scope === suggScope)
-                    ?.items.map((sg) => (
+                  {SUGGESTION_KEYS[suggScope].map((key) => {
+                    const sentence = t(`suggest.${key}.sentence`);
+                    return (
                       <Pressable
-                        key={sg.label}
+                        key={key}
                         onPress={() => {
                           haptic.light();
                           const next: AssistMessage[] = [
                             ...messages,
-                            { role: "user", content: sg.sentence },
+                            { role: "user", content: sentence },
                           ];
                           setMessages(next);
                           assist.mutate(next);
                         }}
                         accessibilityRole="button"
-                        accessibilityLabel={sg.sentence}
+                        accessibilityLabel={sentence}
                         className="border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] justify-center active:bg-accent/15"
                       >
-                        <Text className="text-accent text-xs">{sg.label}</Text>
+                        <Text className="text-accent text-xs">{t(`suggest.${key}.label`)}</Text>
                       </Pressable>
-                    ))}
+                    );
+                  })}
                 </View>
               </View>
             ) : null}

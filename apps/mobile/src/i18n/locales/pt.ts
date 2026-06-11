@@ -224,6 +224,64 @@ export const pt: Catalog = {
     invoicesHint:
       "Uma vez os pagamentos estiverem ativos, suas faturas serão listadas e baixáveis aqui.",
   },
+  suggest: {
+    appointment: {
+      label: "Agendamento",
+      sentence: "Avise-me quando abrir o agendamento oficial que preciso (visto, consulado, etc.)",
+    },
+    doctor: {
+      label: "Consulta médica",
+      sentence: "Avise-me quando abrir a consulta médica que preciso",
+    },
+    medicine: {
+      label: "Remédio / estoque",
+      sentence: "Avise-me quando o remédio ou item que procuro voltar ao estoque",
+    },
+    rental: {
+      label: "Anúncio imóvel",
+      sentence: "Avise-me quando surgir um novo anúncio de aluguel/venda na minha área e orçamento",
+    },
+    restock: {
+      label: "Reposição",
+      sentence: "Avise-me na hora quando o produto que sigo voltar ao estoque",
+    },
+    tickets: {
+      label: "Ingressos",
+      sentence: "Avise-me quando os ingressos do evento que sigo entrarem à venda",
+    },
+    priceDrop: {
+      label: "Queda de preço",
+      sentence: "Avise-me quando o preço de um produto cair abaixo da minha meta",
+    },
+    result: {
+      label: "Resultados",
+      sentence: "Avise-me quando o resultado de prova ou inscrição que aguardo for divulgado",
+    },
+    tender: {
+      label: "Licitação",
+      sentence: "Avise-me quando uma nova licitação ou RFP for publicada na minha área",
+    },
+    regulation: {
+      label: "Regulamentação",
+      sentence: "Avise-me quando uma nova regulamentação que afeta meu setor for publicada",
+    },
+    grant: {
+      label: "Subsídio",
+      sentence: "Avise-me quando abrir um novo edital de subsídio ou apoio",
+    },
+    competitor: {
+      label: "Concorrente",
+      sentence: "Avise-me quando o preço ou site do meu concorrente mudar",
+    },
+    brand: {
+      label: "Monitor de marca",
+      sentence: "Avise-me quando minha marca for mencionada negativamente online",
+    },
+    expiry: {
+      label: "Expiração",
+      sentence: "Avise-me antes do meu domínio, certificado ou assinatura expirar",
+    },
+  },
   settings: {
     account: "Sua conta do Whenly",
     language: "Idioma",
