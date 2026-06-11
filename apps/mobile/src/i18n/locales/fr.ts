@@ -117,6 +117,9 @@ export const fr: Catalog = {
     },
     greeting:
       "Bonjour ! Qu'est-ce que je devrais vous notifié à propos de ? Décrivez-le naturellement — si c'est trop large, je poserai une question pour le resserrer.",
+    suggestTitle: "Ou commencez avec un exemple:",
+    suggestPersonal: "Personnel",
+    suggestBusiness: "Entreprise",
     ready: "prêt à regarder",
     readyHint: 'Fréquence suggérée : {{freq}} · appuyez sur "Continuer" ou continuez à taper.',
     chatPlaceholder: "Typez un message…",

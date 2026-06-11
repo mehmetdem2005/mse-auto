@@ -10,6 +10,7 @@ import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { type SuggestionScope, suggestionsFor } from "@/lib/suggestions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -35,11 +36,6 @@ const FREQ_META: Record<number, { name: string; desc: string }> = {
   720: { name: "12 saat", desc: "Çok düşük" },
   1440: { name: "Günlük", desc: "En düşük" },
 };
-const INTENT_EXAMPLES = [
-  "İzmir'de deprem olunca haber ver",
-  "iPhone 17 fiyatı düşünce haber ver",
-  "YKS sonuçları açıklanınca haber ver",
-];
 type FilterType = "none" | "geo" | "numeric" | "keyword";
 
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
@@ -105,7 +101,7 @@ function CInput(props: {
 }
 
 export default function NewWatcher() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const qc = useQueryClient();
   const reduce = useReduceMotion();
@@ -120,6 +116,7 @@ export default function NewWatcher() {
     { role: "assistant", content: t("wizard.greeting") },
   ]);
   const [draft, setDraft] = useState("");
+  const [suggScope, setSuggScope] = useState<SuggestionScope>("personal");
   const [readyIntent, setReadyIntent] = useState<string | null>(null);
   const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
   const chatScroll = useRef<ScrollView>(null);
@@ -371,22 +368,57 @@ export default function NewWatcher() {
               </EnterItem>
             ))}
             {messages.length === 1 && !assist.isPending ? (
-              <View className="flex-row flex-wrap gap-2 mb-2.5">
-                {INTENT_EXAMPLES.map((ex) => (
-                  <Pressable
-                    key={ex}
-                    onPress={() => {
-                      const next: AssistMessage[] = [...messages, { role: "user", content: ex }];
-                      setMessages(next);
-                      assist.mutate(next);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Örnek: ${ex}`}
-                    className="border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] justify-center active:bg-accent/15"
-                  >
-                    <Text className="text-accent text-xs">{ex}</Text>
-                  </Pressable>
-                ))}
+              <View className="mb-2.5">
+                <Text className="text-muted text-[11px] mb-2">{t("wizard.suggestTitle")}</Text>
+                {/* Bireysel / Kurumsal sekmesi */}
+                <View className="flex-row gap-2 mb-2.5">
+                  {(["personal", "business"] as const).map((sc) => {
+                    const on = suggScope === sc;
+                    return (
+                      <Pressable
+                        key={sc}
+                        onPress={() => setSuggScope(sc)}
+                        accessibilityRole="tab"
+                        accessibilityState={{ selected: on }}
+                        className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
+                          on ? "bg-accent" : "bg-panel border border-line"
+                        }`}
+                      >
+                        <Text
+                          className="text-[12px] font-semibold"
+                          style={{ color: on ? "#FFFFFF" : "#475569" }}
+                        >
+                          {t(
+                            sc === "personal" ? "wizard.suggestPersonal" : "wizard.suggestBusiness",
+                          )}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <View className="flex-row flex-wrap gap-2">
+                  {suggestionsFor(i18n.language)
+                    .find((g) => g.scope === suggScope)
+                    ?.items.map((sg) => (
+                      <Pressable
+                        key={sg.label}
+                        onPress={() => {
+                          haptic.light();
+                          const next: AssistMessage[] = [
+                            ...messages,
+                            { role: "user", content: sg.sentence },
+                          ];
+                          setMessages(next);
+                          assist.mutate(next);
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={sg.sentence}
+                        className="border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] justify-center active:bg-accent/15"
+                      >
+                        <Text className="text-accent text-xs">{sg.label}</Text>
+                      </Pressable>
+                    ))}
+                </View>
               </View>
             ) : null}
             {assist.isPending ? (

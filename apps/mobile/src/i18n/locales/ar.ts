@@ -117,6 +117,9 @@ export const ar: Catalog = {
     },
     greeting:
       "مرحبا! ماذا يجب أن أعتنبه لك؟ وصفها بشكل طبيعي - إذا كانت واسعة جدًا فسأسأل سؤالاً لضيقها.",
+    suggestTitle: "أو ابدأ بمثال جاهز:",
+    suggestPersonal: "شخصي",
+    suggestBusiness: "أعمال",
     ready: "جاهز للعرض",
     readyHint: 'التكرار الموصى به: {{freq}} · انقر على "استمرار" أو استمر في الكتابة.',
     chatPlaceholder: "اكتب رسالة…",

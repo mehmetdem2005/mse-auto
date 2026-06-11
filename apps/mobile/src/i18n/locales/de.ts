@@ -119,6 +119,9 @@ export const de: Catalog = {
     },
     greeting:
       "Hi! Worum soll ich dich benachrichtigen? Beschreibe es natürlich — wenn es zu weit gefasst ist, werde ich eine Frage stellen, um es einzugrenzen.",
+    suggestTitle: "Oder mit einem Beispiel starten:",
+    suggestPersonal: "Privat",
+    suggestBusiness: "Geschäftlich",
     ready: "Bereit zum Beobachten",
     readyHint:
       'Vorgeschlagene Häufigkeit: {{freq}} · Tippe auf "Weiter" oder fahre mit der Eingabe fort.',

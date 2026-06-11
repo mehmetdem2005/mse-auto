@@ -117,6 +117,9 @@ export const en: Catalog = {
     },
     greeting:
       "Hi! What should I notify you about? Describe it naturally — if it's too broad I'll ask a question to narrow it down.",
+    suggestTitle: "Or start with a ready example:",
+    suggestPersonal: "Personal",
+    suggestBusiness: "Business",
     ready: "ready to watch",
     readyHint: 'Suggested frequency: {{freq}} · tap "Continue" or keep typing.',
     chatPlaceholder: "Type a message…",

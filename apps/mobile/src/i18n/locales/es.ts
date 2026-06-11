@@ -117,6 +117,9 @@ export const es: Catalog = {
     },
     greeting:
       "¡Hola! ¿De qué quieres que te avise? Descríbelo con naturalidad — si es muy general te haré una pregunta para concretar.",
+    suggestTitle: "O empieza con un ejemplo:",
+    suggestPersonal: "Personal",
+    suggestBusiness: "Empresa",
     ready: "listo para vigilar",
     readyHint: 'Frecuencia sugerida: {{freq}} · pulsa "Continuar" o sigue escribiendo.',
     chatPlaceholder: "Escribe un mensaje…",

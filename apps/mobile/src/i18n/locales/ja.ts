@@ -117,6 +117,9 @@ export const ja: Catalog = {
     },
     greeting:
       "Hi! {{mail}}について教えてください。自然な言葉で説明してください — それが広すぎると、質問をして範囲を狭めます。",
+    suggestTitle: "または例から始める:",
+    suggestPersonal: "個人",
+    suggestBusiness: "ビジネス",
     ready: "{{status}}",
     readyHint: '推奨の頻度: {{freq}} · "Continue"をタップするか、入力を続ける。',
     chatPlaceholder: "メッセージを入力…",

@@ -116,6 +116,9 @@ export const tr = {
     },
     greeting:
       "Merhaba! Ne olduğunda sana haber vereyim? Doğal dille anlat — genel kalırsa netleştirmek için soru soracağım.",
+    suggestTitle: "Ya da hazır bir öneriyle başla:",
+    suggestPersonal: "Bireysel",
+    suggestBusiness: "Kurumsal",
     ready: "izlemeye hazır",
     readyHint: 'Önerilen sıklık: {{freq}} · "Devam" ile sürdür ya da yazmaya devam et.',
     chatPlaceholder: "Mesaj yaz…",
