@@ -1,7 +1,7 @@
 // Abonelik — maket düzeni (hero plan kartı + kullanım barı + faturalama), gerçek veri.
 import { EnterItem } from "@/components/motion";
 import { Badge, Btn } from "@/components/ui";
-import { GradientHero, HeroOverlap } from "@/components/ui";
+import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -43,7 +43,13 @@ export default function SubscriptionScreen() {
   if (sub.isLoading) {
     return (
       <View className="flex-1 bg-ink">
-        <ActivityIndicator color="#6366F1" className="mt-10" />
+        <GradientHero title={t("tabs.subscription")} />
+        <HeroOverlap>
+          <View className="px-5 pt-5">
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+        </HeroOverlap>
       </View>
     );
   }

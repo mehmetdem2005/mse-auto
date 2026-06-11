@@ -2,11 +2,11 @@ import { api } from "@/lib/api";
 import { configureNotificationHandler, registerForegroundListener } from "@/lib/notifications";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 // M3 bottom-nav: aktif öğede pill (secondary-container) gösterge + vektör ikon.
 function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; focused: boolean }) {
@@ -35,7 +35,6 @@ export default function AppLayout() {
   // /me yüklenene dek Tabs'ı render etme: expo-router sekme görünürlüğünü ilk
   // render'da belirler; href'i sonradan null→görünür çevirmek sekmeyi geri
   // getirmez. Bu yüzden isAdmin'i ilk render'dan ÖNCE biliyoruz.
-  const router = useRouter();
   const { data: me, isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
   if (isLoading) {
     return (
@@ -47,44 +46,8 @@ export default function AppLayout() {
   const isAdmin = me?.isAdmin ?? false;
   return (
     <Tabs
+      // Native header tüm sekmelerde kapalı — GradientHero kabuk görevini üstlenir (ADR-054/058).
       screenOptions={{
-        headerStyle: { backgroundColor: "#FFFFFF" },
-        headerTitleStyle: { color: "#0F172A", fontWeight: "700" },
-        headerShadowVisible: false,
-        // Whenly markası: sol üstte W logosu (her sekmede)
-        headerLeft: () => (
-          <View
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 8,
-              marginLeft: 16,
-              marginRight: 4,
-              backgroundColor: "#6366F1",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text style={{ color: "#FFFFFF", fontWeight: "800", fontSize: 15 }}>W</Text>
-          </View>
-        ),
-        // Maket: sağ üstte bildirim (zil) ikonu — ayarlardaki bildirim yönetimine götürür.
-        headerRight: () => (
-          <Pressable
-            onPress={() => router.push("/support")}
-            accessibilityRole="button"
-            accessibilityLabel="Bildirimler ve destek"
-            style={{
-              marginRight: 16,
-              width: 36,
-              height: 36,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Bell size={20} color="#0F172A" />
-          </Pressable>
-        ),
         sceneStyle: { backgroundColor: "#F5F7FB" },
         tabBarStyle: {
           backgroundColor: "#FFFFFF",

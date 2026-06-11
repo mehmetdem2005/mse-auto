@@ -1,6 +1,6 @@
 import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
-import { GradientHero, HeroOverlap, Vote } from "@/components/ui";
+import { GradientHero, HeroOverlap, SkeletonCard, Vote } from "@/components/ui";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
@@ -36,17 +36,26 @@ export default function WatcherDetail(): ReactNode {
 
   if (q.isLoading) {
     return (
-      <View className="flex-1 bg-ink justify-center">
-        <ActivityIndicator color="#6366F1" />
+      <View className="flex-1 bg-ink">
+        <GradientHero title={t("detail.title")} back />
+        <HeroOverlap>
+          <View className="px-5 pt-5">
+            <SkeletonCard />
+            <SkeletonCard />
+          </View>
+        </HeroOverlap>
       </View>
     );
   }
   if (q.error) {
     return (
-      <View className="flex-1 bg-ink px-5 pt-6">
-        <Text className="text-neg">
-          {q.error instanceof Error ? q.error.message : "yüklenemedi"}
-        </Text>
+      <View className="flex-1 bg-ink">
+        <GradientHero title={t("detail.title")} back />
+        <HeroOverlap>
+          <Text className="text-neg px-5 pt-6">
+            {q.error instanceof Error ? q.error.message : t("common.loadError")}
+          </Text>
+        </HeroOverlap>
       </View>
     );
   }

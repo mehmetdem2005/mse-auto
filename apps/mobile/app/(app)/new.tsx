@@ -628,9 +628,7 @@ export default function NewWatcher() {
               })}
             </View>
             {!canAlarm ? (
-              <Text className="text-muted text-[11px] mb-3">
-                Alarm ve özel sesler Pro planında.
-              </Text>
+              <Text className="text-muted text-[11px] mb-3">{t("wizard.alarmPro")}</Text>
             ) : null}
             {/* Maket: ek bildirim yöntemleri — entegrasyon hazır olana dek 'yakında' */}
             <View className="mt-3 border border-line rounded-xl overflow-hidden">

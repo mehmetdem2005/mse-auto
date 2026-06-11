@@ -1,6 +1,6 @@
 // Canlı destek sohbeti (kullanıcı tarafı) — 5 sn'de bir yenilenir (ADR-044).
 import { EnterItem } from "@/components/motion";
-import { GradientHero } from "@/components/ui";
+import { GradientHero, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
@@ -39,8 +39,11 @@ export default function SupportThread() {
 
   if (q.isLoading) {
     return (
-      <View className="flex-1 bg-ink justify-center">
-        <ActivityIndicator color="#6366F1" />
+      <View className="flex-1 bg-ink">
+        <GradientHero title={t("support.thread")} back />
+        <View className="px-5 pt-5">
+          <SkeletonCard />
+        </View>
       </View>
     );
   }

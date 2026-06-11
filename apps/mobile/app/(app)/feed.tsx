@@ -26,7 +26,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 const ACCENT = "#6366F1";
 
@@ -144,8 +144,13 @@ export default function Feed() {
   }
   if (error) {
     return (
-      <View className="flex-1 bg-ink px-5 pt-6">
-        <Text className="text-neg">{error instanceof Error ? error.message : "yüklenemedi"}</Text>
+      <View className="flex-1 bg-ink">
+        <GradientHero title={t("feed.title")} subtitle={t("feed.subtitle")} />
+        <HeroOverlap>
+          <Text className="text-neg px-5 pt-6">
+            {error instanceof Error ? error.message : t("common.loadError")}
+          </Text>
+        </HeroOverlap>
       </View>
     );
   }
