@@ -11,7 +11,8 @@
     "worker": "tsx watch src/worker.ts",
     "worker:start": "tsx src/worker.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval": "tsx eval/run-eval.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.7",
