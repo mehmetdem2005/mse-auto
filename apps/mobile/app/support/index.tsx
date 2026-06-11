@@ -3,6 +3,7 @@ import { EnterItem } from "@/components/motion";
 import { Badge, Btn, Card, SectionLabel } from "@/components/ui";
 import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type SupportTicket, api } from "@/lib/api";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { ChevronRight, Mail, MessageCircle } from "lucide-react-native";
@@ -18,6 +19,7 @@ function when(iso: string, lang: string): string {
 
 export default function Support() {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
   const [problem, setProblem] = useState("");
@@ -62,7 +64,7 @@ export default function Support() {
                 <Text className="text-text text-sm font-semibold">{t("support.emailTitle")}</Text>
                 <Text className="text-muted text-xs mt-0.5">{CONTACT_EMAIL}</Text>
               </View>
-              <ChevronRight size={16} color="#475569" />
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>
           </Card>
 
@@ -136,6 +138,7 @@ export default function Support() {
 }
 
 function TicketRow({ t: tk, onPress }: { t: SupportTicket; onPress: () => void }) {
+  const tTheme = useTheme();
   const { t, i18n } = useTranslation();
   const open = tk.status === "open";
   return (
@@ -151,7 +154,7 @@ function TicketRow({ t: tk, onPress }: { t: SupportTicket; onPress: () => void }
       <View className="flex-row items-center gap-2">
         <Badge tone={open ? "pos" : "muted"}>{open ? t("common.open") : t("common.closed")}</Badge>
         <Text className="text-muted text-[11px] ml-auto">{when(tk.createdAt, i18n.language)}</Text>
-        <ChevronRight size={14} color="#475569" />
+        <ChevronRight size={14} color={tTheme.colors.mutedIcon} />
       </View>
       {tk.lastMessage ? (
         <Text className="text-text text-sm mt-1.5" numberOfLines={1}>

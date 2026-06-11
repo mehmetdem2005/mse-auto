@@ -204,7 +204,7 @@ export function Vote({
       {kind === "up" ? (
         <ThumbsUp size={18} color="#16A34A" />
       ) : (
-        <ThumbsDown size={18} color="#475569" />
+        <ThumbsDown size={18} color="#64748B" />
       )}
     </PressScale>
   );

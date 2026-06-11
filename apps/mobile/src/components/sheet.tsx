@@ -1,9 +1,12 @@
-// Alt-sayfa (bottom sheet) katmanı (ADR-062): ekran-ortası Modal yerine
-// alttan kayan, tutamaçlı, yuvarlak köşeli yüzey — premium mobil dili.
+// Alt-sayfa (bottom sheet) katmanı (ADR-062/065): ekran-ortası Modal yerine
+// alttan kayan, tutamaçlı, yuvarlak köşeli yüzey. Kritik stiller INLINE +
+// temaya bağlı — RN Modal portalında NativeWind className uygulanmadığı için
+// (web'de arka plan/radius kaybolur ve liste sayfaya taşardı). ADR-065 düzeltmesi.
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { useTheme } from "@/theme";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Dimensions, Modal, Pressable, ScrollView, View } from "react-native";
 import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
 
 export function BottomSheet({
@@ -20,12 +23,20 @@ export function BottomSheet({
 }) {
   const { t } = useTranslation();
   const reduce = useReduceMotion();
+  const theme = useTheme();
+  const maxH = Math.round((Dimensions.get("window").height * maxHeightPct) / 100);
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose}>
+      {/* Karartma + panel — INLINE stiller (className Modal portalında uygulanmaz) */}
       <Pressable
-        className="flex-1 bg-black/40 justify-end"
         onPress={onClose}
         accessibilityLabel={t("common.close")}
+        // cssVars: Modal portal kök tema-sarmalayıcının DIŞINDA render olur →
+        // içerikteki bg-panel/text-text/border-line token'ları yeniden tanımlanır.
+        style={[
+          { flex: 1, backgroundColor: "rgba(0,0,0,0.45)", justifyContent: "flex-end" },
+          theme.cssVars,
+        ]}
       >
         <Animated.View
           entering={reduce ? undefined : SlideInDown.springify().damping(20).stiffness(220)}
@@ -34,12 +45,29 @@ export function BottomSheet({
           {/* İç basışlar kapanmayı tetiklemesin */}
           <Pressable onPress={(e) => e.stopPropagation()}>
             <View
-              className="bg-panel rounded-t-[24px] pb-8"
-              style={{ maxHeight: `${maxHeightPct}%` as never }}
+              style={{
+                backgroundColor: theme.colors.panel,
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                paddingBottom: 32,
+                maxHeight: maxH,
+                shadowColor: "#0F172A",
+                shadowOpacity: 0.18,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: -6 },
+                elevation: 16,
+              }}
             >
               {/* Tutamaç */}
-              <View className="items-center pt-3 pb-1">
-                <View className="w-10 h-1.5 rounded-full bg-line" />
+              <View style={{ alignItems: "center", paddingTop: 12, paddingBottom: 4 }}>
+                <View
+                  style={{
+                    width: 40,
+                    height: 5,
+                    borderRadius: 999,
+                    backgroundColor: theme.colors.line,
+                  }}
+                />
               </View>
               <ScrollView bounces={false}>{children}</ScrollView>
             </View>

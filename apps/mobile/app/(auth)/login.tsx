@@ -2,6 +2,7 @@ import { Field, PrimaryButton } from "@/components/ui";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
+import { useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
@@ -21,6 +22,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 export default function Login() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const reduce = useReduceMotion();
   const setSession = useAuth((s) => s.setSession);
   const [email, setEmail] = useState("");
@@ -115,7 +117,7 @@ export default function Login() {
                       autoComplete="email"
                       keyboardType="email-address"
                       placeholder="ornek@whenly.app"
-                      placeholderTextColor="#94A3B8"
+                      placeholderTextColor={theme.colors.placeholder}
                       className="bg-ink border border-line rounded-xl px-4 py-3.5 text-text text-[15px]"
                     />
                   </Field>
@@ -127,7 +129,7 @@ export default function Login() {
                         secureTextEntry={!showPass}
                         autoComplete="password"
                         placeholder="••••••••"
-                        placeholderTextColor="#94A3B8"
+                        placeholderTextColor={theme.colors.placeholder}
                         accessibilityLabel={t("login.password")}
                         className="flex-1 px-4 py-3.5 text-text text-[15px]"
                       />
@@ -138,9 +140,9 @@ export default function Login() {
                         className="w-11 h-11 items-center justify-center"
                       >
                         {showPass ? (
-                          <EyeOff size={18} color="#64748B" />
+                          <EyeOff size={18} color={theme.colors.mutedIcon} />
                         ) : (
-                          <Eye size={18} color="#64748B" />
+                          <Eye size={18} color={theme.colors.mutedIcon} />
                         )}
                       </Pressable>
                     </View>
@@ -160,7 +162,7 @@ export default function Login() {
                       onChangeText={setDevId}
                       autoCapitalize="none"
                       placeholder="admin_demo"
-                      placeholderTextColor="#94A3B8"
+                      placeholderTextColor={theme.colors.placeholder}
                       className="bg-ink border border-line rounded-xl px-4 py-3.5 text-text text-[15px]"
                     />
                   </Field>

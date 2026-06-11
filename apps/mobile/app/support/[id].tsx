@@ -2,6 +2,7 @@
 import { EnterItem } from "@/components/motion";
 import { GradientHero, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { Send } from "lucide-react-native";
@@ -15,6 +16,7 @@ function when(iso: string, lang: string): string {
 
 export default function SupportThread() {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
   const { id } = useLocalSearchParams<{ id: string }>();
   const qc = useQueryClient();
   const [draft, setDraft] = useState("");
@@ -88,7 +90,7 @@ export default function SupportThread() {
           onChangeText={setDraft}
           multiline
           placeholder={t("support.msgPlaceholder")}
-          placeholderTextColor="#94A3B8"
+          placeholderTextColor={theme.colors.placeholder}
           accessibilityLabel={t("support.msgA11y")}
           className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
           style={{ textAlignVertical: "top" }}

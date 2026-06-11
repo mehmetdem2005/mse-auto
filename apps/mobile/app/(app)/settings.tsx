@@ -128,7 +128,7 @@ export default function Settings() {
                   {SUPPORTED_LANGS.find((l) => l.code === i18n.language)?.native ?? i18n.language}
                 </Text>
               </View>
-              <ChevronRight size={16} color="#475569" />
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>
           </Pressable>
           <BottomSheet visible={langOpen} onClose={() => setLangOpen(false)}>
@@ -238,7 +238,7 @@ export default function Settings() {
                 </Text>
                 <Text className="text-muted text-xs mt-0.5">{t("settings.supportSub")}</Text>
               </View>
-              <ChevronRight size={16} color="#475569" />
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>
           </Pressable>
 
@@ -269,7 +269,7 @@ export default function Settings() {
                 <Text className="text-text text-sm font-semibold">{t("settings.privacy")}</Text>
                 <Text className="text-muted text-xs mt-0.5">{t("settings.privacySub")}</Text>
               </View>
-              <ChevronRight size={16} color="#475569" />
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>
           </Pressable>
 

@@ -4,6 +4,7 @@ import { Badge, Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Crown, FileText, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,7 @@ function Row({ k, v, tone }: { k: string; v: string; tone?: "pos" | "neg" }) {
 
 export default function SubscriptionScreen() {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
   const qc = useQueryClient();
   const sub = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const plans = useQuery({ queryKey: qk.plans, queryFn: api.plans });
@@ -232,7 +234,7 @@ export default function SubscriptionScreen() {
               </View>
               <View className="items-center py-6">
                 <View className="w-11 h-11 rounded-full bg-panel2 items-center justify-center mb-3">
-                  <FileText size={18} color="#475569" />
+                  <FileText size={18} color={theme.colors.mutedIcon} />
                 </View>
                 <Text className="text-text text-sm font-medium">{t("sub.invoicesEmpty")}</Text>
                 <Text className="text-muted text-xs text-center mt-1">{t("sub.invoicesHint")}</Text>
