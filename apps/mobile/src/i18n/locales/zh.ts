@@ -260,6 +260,15 @@ export const zh: Catalog = {
     saveFail: "保存失败",
   },
 
+  quiet: {
+    title: "勿扰时段",
+    sub: "在这些时段，通知会静默送达（无声音/闹钟）。",
+    start: "开始",
+    end: "结束",
+    decA11y: "减少{{label}}小时",
+    incA11y: "增加{{label}}小时",
+  },
+
   settings: {
     account: "你的Whenly账户",
     language: "语言",

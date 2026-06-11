@@ -285,6 +285,15 @@ export const hi: Catalog = {
     saveFail: "सहेजा नहीं जा सका",
   },
 
+  quiet: {
+    title: "शांत घंटे",
+    sub: "इन घंटों में सूचनाएँ चुपचाप आती हैं (ध्वनि/अलार्म नहीं)।",
+    start: "शुरू",
+    end: "समाप्त",
+    decA11y: "{{label}} घंटा घटाएँ",
+    incA11y: "{{label}} घंटा बढ़ाएँ",
+  },
+
   settings: {
     account: "आपका Whenly खाता",
     language: "भाषा",

@@ -304,6 +304,15 @@ export const tr = {
     saveFail: "kaydedilemedi",
   },
 
+  quiet: {
+    title: "Sessiz saatler",
+    sub: "Bu saatlerde bildirimler sessiz gelir (ses/alarm yok).",
+    start: "Başlangıç",
+    end: "Bitiş",
+    decA11y: "{{label}} saatini azalt",
+    incA11y: "{{label}} saatini artır",
+  },
+
   settings: {
     account: "Whenly hesabın",
     language: "Dil",

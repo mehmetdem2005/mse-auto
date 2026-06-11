@@ -290,6 +290,15 @@ export const ar: Catalog = {
     saveFail: "تعذّر الحفظ",
   },
 
+  quiet: {
+    title: "ساعات الصمت",
+    sub: "خلال هذه الساعات تصل الإشعارات بصمت (بدون صوت/منبّه).",
+    start: "البداية",
+    end: "النهاية",
+    decA11y: "إنقاص ساعة {{label}}",
+    incA11y: "زيادة ساعة {{label}}",
+  },
+
   settings: {
     account: "حسابك في Whenly",
     language: "اللغة",

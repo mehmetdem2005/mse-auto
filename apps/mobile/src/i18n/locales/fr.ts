@@ -313,6 +313,15 @@ export const fr: Catalog = {
     saveFail: "échec de l'enregistrement",
   },
 
+  quiet: {
+    title: "Heures silencieuses",
+    sub: "Pendant ces heures, les notifications arrivent en silence (sans son/alarme).",
+    start: "Début",
+    end: "Fin",
+    decA11y: "Diminuer l'heure de {{label}}",
+    incA11y: "Augmenter l'heure de {{label}}",
+  },
+
   settings: {
     account: "Votre compte Whenly",
     language: "Langue",

@@ -308,6 +308,15 @@ export const es: Catalog = {
     saveFail: "no se pudo guardar",
   },
 
+  quiet: {
+    title: "Horas de silencio",
+    sub: "En estas horas las notificaciones llegan en silencio (sin sonido/alarma).",
+    start: "Inicio",
+    end: "Fin",
+    decA11y: "Reducir la hora de {{label}}",
+    incA11y: "Aumentar la hora de {{label}}",
+  },
+
   settings: {
     account: "Tu cuenta Whenly",
     language: "Idioma",

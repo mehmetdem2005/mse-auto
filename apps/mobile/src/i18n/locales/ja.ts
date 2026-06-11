@@ -276,6 +276,15 @@ export const ja: Catalog = {
     saveFail: "保存できませんでした",
   },
 
+  quiet: {
+    title: "サイレント時間",
+    sub: "この時間帯は通知が静かに届きます（音/アラームなし）。",
+    start: "開始",
+    end: "終了",
+    decA11y: "{{label}}の時刻を減らす",
+    incA11y: "{{label}}の時刻を増やす",
+  },
+
   settings: {
     account: "あなたのWhenlyアカウント",
     language: "言語",

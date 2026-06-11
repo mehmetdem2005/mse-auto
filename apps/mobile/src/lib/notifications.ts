@@ -4,8 +4,10 @@ import { getAlarmConfig } from "./alarm-config";
 import { ALARM_SOUNDS } from "./alarm-sounds";
 import { getCachedEntitlements } from "./entitlements-cache";
 import { shouldSurface } from "./notification-gate";
+import { isQuietNow } from "./quiet-hours";
 
 const DEFAULT_CHANNEL = "default";
+const MUTED_CHANNEL = "muted"; // sessiz saatler: düşük öncelik, ses yok
 
 function soundFile(soundId: string): string | null {
   return ALARM_SOUNDS.find((s) => s.id === soundId)?.file ?? null;
@@ -13,17 +15,28 @@ function soundFile(soundId: string): string | null {
 
 export function configureNotificationHandler(): void {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowBanner: true,
-      shouldShowList: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-    }),
+    // Sessiz saatlerde ses çalma (ön planda) — banner/list yine görünür.
+    handleNotification: async () => {
+      const quiet = await isQuietNow();
+      return {
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: !quiet,
+        shouldSetBadge: false,
+      };
+    },
   });
   if (Platform.OS === "android") {
     void Notifications.setNotificationChannelAsync(DEFAULT_CHANNEL, {
       name: "Bildirimler",
       importance: Notifications.AndroidImportance.HIGH,
+    });
+    // Sessiz saatler kanalı: düşük öncelik + ses yok (tray'de görünür, uyandırmaz).
+    void Notifications.setNotificationChannelAsync(MUTED_CHANNEL, {
+      name: "Sessiz saatler",
+      importance: Notifications.AndroidImportance.LOW,
+      sound: null,
+      enableVibrate: false,
     });
   }
 }
@@ -65,13 +78,18 @@ export async function handleIncomingData(data: Record<string, string | undefined
   }
   if (channel === "silent") return;
 
+  // Sessiz saatler (ADR-085): pencere içinde ses/alarm yok → sessiz banner'a indir
+  // (tray'de görünür, uyandırmaz). Kullanıcı silent seçmediyse bilgi yine ulaşır.
+  const quiet = await isQuietNow();
+  if (quiet) channel = "notify";
+
   const content = {
     title: data.title ?? "Watcher",
     body: data.body ?? "İzlediğin olay gerçekleşti.",
     data,
   };
 
-  if (channel === "alarm" && cfg) {
+  if (channel === "alarm" && cfg && !quiet) {
     const channelId = await ensureAlarmChannel(cfg.soundId);
     await Notifications.scheduleNotificationAsync({
       content: { ...content, sound: soundFile(cfg.soundId) ?? true },
@@ -80,8 +98,8 @@ export async function handleIncomingData(data: Record<string, string | undefined
     return;
   }
   await Notifications.scheduleNotificationAsync({
-    content,
-    trigger: { channelId: DEFAULT_CHANNEL },
+    content: quiet ? { ...content, sound: false } : content,
+    trigger: { channelId: quiet ? MUTED_CHANNEL : DEFAULT_CHANNEL },
   });
 }
 

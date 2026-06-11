@@ -318,6 +318,15 @@ export const de: Catalog = {
     saveFail: "konnte nicht gespeichert werden",
   },
 
+  quiet: {
+    title: "Ruhezeiten",
+    sub: "In diesen Stunden kommen Benachrichtigungen lautlos (kein Ton/Alarm).",
+    start: "Beginn",
+    end: "Ende",
+    decA11y: "{{label}}-Stunde verringern",
+    incA11y: "{{label}}-Stunde erhöhen",
+  },
+
   settings: {
     account: "Dein Whenly-Konto",
     language: "Sprache",

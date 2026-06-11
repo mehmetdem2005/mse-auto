@@ -1,4 +1,5 @@
 import { toast } from "@/components/feedback";
+import { QuietHoursCard } from "@/components/quiet-hours-card";
 import { BottomSheet } from "@/components/sheet";
 import { Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap } from "@/components/ui";
@@ -282,6 +283,9 @@ export default function Settings() {
             </Btn>
             {status ? <Text className="text-muted text-xs mt-3">{status}</Text> : null}
           </View>
+
+          {/* Sessiz saatler (ADR-085) — pencere içinde bildirimler sessiz */}
+          <QuietHoursCard />
 
           {/* Ek bildirim kanalları (ADR-084): Telegram / E-posta / WhatsApp */}
           <Pressable
