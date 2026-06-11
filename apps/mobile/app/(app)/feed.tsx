@@ -384,8 +384,12 @@ function StatCard({
       >
         <Icon size={16} color={tint} />
       </View>
-      <Text className="text-text text-2xl font-extrabold">{n}</Text>
-      <Text className="text-muted text-[11px] mt-0.5">{label}</Text>
+      <Text className="text-text text-2xl font-extrabold" numberOfLines={1}>
+        {n}
+      </Text>
+      <Text className="text-muted text-[11px] mt-0.5" numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 }

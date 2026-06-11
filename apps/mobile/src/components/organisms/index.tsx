@@ -34,10 +34,10 @@ export function GradientHero({
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
-        // TÜM sayfalarda EŞİT yükseklik (compact kaldırıldı — morluk seviyesi tutarlı).
+        // Kompakt + EŞİT yükseklik (ADR-064): ekranın ~%18'i, yarısı değil.
         // Alt boşluk, içeriğin -mt-7 ile bineceği yuvarlak paneli hesaba katar.
-        paddingTop: Platform.OS === "web" ? 28 : 56,
-        paddingBottom: 60,
+        paddingTop: Platform.OS === "web" ? 16 : 48,
+        paddingBottom: 40,
         paddingHorizontal: 20,
       }}
     >
@@ -73,9 +73,16 @@ export function GradientHero({
             )}
           </View>
         </View>
-        <Text className="text-white text-[26px] font-extrabold tracking-tight mt-4">{title}</Text>
+        <Text
+          className="text-white text-[22px] font-extrabold tracking-tight mt-3"
+          numberOfLines={1}
+        >
+          {title}
+        </Text>
         {subtitle ? (
-          <Text className="text-white/80 text-[13px] mt-1 leading-5">{subtitle}</Text>
+          <Text className="text-white/80 text-[13px] mt-0.5 leading-5" numberOfLines={1}>
+            {subtitle}
+          </Text>
         ) : null}
       </Animated.View>
     </LinearGradient>

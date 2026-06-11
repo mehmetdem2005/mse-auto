@@ -125,3 +125,17 @@ Her kodlama işinin sonunda şu formatta bir blok ekle (yalnız fiilen uygulanan
 > **ISO (zorunlu rapor):** 42010 (view yapısı korundu) · **25010**: <karakteristik> + ölçülebilir NFR + doğrulama · 25012: <veri boyutu | uygulanmaz> · **27002**: <kontrol | uygulanmaz> · 29148: <izlenebilirlik | uygulanmaz> · 9241/WCAG: <UI | uygulanmaz>.
 
 Uygulanmayan ama ilgili bir standardı bilinçli atladıysan tek satırla nedenini belirt. **TOGAF ve ISO asla atlanmaz** — mimari/kalite etkisi yoksa bile P1–P9 taraması + 25010 karakteristiği + "Basitleştirme" sınıfı yazılır.
+
+## Metin Taşma Standardı (ADR-064) — ZORUNLU
+Her metin öğesi için taşma davranışı AÇIKÇA tanımlanmalı; "doğal akışa" bırakılmaz.
+
+| Öğe türü | Kural |
+|---|---|
+| **Başlık (kart/hero)** | `numberOfLines={2}` (hero başlığı `={1}`); kapsayıcı `flex-1` + `min-w-0`. |
+| **Meta/etiket/değer (tek satır)** | `numberOfLines={1}`; esneyen tarafta `flex-1` + `ellipsizeMode="tail"`. |
+| **Kısa sabit etiket** (frekans, sayaç, "research") | `numberOfLines={1}` + `shrink-0` — asla kırılmaz, asla kırpılmaz. |
+| **Domain/URL/e-posta** | `flex-1 min-w-0` + `numberOfLines={1}` + `ellipsizeMode="tail"` (or "middle" URL'de). |
+| **Rozet (Badge)** | İçerik kırpılmaz; satıra sığmazsa kapsayıcı `flex-wrap` ile alt satıra sarar. |
+| **Sayı (istatistik)** | `numberOfLines={1}`. |
+
+İlkeler: (1) yan-yana esnek+sabit öğelerde sabit olana `shrink-0`, esneyene `flex-1 min-w-0`. (2) `flex` satırında uzun metin için ebeveyne `min-w-0` şart (yoksa RN/web kırpmaz, taşırır). (3) çok dilli (11 dil) — TR/DE/RU daha uzun; her etiket en uzun dile göre taşma-güvenli olmalı.

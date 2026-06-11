@@ -676,3 +676,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **QA yakalaması:** Ayarlar'da dil-seçici bloğunun MÜKERRER olduğu görüldü (i18n turundaki otomatik ekleme iki çapaya eklemiş) — ikinci kopya söküldü.
 - **Bilinen sınır (dürüst):** ekran-içi sabit hex ikon renkleri (ör. bazı #475569 chevron'lar) v1'de açık-tema değerinde kalabilir — okunurluk kabul edilebilir, tam süpürme ayrı küçük tur.
 - **ISO:** 9241 (kullanıcı tercihi/ortam uyumu) · 25010 *Flexibility* · WCAG 1.4.3/1.4.6 koyu palet kontrastları.
+
+## ADR-064 — Hero daraltma + metin taşma standardı
+- **Durum:** Kabul · ürün sahibi geri bildirimi (Android görüntüsü): "mor kısım ekranın yarısı, daralt; yazılarda taşma olmasın, standart belirle".
+- **Kök neden:** (1) GradientHero paddingTop 56/paddingBottom 60 + 26px başlık + mt-4 → hero ekranın ~%35'i. (2) Watcher kartı meta satırı tek flex-row'da 6 öğe, numberOfLines yok → "every 1h" 2 satıra, "once a day" 3 satıra kırılıyor; domain+research sağdan taşıyor.
+- **Karar:** (1) **Hero kompakt:** paddingTop 48 (web 16) / paddingBottom 40, başlık 26→22px + numberOfLines={1}, mt-4→mt-3, altyazı mt-1→mt-0.5 + numberOfLines={1} → ~%18 yükseklik, tüm sayfalarda eşit. (2) **Watcher meta iki satıra bölündü:** rozetler `flex-wrap` üst satır (kırpılmaz, sarar); frekans(`shrink-0`)·domain(`flex-1 min-w-0` + ellipsizeMode tail)·research(`shrink-0`) alt satır — taşma biter. (3) StatCard sayı+etiket numberOfLines={1}. (4) Watcher kart ikonları (kebab/globe/chevron) temaya bağlandı (koyu-mod ikon süpürmesinin bir kısmı).
+- **STANDART (kalıcı):** `.claude/skills/design-standards/SKILL.md` → "Metin Taşma Standardı" tablosu eklendi — başlık/meta/etiket/domain/rozet/sayı için zorunlu numberOfLines + shrink/flex kuralları; çok-dilli (11 dil, TR/DE/RU uzun) taşma-güvenliği şartı.
+- **ISO:** 9241-112 (tutarlılık + hata önleme) · WCAG 1.4.4/1.4.10 (reflow — metin kırpılır ama yatay taşma/kayıp yok) · 25010 *Usability*.

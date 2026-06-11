@@ -13,6 +13,7 @@ import {
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
 import { qk } from "@/lib/query";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -177,6 +178,8 @@ function WatchRow({
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const mutedHex = theme.colors.mutedIcon;
   const labelFreq = useLabelFreq();
   const [menu, setMenu] = useState(false);
   const active = item.status === "active";
@@ -197,7 +200,7 @@ function WatchRow({
           accessibilityLabel={t("watchers.menuA11y")}
           className="w-11 h-11 -mr-2 -mt-1 items-center justify-center rounded-full active:bg-panel2"
         >
-          <MoreVertical size={18} color="#475569" />
+          <MoreVertical size={18} color={mutedHex} />
         </Pressable>
       </View>
       <BottomSheet visible={menu} onClose={() => setMenu(false)}>
@@ -231,7 +234,8 @@ function WatchRow({
           />
         </View>
       </BottomSheet>
-      <View className="flex-row items-center gap-2 mt-3">
+      {/* Rozetler — taşarsa alt satıra sarar (taşma standardı: rozet asla kırpılmaz) */}
+      <View className="flex-row flex-wrap items-center gap-2 mt-3">
         <Badge tone={active ? "pos" : "muted"}>
           {active ? t("common.active") : t("common.paused")}
         </Badge>
@@ -239,18 +243,25 @@ function WatchRow({
         <Badge tone="accent">
           {item.archetype === "shared" ? t("watchers.shared") : t("watchers.personal")}
         </Badge>
-        <Text className="text-muted text-xs">{labelFreq(item.frequencyMinutes)}</Text>
+      </View>
+      {/* Meta — tek satır; frekans sabit, domain esner+kırpılır, research sağda sabit */}
+      <View className="flex-row items-center gap-2 mt-2">
+        <Text className="text-muted text-xs shrink-0" numberOfLines={1}>
+          {labelFreq(item.frequencyMinutes)}
+        </Text>
         {item.authorityDomain ? (
-          <View className="flex-row items-center gap-1">
-            <Globe size={11} color="#475569" />
-            <Text className="text-muted text-xs" numberOfLines={1}>
+          <View className="flex-row items-center gap-1 flex-1 min-w-0">
+            <Globe size={11} color={mutedHex} />
+            <Text className="text-muted text-xs flex-1" numberOfLines={1} ellipsizeMode="tail">
               {item.authorityDomain}
             </Text>
           </View>
-        ) : null}
-        <View className="flex-row items-center ml-auto">
+        ) : (
+          <View className="flex-1" />
+        )}
+        <View className="flex-row items-center shrink-0">
           <Text className="text-muted text-xs">{t("watchers.research")}</Text>
-          <ChevronRight size={14} color="#475569" />
+          <ChevronRight size={14} color={mutedHex} />
         </View>
       </View>
     </Card>
