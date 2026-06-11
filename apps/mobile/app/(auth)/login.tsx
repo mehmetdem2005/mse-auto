@@ -43,8 +43,10 @@ export default function Login() {
     setBusy(false);
   }
 
+  // Web'de reanimated layout `entering` GPU artefaktı üretiyor → native'e kıstır.
+  const skipEntering = reduce || Platform.OS === "web";
   const enter = (delay: number) =>
-    reduce ? undefined : FadeInDown.delay(delay).springify().damping(18).stiffness(180);
+    skipEntering ? undefined : FadeInDown.delay(delay).springify().damping(18).stiffness(180);
 
   return (
     <View className="flex-1 bg-ink">
@@ -55,7 +57,7 @@ export default function Login() {
         end={{ x: 1, y: 1 }}
         style={{ paddingTop: 72, paddingBottom: 96, paddingHorizontal: 24 }}
       >
-        <Animated.View entering={reduce ? undefined : FadeIn.duration(500)}>
+        <Animated.View entering={skipEntering ? undefined : FadeIn.duration(500)}>
           <View className="flex-row items-center gap-3">
             <View
               className="w-12 h-12 rounded-2xl bg-white/20 items-center justify-center"
@@ -102,7 +104,7 @@ export default function Login() {
 
               {err ? (
                 <Animated.View
-                  entering={reduce ? undefined : FadeIn}
+                  entering={skipEntering ? undefined : FadeIn}
                   className="bg-neg/10 border border-neg/30 rounded-xl px-3 py-2.5 mb-4"
                 >
                   <Text className="text-neg text-xs">{err}</Text>

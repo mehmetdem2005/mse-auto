@@ -2,7 +2,7 @@
 // Süre token'ları: mikro 120-150 · standart 200-250 · büyük 300-350 ms.
 import { useReduceMotion } from "@/lib/reduce-motion";
 import type { ReactNode } from "react";
-import { Pressable, type PressableProps } from "react-native";
+import { Platform, Pressable, type PressableProps } from "react-native";
 import Animated, {
   FadeIn,
   FadeInUp,
@@ -13,7 +13,13 @@ import Animated, {
 
 const AnimatedPressableBase = Animated.createAnimatedComponent(Pressable);
 
-/** Liste kartı girişi: stagger'lı FadeInUp (ilk ~12 öğe), reduce'ta animasyonsuz. */
+// Reanimated'in layout `entering` animasyonları React Native Web'de yırtık kare /
+// GPU kompozit artefaktı üretiyor (mobil Chrome). Bu yüzden `entering`'i NATIVE'e
+// kıstırıyoruz; web'de düz render (reduce-motion ile aynı kapı). PressScale gibi
+// transform-tabanlı mikro-etkileşimler her iki platformda da güvenli → kalır.
+const SKIP_ENTERING = Platform.OS === "web";
+
+/** Liste kartı girişi: stagger'lı FadeInUp (ilk ~12 öğe), reduce/web'de animasyonsuz. */
 export function EnterItem({
   index = 0,
   children,
@@ -24,7 +30,7 @@ export function EnterItem({
     <Animated.View
       className={className}
       entering={
-        reduce
+        reduce || SKIP_ENTERING
           ? undefined
           : FadeInUp.delay(Math.min(index, 12) * 40)
               .springify()
@@ -37,14 +43,17 @@ export function EnterItem({
   );
 }
 
-/** Açılır (akordeon) içerik girişi — standart süre. */
+/** Açılır (akordeon) içerik girişi — standart süre (reduce/web'de animasyonsuz). */
 export function ExpandIn({
   children,
   className,
 }: { children: ReactNode; className?: string }): ReactNode {
   const reduce = useReduceMotion();
   return (
-    <Animated.View className={className} entering={reduce ? undefined : FadeIn.duration(200)}>
+    <Animated.View
+      className={className}
+      entering={reduce || SKIP_ENTERING ? undefined : FadeIn.duration(200)}
+    >
       {children}
     </Animated.View>
   );
