@@ -643,3 +643,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Karar:** (1) **Admin sekmesi** (işletmeci konsolu) son kalan eski-beyaz-başlıklı yüzeydi — GradientHero("Admin · Whenly işletme konsolu") + HeroOverlap sheet'e geçti; iç sekme çipleri sheet içinde. Native header kapatıldı. Artık UYGULAMANIN TÜM YÜZEYLERİ tek imza kabukta. (2) **StatusBar** dark→light: durum çubuğu artık gradyan hero üstünde beyaz ikonlarla (Android'de okunaklı).
 - **Not:** Admin içerik metinleri bilinçli TR (ADR-053 kapsam kararı); kabuk tutarlılığı içerik dilinden bağımsız.
 - **ISO:** 9241-112 tutarlılık tamamlandı (kabuk %100 kapsam) · 25010.
+
+## ADR-059 — AAA Faz 5: çekirdek akış mikro-cilası (FAB gradyan · mor refresh · CTA · paylaşılan Vote)
+- **Durum:** Kabul · Faz 4/ADR-058 devamı.
+- **Karar:** (1) **FAB gradyan** — düz indigo→imza gradyan (uygulama genelinde tek birincil-eylem dili). (2) **Pull-to-refresh mor tint** (RefreshControl tintColor/colors) — Akış + Watcher'lar. (3) **Sihirbaz ileri/oluştur CTA'sı → PrimaryButton** (gradyan+ok; eski düz Btn kalktı). (4) **Vote paylaşılan moleküle taşındı** — feed ve detaydaki iki KOPYA tek bileşene indi (DRY), PressScale bası animasyonu + 48px AAA hedef kazandı.
+- **Ertelenen (dürüst):** Native Inter (Android EAS) — global font değişimi paylaşılan Text bileşeni olmadan kalın/ince hiyerarşiyi düzleştirme riski taşıyor; koyu tema — tam token geçişi ister, yarım koyu tema kullanıcının onayladığı ışık temayı bozar. İkisi de ayrı tam faz olarak planda.
+- **ISO:** 25010 *Attractiveness/Maintainability* (DRY) · 9241 mikro-geri bildirim.

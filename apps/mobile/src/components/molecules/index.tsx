@@ -1,8 +1,9 @@
+import { PressScale } from "@/components/motion";
 import { type EventFacts, parseEventFacts } from "@/domain/personal";
 // Molecules — atom + primitive bileşimleri (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { LinearGradient } from "expo-linear-gradient";
-import { type LucideIcon, MapPin, Sparkles } from "lucide-react-native";
+import { type LucideIcon, MapPin, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { type ReactNode, useEffect } from "react";
 import { Linking, Pressable, Text, View } from "react-native";
 import Animated, {
@@ -180,5 +181,27 @@ export function SkeletonCard() {
       <Shimmer className="h-3 rounded-full mt-4 w-11/12" />
       <Shimmer className="h-3 rounded-full mt-2 w-4/5" />
     </View>
+  );
+}
+
+/** Geri bildirim oyu — bası animasyonlu (PressScale), ≥48px AAA hedef. */
+export function Vote({
+  kind,
+  label,
+  onPress,
+}: { kind: "up" | "down"; label: string; onPress: () => void }) {
+  return (
+    <PressScale
+      onPress={onPress}
+      className="w-12 h-12 rounded-full bg-panel2 items-center justify-center"
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      {kind === "up" ? (
+        <ThumbsUp size={18} color="#16A34A" />
+      ) : (
+        <ThumbsDown size={18} color="#475569" />
+      )}
+    </PressScale>
   );
 }

@@ -8,6 +8,7 @@ import {
   GradientHero,
   HeroOverlap,
   SkeletonCard,
+  Vote,
 } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
@@ -25,7 +26,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, FlatList, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 const ACCENT = "#6366F1";
 
@@ -172,8 +173,14 @@ export default function Feed() {
           data={groups}
           keyExtractor={(g) => g.watchId}
           contentContainerClassName="px-5 pt-5 pb-10"
-          onRefresh={() => void refetch()}
-          refreshing={isRefetching}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={() => void refetch()}
+              tintColor="#6366F1"
+              colors={["#6366F1", "#7C3AED"]}
+            />
+          }
           ItemSeparatorComponent={() => <View className="h-3" />}
           ListHeaderComponent={
             <View>
@@ -345,27 +352,6 @@ function FeedCard({
         </View>
       </View>
     </Card>
-  );
-}
-
-function Vote({
-  kind,
-  label,
-  onPress,
-}: { kind: "up" | "down"; label: string; onPress: () => void }) {
-  return (
-    <Pressable
-      onPress={onPress}
-      className="w-11 h-11 rounded-full bg-panel2 items-center justify-center active:opacity-60"
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      {kind === "up" ? (
-        <ThumbsUp size={18} color="#16A34A" />
-      ) : (
-        <ThumbsDown size={18} color="#475569" />
-      )}
-    </Pressable>
   );
 }
 

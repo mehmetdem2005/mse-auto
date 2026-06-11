@@ -81,7 +81,7 @@ export function Fab({
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
-      className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl bg-accent items-center justify-center"
+      className="absolute right-5 bottom-5 w-14 h-14 rounded-2xl overflow-hidden items-center justify-center"
       // M3 bas-küçül geri bildirimi (state layer) + elevation; reduce-motion'da scale kapalı.
       style={({ pressed }) => ({
         shadowColor: "#0F172A",
@@ -93,7 +93,22 @@ export function Fab({
         opacity: pressed ? 0.92 : 1,
       })}
     >
-      <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
+      <LinearGradient
+        colors={["#6366F1", "#7C3AED"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
+      </LinearGradient>
     </Pressable>
   );
 }

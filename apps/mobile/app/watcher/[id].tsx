@@ -1,6 +1,6 @@
 import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
-import { GradientHero, HeroOverlap } from "@/components/ui";
+import { GradientHero, HeroOverlap, Vote } from "@/components/ui";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
@@ -173,27 +173,6 @@ function EventCard({
         ) : null}
       </Card>
     </View>
-  );
-}
-
-function Vote({
-  kind,
-  label,
-  onPress,
-}: { kind: "up" | "down"; label: string; onPress: () => void }): ReactNode {
-  return (
-    <Pressable
-      onPress={onPress}
-      className="w-11 h-11 rounded-full bg-panel2 items-center justify-center active:opacity-60"
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      {kind === "up" ? (
-        <ThumbsUp size={18} color="#16A34A" />
-      ) : (
-        <ThumbsDown size={18} color="#475569" />
-      )}
-    </Pressable>
   );
 }
 

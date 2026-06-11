@@ -25,7 +25,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, FlatList, Modal, Pressable, Text, View } from "react-native";
+import { Alert, FlatList, Modal, Pressable, RefreshControl, Text, View } from "react-native";
 
 function useLabelFreq(): (m: number) => string {
   const { t } = useTranslation();

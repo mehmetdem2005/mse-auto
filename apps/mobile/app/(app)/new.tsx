@@ -1,6 +1,6 @@
 import { EnterItem } from "@/components/motion";
 import { Btn, Card } from "@/components/ui";
-import { GradientHero } from "@/components/ui";
+import { GradientHero, PrimaryButton } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
@@ -768,15 +768,11 @@ export default function NewWatcher() {
           </View>
         ) : null}
         <View className="flex-[2]">
-          <Btn onPress={next} disabled={mutation.isPending}>
-            {mutation.isPending ? (
-              <ActivityIndicator color="#FFFFFF" />
-            ) : (
-              <Text className="text-white font-semibold uppercase tracking-wider text-xs">
-                {isLast ? t("common.create") : t("common.continue")}
-              </Text>
-            )}
-          </Btn>
+          <PrimaryButton
+            label={isLast ? t("common.create") : t("common.continue")}
+            busy={mutation.isPending}
+            onPress={next}
+          />
         </View>
       </View>
     </View>
