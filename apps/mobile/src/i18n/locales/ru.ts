@@ -182,7 +182,11 @@ export const ru: Catalog = {
     alertAlarm: "Сигнал",
     alarmPro: "Сигнал и пользовательские звуки — это функции Pro.",
     allSoundsPro: "Все звуки — это функция Pro.",
-    soundNote: "Просмотр/воспроизведение в сборке EAS. 100 звуков в assets/sounds.",
+    soundPlay: "Воспроизвести {{name}}",
+    soundStop: "Стоп",
+    soundCustomPick: "Выбрать звук с устройства",
+    soundNote:
+      "Нажмите ▶, чтобы прослушать. В Pro можно выбрать свой звук с устройства. Звук уведомления входит в сборку Android.",
     rIntent: "что отслеживать",
     rSource: "источник",
     rFreq: "частота",

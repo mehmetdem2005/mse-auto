@@ -184,7 +184,11 @@ export const de: Catalog = {
     alertAlarm: "Alarm",
     alarmPro: "Alarm und benutzerdefinierte Klänge sind Pro-Features.",
     allSoundsPro: "Alle Klänge sind ein Pro-Feature.",
-    soundNote: "Vorschau/Wiedergabe im EAS-Build. 100 Klänge in assets/sounds.",
+    soundPlay: "{{name}} abspielen",
+    soundStop: "Stopp",
+    soundCustomPick: "Sound vom Gerät wählen",
+    soundNote:
+      "Zum Anhören ▶ tippen. In Pro kannst du einen eigenen Sound vom Gerät wählen. Der Benachrichtigungston kommt mit dem Android-Build.",
     rIntent: "was beobachten",
     rSource: "Quelle",
     rFreq: "Häufigkeit",

@@ -180,7 +180,11 @@ export const en: Catalog = {
     alertAlarm: "Alarm",
     alarmPro: "Alarm and custom sounds are Pro features.",
     allSoundsPro: "All sounds are a Pro feature.",
-    soundNote: "Preview/playback in the EAS build. 100 sounds in assets/sounds.",
+    soundPlay: "Play {{name}}",
+    soundStop: "Stop",
+    soundCustomPick: "Pick a sound from device",
+    soundNote:
+      "Tap ▶ to listen. On Pro you can pick your own sound from the device. The notification sound ships with the Android build.",
     rIntent: "what to watch",
     rSource: "source",
     rFreq: "frequency",

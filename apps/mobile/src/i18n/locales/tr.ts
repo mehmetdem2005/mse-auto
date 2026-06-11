@@ -179,7 +179,11 @@ export const tr = {
     alertAlarm: "Alarm",
     alarmPro: "Alarm ve özel sesler Pro planında.",
     allSoundsPro: "Tüm sesler Pro planında.",
-    soundNote: "Önizleme/çalma EAS derlemesinde. 100 ses assets/sounds içinde.",
+    soundPlay: "{{name}} sesini çal",
+    soundStop: "Durdur",
+    soundCustomPick: "Cihazdan ses seç",
+    soundNote:
+      "Sesi dinlemek için ▶ dokun. Pro'da kendi sesini cihazdan seçebilirsin. Bildirim sesi Android'de derlemeyle gelir.",
     rIntent: "ne izlensin",
     rSource: "kaynak",
     rFreq: "sıklık",

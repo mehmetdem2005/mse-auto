@@ -6,10 +6,15 @@ export type AlarmChannel = "silent" | "notify" | "alarm";
 export interface AlarmConfig {
   channel: AlarmChannel;
   soundId: string;
+  /** Cihazdan seçilen özel ses (varsa soundId yerine bu çalınır). Yereldedir, sunucuya gitmez. */
+  customSoundUri?: string | null;
+  customSoundName?: string | null;
 }
 export const DEFAULT_ALARM_CONFIG: AlarmConfig = {
   channel: "notify",
   soundId: DEFAULT_ALARM_SOUND_ID,
+  customSoundUri: null,
+  customSoundName: null,
 };
 
 const key = (watchId: string): string => `watcher:alarm:${watchId}`;
@@ -25,7 +30,12 @@ export async function getAlarmConfig(watchId: string): Promise<AlarmConfig> {
     const p = JSON.parse(raw) as Partial<AlarmConfig>;
     const channel: AlarmChannel =
       p.channel === "silent" || p.channel === "alarm" ? p.channel : "notify";
-    return { channel, soundId: typeof p.soundId === "string" ? p.soundId : DEFAULT_ALARM_SOUND_ID };
+    return {
+      channel,
+      soundId: typeof p.soundId === "string" ? p.soundId : DEFAULT_ALARM_SOUND_ID,
+      customSoundUri: typeof p.customSoundUri === "string" ? p.customSoundUri : null,
+      customSoundName: typeof p.customSoundName === "string" ? p.customSoundName : null,
+    };
   } catch {
     return DEFAULT_ALARM_CONFIG;
   }

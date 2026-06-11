@@ -180,7 +180,11 @@ export const es: Catalog = {
     alertAlarm: "Alarma",
     alarmPro: "Alarma y sonidos personalizados son Pro.",
     allSoundsPro: "Todos los sonidos son función Pro.",
-    soundNote: "Vista previa en la build EAS. 100 sonidos en assets/sounds.",
+    soundPlay: "Reproducir {{name}}",
+    soundStop: "Detener",
+    soundCustomPick: "Elegir un sonido del dispositivo",
+    soundNote:
+      "Toca ▶ para escuchar. En Pro puedes elegir tu propio sonido del dispositivo. El sonido de notificación viene con la compilación de Android.",
     rIntent: "qué vigilar",
     rSource: "fuente",
     rFreq: "frecuencia",

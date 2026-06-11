@@ -179,7 +179,11 @@ export const ar: Catalog = {
     alertAlarm: "إشعار",
     alarmPro: "الإشعارات والصوت المخصص هما خاصيتا Pro.",
     allSoundsPro: "جميع الأصوات هي خاصية Pro.",
-    soundNote: "النظرة المسبقة/الاستماع في البناء EAS. 100 صوت في assets/sounds.",
+    soundPlay: "تشغيل {{name}}",
+    soundStop: "إيقاف",
+    soundCustomPick: "اختر صوتًا من الجهاز",
+    soundNote:
+      "اضغط ▶ للاستماع. في Pro يمكنك اختيار صوتك الخاص من الجهاز. يأتي صوت الإشعار مع نسخة أندرويد.",
     rIntent: "ماذا نشاهد؟",
     rSource: "المصدر",
     rFreq: "التكرار",

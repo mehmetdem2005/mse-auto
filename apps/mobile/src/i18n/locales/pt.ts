@@ -181,7 +181,11 @@ export const pt: Catalog = {
     alertAlarm: "Alarme",
     alarmPro: "Alarme e sons personalizados são características Pro.",
     allSoundsPro: "Todos os sons são uma característica Pro.",
-    soundNote: "Prévia/Reprodução no build EAS. 100 sons em assets/sounds.",
+    soundPlay: "Reproduzir {{name}}",
+    soundStop: "Parar",
+    soundCustomPick: "Escolher um som do dispositivo",
+    soundNote:
+      "Toque em ▶ para ouvir. No Pro você pode escolher seu próprio som do dispositivo. O som de notificação vem na build do Android.",
     rIntent: "o que assistir",
     rSource: "fonte",
     rFreq: "frequência",

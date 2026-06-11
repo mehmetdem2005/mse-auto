@@ -2,7 +2,7 @@ import { EnterItem } from "@/components/motion";
 import { Btn, Card } from "@/components/ui";
 import { GradientHero, PrimaryButton } from "@/components/ui";
 import type { PersonalCriterion } from "@/domain/personal";
-import { type AlarmChannel, DEFAULT_ALARM_CONFIG, setAlarmConfig } from "@/lib/alarm-config";
+import { type AlarmChannel, DEFAULT_ALARM_CONFIG } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
 import { type AssistMessage, api } from "@/lib/api";
 import { setCriterion } from "@/lib/criteria-store";
@@ -10,13 +10,18 @@ import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { persistSound, useSoundPreview } from "@/lib/sound-preview";
 import { SUGGESTION_ICONS, SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
+  FileMusic,
   Globe,
   Landmark,
   Newspaper,
+  Pause,
+  Play,
   Send,
   ShoppingBag,
   Sparkles,
@@ -133,6 +138,22 @@ export default function NewWatcher() {
   const [alarmChannel, setAlarmChannel] = useState<AlarmChannel>(DEFAULT_ALARM_CONFIG.channel);
   const [soundId, setSoundId] = useState(DEFAULT_ALARM_CONFIG.soundId);
   const [soundCat, setSoundCat] = useState(ALARM_CATEGORIES[0] ?? "Klasik");
+  // Cihazdan seçilen özel ses (ADR-083) — yereldedir, sunucuya gitmez.
+  const [customSound, setCustomSound] = useState<{ uri: string; name: string } | null>(null);
+  const preview = useSoundPreview();
+
+  /** Cihaz dosya seçiciden bir ses dosyası al → özel ses + anında önizle. */
+  async function pickCustomSound() {
+    const res = await DocumentPicker.getDocumentAsync({
+      type: "audio/*",
+      copyToCacheDirectory: true,
+    });
+    const file = res.assets?.[0];
+    if (!file) return;
+    haptic.light();
+    setCustomSound({ uri: file.uri, name: file.name });
+    preview.playUri(file.uri);
+  }
   const { data: sub } = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const canAlarm = sub?.entitlements.alarmChannel ?? false;
   const canPersonal = sub?.entitlements.personalFilters ?? false;
@@ -145,6 +166,14 @@ export default function NewWatcher() {
       personalFilters: sub.entitlements.personalFilters,
     });
   }, [sub]);
+  // Adım değişince/ekrandan çıkınca önizlemeyi durdur (sızıntı/çakışma olmasın).
+  // preview.stop stabil useCallback → yalnız [step]/mount'a bağlamak kasıtlı.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stop stabil; adım değişiminde çalışmalı
+  useEffect(() => {
+    if (STEPS[step]?.key !== "alert") preview.stop();
+  }, [step]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: yalnız unmount temizliği
+  useEffect(() => () => preview.stop(), []);
 
   const minFreq = sub?.limits.minFrequencyMinutes ?? 60;
   const assist = useMutation({
@@ -247,7 +276,8 @@ export default function NewWatcher() {
     onSuccess: async (watch, criterion) => {
       haptic.success();
       if (criterion) await setCriterion(watch.id, criterion);
-      await setAlarmConfig(watch.id, { channel: alarmChannel, soundId });
+      preview.stop();
+      await persistSound(watch.id, alarmChannel, soundId, customSound);
       await qc.invalidateQueries({ queryKey: qk.watchers });
       await qc.invalidateQueries({ queryKey: qk.subscription });
       router.replace("/");
@@ -704,28 +734,100 @@ export default function NewWatcher() {
                 <View className="border border-line rounded-xl overflow-hidden">
                   {ALARM_SOUNDS.filter((s) => s.category === soundCat).map((s) => {
                     const locked = !canAllSounds && s.id !== DEFAULT_ALARM_CONFIG.soundId;
-                    const sel = soundId === s.id;
-                    let cls = "text-text text-xs";
-                    if (locked) cls = "text-muted text-xs opacity-50";
-                    else if (sel) cls = "text-accent text-xs";
+                    const sel = soundId === s.id && !customSound;
+                    const playing = preview.playingId === s.id;
+                    let cls = "text-text text-xs flex-1";
+                    if (locked) cls = "text-muted text-xs opacity-50 flex-1";
+                    else if (sel) cls = "text-accent text-xs flex-1 font-semibold";
                     return (
-                      <Pressable
+                      <View
                         key={s.id}
-                        disabled={locked}
-                        onPress={locked ? undefined : () => setSoundId(s.id)}
-                        className={`px-3 py-2 border-b border-line ${sel ? "bg-accent/10" : ""}`}
-                        accessibilityRole="button"
+                        className={`flex-row items-center px-3 border-b border-line ${sel ? "bg-accent/10" : ""}`}
                       >
-                        <Text className={cls}>
-                          {sel ? "• " : ""}
-                          {locked ? `${s.name} (Pro)` : s.name}
-                        </Text>
-                      </Pressable>
+                        {/* Seç (satıra dokun) */}
+                        <Pressable
+                          disabled={locked}
+                          onPress={
+                            locked
+                              ? undefined
+                              : () => {
+                                  setSoundId(s.id);
+                                  setCustomSound(null);
+                                  preview.play(s.id);
+                                }
+                          }
+                          accessibilityRole="button"
+                          accessibilityState={{ selected: sel, disabled: locked }}
+                          accessibilityLabel={locked ? `${s.name} (Pro)` : s.name}
+                          className="flex-1 flex-row items-center py-2.5 min-h-[44px]"
+                        >
+                          <Text className={cls} numberOfLines={1}>
+                            {sel ? "• " : ""}
+                            {locked ? `${s.name} (Pro)` : s.name}
+                          </Text>
+                        </Pressable>
+                        {/* Önizle/Durdur (dinle) */}
+                        {!locked ? (
+                          <Pressable
+                            onPress={() => (playing ? preview.stop() : preview.play(s.id))}
+                            accessibilityRole="button"
+                            accessibilityLabel={t(
+                              playing ? "wizard.soundStop" : "wizard.soundPlay",
+                              {
+                                name: s.name,
+                              },
+                            )}
+                            className="w-11 h-11 items-center justify-center"
+                          >
+                            {playing ? (
+                              <Pause size={16} color="#6366F1" />
+                            ) : (
+                              <Play size={16} color="#94A3B8" />
+                            )}
+                          </Pressable>
+                        ) : null}
+                      </View>
                     );
                   })}
                 </View>
                 {!canAllSounds ? (
                   <Text className="text-muted text-[10px] mt-1">{t("wizard.allSoundsPro")}</Text>
+                ) : null}
+
+                {/* Cihazdan kendi sesini seç (ADR-083) — Pro'da açık */}
+                {canAllSounds ? (
+                  <Pressable
+                    onPress={() => void pickCustomSound()}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("wizard.soundCustomPick")}
+                    className="flex-row items-center gap-2 mt-2.5 border border-accent/40 bg-accent/5 rounded-xl px-3.5 py-3 min-h-[44px] active:bg-accent/15"
+                  >
+                    <FileMusic size={16} color="#6366F1" />
+                    <Text className="text-accent text-xs font-semibold flex-1" numberOfLines={1}>
+                      {customSound ? customSound.name : t("wizard.soundCustomPick")}
+                    </Text>
+                    {customSound ? (
+                      <Pressable
+                        onPress={() =>
+                          preview.playingId === "custom"
+                            ? preview.stop()
+                            : preview.playUri(customSound.uri)
+                        }
+                        accessibilityRole="button"
+                        accessibilityLabel={t(
+                          preview.playingId === "custom" ? "wizard.soundStop" : "wizard.soundPlay",
+                          { name: customSound.name },
+                        )}
+                        className="w-9 h-9 items-center justify-center"
+                      >
+                        {preview.playingId === "custom" ? (
+                          <Pause size={15} color="#6366F1" />
+                        ) : (
+                          <Play size={15} color="#6366F1" />
+                        )}
+                      </Pressable>
+                    ) : null}
+                  </Pressable>
                 ) : null}
                 <Text className="text-muted text-[10px] mt-2">{t("wizard.soundNote")}</Text>
               </View>

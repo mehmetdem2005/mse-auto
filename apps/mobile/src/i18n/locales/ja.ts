@@ -180,7 +180,11 @@ export const ja: Catalog = {
     alertAlarm: "アラーム",
     alarmPro: "アラームとカスタムサウンドはプロの機能です。",
     allSoundsPro: "すべてのサウンドはプロの機能です。",
-    soundNote: "EASビルドでプレビュー/再生。100のサウンドがassets/soundsにあります。",
+    soundPlay: "{{name}} を再生",
+    soundStop: "停止",
+    soundCustomPick: "端末から音を選ぶ",
+    soundNote:
+      "▶ をタップで試聴。Proでは端末から独自の音を選べます。通知音はAndroidビルドに含まれます。",
     rIntent: "{{intent}}を見つける",
     rSource: "{{source}}",
     rFreq: "{{freq}}",
