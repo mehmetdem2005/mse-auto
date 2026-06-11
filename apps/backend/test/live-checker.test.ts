@@ -103,7 +103,10 @@ describe("LiveChecker orkestrasyonu (ADR-046/047/048)", () => {
 });
 
 describe("eskalasyon turu (ADR-073/A2)", () => {
-  function reasonerWith(confidences: number[]): { reasoner: EventReasoner; calls: number[] } {
+  function reasonerWith(
+    confidences: number[],
+    tokensPerCall = 100,
+  ): { reasoner: EventReasoner; calls: number[] } {
     const calls: number[] = [];
     let i = 0;
     return {
@@ -113,7 +116,13 @@ describe("eskalasyon turu (ADR-073/A2)", () => {
           calls.push(input.hits.length);
           const c = confidences[Math.min(i, confidences.length - 1)] ?? 0.9;
           i += 1;
-          return { detected: false, description: null, reasoning: "r", confidence: c };
+          return {
+            detected: false,
+            description: null,
+            reasoning: "r",
+            confidence: c,
+            tokensUsed: tokensPerCall,
+          };
         },
       },
     };
@@ -149,5 +158,62 @@ describe("eskalasyon turu (ADR-073/A2)", () => {
     const checker = new LiveChecker(p, reasoner);
     await checker.check(topic, { lastEventDescription: null });
     expect(calls.length).toBe(1);
+  });
+});
+
+describe("token bütçesi guardrail'i (ADR-081/A0)", () => {
+  const hit = (u: string): SearchHit => ({ title: u, snippet: "s", url: u, date: null });
+  function reasonerWith(
+    confidences: number[],
+    tokensPerCall: number,
+  ): { reasoner: EventReasoner; calls: number[] } {
+    const calls: number[] = [];
+    let i = 0;
+    return {
+      calls,
+      reasoner: {
+        async reason(input) {
+          calls.push(input.hits.length);
+          const c = confidences[Math.min(i, confidences.length - 1)] ?? 0.9;
+          i += 1;
+          return {
+            detected: false,
+            description: null,
+            reasoning: "r",
+            confidence: c,
+            tokensUsed: tokensPerCall,
+          };
+        },
+      },
+    };
+  }
+
+  it("ilk tur bütçeyi tükettiyse eskalasyon ATLANIR ve iz şeffafça işaretlenir", async () => {
+    const { reasoner, calls } = reasonerWith([0.55], 5000); // belirsiz bant + ağır ilk tur
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner, null, 4000); // bütçe < ilk tur
+    const out = await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(1); // 2. muhakeme YOK
+    expect(out.resultSummary).toContain("token bütçesi");
+    expect(out.resultSummary).not.toContain("eskalasyon (2. tur)");
+    expect(out.tokensUsed).toBe(5000);
+  });
+
+  it("bütçe yeterliyse eskalasyon normal işler (bütçe yanlış-pozitif kısmaz)", async () => {
+    const { reasoner, calls } = reasonerWith([0.55, 0.85], 1000);
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner, null, 4000); // bütçe > ilk tur
+    const out = await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(2);
+    expect(out.resultSummary).toContain("eskalasyon (2. tur)");
+    expect(out.tokensUsed).toBe(2000); // iki turun toplamı
+  });
+
+  it("bütçe verilmemişse (null) davranış değişmez — sınırsız", async () => {
+    const { reasoner, calls } = reasonerWith([0.55, 0.85], 99999);
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner); // bütçe yok
+    await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(2);
   });
 });

@@ -130,6 +130,7 @@ function buildChecker(env: Env): Checker {
       new FallbackSearchProvider(providers),
       reasoner,
       env.RENDER_FETCH_TEMPLATE ?? null,
+      env.CHECK_TOKEN_BUDGET ?? null,
     );
   }
   return new StubChecker();

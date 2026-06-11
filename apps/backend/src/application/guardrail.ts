@@ -3,9 +3,10 @@
  * token-bütçe + timeout + ilerleme-yok birlikte zorunlu (bütçesiz ajanlar gerçekte
  * 47.000$ fatura üretti). Bu modül DETERMİNİSTİK kapıları açık koda döker.
  *
- * Bu turda uygulanan: WALL-CLOCK TIMEOUT (asılı/yavaş checker'ı keser).
- * - Tur limiti: LiveChecker'da maks 2 (ADR-073 eskalasyon) — zaten sabit.
- * - Token bütçesi: A3 (token izleri) sonrası eklenecek — şimdilik yok (dürüst).
+ * Bu modülde: WALL-CLOCK TIMEOUT (asılı/yavaş checker'ı keser).
+ * - Tur limiti: LiveChecker'da maks 2 (ADR-073 eskalasyon) — sabit.
+ * - Token bütçesi: LiveChecker'da CHECK_TOKEN_BUDGET (ADR-081) — ilk tur bütçeyi
+ *   tükettiyse eskalasyon atlanır; iz kaydında şeffafça işaretlenir.
  */
 
 /** Zaman aşımında atılan ayırt edilebilir hata (catch tarafı "timeout" diyebilsin). */

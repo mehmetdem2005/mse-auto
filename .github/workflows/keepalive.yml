@@ -1,9 +1,13 @@
 name: keepalive
 
-# Render free web servisi 15 dk hareketsizlikte uyur. Bu cron her ~10 dk /health'e
-# ping atarak servisi uyanık tutar; böylece içindeki scheduler tick (60 sn) durmaz.
-# URL'i repo'da Settings → Secrets and variables → Actions → Variables altında
-# RENDER_HEALTH_URL olarak ayarla (yoksa aşağıdaki varsayılan kullanılır).
+# İki görev tek cron'da (ADR-082):
+# 1) KEEPALIVE: Render free web servisi 15 dk hareketsizlikte uyur; her ~10 dk
+#    /health ping'i servisi uyanık tutar (içindeki scheduler tick durmasın).
+# 2) UPTIME ALARMI: uyandırma payına rağmen servis HÂLÂ cevap vermiyorsa job
+#    bilinçli FAIL eder → GitHub, repo sahibine workflow-failure e-postası atar.
+#    (Ek altyapı/servis yok; alarm kanalı GitHub'ın kendisi.)
+# URL: Settings → Secrets and variables → Actions → Variables → RENDER_HEALTH_URL
+# (yoksa aşağıdaki varsayılan kullanılır).
 on:
   schedule:
     - cron: "*/10 * * * *"
@@ -13,13 +17,28 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping health endpoint
+      - name: Wake service (cold start toleranslı)
         run: |
           URL="${{ vars.RENDER_HEALTH_URL }}"
           URL="${URL:-https://watcher-backend-p0hi.onrender.com/health}"
+          echo "URL=$URL" >> "$GITHUB_ENV"
           echo "Pinging $URL"
-          # Soğuk başlatma ~50 sn sürebilir; uzun timeout + retry. İstek Render router'a
-          # ulaştığı an servis uyanır, bu yüzden ping başarısız olsa bile job'ı kırmıyoruz.
-          curl -fsS --max-time 90 --retry 3 --retry-delay 10 "$URL" \
-            && echo && echo "OK" \
-            || echo "ping cevabı gecikti/başarısız — servis büyük ihtimalle uyanıyor"
+          # Soğuk başlatma ~50 sn; istek router'a ulaştığı an uyanma başlar.
+          # Bu adım ASLA fail etmez — görevi yalnız uyandırmak.
+          curl -fsS --max-time 90 --retry 2 --retry-delay 10 "$URL" \
+            && echo && echo "OK (ilk denemede ayakta)" \
+            || echo "ilk ping gecikti — servis uyanıyor olabilir, doğrulama adımı karar verecek"
+
+      - name: Verify up — kalıcı çöküşte ALARM (job fail → e-posta)
+        run: |
+          # Uyanma için toplamda ~3 dk pay: 6 deneme × 30 sn ara.
+          for i in 1 2 3 4 5 6; do
+            if curl -fsS --max-time 30 "$URL" > /dev/null; then
+              echo "OK — servis ayakta (deneme $i)"
+              exit 0
+            fi
+            echo "deneme $i başarısız, 30 sn sonra tekrar…"
+            sleep 30
+          done
+          echo "::error::Backend /health ~4.5 dk boyunca cevap vermedi — servis DÜŞÜK görünüyor: $URL"
+          exit 1

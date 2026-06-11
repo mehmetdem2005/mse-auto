@@ -15,6 +15,8 @@ export class LiveChecker implements Checker {
     private readonly reasoner: EventReasoner,
     /** JS-render proxy şablonu (ADR-070) — verilirse dinamik sayfalar okunur. */
     private readonly renderTemplate: string | null = null,
+    /** Kontrol başına token bütçesi (ADR-081/A0) — null: sınırsız. */
+    private readonly tokenBudget: number | null = null,
   ) {}
 
   async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
@@ -73,8 +75,14 @@ export class LiveChecker implements Checker {
     // genel arama varyantıyla derin 2. tur + yeniden muhakeme. Net kararlar (yüksek/
     // düşük güven) tek turda kalır → ekstra LLM+arama maliyeti yalnız belirsiz vakada.
     // Maks 2 tur — guardrail sabit (sonsuz derinleşme yok).
+    // TOKEN BÜTÇESİ (ADR-081/A0): ilk tur bütçeyi tükettiyse eskalasyon ATLANIR —
+    // tek opsiyonel LLM çağrısı budur; atlama izde şeffafça işaretlenir.
     let escalated = false;
-    if (r.confidence >= ESCALATE_LOW && r.confidence <= ESCALATE_HIGH) {
+    let budgetSkipped = false;
+    const inBand = r.confidence >= ESCALATE_LOW && r.confidence <= ESCALATE_HIGH;
+    const overBudget = this.tokenBudget !== null && (tokensUsed ?? 0) >= this.tokenBudget;
+    if (inBand && overBudget) budgetSkipped = true;
+    if (inBand && !overBudget) {
       escalated = true;
       const extra = await this.search.search(q).catch(() => []);
       const known = new Set(finalHits.map((h) => h.url));
@@ -94,7 +102,7 @@ export class LiveChecker implements Checker {
     return {
       detected: r.detected,
       description: r.description,
-      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})${escalated ? " · eskalasyon (2. tur)" : ""}`,
+      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})${escalated ? " · eskalasyon (2. tur)" : ""}${budgetSkipped ? " · token bütçesi (eskalasyon atlandı)" : ""}`,
       reasoning: escalated ? `[ESKALASYON — belirsiz güven, 2. tur] ${r.reasoning}` : r.reasoning,
       confidence: r.confidence,
       searchQuery: ctx?.authorityDomain ? `${q} (+ site:${ctx.authorityDomain})` : q,

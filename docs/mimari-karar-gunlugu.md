@@ -793,3 +793,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **A11y:** her grafiğe `accessibilityRole="image"` + veriyi özetleyen `accessibilityLabel` (WCAG 2.2 — metin-olmayan içerik); renge ek olarak en-yüksek çubuk vurgusu (yalnız-renk değil).
 - **i18n:** `feed.activity/last7days/activityA11y` + `detail.insights/detectionRate/confidenceTrend(+A11y)/valueTrend/numericTrend(+A11y)` × 11 dil.
 - **ISO/TOGAF:** 25010 (kullanılabilirlik — içgörü görünürlüğü) · 9241 (etkileşim) · TOGAF Phase C, sınıf **Artımlı** (yeni bileşen, mimari sabit). Bilinçli atlanan: gerçek harita (geo) — `FactChips` zaten konumu Google Maps linkiyle açıyor (dürüst, native harita modülü/bundle yükü yok).
+
+## ADR-081 — Token-bütçe guardrail'i (A0 kalanı — Dalga-1 kapanışı)
+- **Durum:** Kabul · ADR-076'da "A3 sonrası eklenecek" diye DÜRÜSTÇE ertelenen son guardrail; A3 token izleri bitti, engel kalktı.
+- **Karar:** `CHECK_TOKEN_BUDGET` (env, opsiyonel) → LiveChecker'a `tokenBudget`. Kontroldeki TEK opsiyonel LLM çağrısı eskalasyon 2. turudur: ilk muhakeme bütçeyi tükettiyse eskalasyon ATLANIR ve `resultSummary`'ye "· token bütçesi (eskalasyon atlandı)" işareti düşülür (sessiz kısma yok — iz şeffaf). Doğrulayıcı (verifier) bütçeye TABİ DEĞİL — bilinçli: yanlış-pozitif öldürücüdür, maliyeti tespit-pozitif vakayla sınırlıdır ve kullanıcıya yanlış bildirim göndermemek bütçeden önce gelir. Env boşsa davranış birebir eski hâli (sınırsız) — geri-uyumlu. 3 birim test (aşım→atla+işaret, yeterli→normal, null→değişmez); toplam 111.
+- **ISO/TOGAF:** 25010 (kaynak verimliliği — ölçülebilir NFR: kontrol başına ≤bütçe token) · TOGAF Phase C, sınıf Artımlı.
+
+## ADR-082 — Uptime alarmı: keepalive workflow'u kalıcı çöküşte FAIL eder
+- **Durum:** Kabul · Dalga-1 "uptime izleme" maddesi; harici izleme servisi (ücret/anahtar) yerine sıfır-altyapı çözüm.
+- **Karar:** `.github/workflows/keepalive.yml` iki adıma ayrıldı: (1) uyandırma ping'i (asla fail etmez — Render free cold start ~50 sn toleransı); (2) doğrulama — 6 deneme × 30 sn sonrasında /health hâlâ cevapsızsa job `exit 1` → GitHub repo sahibine workflow-failure e-postası atar. Alarm kanalı GitHub'ın kendisi; ek servis/anahtar/maliyet yok. Sınır (dürüst): 10 dk'lık cron aralığında en kötü ~10 dk gecikmeli alarm; saniye-düzeyi SLA izleme DEĞİL — büyüme planındaki gerçek APM (Dalga-4) yerini almaz.
+- **ISO/TOGAF:** 25010 (güvenilirlik — kullanılabilirlik izlenebilir) · 27002 (operasyonel izleme) · TOGAF Phase G (uygulama gözetimi), sınıf Artımlı.

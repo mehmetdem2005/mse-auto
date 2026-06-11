@@ -16,6 +16,8 @@ const EnvSchema = z.object({
   RENDER_FETCH_TEMPLATE: z.string().min(1).optional(),
   // Tarama zaman aşımı (ADR-076 A0 guardrail) — asılı checker'ı keser.
   CHECK_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
+  // Kontrol başına token bütçesi (ADR-081 A0 guardrail) — aşılırsa eskalasyon turu atlanır.
+  CHECK_TOKEN_BUDGET: z.coerce.number().int().positive().optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   // Model yönlendirme (ADR-078 A5): rol başına model env'den seçilebilir.
   // Boşsa her rol varsayılanı kullanır (llama-3.3-70b-versatile) — davranış değişmez.
