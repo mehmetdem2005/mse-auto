@@ -13,6 +13,7 @@ import {
 } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { type ReactNode, useEffect, useRef, useState } from "react";
@@ -170,6 +171,7 @@ export default function AdminScreen(): ReactNode {
 // ----------------------------- Analitik + Fiyat -----------------------------
 
 function AnalyticsTab(): ReactNode {
+  const aTheme = useTheme();
   const stats = useQuery({ queryKey: ["adminStats"], queryFn: api.adminStats });
   const prices = useQuery({ queryKey: ["adminPrices"], queryFn: api.adminPrices });
   const series = useQuery({
@@ -219,7 +221,7 @@ function AnalyticsTab(): ReactNode {
           <Donut pro={s.proUsers} free={s.freeUsers} />
           <View className="gap-2">
             <LegendRow color="#6366F1" label={`Pro · ${s.proUsers}`} />
-            <LegendRow color="#E2E8F0" label={`Ücretsiz · ${s.freeUsers}`} />
+            <LegendRow color={aTheme.colors.line} label={`Ücretsiz · ${s.freeUsers}`} />
           </View>
         </View>
       </View>
@@ -913,6 +915,7 @@ function AreaChart({
 
 /** Plan dağılımı donut'u — react-native-svg, gerçek sayılarla. */
 function Donut({ pro, free }: { pro: number; free: number }): ReactNode {
+  const dTheme = useTheme();
   const total = Math.max(1, pro + free);
   const size = 92;
   const stroke = 14;
@@ -926,7 +929,7 @@ function Donut({ pro, free }: { pro: number; free: number }): ReactNode {
           cx={size / 2}
           cy={size / 2}
           r={r}
-          stroke="#E2E8F0"
+          stroke={dTheme.colors.line}
           strokeWidth={stroke}
           fill="none"
         />

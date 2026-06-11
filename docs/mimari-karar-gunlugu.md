@@ -698,3 +698,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **İlke teyidi:** `style={{}}` prop'ları (className değil) tema token'larını OTOMATİK almaz → her style-prop rengi ya temaya bağlanmalı ya iki-temada-okunur sabit olmalı. design-standards'a örtük kural.
 - **Kalan (dürüst):** admin konsolu (TR, işletmeci-içi) sabit renklerde — düşük öncelik, ayrı tur.
 - **ISO:** WCAG 1.4.3/1.4.11 (metin + UI bileşeni kontrastı, koyu) · 9241 · 25010.
+
+## ADR-067 — Admin konsolu koyu-tema tamamlama: tüm kullanıcı yüzeyleri %100 koyu-uyumlu
+- **Durum:** Kabul · koyu-tema serisinin (ADR-063/065/066) kapanışı.
+- **Tespit:** Admin %95 token-tabanlıydı (bg-panel/text-text → otomatik koyu); yalnız grafik nötr renkleri sabitti — Donut boş-halka stroke ve LegendRow "ücretsiz" bacağı `#E2E8F0` (koyu zeminde görünmez).
+- **Karar:** Donut (`dTheme`) ve AnalyticsTab (`aTheme`) useTheme'e bağlandı; nötr çizgiler `theme.colors.line`. Marka renkleri (#6366F1 accent grafikte) iki temada görünür olduğundan korundu. Sonuç: **uygulamanın TÜM ekranları (admin dahil) koyu-tema uyumlu.**
+- **ISO:** WCAG 1.4.11 (grafik UI bileşeni kontrastı) · 25010 *Usability* · tamlık (kapsam %100).
