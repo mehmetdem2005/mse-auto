@@ -308,6 +308,17 @@ export const tr = {
     signOut: "Çıkış yap",
     footer: "Whenly · hesabındaki gizlilik ve veri hakların için Destek & İletişim",
   },
+  legal: {
+    privacyTitle: "Gizlilik Politikası",
+    termsTitle: "Kullanım Koşulları",
+    termsSub: "Hizmetin tanımı · dürüst sınırlar · sorumluluk",
+    updated: "Sürüm {{v}} · güncelleme: {{date}}",
+    noticeEn: "Bu belgenin bağlayıcı sürümü İngilizcedir; dilin için henüz çeviri yok.",
+    exportTitle: "Verilerimi indir",
+    exportSub: "Tüm verini JSON olarak al (KVKK/GDPR taşınabilirlik)",
+    exportOk: "Veri dökümün hazır.",
+    exportFail: "dışa aktarılamadı",
+  },
   support: {
     title: "Destek & İletişim",
     thread: "Canlı Destek",

@@ -314,6 +314,17 @@ export const ru: Catalog = {
     signOut: "Выйти",
     footer: "Whenly · see Support & Contact for your privacy and data rights",
   },
+  legal: {
+    privacyTitle: "Политика конфиденциальности",
+    termsTitle: "Условия использования",
+    termsSub: "Что это за сервис · честные ограничения · ответственность",
+    updated: "Версия {{v}} · обновлено: {{date}}",
+    noticeEn: "Обязательная версия этого документа — на английском; перевода на ваш язык пока нет.",
+    exportTitle: "Скачать мои данные",
+    exportSub: "Получите все свои данные в JSON (переносимость, GDPR)",
+    exportOk: "Экспорт данных готов.",
+    exportFail: "не удалось экспортировать",
+  },
   support: {
     title: "Поддержка и контакты",
     thread: "Поддержка в режиме реального времени",

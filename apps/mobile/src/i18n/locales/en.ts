@@ -311,6 +311,18 @@ export const en: Catalog = {
     signOut: "Sign out",
     footer: "Whenly · see Support & Contact for your privacy and data rights",
   },
+  legal: {
+    privacyTitle: "Privacy Policy",
+    termsTitle: "Terms of Service",
+    termsSub: "What the service is · honest limits · liability",
+    updated: "Version {{v}} · updated: {{date}}",
+    noticeEn:
+      "The binding version of this document is in English; a translation for your language is not available yet.",
+    exportTitle: "Download my data",
+    exportSub: "Get all your data as JSON (GDPR portability)",
+    exportOk: "Your data export is ready.",
+    exportFail: "export failed",
+  },
   support: {
     title: "Support & Contact",
     thread: "Live Support",

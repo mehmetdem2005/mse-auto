@@ -4,6 +4,7 @@ import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import { useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,7 @@ import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 export default function Login() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const router = useRouter();
   const reduce = useReduceMotion();
   const setSession = useAuth((s) => s.setSession);
   const [email, setEmail] = useState("");
@@ -181,12 +183,34 @@ export default function Login() {
               )}
             </Animated.View>
 
-            <Animated.Text
-              entering={enter(160)}
-              className="text-muted text-[11px] text-center mt-6 leading-4"
-            >
-              {t("login.terms")}
-            </Animated.Text>
+            {/* Yasal bağlantılar (ADR-079): belgeler giriş öncesi okunabilir */}
+            <Animated.View entering={enter(160)} className="mt-6">
+              <Text className="text-muted text-[11px] text-center leading-4">
+                {t("login.terms")}
+              </Text>
+              <View className="flex-row justify-center gap-5 mt-2">
+                <Pressable
+                  onPress={() => router.push("/legal/terms")}
+                  accessibilityRole="link"
+                  accessibilityLabel={t("legal.termsTitle")}
+                  className="min-h-[44px] justify-center"
+                >
+                  <Text className="text-accent text-[11px] font-semibold underline">
+                    {t("legal.termsTitle")}
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push("/legal/privacy")}
+                  accessibilityRole="link"
+                  accessibilityLabel={t("legal.privacyTitle")}
+                  className="min-h-[44px] justify-center"
+                >
+                  <Text className="text-accent text-[11px] font-semibold underline">
+                    {t("legal.privacyTitle")}
+                  </Text>
+                </Pressable>
+              </View>
+            </Animated.View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>

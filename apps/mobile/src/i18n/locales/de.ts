@@ -322,6 +322,18 @@ export const de: Catalog = {
     signOut: "Abmelden",
     footer: "Whenly · siehe Support & Kontakt für deine Datenschutz- und Datenrechte",
   },
+  legal: {
+    privacyTitle: "Datenschutzerklärung",
+    termsTitle: "Nutzungsbedingungen",
+    termsSub: "Was der Dienst ist · ehrliche Grenzen · Haftung",
+    updated: "Version {{v}} · aktualisiert: {{date}}",
+    noticeEn:
+      "Die verbindliche Fassung dieses Dokuments ist Englisch; eine Übersetzung für deine Sprache gibt es noch nicht.",
+    exportTitle: "Meine Daten herunterladen",
+    exportSub: "Alle deine Daten als JSON erhalten (DSGVO-Portabilität)",
+    exportOk: "Dein Datenexport ist bereit.",
+    exportFail: "Export fehlgeschlagen",
+  },
   support: {
     title: "Support & Kontakt",
     thread: "Live-Support",

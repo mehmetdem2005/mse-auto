@@ -264,6 +264,17 @@ export const zh: Catalog = {
     signOut: "退出",
     footer: "Whenly · 请参阅支持与联系页面以获取你的隐私与数据权利",
   },
+  legal: {
+    privacyTitle: "隐私政策",
+    termsTitle: "服务条款",
+    termsSub: "服务说明 · 诚实的限制 · 责任",
+    updated: "版本 {{v}} · 更新：{{date}}",
+    noticeEn: "本文件以英文版本为准；暂无您所用语言的译文。",
+    exportTitle: "下载我的数据",
+    exportSub: "以 JSON 获取你的全部数据（数据可携权）",
+    exportOk: "数据导出已就绪。",
+    exportFail: "导出失败",
+  },
   support: {
     title: "支持与联系",
     thread: "实时支持",

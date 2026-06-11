@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { meSchema } from "@watcher/contracts";
 import { deleteAccount } from "../../application/delete-account";
+import { exportAccount } from "../../application/export-account";
 import { getMe } from "../../application/get-me";
 import type { Container } from "../../config/container";
 import type { AuthVariables } from "./auth.middleware";
@@ -56,6 +57,37 @@ export function meRoutes(container: Container): OpenAPIHono<{ Variables: AuthVar
         200,
       );
     },
+  );
+
+  // Veri dökümü (KVKK m.11 / GDPR Art.15+20): kullanıcının tüm PII-zon verisi tek JSON.
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/export",
+      tags: ["me"],
+      summary: "Hesap veri dökümü — taşınabilirlik (KVKK/GDPR)",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({
+                format: z.literal("whenly-account-export"),
+                version: z.number().int(),
+                exportedAt: z.string(),
+                account: z.object({ userId: z.string(), email: z.string().nullable() }),
+                watches: z.array(z.unknown()),
+                subscription: z.unknown().nullable(),
+                notifications: z.array(z.unknown()),
+                supportTickets: z.array(z.unknown()),
+              }),
+            },
+          },
+          description: "Veri dökümü",
+        },
+      },
+    }),
+    async (c) =>
+      c.json(await exportAccount(container, c.get("userId"), c.get("email") ?? null), 200),
   );
 
   app.openapi(

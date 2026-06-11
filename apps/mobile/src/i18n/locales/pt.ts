@@ -313,6 +313,18 @@ export const pt: Catalog = {
     signOut: "Sair",
     footer: "Whenly · veja Suporte e Contato para seus direitos de privacidade e dados",
   },
+  legal: {
+    privacyTitle: "Política de Privacidade",
+    termsTitle: "Termos de Serviço",
+    termsSub: "O que é o serviço · limites honestos · responsabilidade",
+    updated: "Versão {{v}} · atualizado: {{date}}",
+    noticeEn:
+      "A versão vinculativa deste documento está em inglês; ainda não há tradução para o teu idioma.",
+    exportTitle: "Baixar meus dados",
+    exportSub: "Receba todos os seus dados em JSON (portabilidade LGPD/GDPR)",
+    exportOk: "Sua exportação de dados está pronta.",
+    exportFail: "falha na exportação",
+  },
   support: {
     title: "Suporte & Contato",
     thread: "Suporte ao Vivo",

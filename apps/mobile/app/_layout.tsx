@@ -51,6 +51,11 @@ export default function RootLayout() {
             <Stack.Protected guard={!isSignedIn}>
               <Stack.Screen name="(auth)" />
             </Stack.Protected>
+            {/* Yasal belgeler (ADR-079): giriş ÖNCESİ ve sonrası erişilebilir */}
+            <Stack.Screen
+              name="legal/[doc]"
+              options={{ animation: reduce ? "none" : "slide_from_right" }}
+            />
           </Stack>
           <ToastHost />
         </View>

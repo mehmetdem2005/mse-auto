@@ -13,16 +13,18 @@ import { useRouter } from "expo-router";
 import {
   Check,
   ChevronRight,
+  FileDown,
   Globe2,
   LifeBuoy,
   MonitorSmartphone,
   Moon,
+  ScrollText,
   ShieldCheck,
   Sun,
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, Share, Text, View } from "react-native";
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -74,6 +76,31 @@ export default function Settings() {
       setSession(null);
     } catch (e) {
       setStatus(e instanceof Error ? e.message : t("settings.deleteFail"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Veri dökümü (KVKK m.11 / GDPR Art.20): JSON'u web'de dosya olarak indir,
+  // native'de sistem paylaşım sayfasıyla dışarı aktar (ek bağımlılık yok).
+  async function exportData() {
+    setBusy(true);
+    try {
+      const data = await api.exportAccount();
+      const json = JSON.stringify(data, null, 2);
+      if (Platform.OS === "web") {
+        const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "whenly-export.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      } else {
+        await Share.share({ message: json });
+      }
+      toast.success(t("legal.exportOk"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("legal.exportFail"));
     } finally {
       setBusy(false);
     }
@@ -255,10 +282,11 @@ export default function Settings() {
             {status ? <Text className="text-muted text-xs mt-3">{status}</Text> : null}
           </View>
 
+          {/* Yasal katman (ADR-079): gizlilik politikası + koşullar + veri dökümü */}
           <Pressable
-            onPress={() => router.push("/support")}
+            onPress={() => router.push("/legal/privacy")}
             accessibilityRole="button"
-            accessibilityLabel={t("settings.privacyA11y")}
+            accessibilityLabel={t("legal.privacyTitle")}
             className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
           >
             <View className="flex-row items-center gap-3">
@@ -268,6 +296,43 @@ export default function Settings() {
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("settings.privacy")}</Text>
                 <Text className="text-muted text-xs mt-0.5">{t("settings.privacySub")}</Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push("/legal/terms")}
+            accessibilityRole="button"
+            accessibilityLabel={t("legal.termsTitle")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <ScrollText size={18} color="#6366F1" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("legal.termsTitle")}</Text>
+                <Text className="text-muted text-xs mt-0.5">{t("legal.termsSub")}</Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => void exportData()}
+            disabled={busy}
+            accessibilityRole="button"
+            accessibilityLabel={t("legal.exportTitle")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <FileDown size={18} color="#6366F1" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("legal.exportTitle")}</Text>
+                <Text className="text-muted text-xs mt-0.5">{t("legal.exportSub")}</Text>
               </View>
               <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>

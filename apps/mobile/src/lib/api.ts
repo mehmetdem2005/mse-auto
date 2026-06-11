@@ -266,6 +266,8 @@ export const api = {
       body: JSON.stringify({ fcmToken, platform }),
     }),
   deleteAccount: () => req<{ ok: boolean }>("/v1/me", { method: "DELETE" }),
+  // Veri dökümü (KVKK/GDPR taşınabilirlik) — serbest biçimli JSON, olduğu gibi indirilir.
+  exportAccount: () => req<Record<string, unknown>>("/v1/me/export"),
 
   // ---- Admin konsolu ----
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),

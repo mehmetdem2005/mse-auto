@@ -280,6 +280,17 @@ export const ja: Catalog = {
     signOut: "サインアウト",
     footer: "Whenly · サポート & お問い合わせを参照してください。",
   },
+  legal: {
+    privacyTitle: "プライバシーポリシー",
+    termsTitle: "利用規約",
+    termsSub: "サービス内容 · 正直な限界 · 責任",
+    updated: "バージョン {{v}} · 更新：{{date}}",
+    noticeEn: "本書の正文は英語版です。あなたの言語への翻訳はまだありません。",
+    exportTitle: "自分のデータをダウンロード",
+    exportSub: "全データをJSONで取得（データポータビリティ）",
+    exportOk: "データのエクスポートが完了しました。",
+    exportFail: "エクスポートに失敗しました",
+  },
   support: {
     title: "サポート & お問い合わせ",
     thread: "ライブサポート",

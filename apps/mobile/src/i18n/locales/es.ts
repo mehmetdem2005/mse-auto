@@ -312,6 +312,18 @@ export const es: Catalog = {
     signOut: "Cerrar sesión",
     footer: "Whenly · consulta Soporte y contacto para tus derechos de datos",
   },
+  legal: {
+    privacyTitle: "Política de privacidad",
+    termsTitle: "Términos del servicio",
+    termsSub: "Qué es el servicio · límites honestos · responsabilidad",
+    updated: "Versión {{v}} · actualizado: {{date}}",
+    noticeEn:
+      "La versión vinculante de este documento está en inglés; aún no hay traducción para tu idioma.",
+    exportTitle: "Descargar mis datos",
+    exportSub: "Obtén todos tus datos en JSON (portabilidad RGPD)",
+    exportOk: "Tu exportación de datos está lista.",
+    exportFail: "no se pudo exportar",
+  },
   support: {
     title: "Soporte y contacto",
     thread: "Soporte en vivo",
