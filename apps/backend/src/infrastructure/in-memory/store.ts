@@ -1,4 +1,5 @@
 import type { Price, Subscription } from "../../domain/billing";
+import type { UserChannels } from "../../domain/channels";
 import type { StoredSearchHit } from "../../domain/monitoring";
 import type { CanonicalTopic } from "../../domain/topic";
 import type { Watch } from "../../domain/watch";
@@ -65,6 +66,8 @@ export class InMemoryStore {
   readonly events: StoredEvent[] = [];
   readonly deliveries: StoredDelivery[] = [];
   readonly deviceTokens: StoredDeviceToken[] = [];
+  /** Kullanıcı ek-kanal tercihleri (ADR-084) — userId → UserChannels. */
+  readonly userChannels = new Map<string, UserChannels>();
   readonly subscriptions = new Map<string, Subscription>();
   // Dev varsayılan fiyat kataloğu (admin değiştirebilir). Prod'da admin/seed ayarlar.
   readonly prices: Price[] = [

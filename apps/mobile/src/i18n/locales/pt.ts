@@ -289,6 +289,27 @@ export const pt: Catalog = {
       sentence: "Avise-me antes do meu domínio, certificado ou assinatura expirar",
     },
   },
+  channels: {
+    title: "Canais de notificação",
+    sub: "Telegram · E-mail · WhatsApp",
+    intro:
+      "ALÉM do push, também podemos enviar novidades aqui. O push está sempre ativo; isto é extra. Funciona apenas em watchers compartilhados (sem filtro pessoal).",
+    telegram: "Telegram",
+    telegramNote: "Envie /start ao nosso bot e cole o chat ID aqui. Grátis e o mais rápido.",
+    telegramPlaceholder: "Chat ID do Telegram",
+    email: "E-mail",
+    emailNote: "Receba novidades por e-mail.",
+    emailPlaceholder: "voce@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "Digite seu número em formato internacional (+55…). Nota: o WhatsApp automático exige aprovação empresarial; este canal pode ficar pendente até ser ativado.",
+    whatsappPlaceholder: "+55 11 9xxxx xxxx",
+    privacy:
+      "Estes são seus dados pessoais, usados apenas para notificá-lo e nunca compartilhados.",
+    saved: "Canais salvos.",
+    saveFail: "não foi possível salvar",
+  },
+
   settings: {
     account: "Sua conta do Whenly",
     language: "Idioma",

@@ -287,6 +287,26 @@ export const en: Catalog = {
       sentence: "Notify me before my domain, certificate or subscription expires",
     },
   },
+  channels: {
+    title: "Notification channels",
+    sub: "Telegram · Email · WhatsApp",
+    intro:
+      "In ADDITION to push, we can deliver developments here too. Push is always on; these are extra. Works only for shared (no personal filter) watchers.",
+    telegram: "Telegram",
+    telegramNote: "Send /start to our bot and paste the chat ID here. Free and fastest.",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "Email",
+    emailNote: "Get developments by email.",
+    emailPlaceholder: "you@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "Enter your number in international format (+1…). Note: automatic WhatsApp requires business approval; this channel may be pending until enabled.",
+    whatsappPlaceholder: "+1 555 555 5555",
+    privacy: "This is your personal data, used only to notify you and never shared.",
+    saved: "Channels saved.",
+    saveFail: "could not save",
+  },
+
   settings: {
     account: "Your Whenly account",
     language: "Language",

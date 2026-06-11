@@ -284,6 +284,26 @@ export const tr = {
       sentence: "Alan adımın, sertifikamın veya aboneliğimin süresi dolmadan haber ver",
     },
   },
+  channels: {
+    title: "Bildirim kanalları",
+    sub: "Telegram · E-posta · WhatsApp",
+    intro:
+      "Push'a EK olarak gelişmeleri buralara da iletebiliriz. Push her zaman açık; bunlar ekstradır. Yalnız paylaşılan (kişisel filtresiz) watcher'larda çalışır.",
+    telegram: "Telegram",
+    telegramNote: "Botumuza /start yaz, gelen chat ID'yi buraya gir. Ücretsiz ve en hızlısı.",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "E-posta",
+    emailNote: "Gelişmeleri e-posta olarak al.",
+    emailPlaceholder: "ornek@eposta.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "Numaranı uluslararası biçimde gir (+90…). Not: WhatsApp otomatik mesaj için işletme onayı gerekir; etkinleşene dek bu kanal beklemede olabilir.",
+    whatsappPlaceholder: "+90 5xx xxx xx xx",
+    privacy: "Bu bilgiler kişisel verindir, yalnız sana bildirim için kullanılır ve paylaşılmaz.",
+    saved: "Kanallar kaydedildi.",
+    saveFail: "kaydedilemedi",
+  },
+
   settings: {
     account: "Whenly hesabın",
     language: "Dil",

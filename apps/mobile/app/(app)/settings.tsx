@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   MonitorSmartphone,
   Moon,
+  Radio,
   ScrollText,
   ShieldCheck,
   Sun,
@@ -281,6 +282,25 @@ export default function Settings() {
             </Btn>
             {status ? <Text className="text-muted text-xs mt-3">{status}</Text> : null}
           </View>
+
+          {/* Ek bildirim kanalları (ADR-084): Telegram / E-posta / WhatsApp */}
+          <Pressable
+            onPress={() => router.push("/channels")}
+            accessibilityRole="button"
+            accessibilityLabel={t("channels.title")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <Radio size={18} color="#6366F1" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("channels.title")}</Text>
+                <Text className="text-muted text-xs mt-0.5">{t("channels.sub")}</Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
 
           {/* Yasal katman (ADR-079): gizlilik politikası + koşullar + veri dökümü */}
           <Pressable

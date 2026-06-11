@@ -29,6 +29,12 @@ const EnvSchema = z.object({
   // FCM push (yoksa NoopNotifier — dev)
   FCM_PROJECT_ID: z.string().min(1).optional(),
   GOOGLE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),
+  // Ek teslim kanalları (ADR-084) — yoksa o kanal kurulmaz (graceful).
+  TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  RESEND_FROM: z.string().min(1).optional(), // "Whenly <bildirim@alanadi.com>"
+  WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
   // Dev/in-memory admin kullanıcı id'leri (virgülle). Supabase'de admins tablosu kaynaktır.
   ADMIN_USER_IDS: z.string().optional(),
   // Dashboard CORS — virgülle origin listesi (yoksa tüm origin'lere izin verilir).

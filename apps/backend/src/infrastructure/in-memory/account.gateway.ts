@@ -15,6 +15,7 @@ export class InMemoryAccountGateway implements AccountGateway {
     purge(this.store.watches, (w) => w.userId !== userId);
     purge(this.store.deliveries, (d) => d.userId !== userId);
     purge(this.store.deviceTokens, (t) => t.userId !== userId);
+    this.store.userChannels.delete(userId);
     this.store.subscriptions.delete(userId);
   }
 }

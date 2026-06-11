@@ -7,6 +7,7 @@ import type {
   AnalyticsRepository,
   PriceRepository,
 } from "../domain/billing";
+import type { ChannelSender, UserChannelRepository } from "../domain/channels";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
 import type { IntentAssistant } from "../domain/intent-assistant";
@@ -24,6 +25,9 @@ import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant"
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
 import { SupabaseJwtVerifier } from "../infrastructure/auth/supabase.verifier";
+import { ResendEmailSender } from "../infrastructure/channels/email.sender";
+import { TelegramSender } from "../infrastructure/channels/telegram.sender";
+import { WhatsAppSender } from "../infrastructure/channels/whatsapp.sender";
 import { LiveChecker } from "../infrastructure/checker/live.checker";
 import { StubChecker } from "../infrastructure/checker/stub.checker";
 import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gateway";
@@ -38,6 +42,7 @@ import { InMemoryStore } from "../infrastructure/in-memory/store";
 import { InMemorySubscriptionRepository } from "../infrastructure/in-memory/subscription.repo";
 import { InMemorySupportRepository } from "../infrastructure/in-memory/support.repo";
 import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/topic.repo";
+import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import { logger } from "../infrastructure/logging/logger";
 import type { Logger } from "../infrastructure/logging/logger";
@@ -68,6 +73,7 @@ import { SupabasePriceRepository } from "../infrastructure/supabase/price.repo";
 import { SupabaseSubscriptionRepository } from "../infrastructure/supabase/subscription.repo";
 import { SupabaseSupportRepository } from "../infrastructure/supabase/support.repo";
 import { SupabaseCanonicalTopicRepository } from "../infrastructure/supabase/topic.repo";
+import { SupabaseUserChannelRepository } from "../infrastructure/supabase/user-channels.repo";
 import { SupabaseWatchRepository } from "../infrastructure/supabase/watch.repo";
 import { GroqEventVerifier } from "../infrastructure/verifier/groq.verifier";
 import type { Env } from "./env";
@@ -84,6 +90,8 @@ export interface Container {
   adminConsole: AdminConsoleRepository;
   analytics: AnalyticsRepository;
   support: SupportRepository;
+  userChannels: UserChannelRepository;
+  channels: ChannelSender[];
   checker: Checker;
   verifier: EventVerifier | undefined;
   checkTimeoutMs: number | undefined;
@@ -159,6 +167,19 @@ function buildNotifier(env: Env): Notifier {
   return new NoopNotifier();
 }
 
+/** Ek teslim kanalları (ADR-084) — yalnız env'i dolu olanlar kurulur (graceful). */
+function buildChannels(env: Env): ChannelSender[] {
+  const channels: ChannelSender[] = [];
+  if (env.TELEGRAM_BOT_TOKEN) channels.push(new TelegramSender(env.TELEGRAM_BOT_TOKEN));
+  if (env.RESEND_API_KEY && env.RESEND_FROM) {
+    channels.push(new ResendEmailSender(env.RESEND_API_KEY, env.RESEND_FROM));
+  }
+  if (env.WHATSAPP_ACCESS_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID) {
+    channels.push(new WhatsAppSender(env.WHATSAPP_ACCESS_TOKEN, env.WHATSAPP_PHONE_NUMBER_ID));
+  }
+  return channels;
+}
+
 function buildAuth(env: Env): AuthVerifier {
   return env.SUPABASE_URL ? new SupabaseJwtVerifier(env.SUPABASE_URL) : new DevAuthVerifier();
 }
@@ -200,6 +221,7 @@ export function createContainer(env: Env): Container {
   const assistant = buildAssistant(env);
   const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
+  const channels = buildChannels(env);
   const auth = buildAuth(env);
   const payment = buildPayment(env);
   const queue: JobQueue = env.DATABASE_URL
@@ -221,6 +243,8 @@ export function createContainer(env: Env): Container {
       devices: new SupabaseDeviceRepository(db),
       subscriptions: new SupabaseSubscriptionRepository(db),
       account: new SupabaseAccountGateway(db),
+      userChannels: new SupabaseUserChannelRepository(db),
+      channels,
       prices: new SupabasePriceRepository(db),
       admin: new SupabaseAdminRepository(db),
       adminConsole: new SupabaseAdminConsoleRepository(db),
@@ -249,6 +273,8 @@ export function createContainer(env: Env): Container {
     devices: new InMemoryDeviceRepository(store),
     subscriptions: new InMemorySubscriptionRepository(store),
     account: new InMemoryAccountGateway(store),
+    userChannels: new InMemoryUserChannelRepository(store),
+    channels,
     prices: new InMemoryPriceRepository(store),
     admin: new InMemoryAdminRepository(adminIdsFromEnv(env)),
     adminConsole: new InMemoryAdminConsoleRepository(),

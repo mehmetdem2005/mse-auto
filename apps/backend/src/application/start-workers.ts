@@ -33,6 +33,8 @@ export async function startWorkers(
     monitoring: container.monitoring,
     devices: container.devices,
     notifier: container.notifier,
+    channels: container.channels,
+    userChannels: container.userChannels,
   });
 
   const tick = async (): Promise<void> => {

@@ -25,6 +25,13 @@ export interface MeStats {
   activeWatchers: number;
   checks24h: number;
 }
+export type ChannelKind = "telegram" | "email" | "whatsapp";
+export interface UserChannels {
+  telegramChatId: string | null;
+  email: string | null;
+  whatsappTo: string | null;
+  enabled: ChannelKind[];
+}
 export interface SubscriptionDetail {
   interval: BillingInterval;
   amountCents: number;
@@ -268,6 +275,10 @@ export const api = {
   deleteAccount: () => req<{ ok: boolean }>("/v1/me", { method: "DELETE" }),
   // Veri dökümü (KVKK/GDPR taşınabilirlik) — serbest biçimli JSON, olduğu gibi indirilir.
   exportAccount: () => req<Record<string, unknown>>("/v1/me/export"),
+  // Ek bildirim kanalları (ADR-084) — hesap düzeyi.
+  channels: () => req<UserChannels>("/v1/me/channels"),
+  setChannels: (c: UserChannels) =>
+    req<UserChannels>("/v1/me/channels", { method: "PUT", body: JSON.stringify(c) }),
 
   // ---- Admin konsolu ----
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),

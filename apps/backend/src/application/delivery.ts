@@ -1,3 +1,5 @@
+import type { ChannelSender, UserChannelRepository } from "../domain/channels";
+import { resolveTargets } from "../domain/channels";
 import type { DeviceRepository } from "../domain/device";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { Notifier } from "../domain/notifier";
@@ -17,6 +19,9 @@ export interface DeliveryDeps {
   monitoring: MonitoringRepository;
   devices: DeviceRepository;
   notifier: Notifier;
+  /** Ek kanallar (ADR-084) — opsiyonel: yoksa yalnız push. */
+  channels?: ChannelSender[] | undefined;
+  userChannels?: UserChannelRepository | undefined;
 }
 
 /** Bir olayın bekleyen teslimlerini gönderir: token bul → push → işaretle. */
@@ -48,6 +53,19 @@ export async function dispatchEventDeliveries(
     for (const token of tokens) {
       const result = await deps.notifier.send({ token, title: job.title, body: job.body, data });
       if (result.success) anySuccess = true;
+    }
+    // Ek kanallar (ADR-084): YALNIZ paylaşılan (shared) teslimlerde sunucu-tarafı
+    // gönderim yapılır. Kişisel (personal) teslimde eşleşme kararı CİHAZDA verilir
+    // (gate=1) → sunucu kriteri bilmez; e-posta/telegram'a göndermek cihazın
+    // bastıracağı bir uyarıyı sızdırırdı. Bu yüzden personal'da ek kanal ATLANIR.
+    if (delivery.archetype !== "personal" && deps.channels && deps.userChannels) {
+      const prefs = await deps.userChannels.get(delivery.userId);
+      for (const { kind, target } of resolveTargets(prefs)) {
+        const sender = deps.channels.find((c) => c.kind === kind);
+        if (!sender) continue;
+        const r = await sender.send(target, { title: job.title, body: job.body });
+        if (r.success) anySuccess = true;
+      }
     }
     await deps.monitoring.markDeliveryStatus(delivery.id, anySuccess ? "sent" : "failed");
     if (anySuccess) sent++;

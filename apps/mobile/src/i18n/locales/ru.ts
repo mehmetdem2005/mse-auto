@@ -290,6 +290,26 @@ export const ru: Catalog = {
       sentence: "Сообщи до истечения домена, сертификата или подписки",
     },
   },
+  channels: {
+    title: "Каналы уведомлений",
+    sub: "Telegram · E-mail · WhatsApp",
+    intro:
+      "ПОМИМО push мы можем присылать события и сюда. Push всегда включён; это дополнительно. Работает только для общих вотчеров (без личного фильтра).",
+    telegram: "Telegram",
+    telegramNote: "Напишите /start нашему боту и вставьте сюда chat ID. Бесплатно и быстрее всего.",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "E-mail",
+    emailNote: "Получайте события по e-mail.",
+    emailPlaceholder: "you@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "Введите номер в международном формате (+7…). Примечание: автоматический WhatsApp требует бизнес-подтверждения; до активации канал может быть в ожидании.",
+    whatsappPlaceholder: "+7 9xx xxx xx xx",
+    privacy: "Это ваши персональные данные, используются только для уведомлений и не передаются.",
+    saved: "Каналы сохранены.",
+    saveFail: "не удалось сохранить",
+  },
+
   settings: {
     account: "Ваша учетная запись Whenly",
     language: "Язык",

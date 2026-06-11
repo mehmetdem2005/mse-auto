@@ -292,6 +292,27 @@ export const fr: Catalog = {
       sentence: "Préviens-moi avant l'expiration de mon domaine, certificat ou abonnement",
     },
   },
+  channels: {
+    title: "Canaux de notification",
+    sub: "Telegram · E-mail · WhatsApp",
+    intro:
+      "EN PLUS du push, nous pouvons aussi envoyer les nouveautés ici. Le push est toujours actif ; ceci est en supplément. Fonctionne uniquement pour les watchers partagés (sans filtre personnel).",
+    telegram: "Telegram",
+    telegramNote: "Envoie /start à notre bot et colle l'ID de chat ici. Gratuit et le plus rapide.",
+    telegramPlaceholder: "ID de chat Telegram",
+    email: "E-mail",
+    emailNote: "Recevoir les nouveautés par e-mail.",
+    emailPlaceholder: "toi@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "Saisis ton numéro au format international (+33…). Note : le WhatsApp automatique nécessite une validation entreprise ; ce canal peut rester en attente jusqu'à activation.",
+    whatsappPlaceholder: "+33 6 xx xx xx xx",
+    privacy:
+      "Ce sont tes données personnelles, utilisées uniquement pour te notifier et jamais partagées.",
+    saved: "Canaux enregistrés.",
+    saveFail: "échec de l'enregistrement",
+  },
+
   settings: {
     account: "Votre compte Whenly",
     language: "Langue",

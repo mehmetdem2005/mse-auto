@@ -256,6 +256,26 @@ export const ja: Catalog = {
     },
     expiry: { label: "期限・更新", sentence: "ドメイン・証明書・サブスクの期限切れ前に通知して" },
   },
+  channels: {
+    title: "通知チャネル",
+    sub: "Telegram · メール · WhatsApp",
+    intro:
+      "プッシュに加えて、ここにも更新を送れます。プッシュは常時オン、これは追加です。共有（個人フィルタなし）ウォッチャーのみ対象。",
+    telegram: "Telegram",
+    telegramNote: "ボットに /start を送り、chat ID をここに貼り付け。無料で最速。",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "メール",
+    emailNote: "更新をメールで受け取る。",
+    emailPlaceholder: "you@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "番号を国際形式で入力（+81…）。注意：自動WhatsAppにはビジネス承認が必要で、有効化までこのチャネルは保留になる場合があります。",
+    whatsappPlaceholder: "+81 90 xxxx xxxx",
+    privacy: "これはあなたの個人データで、通知のみに使用され共有されません。",
+    saved: "チャネルを保存しました。",
+    saveFail: "保存できませんでした",
+  },
+
   settings: {
     account: "あなたのWhenlyアカウント",
     language: "言語",

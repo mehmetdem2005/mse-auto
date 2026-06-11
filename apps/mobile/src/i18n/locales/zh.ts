@@ -240,6 +240,26 @@ export const zh: Catalog = {
     brand: { label: "品牌监测", sentence: "当我的品牌在网上被负面提及时通知我" },
     expiry: { label: "到期/续费", sentence: "在我的域名、证书或订阅到期前通知我" },
   },
+  channels: {
+    title: "通知渠道",
+    sub: "Telegram · 邮件 · WhatsApp",
+    intro:
+      "除推送外，我们也可将动态发送到这里。推送始终开启；这些为额外渠道。仅对共享（无个人过滤）的监视生效。",
+    telegram: "Telegram",
+    telegramNote: "向我们的机器人发送 /start，并把 chat ID 粘贴到这里。免费且最快。",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "邮件",
+    emailNote: "通过邮件接收动态。",
+    emailPlaceholder: "you@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "请以国际格式输入号码（+86…）。注意：自动 WhatsApp 需要商业审核；启用前此渠道可能处于待定状态。",
+    whatsappPlaceholder: "+86 1xx xxxx xxxx",
+    privacy: "这是你的个人数据，仅用于通知你，绝不共享。",
+    saved: "渠道已保存。",
+    saveFail: "保存失败",
+  },
+
   settings: {
     account: "你的Whenly账户",
     language: "语言",

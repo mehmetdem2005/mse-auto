@@ -265,6 +265,26 @@ export const hi: Catalog = {
       sentence: "मेरा डोमेन, प्रमाणपत्र या सदस्यता समाप्त होने से पहले सूचित करें",
     },
   },
+  channels: {
+    title: "सूचना चैनल",
+    sub: "Telegram · ईमेल · WhatsApp",
+    intro:
+      "पुश के अतिरिक्त, हम घटनाक्रम यहाँ भी भेज सकते हैं। पुश हमेशा चालू रहता है; ये अतिरिक्त हैं। केवल साझा (बिना व्यक्तिगत फ़िल्टर) वॉचर्स के लिए काम करता है।",
+    telegram: "Telegram",
+    telegramNote: "हमारे बॉट को /start भेजें और chat ID यहाँ चिपकाएँ। मुफ़्त और सबसे तेज़।",
+    telegramPlaceholder: "Telegram chat ID",
+    email: "ईमेल",
+    emailNote: "घटनाक्रम ईमेल से पाएँ।",
+    emailPlaceholder: "you@email.com",
+    whatsapp: "WhatsApp",
+    whatsappNote:
+      "अपना नंबर अंतरराष्ट्रीय प्रारूप में दर्ज करें (+91…)। नोट: स्वचालित WhatsApp के लिए व्यावसायिक स्वीकृति चाहिए; सक्रिय होने तक यह चैनल लंबित रह सकता है।",
+    whatsappPlaceholder: "+91 9xxxx xxxxx",
+    privacy: "यह आपका व्यक्तिगत डेटा है, केवल आपको सूचित करने के लिए उपयोग होता है और साझा नहीं किया जाता।",
+    saved: "चैनल सहेजे गए।",
+    saveFail: "सहेजा नहीं जा सका",
+  },
+
   settings: {
     account: "आपका Whenly खाता",
     language: "भाषा",

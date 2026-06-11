@@ -270,6 +270,31 @@ export interface Database {
         Update: { fcm_token?: string; platform?: string };
         Relationships: [];
       };
+      user_channels: {
+        Row: {
+          user_id: string;
+          telegram_chat_id: string | null;
+          email: string | null;
+          whatsapp_to: string | null;
+          enabled: string[];
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          telegram_chat_id?: string | null;
+          email?: string | null;
+          whatsapp_to?: string | null;
+          enabled?: string[];
+          updated_at?: string;
+        };
+        Update: {
+          telegram_chat_id?: string | null;
+          email?: string | null;
+          whatsapp_to?: string | null;
+          enabled?: string[];
+        };
+        Relationships: [];
+      };
       user_feedback: {
         Row: { id: string; user_id: string; event_id: string; verdict: string; created_at: string };
         Insert: {
