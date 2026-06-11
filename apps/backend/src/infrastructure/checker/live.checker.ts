@@ -4,6 +4,10 @@ import type { SearchProvider } from "../../domain/search";
 import type { CanonicalTopic } from "../../domain/topic";
 import { fetchOriginText } from "../search/origin";
 
+/** Eskalasyon güven bandı (ADR-073/A2): bu aralıkta 2. derin tur yapılır. */
+const ESCALATE_LOW = 0.4;
+const ESCALATE_HIGH = 0.7;
+
 /** Gerçek checker: web araması + DeepSeek muhakemesi (uçtan uca PII'siz). */
 export class LiveChecker implements Checker {
   constructor(
@@ -56,18 +60,40 @@ export class LiveChecker implements Checker {
     });
     // Hiç kaynak yoksa genel arama yedeği; o da patlarsa boş (checker hatası kaydı
     // run-topic-check tarafından DB'ye yazılır → sessiz değil).
-    const finalHits =
+    let finalHits =
       hits.length > 0 ? hits.slice(0, 10) : await this.search.search(q).catch(() => []);
-    const r = await this.reasoner.reason({
+    let r = await this.reasoner.reason({
       canonicalQuery: q,
       hits: finalHits,
       lastEventDescription: ctx?.lastEventDescription ?? null,
     });
+
+    // ESKALASYON (ADR-073/A2 — effort scaling): ilk karar BELİRSİZ güven bandındaysa
+    // genel arama varyantıyla derin 2. tur + yeniden muhakeme. Net kararlar (yüksek/
+    // düşük güven) tek turda kalır → ekstra LLM+arama maliyeti yalnız belirsiz vakada.
+    // Maks 2 tur — guardrail sabit (sonsuz derinleşme yok).
+    let escalated = false;
+    if (r.confidence >= ESCALATE_LOW && r.confidence <= ESCALATE_HIGH) {
+      escalated = true;
+      const extra = await this.search.search(q).catch(() => []);
+      const known = new Set(finalHits.map((h) => h.url));
+      const merged = [...finalHits, ...extra.filter((h) => !known.has(h.url))].slice(0, 14);
+      // Yeni kaynak gelmediyse 2. muhakemeyi boşa çağırma (token tasarrufu).
+      if (merged.length > finalHits.length) {
+        finalHits = merged;
+        r = await this.reasoner.reason({
+          canonicalQuery: q,
+          hits: finalHits,
+          lastEventDescription: ctx?.lastEventDescription ?? null,
+        });
+      }
+    }
+
     return {
       detected: r.detected,
       description: r.description,
-      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})`,
-      reasoning: r.reasoning,
+      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})${escalated ? " · eskalasyon (2. tur)" : ""}`,
+      reasoning: escalated ? `[ESKALASYON — belirsiz güven, 2. tur] ${r.reasoning}` : r.reasoning,
       confidence: r.confidence,
       searchQuery: ctx?.authorityDomain ? `${q} (+ site:${ctx.authorityDomain})` : q,
       hits: finalHits,

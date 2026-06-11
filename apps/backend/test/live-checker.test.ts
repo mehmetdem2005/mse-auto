@@ -101,3 +101,53 @@ describe("LiveChecker orkestrasyonu (ADR-046/047/048)", () => {
     expect(seen[0]?.lastEventDescription).toBe("önceki olay");
   });
 });
+
+describe("eskalasyon turu (ADR-073/A2)", () => {
+  function reasonerWith(confidences: number[]): { reasoner: EventReasoner; calls: number[] } {
+    const calls: number[] = [];
+    let i = 0;
+    return {
+      calls,
+      reasoner: {
+        async reason(input) {
+          calls.push(input.hits.length);
+          const c = confidences[Math.min(i, confidences.length - 1)] ?? 0.9;
+          i += 1;
+          return { detected: false, description: null, reasoning: "r", confidence: c };
+        },
+      },
+    };
+  }
+  const hit = (u: string): SearchHit => ({ title: u, snippet: "s", url: u, date: null });
+
+  it("belirsiz güvende (0.4–0.7) yeni kaynak varsa 2. muhakeme yapılır ve özet işaretlenir", async () => {
+    const { reasoner, calls } = reasonerWith([0.55, 0.85]);
+    // İlk tur haber kaynağı kullanır; eskalasyondaki genel arama YENİ url getirir.
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner);
+    const out = await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(2); // eskalasyon → 2. çağrı
+    expect(calls[1]).toBeGreaterThan(calls[0] ?? 0); // 2. turda daha fazla kaynak
+    expect(out.resultSummary).toContain("eskalasyon");
+    expect(out.reasoning).toContain("ESKALASYON");
+    expect(out.confidence).toBe(0.85); // 2. turun kararı geçerli
+  });
+
+  it("net (yüksek) güvende eskalasyon TETİKLENMEZ — tek muhakeme", async () => {
+    const { reasoner, calls } = reasonerWith([0.95]);
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner);
+    const out = await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(1);
+    expect(out.resultSummary).not.toContain("eskalasyon");
+  });
+
+  it("belirsiz güvende YENİ kaynak yoksa 2. muhakeme boşa çağrılmaz (token tasarrufu)", async () => {
+    const { reasoner, calls } = reasonerWith([0.5]);
+    // Genel arama da aynı url'i döner → merge yeni kaynak eklemez.
+    const p = provider({ news: [hit("https://same.com")], general: [hit("https://same.com")] });
+    const checker = new LiveChecker(p, reasoner);
+    await checker.check(topic, { lastEventDescription: null });
+    expect(calls.length).toBe(1);
+  });
+});
