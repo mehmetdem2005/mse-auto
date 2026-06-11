@@ -1,3 +1,5 @@
+import { toast } from "@/components/feedback";
+import { BottomSheet } from "@/components/sheet";
 import { Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type LangCode, SUPPORTED_LANGS, setLanguage } from "@/i18n";
@@ -10,7 +12,7 @@ import { useRouter } from "expo-router";
 import { Check, ChevronRight, Globe2, LifeBuoy, ShieldCheck } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Modal, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -116,46 +118,31 @@ export default function Settings() {
               <ChevronRight size={16} color="#475569" />
             </View>
           </Pressable>
-          <Modal
-            transparent
-            visible={langOpen}
-            animationType="fade"
-            onRequestClose={() => setLangOpen(false)}
-          >
-            <Pressable
-              className="flex-1 bg-black/30 justify-center px-10"
-              onPress={() => setLangOpen(false)}
-              accessibilityLabel={t("common.close")}
-            >
-              <View className="bg-panel rounded-2xl overflow-hidden max-h-[70%]">
-                <ScrollView>
-                  {SUPPORTED_LANGS.map((l) => {
-                    const sel = i18n.language === l.code;
-                    return (
-                      <Pressable
-                        key={l.code}
-                        onPress={() => {
-                          void setLanguage(l.code as LangCode);
-                          setLangOpen(false);
-                        }}
-                        accessibilityRole="menuitem"
-                        accessibilityState={{ selected: sel }}
-                        accessibilityLabel={l.native}
-                        className="flex-row items-center justify-between px-5 min-h-[52px] border-b border-line active:bg-panel2"
-                      >
-                        <Text
-                          className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}
-                        >
-                          {l.native}
-                        </Text>
-                        {sel ? <Check size={17} color="#6366F1" /> : null}
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-            </Pressable>
-          </Modal>
+          <BottomSheet visible={langOpen} onClose={() => setLangOpen(false)}>
+            <View>
+              {SUPPORTED_LANGS.map((l) => {
+                const sel = i18n.language === l.code;
+                return (
+                  <Pressable
+                    key={l.code}
+                    onPress={() => {
+                      void setLanguage(l.code as LangCode);
+                      setLangOpen(false);
+                    }}
+                    accessibilityRole="menuitem"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={l.native}
+                    className="flex-row items-center justify-between px-5 min-h-[52px] border-b border-line active:bg-panel2"
+                  >
+                    <Text className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}>
+                      {l.native}
+                    </Text>
+                    {sel ? <Check size={17} color="#6366F1" /> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </BottomSheet>
 
           <Pressable
             onPress={() => router.push("/support")}
@@ -210,46 +197,31 @@ export default function Settings() {
               <ChevronRight size={16} color="#475569" />
             </View>
           </Pressable>
-          <Modal
-            transparent
-            visible={langOpen}
-            animationType="fade"
-            onRequestClose={() => setLangOpen(false)}
-          >
-            <Pressable
-              className="flex-1 bg-black/30 justify-center px-10"
-              onPress={() => setLangOpen(false)}
-              accessibilityLabel={t("common.close")}
-            >
-              <View className="bg-panel rounded-2xl overflow-hidden max-h-[70%]">
-                <ScrollView>
-                  {SUPPORTED_LANGS.map((l) => {
-                    const sel = i18n.language === l.code;
-                    return (
-                      <Pressable
-                        key={l.code}
-                        onPress={() => {
-                          void setLanguage(l.code as LangCode);
-                          setLangOpen(false);
-                        }}
-                        accessibilityRole="menuitem"
-                        accessibilityState={{ selected: sel }}
-                        accessibilityLabel={l.native}
-                        className="flex-row items-center justify-between px-5 min-h-[52px] border-b border-line active:bg-panel2"
-                      >
-                        <Text
-                          className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}
-                        >
-                          {l.native}
-                        </Text>
-                        {sel ? <Check size={17} color="#6366F1" /> : null}
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-            </Pressable>
-          </Modal>
+          <BottomSheet visible={langOpen} onClose={() => setLangOpen(false)}>
+            <View>
+              {SUPPORTED_LANGS.map((l) => {
+                const sel = i18n.language === l.code;
+                return (
+                  <Pressable
+                    key={l.code}
+                    onPress={() => {
+                      void setLanguage(l.code as LangCode);
+                      setLangOpen(false);
+                    }}
+                    accessibilityRole="menuitem"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={l.native}
+                    className="flex-row items-center justify-between px-5 min-h-[52px] border-b border-line active:bg-panel2"
+                  >
+                    <Text className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}>
+                      {l.native}
+                    </Text>
+                    {sel ? <Check size={17} color="#6366F1" /> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </BottomSheet>
 
           <Pressable
             onPress={() => router.push("/support")}

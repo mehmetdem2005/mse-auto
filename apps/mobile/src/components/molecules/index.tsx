@@ -1,5 +1,6 @@
 import { PressScale } from "@/components/motion";
 import { type EventFacts, parseEventFacts } from "@/domain/personal";
+import { haptic } from "@/lib/haptics";
 // Molecules — atom + primitive bileşimleri (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { LinearGradient } from "expo-linear-gradient";
@@ -192,7 +193,10 @@ export function Vote({
 }: { kind: "up" | "down"; label: string; onPress: () => void }) {
   return (
     <PressScale
-      onPress={onPress}
+      onPress={() => {
+        haptic.light();
+        onPress();
+      }}
       className="w-12 h-12 rounded-full bg-panel2 items-center justify-center"
       accessibilityRole="button"
       accessibilityLabel={label}

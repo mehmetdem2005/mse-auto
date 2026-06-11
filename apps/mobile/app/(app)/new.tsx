@@ -7,6 +7,7 @@ import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
 import { type AssistMessage, api } from "@/lib/api";
 import { setCriterion } from "@/lib/criteria-store";
 import { setCachedEntitlements } from "@/lib/entitlements-cache";
+import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -247,6 +248,7 @@ export default function NewWatcher() {
     mutationFn: (_criterion: PersonalCriterion | null) =>
       api.createWatcher(rawIntent.trim(), freq, sourcePref),
     onSuccess: async (watch, criterion) => {
+      haptic.success();
       if (criterion) await setCriterion(watch.id, criterion);
       await setAlarmConfig(watch.id, { channel: alarmChannel, soundId });
       await qc.invalidateQueries({ queryKey: qk.watchers });

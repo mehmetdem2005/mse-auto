@@ -1,4 +1,5 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
+import { haptic } from "@/lib/haptics";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, Plus } from "lucide-react-native";
@@ -69,13 +70,17 @@ export function Btn({
 
 /** Material 3 FAB — ekranın birincil eylemi (yüzen, sağ-alt). Vektör ikon (emoji yasak). */
 export function Fab({
-  onPress,
+  onPress: onPressProp,
   accessibilityLabel,
 }: {
   onPress: () => void;
   accessibilityLabel: string;
 }) {
   const reduce = useReduceMotion();
+  const onPress = () => {
+    haptic.medium();
+    onPressProp();
+  };
   return (
     <Pressable
       onPress={onPress}

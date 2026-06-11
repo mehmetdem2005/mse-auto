@@ -1,4 +1,5 @@
 import "@/i18n";
+import { ToastHost } from "@/components/feedback";
 import "../global.css";
 import { registerBackgroundNotifications } from "@/lib/background-notifications";
 import { queryClient } from "@/lib/query";
@@ -46,6 +47,7 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
           </Stack.Protected>
         </Stack>
+        <ToastHost />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

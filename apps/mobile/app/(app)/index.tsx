@@ -1,4 +1,6 @@
+import { toast } from "@/components/feedback";
 import { EnterItem } from "@/components/motion";
+import { BottomSheet } from "@/components/sheet";
 import {
   Badge,
   Card,
@@ -25,7 +27,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, FlatList, Modal, Pressable, RefreshControl, Text, View } from "react-native";
+import { Alert, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 function useLabelFreq(): (m: number) => string {
   const { t } = useTranslation();
@@ -56,14 +58,12 @@ export default function Watchers() {
     mutationFn: (v: { id: string; status: "active" | "paused" }) =>
       api.setMyWatchStatus(v.id, v.status),
     onSuccess: invalidate,
-    onError: (e) =>
-      Alert.alert(t("watchers.fail"), e instanceof Error ? e.message : t("common.loadError")),
+    onError: (e) => toast.error(e instanceof Error ? e.message : t("common.loadError")),
   });
   const del = useMutation({
     mutationFn: (id: string) => api.deleteMyWatch(id),
     onSuccess: invalidate,
-    onError: (e) =>
-      Alert.alert(t("watchers.fail"), e instanceof Error ? e.message : t("common.loadError")),
+    onError: (e) => toast.error(e instanceof Error ? e.message : t("common.loadError")),
   });
 
   function confirmDelete(w: Watch) {
@@ -200,43 +200,37 @@ function WatchRow({
           <MoreVertical size={18} color="#475569" />
         </Pressable>
       </View>
-      <Modal transparent visible={menu} animationType="fade" onRequestClose={() => setMenu(false)}>
-        <Pressable
-          className="flex-1 bg-black/30 justify-center px-10"
-          onPress={() => setMenu(false)}
-          accessibilityLabel={t("common.close")}
-        >
-          <View className="bg-panel rounded-2xl overflow-hidden">
-            <MenuItem
-              Icon={Search}
-              label={t("watchers.menuOpen")}
-              onPress={() => {
-                setMenu(false);
-                onPress();
-              }}
-            />
-            <MenuItem
-              Icon={active ? Pause : Play}
-              label={active ? t("watchers.pause") : t("watchers.resume")}
-              disabled={busy}
-              onPress={() => {
-                setMenu(false);
-                onToggle();
-              }}
-            />
-            <MenuItem
-              Icon={Trash2}
-              label={t("common.delete")}
-              tone="danger"
-              disabled={busy}
-              onPress={() => {
-                setMenu(false);
-                onDelete();
-              }}
-            />
-          </View>
-        </Pressable>
-      </Modal>
+      <BottomSheet visible={menu} onClose={() => setMenu(false)}>
+        <View>
+          <MenuItem
+            Icon={Search}
+            label={t("watchers.menuOpen")}
+            onPress={() => {
+              setMenu(false);
+              onPress();
+            }}
+          />
+          <MenuItem
+            Icon={active ? Pause : Play}
+            label={active ? t("watchers.pause") : t("watchers.resume")}
+            disabled={busy}
+            onPress={() => {
+              setMenu(false);
+              onToggle();
+            }}
+          />
+          <MenuItem
+            Icon={Trash2}
+            label={t("common.delete")}
+            tone="danger"
+            disabled={busy}
+            onPress={() => {
+              setMenu(false);
+              onDelete();
+            }}
+          />
+        </View>
+      </BottomSheet>
       <View className="flex-row items-center gap-2 mt-3">
         <Badge tone={active ? "pos" : "muted"}>
           {active ? t("common.active") : t("common.paused")}
