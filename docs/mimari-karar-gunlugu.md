@@ -771,3 +771,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Dağıtım güvenliği:** Sınıflandırıcı canlı-migration'ı doğru şekilde engelledi (CLAUDE.md: açık izin şart). Supabase repo'ya **zarif geri-düşüş** eklendi: `tokens_used` kolonu yoksa insert tokens'sız yeniden denenir, list `select("*")` — migration uygulanmadan deploy CANLIYI KIRMAZ; izin sonrası izler otomatik akar. **Migration 0010 canlıya UYGULANMADI — kullanıcı izni bekliyor.**
 - **Doğrulama:** 2 yeni test (checker+verifier toplama=1000; bilgi yoksa null) → 107 test.
 - **ISO:** 25010 *ölçülebilir maliyet NFR* · 25012 (gerçek usage verisi) · 27002 (kaynak görünürlüğü) · 42010.
+
+## ADR-078 — Ajan mimarisi A5: model yönlendirme (rol başına env'den model)
+- **Durum:** Kabul · ADR-060 A5 (son madde — plan A0–A5 tamam); Dalga-1.
+- **Karar:** Üç LLM rolünün modeli env'den seçilebilir: `GROQ_REASONER_MODEL` / `GROQ_VERIFIER_MODEL` / `GROQ_ASSISTANT_MODEL` (hepsi opsiyonel). Container ilgili sınıflara geçirir (`GroqEventReasoner`/`GroqEventVerifier`/`GroqIntentAssistant` zaten `model` parametresi alıyordu); boş bırakılırsa sınıf varsayılanı (`llama-3.3-70b-versatile`) — **davranış değişmez**. Bu, "ucuz model basit işe / güçlü model kritik karara" yönlendirmesinin ALTYAPISIDIR: ör. doğrulayıcıyı küçük modele indirme denemesi artık kod değişikliği değil, env değişikliği.
+- **Kapsam dürüstlüğü:** Varsayılanlar BİLEREK değiştirilmedi — herhangi bir ucuzlatma, önce A4 eval düzeneğiyle (golden-set tespit isabeti, GROQ+SERPER anahtarı gerekir) ölçülmeden yapılmaz. Otomatik/dinamik yönlendirme (vaka zorluğuna göre model seçimi) bu turda YOK; eskalasyon (ADR-073) zaten belirsiz vakada efor artırıyor.
+- **Doğrulama:** typecheck + biome + 107 test (mevcut davranış korunduğundan yeni test gerekmedi; env şeması zod ile doğrulanıyor).
+- **ISO:** 25010 *Maintainability/Modifiability* (modeli env'den değiştirme) · 42010 (yapılandırma görünümü) · 29148 (izlenebilir A5 gereksinimi).

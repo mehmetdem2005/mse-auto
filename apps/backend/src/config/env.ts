@@ -17,6 +17,11 @@ const EnvSchema = z.object({
   // Tarama zaman aşımı (ADR-076 A0 guardrail) — asılı checker'ı keser.
   CHECK_TIMEOUT_MS: z.coerce.number().int().positive().optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
+  // Model yönlendirme (ADR-078 A5): rol başına model env'den seçilebilir.
+  // Boşsa her rol varsayılanı kullanır (llama-3.3-70b-versatile) — davranış değişmez.
+  GROQ_REASONER_MODEL: z.string().min(1).optional(),
+  GROQ_VERIFIER_MODEL: z.string().min(1).optional(),
+  GROQ_ASSISTANT_MODEL: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
   // FCM push (yoksa NoopNotifier — dev)

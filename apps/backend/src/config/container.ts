@@ -119,8 +119,9 @@ function buildChecker(env: Env): Checker {
   const providers: SearchProvider[] = [];
   if (env.SERPER_API_KEY) providers.push(new SerperSearchProvider(env.SERPER_API_KEY));
   if (env.TAVILY_API_KEY) providers.push(new TavilySearchProvider(env.TAVILY_API_KEY));
+  // Model yönlendirme (ADR-078 A5): rol başına model env'den; boşsa sınıf varsayılanı.
   const reasoner = env.GROQ_API_KEY
-    ? new GroqEventReasoner(env.GROQ_API_KEY)
+    ? new GroqEventReasoner(env.GROQ_API_KEY, env.GROQ_REASONER_MODEL)
     : env.DEEPSEEK_API_KEY
       ? new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY)
       : null;
@@ -143,7 +144,7 @@ function buildAuthority(env: Env): AuthorityResolver {
 function buildAssistant(env: Env): IntentAssistant {
   // Niyet asistanı: Groq (varsa) yoksa sezgisel fallback (anahtarsız dev).
   return env.GROQ_API_KEY
-    ? new GroqIntentAssistant(env.GROQ_API_KEY)
+    ? new GroqIntentAssistant(env.GROQ_API_KEY, env.GROQ_ASSISTANT_MODEL)
     : new HeuristicIntentAssistant();
 }
 
@@ -191,7 +192,9 @@ function adminIdsFromEnv(env: Env): ReadonlySet<string> {
 export function createContainer(env: Env): Container {
   const checker = buildChecker(env);
   // Doğrulayıcı (ADR-060 A1): GROQ varsa kur; yoksa undefined → doğrulama atlanır.
-  const verifier = env.GROQ_API_KEY ? new GroqEventVerifier(env.GROQ_API_KEY) : undefined;
+  const verifier = env.GROQ_API_KEY
+    ? new GroqEventVerifier(env.GROQ_API_KEY, env.GROQ_VERIFIER_MODEL)
+    : undefined;
   const checkTimeoutMs = env.CHECK_TIMEOUT_MS;
   const assistant = buildAssistant(env);
   const authority = buildAuthority(env);
