@@ -218,6 +218,11 @@ export const zh: Catalog = {
   settings: {
     account: "你的Whenly账户",
     language: "语言",
+    appearance: "外观",
+    themeSystem: "系统",
+    themeLight: "浅色",
+    themeDark: "深色",
+    appearanceA11y: "选择应用外观",
     languageA11y: "选择应用语言",
     supportTitle: "支持与联系",
     supportSub: "报告问题 · 实时支持 · 电子邮件",

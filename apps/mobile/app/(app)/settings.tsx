@@ -6,10 +6,20 @@ import { type LangCode, SUPPORTED_LANGS, setLanguage } from "@/i18n";
 import { api } from "@/lib/api";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
+import { useTheme, useThemeStore } from "@/theme";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
-import { Check, ChevronRight, Globe2, LifeBuoy, ShieldCheck } from "lucide-react-native";
+import {
+  Check,
+  ChevronRight,
+  Globe2,
+  LifeBuoy,
+  MonitorSmartphone,
+  Moon,
+  ShieldCheck,
+  Sun,
+} from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
@@ -17,6 +27,9 @@ import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native
 export default function Settings() {
   const { t, i18n } = useTranslation();
   const [langOpen, setLangOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const theme = useTheme();
+  const setMode = useThemeStore((st) => st.setMode);
   const router = useRouter();
   const session = useAuth((s) => s.session);
   const setSession = useAuth((s) => s.setSession);
@@ -144,6 +157,71 @@ export default function Settings() {
             </View>
           </BottomSheet>
 
+          {/* Görünüm seçici (ADR-063) — Sistem/Açık/Koyu, kalıcı */}
+          <Pressable
+            onPress={() => setThemeOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t("settings.appearanceA11y")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                {theme.dark ? (
+                  <Moon size={18} color={theme.colors.accent} />
+                ) : (
+                  <Sun size={18} color={theme.colors.accent} />
+                )}
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("settings.appearance")}</Text>
+                <Text className="text-muted text-xs mt-0.5">
+                  {t(
+                    theme.mode === "system"
+                      ? "settings.themeSystem"
+                      : theme.mode === "dark"
+                        ? "settings.themeDark"
+                        : "settings.themeLight",
+                  )}
+                </Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
+          <BottomSheet visible={themeOpen} onClose={() => setThemeOpen(false)}>
+            <View>
+              {(
+                [
+                  ["system", "settings.themeSystem", MonitorSmartphone],
+                  ["light", "settings.themeLight", Sun],
+                  ["dark", "settings.themeDark", Moon],
+                ] as const
+              ).map(([m, key, Icon]) => {
+                const sel = theme.mode === m;
+                return (
+                  <Pressable
+                    key={m}
+                    onPress={() => {
+                      setMode(m);
+                      setThemeOpen(false);
+                    }}
+                    accessibilityRole="menuitem"
+                    accessibilityState={{ selected: sel }}
+                    accessibilityLabel={t(key)}
+                    className="flex-row items-center gap-3 px-5 min-h-[52px] border-b border-line active:bg-panel2"
+                  >
+                    <Icon size={18} color={sel ? theme.colors.accent : theme.colors.mutedIcon} />
+                    <Text
+                      className={`text-[15px] flex-1 ${sel ? "text-accent font-bold" : "text-text"}`}
+                    >
+                      {t(key)}
+                    </Text>
+                    {sel ? <Check size={17} color={theme.colors.accent} /> : null}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </BottomSheet>
+
           <Pressable
             onPress={() => router.push("/support")}
             accessibilityRole="button"
@@ -176,52 +254,6 @@ export default function Settings() {
             </Btn>
             {status ? <Text className="text-muted text-xs mt-3">{status}</Text> : null}
           </View>
-
-          {/* Dil seçici (ADR-053) — 11 dil, kalıcı tercih */}
-          <Pressable
-            onPress={() => setLangOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t("settings.languageA11y")}
-            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <Globe2 size={18} color="#6366F1" />
-              </View>
-              <View className="flex-1">
-                <Text className="text-text text-sm font-semibold">{t("settings.language")}</Text>
-                <Text className="text-muted text-xs mt-0.5">
-                  {SUPPORTED_LANGS.find((l) => l.code === i18n.language)?.native ?? i18n.language}
-                </Text>
-              </View>
-              <ChevronRight size={16} color="#475569" />
-            </View>
-          </Pressable>
-          <BottomSheet visible={langOpen} onClose={() => setLangOpen(false)}>
-            <View>
-              {SUPPORTED_LANGS.map((l) => {
-                const sel = i18n.language === l.code;
-                return (
-                  <Pressable
-                    key={l.code}
-                    onPress={() => {
-                      void setLanguage(l.code as LangCode);
-                      setLangOpen(false);
-                    }}
-                    accessibilityRole="menuitem"
-                    accessibilityState={{ selected: sel }}
-                    accessibilityLabel={l.native}
-                    className="flex-row items-center justify-between px-5 min-h-[52px] border-b border-line active:bg-panel2"
-                  >
-                    <Text className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}>
-                      {l.native}
-                    </Text>
-                    {sel ? <Check size={17} color="#6366F1" /> : null}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </BottomSheet>
 
           <Pressable
             onPress={() => router.push("/support")}

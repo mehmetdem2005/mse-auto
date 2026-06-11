@@ -222,6 +222,11 @@ export const es: Catalog = {
   settings: {
     account: "Tu cuenta Whenly",
     language: "Idioma",
+    appearance: "Apariencia",
+    themeSystem: "Sistema",
+    themeLight: "Claro",
+    themeDark: "Oscuro",
+    appearanceA11y: "Elegir apariencia",
     languageA11y: "Elegir idioma de la app",
     supportTitle: "Soporte y contacto",
     supportSub: "Reportar problema · soporte en vivo · correo",

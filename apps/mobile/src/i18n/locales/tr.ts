@@ -222,6 +222,11 @@ export const tr = {
   settings: {
     account: "Whenly hesabın",
     language: "Dil",
+    appearance: "Görünüm",
+    themeSystem: "Sistem",
+    themeLight: "Açık",
+    themeDark: "Koyu",
+    appearanceA11y: "Uygulama görünümünü seç",
     languageA11y: "Uygulama dilini seç",
     supportTitle: "Destek & İletişim",
     supportSub: "Sorun bildir · canlı destek · e-posta",

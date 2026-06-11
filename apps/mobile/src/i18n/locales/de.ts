@@ -227,6 +227,11 @@ export const de: Catalog = {
   settings: {
     account: "Dein Whenly-Konto",
     language: "Sprache",
+    appearance: "Erscheinungsbild",
+    themeSystem: "System",
+    themeLight: "Hell",
+    themeDark: "Dunkel",
+    appearanceA11y: "Erscheinungsbild wählen",
     languageA11y: "App-Sprache wählen",
     supportTitle: "Support & Kontakt",
     supportSub: "Problem melden · Live-Support · E-Mail",

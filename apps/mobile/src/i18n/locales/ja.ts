@@ -221,6 +221,11 @@ export const ja: Catalog = {
   settings: {
     account: "あなたのWhenlyアカウント",
     language: "言語",
+    appearance: "外観",
+    themeSystem: "システム",
+    themeLight: "ライト",
+    themeDark: "ダーク",
+    appearanceA11y: "アプリの外観を選択",
     languageA11y: "アプリ言語を選択",
     supportTitle: "サポート & お問い合わせ",
     supportSub: "問題を報告 · ライブサポート · メール",

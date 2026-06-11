@@ -220,6 +220,11 @@ export const ar: Catalog = {
   settings: {
     account: "حسابك في Whenly",
     language: "اللغة",
+    appearance: "المظهر",
+    themeSystem: "النظام",
+    themeLight: "فاتح",
+    themeDark: "داكن",
+    appearanceA11y: "اختيار المظهر",
     languageA11y: "اختر لغة التطبيق",
     supportTitle: "الدعم و الاتصال",
     supportSub: "إبلاغ مشكلة · الدعم المباشر · البريد الإلكتروني",

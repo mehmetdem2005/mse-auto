@@ -225,6 +225,11 @@ export const ru: Catalog = {
   settings: {
     account: "Ваша учетная запись Whenly",
     language: "Язык",
+    appearance: "Оформление",
+    themeSystem: "Система",
+    themeLight: "Светлая",
+    themeDark: "Тёмная",
+    appearanceA11y: "Выбрать оформление",
     languageA11y: "Выберите язык приложения",
     supportTitle: "Поддержка и контакты",
     supportSub: "Сообщить о проблеме · поддержка в режиме реального времени · электронная почта",

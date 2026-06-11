@@ -5,18 +5,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Aurora Day — aydınlık tema (8pt grid + Material/HIG ilhamı)
-        ink: "#F5F7FB", // uygulama zemini (açık)
-        panel: "#FFFFFF", // kartlar
-        panel2: "#EEF2F8", // ikincil yüzey
-        line: "#E2E8F0", // kenarlık
-        accent: "#6366F1", // indigo (birincil)
-        accent2: "#8B5CF6", // mor (vurgu/degrade)
-        text: "#0F172A", // birincil metin (slate-900)
-        muted: "#475569", // ikincil metin (slate-600) — küçük metinde de AA ≥4.5:1
-        muted2: "#64748B", // yalnız büyük/dekoratif (AA için küçük metinde kullanma)
-        pos: "#16A34A", // olumlu/yeşil
-        neg: "#DC2626", // olumsuz/kırmızı
+        // Tema token'ları CSS değişkeni (ADR-063) — açık/koyu paletler src/theme'da.
+        // rgb(var()) biçimi /10 gibi opaklık varyantlarını korur.
+        ink: "rgb(var(--ink) / <alpha-value>)",
+        panel: "rgb(var(--panel) / <alpha-value>)",
+        panel2: "rgb(var(--panel2) / <alpha-value>)",
+        line: "rgb(var(--line) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        accent2: "rgb(var(--accent2) / <alpha-value>)",
+        text: "rgb(var(--text) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        muted2: "rgb(var(--muted2) / <alpha-value>)",
+        pos: "rgb(var(--pos) / <alpha-value>)",
+        neg: "rgb(var(--neg) / <alpha-value>)",
       },
     },
   },

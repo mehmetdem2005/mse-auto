@@ -221,6 +221,11 @@ export const hi: Catalog = {
   settings: {
     account: "आपका Whenly खाता",
     language: "भाषा",
+    appearance: "दिखावट",
+    themeSystem: "सिस्टम",
+    themeLight: "हल्का",
+    themeDark: "गहरा",
+    appearanceA11y: "ऐप की दिखावट चुनें",
     languageA11y: "एप्लिकेशन भाषा चुनें",
     supportTitle: "समर्थन और संपर्क",
     supportSub: "समस्या रिपोर्ट करें · लाइव समर्थन · ईमेल",

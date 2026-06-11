@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { configureNotificationHandler, registerForegroundListener } from "@/lib/notifications";
 import { qk } from "@/lib/query";
+import { useTheme } from "@/theme";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
 import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
@@ -28,6 +29,7 @@ function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; fo
 
 export default function AppLayout() {
   const { t } = useTranslation();
+  const theme = useTheme();
   useEffect(() => {
     configureNotificationHandler();
     return registerForegroundListener();
@@ -38,8 +40,8 @@ export default function AppLayout() {
   const { data: me, isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: "#F5F7FB", justifyContent: "center" }}>
-        <ActivityIndicator color="#6366F1" />
+      <View style={{ flex: 1, backgroundColor: theme.colors.ink, justifyContent: "center" }}>
+        <ActivityIndicator color={theme.colors.accent} />
       </View>
     );
   }
@@ -48,17 +50,17 @@ export default function AppLayout() {
     <Tabs
       // Native header tüm sekmelerde kapalı — GradientHero kabuk görevini üstlenir (ADR-054/058).
       screenOptions={{
-        sceneStyle: { backgroundColor: "#F5F7FB" },
+        sceneStyle: { backgroundColor: theme.colors.ink },
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#E2E8F0",
+          backgroundColor: theme.colors.panel,
+          borderTopColor: theme.colors.line,
           height: 64,
           paddingTop: 6,
           paddingBottom: 8,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
-        tabBarActiveTintColor: "#6366F1",
-        tabBarInactiveTintColor: "#64748B",
+        tabBarActiveTintColor: theme.colors.accent,
+        tabBarInactiveTintColor: theme.colors.mutedIcon,
       }}
     >
       <Tabs.Screen
