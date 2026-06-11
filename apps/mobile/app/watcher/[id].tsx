@@ -2,6 +2,7 @@ import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard, Vote } from "@/components/ui";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import {
@@ -191,6 +192,7 @@ function EventCard({
  */
 function RunCard({ r }: { r: CheckRunView }): ReactNode {
   const { t, i18n } = useTranslation();
+  const runTheme = useTheme();
   const [open, setOpen] = useState(false);
   const hit = r.decision;
   return (
@@ -239,7 +241,7 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
                 {t("detail.toModel")}
               </Text>
               <View className="flex-row items-center gap-1.5">
-                <Search size={12} color="#0F172A" />
+                <Search size={12} color={runTheme.colors.text} />
                 <Text className="text-text text-xs leading-5 flex-1">
                   {t("detail.watching", { q: r.searchQuery ?? "—" })}
                 </Text>

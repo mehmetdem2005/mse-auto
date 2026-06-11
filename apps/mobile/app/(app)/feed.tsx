@@ -13,6 +13,7 @@ import {
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
 import { qk } from "@/lib/query";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -87,6 +88,7 @@ function groupFeed(list: FeedItem[]): FeedGroup[] {
 
 export default function Feed() {
   const { t } = useTranslation();
+  const theme = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<Filter>("all");
@@ -236,7 +238,7 @@ export default function Feed() {
                     >
                       <Text
                         className="text-[12px] font-semibold"
-                        style={{ color: on ? "#FFFFFF" : "#475569" }}
+                        style={{ color: on ? "#FFFFFF" : theme.colors.muted }}
                       >
                         {t(FILTER_KEYS[id])}
                       </Text>

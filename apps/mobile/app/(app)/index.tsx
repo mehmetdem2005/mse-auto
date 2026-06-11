@@ -41,6 +41,7 @@ function useLabelFreq(): (m: number) => string {
 
 export default function Watchers() {
   const { t } = useTranslation();
+  const screenTheme = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
@@ -118,7 +119,7 @@ export default function Watchers() {
                     >
                       <Text
                         className="text-xs font-semibold"
-                        style={{ color: filter === v ? "#FFFFFF" : "#475569" }}
+                        style={{ color: filter === v ? "#FFFFFF" : screenTheme.colors.muted }}
                       >
                         {l}
                       </Text>

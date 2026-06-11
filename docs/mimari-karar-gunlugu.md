@@ -690,3 +690,11 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Karar:** (1) BottomSheet kritik stilleri **inline + temaya bağlı** (backgroundColor=theme.colors.panel, radius, gölge, tutamaç) — className'e güvenilmiyor. (2) En dış Pressable'a **`theme.cssVars` enjekte edildi** → sheet İÇİNDEKİ className token'ları (liste öğelerinin text-text/border-line/text-accent) yeniden tanımlanır. (3) `maxHeight` yüzde-string yerine Dimensions ile px hesabı (web uyumu). (4) Yan iş — **koyu-mod ikon süpürmesi**: login (göz/placeholder), settings/subscription/support (chevron), watcher kartı (kebab/globe/chevron) sabit hex'ten temaya bağlandı; placeholder #94A3B8 iki temada okunur olduğundan korundu.
 - **Genel ilke (kalıcı):** RN Modal/portal kullanan HER bileşen kök tema-vars'ını görmez → ya inline tema-renkleri ya da portal köküne `cssVars` enjekte edilmeli.
 - **ISO:** 9241 (kullanılabilirlik — kritik akış onarımı) · 25010 *Functional Correctness* · WCAG 1.4.3 (koyu kontrast).
+
+## ADR-066 — Koyu-mod denetimi: segment çipi + detay ikonu görünmezlik onarımı
+- **Durum:** Kabul · ADR-063/065 koyu-tema serisinin denetim turu.
+- **Bulgu (style-prop taraması):** className alamayan `style={{color}}` prop'larında sabit hex koyu temada kırılıyordu — KRİTİK: Akış ve Watcher'lar **segment filtre çipleri** seçili-değilken `#475569` (koyu gri) metin kullanıyordu; koyu zeminde (bg-panel koyu) neredeyse görünmez. Detay ekranı arama ikonu `#0F172A` (koyu) benzer.
+- **Karar:** Segment çip metni `theme.colors.muted` (temaya göre açık/koyu); detay RunCard arama ikonu `runTheme.colors.text`. (feedback toast metni #0F172A KORUNDU — toast'ın kendi açık zemini iki temada sabit, okunur; bilinçli.)
+- **İlke teyidi:** `style={{}}` prop'ları (className değil) tema token'larını OTOMATİK almaz → her style-prop rengi ya temaya bağlanmalı ya iki-temada-okunur sabit olmalı. design-standards'a örtük kural.
+- **Kalan (dürüst):** admin konsolu (TR, işletmeci-içi) sabit renklerde — düşük öncelik, ayrı tur.
+- **ISO:** WCAG 1.4.3/1.4.11 (metin + UI bileşeni kontrastı, koyu) · 9241 · 25010.
