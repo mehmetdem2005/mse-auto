@@ -46,6 +46,9 @@ export const en: Catalog = {
     terms: "By continuing you accept Whenly's terms and privacy policy.",
   },
   feed: {
+    activity: "Activity",
+    last7days: "Last 7 days",
+    activityA11y: "{{total}} detections in the last 7 days",
     title: "Feed",
     subtitle: "Live updates from all your watchers.",
     statWatchers: "Total watchers",
@@ -347,6 +350,13 @@ export const en: Catalog = {
     msgA11y: "Write a support message",
   },
   detail: {
+    insights: "Insights",
+    detectionRate: "Detection rate",
+    confidenceTrend: "Confidence trend (over time)",
+    confidenceTrendA11y: "Confidence trend, {{n}} checks, latest {{last}}%",
+    valueTrend: "{{kind}} trend",
+    numericTrend: "Numeric value trend",
+    numericTrendA11y: "Numeric value trend, {{n}} detections",
     title: "Research",
     detections: "detections",
     noDetections: "No detections yet. Monitoring continues.",

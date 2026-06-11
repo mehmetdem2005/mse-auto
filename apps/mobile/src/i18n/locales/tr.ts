@@ -45,6 +45,9 @@ export const tr = {
     terms: "Devam ederek Whenly'nin koşullarını ve gizlilik politikasını kabul edersin.",
   },
   feed: {
+    activity: "Aktivite",
+    last7days: "Son 7 gün",
+    activityA11y: "Son 7 günde toplam {{total}} tespit",
     title: "Akış",
     subtitle: "Tüm watcher'larından canlı gelişmeler.",
     statWatchers: "Toplam watcher",
@@ -343,6 +346,13 @@ export const tr = {
     msgA11y: "Destek mesajı yaz",
   },
   detail: {
+    insights: "İçgörüler",
+    detectionRate: "Tespit oranı",
+    confidenceTrend: "Güven trendi (zamanla)",
+    confidenceTrendA11y: "Güven trendi, {{n}} kontrol, son değer %{{last}}",
+    valueTrend: "{{kind}} trendi",
+    numericTrend: "Sayısal değer trendi",
+    numericTrendA11y: "Sayısal değer trendi, {{n}} tespit",
     title: "Araştırma",
     detections: "tespitler",
     noDetections: "Henüz bir tespit yok. İzleme sürüyor.",

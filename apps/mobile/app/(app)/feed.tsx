@@ -1,3 +1,4 @@
+import { MiniBars } from "@/components/charts";
 import { EnterItem } from "@/components/motion";
 import {
   Badge,
@@ -41,6 +42,27 @@ const FILTER_KEYS: Record<Filter, string> = {
   unread: "feed.filterUnread",
 };
 
+/** Son 7 günün günlük tespit sayıları + kısa gün etiketleri (cihaz diline göre). */
+function last7Days(list: FeedItem[], lang: string): { counts: number[]; labels: string[] } {
+  const counts = new Array(7).fill(0);
+  const labels: string[] = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dayKeys: string[] = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    dayKeys.push(d.toDateString());
+    labels.push(d.toLocaleDateString(lang, { weekday: "narrow" }));
+  }
+  for (const it of list) {
+    const key = new Date(it.detectedAt).toDateString();
+    const idx = dayKeys.indexOf(key);
+    if (idx >= 0) counts[idx] += 1;
+  }
+  return { counts, labels };
+}
+
 /** Watcher başına TEK kart (ADR-037): tespitleri gruplanır, en yenisi gösterilir. */
 interface FeedGroup {
   watchId: string;
@@ -71,7 +93,7 @@ function groupFeed(list: FeedItem[]): FeedGroup[] {
 }
 
 export default function Feed() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const theme = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
@@ -204,6 +226,32 @@ export default function Feed() {
                   tint="#D97706"
                 />
               </View>
+
+              {/* Son 7 gün aktivite grafiği (gerçek tespit verisinden) */}
+              {list.length > 0 ? (
+                <View className="bg-panel border border-line rounded-2xl p-4 mb-4">
+                  <View className="flex-row items-center justify-between mb-3">
+                    <Text className="text-text text-[13px] font-semibold">
+                      {t("feed.activity")}
+                    </Text>
+                    <Text className="text-muted text-[10px] uppercase tracking-wider">
+                      {t("feed.last7days")}
+                    </Text>
+                  </View>
+                  {(() => {
+                    const { counts, labels } = last7Days(list, i18n.language);
+                    return (
+                      <MiniBars
+                        data={counts}
+                        labels={labels}
+                        a11yLabel={t("feed.activityA11y", {
+                          total: counts.reduce((a, b) => a + b, 0),
+                        })}
+                      />
+                    );
+                  })()}
+                </View>
+              ) : null}
 
               {/* Segment filtre (maket) */}
               <View className="flex-row gap-2 mb-3" accessibilityRole="tablist">

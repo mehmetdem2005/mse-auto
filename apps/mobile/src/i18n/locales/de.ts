@@ -48,6 +48,9 @@ export const de: Catalog = {
       "Durch Fortfahren akzeptierst du die Nutzungsbedingungen und Datenschutzrichtlinien von Whenly.",
   },
   feed: {
+    activity: "Aktivität",
+    last7days: "Letzte 7 Tage",
+    activityA11y: "{{total}} Erkennungen in den letzten 7 Tagen",
     title: "Feed",
     subtitle: "Live-Updates aus all deinen Watchern.",
     statWatchers: "Gesamtzahl der Watcher",
@@ -359,6 +362,13 @@ export const de: Catalog = {
     msgA11y: "Support-Nachricht schreiben",
   },
   detail: {
+    insights: "Einblicke",
+    detectionRate: "Erkennungsrate",
+    confidenceTrend: "Konfidenztrend (im Zeitverlauf)",
+    confidenceTrendA11y: "Konfidenztrend, {{n}} Prüfungen, zuletzt {{last}}%",
+    valueTrend: "{{kind}}-Trend",
+    numericTrend: "Numerischer Werttrend",
+    numericTrendA11y: "Numerischer Werttrend, {{n}} Erkennungen",
     title: "Recherche",
     detections: "Erkennungen",
     noDetections: "Noch keine Erkennungen. Überwachung wird fortgesetzt.",

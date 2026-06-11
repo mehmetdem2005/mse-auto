@@ -46,6 +46,9 @@ export const ar: Catalog = {
     terms: "باستمرارك تقبل شروط Whenly وسياسة الخصوصية.",
   },
   feed: {
+    activity: "النشاط",
+    last7days: "آخر 7 أيام",
+    activityA11y: "{{total}} اكتشافًا خلال آخر 7 أيام",
     title: "الرئيسية",
     subtitle: "التحديثات الحية من جميع مراقبيك.",
     statWatchers: "المراقبين الإجمالي",
@@ -328,6 +331,13 @@ export const ar: Catalog = {
     msgA11y: "اكتب رسالة دعم",
   },
   detail: {
+    insights: "رؤى",
+    detectionRate: "معدل الاكتشاف",
+    confidenceTrend: "اتجاه الثقة (بمرور الوقت)",
+    confidenceTrendA11y: "اتجاه الثقة، {{n}} عمليات فحص، الأخير {{last}}%",
+    valueTrend: "اتجاه {{kind}}",
+    numericTrend: "اتجاه القيمة الرقمية",
+    numericTrendA11y: "اتجاه القيمة الرقمية، {{n}} اكتشافات",
     title: "البحث",
     detections: "التحريات",
     noDetections: "لا توجد تحريات بعد. الاستمرار في الرصد.",

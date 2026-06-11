@@ -46,6 +46,9 @@ export const hi: Catalog = {
     terms: "जारी रखने से आप Whenly के नियम और गोपनीयता नीति को स्वीकार करते हैं।",
   },
   feed: {
+    activity: "गतिविधि",
+    last7days: "पिछले 7 दिन",
+    activityA11y: "पिछले 7 दिनों में {{total}} पहचान",
     title: "प्रीलोड",
     subtitle: "आपके सभी देखभालकर्ताओं से लाइव अपडेट्स।",
     statWatchers: "कुल देखभालकर्ता",
@@ -324,6 +327,13 @@ export const hi: Catalog = {
     msgA11y: "समर्थन संदेश लिखें",
   },
   detail: {
+    insights: "अंतर्दृष्टि",
+    detectionRate: "पहचान दर",
+    confidenceTrend: "विश्वास प्रवृत्ति (समय के साथ)",
+    confidenceTrendA11y: "विश्वास प्रवृत्ति, {{n}} जाँचें, अंतिम {{last}}%",
+    valueTrend: "{{kind}} प्रवृत्ति",
+    numericTrend: "संख्यात्मक मान प्रवृत्ति",
+    numericTrendA11y: "संख्यात्मक मान प्रवृत्ति, {{n}} पहचानें",
     title: "अध्ययन",
     detections: "प्रतिक्रियाएं",
     noDetections: "अब तक कोई प्रतिक्रिया नहीं हुई। जारी रखें.",

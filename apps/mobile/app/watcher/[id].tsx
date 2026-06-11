@@ -1,6 +1,8 @@
+import { MiniBars, Sparkline } from "@/components/charts";
 import { EnterItem, ExpandIn } from "@/components/motion";
 import { Badge, Card, FactChips, SectionLabel } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard, Vote } from "@/components/ui";
+import { parseEventFacts } from "@/domain/personal";
 import { type CheckRunView, type DetectionEventView, type FeedbackVerdict, api } from "@/lib/api";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -71,6 +73,9 @@ export default function WatcherDetail(): ReactNode {
       <GradientHero title={t("detail.title")} back />
       <HeroOverlap>
         <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-12">
+          {/* İçgörüler — gerçek kontrol/tespit verisinden trend (grafik) */}
+          <InsightsCard runs={runs} events={events} />
+
           {/* Tespitler önce — en önemli sonuç */}
           <SectionLabel>
             {t("detail.detections")} ({eventGroups.length})
@@ -102,6 +107,74 @@ export default function WatcherDetail(): ReactNode {
           )}
         </ScrollView>
       </HeroOverlap>
+    </View>
+  );
+}
+
+/**
+ * İçgörü kartı: kontrol geçmişinden güven trendi + tespit oranı, varsa olay
+ * facts'inden sayısal (fiyat/büyüklük) trendi. Tümü gerçek veri; yetersizse gizlenir.
+ * Listeler en-yeniden-eskiye gelir → trend için kronolojiye çeviririz (reverse).
+ */
+function InsightsCard({
+  runs,
+  events,
+}: { runs: CheckRunView[]; events: DetectionEventView[] }): ReactNode {
+  const { t } = useTranslation();
+  const conf = [...runs]
+    .reverse()
+    .filter((r) => r.confidence !== null)
+    .map((r) => Math.round((r.confidence ?? 0) * 100));
+  const detRate =
+    runs.length > 0 ? Math.round((runs.filter((r) => r.decision).length / runs.length) * 100) : 0;
+  const numeric = [...events]
+    .reverse()
+    .map((e) => parseEventFacts(e.facts)?.numeric)
+    .filter((v): v is number => typeof v === "number");
+  const numericKind =
+    [...events].map((e) => parseEventFacts(e.facts)?.numericKind).find(Boolean) ?? null;
+
+  // En az bir anlamlı seri yoksa kartı hiç gösterme (boş-durum gürültüsü olmasın).
+  if (conf.length < 2 && numeric.length < 2) return null;
+
+  return (
+    <View className="mb-5">
+      <SectionLabel>{t("detail.insights")}</SectionLabel>
+      <Card>
+        {/* Tespit oranı — tek bakışta özet */}
+        <View className="flex-row items-center justify-between mb-3">
+          <Text className="text-muted text-xs">{t("detail.detectionRate")}</Text>
+          <Text className="text-text text-lg font-extrabold">%{detRate}</Text>
+        </View>
+
+        {conf.length >= 2 ? (
+          <View className="mb-1">
+            <Text className="text-muted text-[11px] mb-1.5">{t("detail.confidenceTrend")}</Text>
+            <Sparkline
+              data={conf}
+              tone="accent"
+              a11yLabel={t("detail.confidenceTrendA11y", {
+                n: conf.length,
+                last: conf[conf.length - 1],
+              })}
+            />
+          </View>
+        ) : null}
+
+        {numeric.length >= 2 ? (
+          <View className="mt-3">
+            <Text className="text-muted text-[11px] mb-1.5">
+              {numericKind
+                ? t("detail.valueTrend", { kind: numericKind })
+                : t("detail.numericTrend")}
+            </Text>
+            <MiniBars
+              data={numeric}
+              a11yLabel={t("detail.numericTrendA11y", { n: numeric.length })}
+            />
+          </View>
+        ) : null}
+      </Card>
     </View>
   );
 }

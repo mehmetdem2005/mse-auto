@@ -47,6 +47,9 @@ export const ru: Catalog = {
     terms: "Продолжая, вы принимаете условия и политику конфиденциальности Whenly.",
   },
   feed: {
+    activity: "Активность",
+    last7days: "Последние 7 дней",
+    activityA11y: "{{total}} обнаружений за последние 7 дней",
     title: "Лента",
     subtitle: "Живые обновления со всех ваших наблюдателей.",
     statWatchers: "Всего наблюдателей",
@@ -349,6 +352,13 @@ export const ru: Catalog = {
     msgA11y: "Написать сообщение поддержке",
   },
   detail: {
+    insights: "Аналитика",
+    detectionRate: "Частота обнаружений",
+    confidenceTrend: "Тренд уверенности (со временем)",
+    confidenceTrendA11y: "Тренд уверенности, проверок: {{n}}, последнее {{last}}%",
+    valueTrend: "Тренд: {{kind}}",
+    numericTrend: "Тренд числового значения",
+    numericTrendA11y: "Тренд числового значения, обнаружений: {{n}}",
     title: "Исследование",
     detections: "обнаружения",
     noDetections: "Обнаружений еще нет. Мониторинг продолжается.",

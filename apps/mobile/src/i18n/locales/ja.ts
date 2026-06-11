@@ -46,6 +46,9 @@ export const ja: Catalog = {
     terms: "続行により、Whenlyの利用規約とプライバシーポリシーに同意します。",
   },
   feed: {
+    activity: "アクティビティ",
+    last7days: "過去7日間",
+    activityA11y: "過去7日間で{{total}}件の検知",
     title: "フィード",
     subtitle: "すべてのウォッチャーからリアルタイムの更新",
     statWatchers: "ウォッチャーの総数",
@@ -315,6 +318,13 @@ export const ja: Catalog = {
     msgA11y: "サポートメッセージを書く",
   },
   detail: {
+    insights: "インサイト",
+    detectionRate: "検知率",
+    confidenceTrend: "信頼度の推移（経時）",
+    confidenceTrendA11y: "信頼度の推移、{{n}}回のチェック、最新{{last}}%",
+    valueTrend: "{{kind}}の推移",
+    numericTrend: "数値の推移",
+    numericTrendA11y: "数値の推移、{{n}}件の検知",
     title: "研究",
     detections: "検出",
     noDetections: "検出なし。監視は続行中。",

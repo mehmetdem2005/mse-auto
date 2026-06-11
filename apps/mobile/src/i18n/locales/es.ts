@@ -46,6 +46,9 @@ export const es: Catalog = {
     terms: "Al continuar aceptas los términos y la política de privacidad de Whenly.",
   },
   feed: {
+    activity: "Actividad",
+    last7days: "Últimos 7 días",
+    activityA11y: "{{total}} detecciones en los últimos 7 días",
     title: "Actividad",
     subtitle: "Novedades en vivo de todos tus watchers.",
     statWatchers: "Watchers totales",
@@ -349,6 +352,13 @@ export const es: Catalog = {
     msgA11y: "Escribir mensaje de soporte",
   },
   detail: {
+    insights: "Estadísticas",
+    detectionRate: "Tasa de detección",
+    confidenceTrend: "Tendencia de confianza (con el tiempo)",
+    confidenceTrendA11y: "Tendencia de confianza, {{n}} comprobaciones, último {{last}}%",
+    valueTrend: "Tendencia de {{kind}}",
+    numericTrend: "Tendencia del valor numérico",
+    numericTrendA11y: "Tendencia del valor numérico, {{n}} detecciones",
     title: "Investigación",
     detections: "detecciones",
     noDetections: "Aún sin detecciones. Seguimos vigilando.",

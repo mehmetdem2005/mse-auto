@@ -46,6 +46,9 @@ export const zh: Catalog = {
     terms: "继续使用意味着你同意Whenly的条款和隐私政策。",
   },
   feed: {
+    activity: "活动",
+    last7days: "最近 7 天",
+    activityA11y: "最近 7 天共 {{total}} 次检测",
     title: "Feed",
     subtitle: "来自所有监控者的实时更新。",
     statWatchers: "总监控者",
@@ -299,6 +302,13 @@ export const zh: Catalog = {
     msgA11y: "写支持消息",
   },
   detail: {
+    insights: "洞察",
+    detectionRate: "检测率",
+    confidenceTrend: "置信度趋势（随时间）",
+    confidenceTrendA11y: "置信度趋势，{{n}} 次检查，最新 {{last}}%",
+    valueTrend: "{{kind}}趋势",
+    numericTrend: "数值趋势",
+    numericTrendA11y: "数值趋势，{{n}} 次检测",
     title: "研究",
     detections: "检测",
     noDetections: "尚无检测。持续监控中。",
