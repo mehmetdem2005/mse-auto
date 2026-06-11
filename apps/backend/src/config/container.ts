@@ -124,7 +124,11 @@ function buildChecker(env: Env): Checker {
       ? new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY)
       : null;
   if (providers.length > 0 && reasoner) {
-    return new LiveChecker(new FallbackSearchProvider(providers), reasoner);
+    return new LiveChecker(
+      new FallbackSearchProvider(providers),
+      reasoner,
+      env.RENDER_FETCH_TEMPLATE ?? null,
+    );
   }
   return new StubChecker();
 }

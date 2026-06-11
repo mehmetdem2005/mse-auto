@@ -12,6 +12,8 @@ const EnvSchema = z.object({
   // + reasoner (Groq geçici · DeepSeek kalıcı)
   SERPER_API_KEY: z.string().min(1).optional(),
   TAVILY_API_KEY: z.string().min(1).optional(),
+  // JS-render proxy şablonu (ADR-070): "...?api_key=KEY&render_js=true&url={url}"
+  RENDER_FETCH_TEMPLATE: z.string().min(1).optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),

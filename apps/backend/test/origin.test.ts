@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildFetchUrl,
   fetchOriginText,
   htmlToText,
   isFetchableDomain,
@@ -54,5 +55,36 @@ describe("canlı kaynak okuma (ADR-047)", () => {
     expect(await fetchOriginText("kurum.gov.tr", failFetch)).toBeNull();
 
     expect(await fetchOriginText("localhost", okFetch)).toBeNull(); // guard fetch'e gitmez
+  });
+});
+
+describe("JS-render proxy (ADR-070)", () => {
+  it("template yoksa hedef URL aynen döner (geriye uyum)", () => {
+    expect(buildFetchUrl("https://kurum.gov.tr/duyurular")).toBe("https://kurum.gov.tr/duyurular");
+    expect(buildFetchUrl("https://x.com", "bad-template-no-placeholder")).toBe("https://x.com");
+  });
+
+  it("template varsa hedef URL encode edilip {url} yerine konur", () => {
+    const tpl = "https://proxy.test/api?key=K&render_js=true&url={url}";
+    expect(buildFetchUrl("https://shop.com/p?id=5", tpl)).toBe(
+      "https://proxy.test/api?key=K&render_js=true&url=https%3A%2F%2Fshop.com%2Fp%3Fid%3D5",
+    );
+  });
+
+  it("render template ile fetchOriginText proxy URL'ini çağırır", async () => {
+    const calls: string[] = [];
+    const okFetch: typeof fetch = (async (u: string) => {
+      calls.push(u);
+      return {
+        ok: true,
+        status: 200,
+        text: async () =>
+          "<p>Yeni ihale ilanı bugün resmî olarak yayınlandı; teklif son tarihi ve teknik şartname detaylı biçimde açıklandı.</p>",
+      } as Response;
+    }) as typeof fetch;
+    const tpl = "https://proxy.test/?url={url}";
+    const out = await fetchOriginText("kurum.gov.tr", okFetch, tpl);
+    expect(out).toContain("ihale");
+    expect(calls.every((c) => c.startsWith("https://proxy.test/?url="))).toBe(true);
   });
 });

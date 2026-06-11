@@ -18,6 +18,17 @@ const PATHS = ["/", "/duyurular", "/haberler", "/announcements", "/news"];
 /** Çerez/gizlilik bandı imzaları — metin bunlardan ibaretse değersizdir. */
 const NOISE = /çerez|cookie|gizlilik politikas|kvkk|aydınlatma metni|privacy policy/gi;
 
+/**
+ * Render-proxy URL'i kurar (ADR-070): JS-render gerektiren dinamik sayfalar için.
+ * template örn: "https://app.scrapingbee.com/api/v1/?api_key=KEY&render_js=true&url={url}"
+ * {url} gerçek hedefle (encode edilerek) doldurulur. template yoksa hedef URL aynen
+ * döner → düz fetch (geriye uyum). Sağlayıcı-bağımsız: ScrapingBee/ScraperAPI/Browserless.
+ */
+export function buildFetchUrl(targetUrl: string, renderTemplate?: string | null): string {
+  if (!renderTemplate || !renderTemplate.includes("{url}")) return targetUrl;
+  return renderTemplate.replace("{url}", encodeURIComponent(targetUrl));
+}
+
 /** SSRF koruması: yalnız kamusal görünümlü alan adları. */
 export function isFetchableDomain(domain: string): boolean {
   const d = domain.toLowerCase().trim();
@@ -57,11 +68,14 @@ async function fetchPath(
   domain: string,
   path: string,
   fetchImpl: typeof fetch,
+  renderTemplate?: string | null,
 ): Promise<string | null> {
   try {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-    const res = await fetchImpl(`https://${domain}${path}`, {
+    // Render-proxy daha yavaştır (gerçek tarayıcı) → JS-render'da timeout 2x.
+    const timer = setTimeout(() => ctrl.abort(), renderTemplate ? TIMEOUT_MS * 2 : TIMEOUT_MS);
+    const url = buildFetchUrl(`https://${domain}${path}`, renderTemplate);
+    const res = await fetchImpl(url, {
       signal: ctrl.signal,
       headers: { "User-Agent": "WhenlyBot/1.0 (+monitoring)" },
       redirect: "follow",
@@ -78,13 +92,17 @@ async function fetchPath(
 /**
  * Resmî siteden ŞU AN içerik çeker: ana sayfa + duyuru yolları paralel; en uzun
  * bilgilendirici metni döner. Hiçbiri işe yaramazsa null (genel akış sürer).
+ * renderTemplate verilirse JS-render proxy üzerinden çeker (dinamik sayfalar).
  */
 export async function fetchOriginText(
   domain: string,
   fetchImpl: typeof fetch = fetch,
+  renderTemplate?: string | null,
 ): Promise<string | null> {
   if (!isFetchableDomain(domain)) return null;
-  const results = await Promise.all(PATHS.map((p) => fetchPath(domain, p, fetchImpl)));
+  const results = await Promise.all(
+    PATHS.map((p) => fetchPath(domain, p, fetchImpl, renderTemplate)),
+  );
   const useful = results.filter((t): t is string => t !== null);
   if (useful.length === 0) return null;
   // En bilgilendirici = en uzun gürültü-dışı metin.

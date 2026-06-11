@@ -9,6 +9,8 @@ export class LiveChecker implements Checker {
   constructor(
     private readonly search: SearchProvider,
     private readonly reasoner: EventReasoner,
+    /** JS-render proxy şablonu (ADR-070) — verilirse dinamik sayfalar okunur. */
+    private readonly renderTemplate: string | null = null,
   ) {}
 
   async check(topic: CanonicalTopic, ctx?: CheckContext): Promise<CheckOutcome> {
@@ -17,7 +19,9 @@ export class LiveChecker implements Checker {
     const q = topic.canonicalQuery;
     const [liveText, official, news] = await Promise.all([
       // ADR-047: tarama ANINDA resmî sitenin kendisi — indeks gecikmesi sıfır.
-      ctx?.authorityDomain ? fetchOriginText(ctx.authorityDomain) : Promise.resolve(null),
+      ctx?.authorityDomain
+        ? fetchOriginText(ctx.authorityDomain, fetch, this.renderTemplate)
+        : Promise.resolve(null),
       ctx?.authorityDomain
         ? this.search.search(`site:${ctx.authorityDomain} ${q}`).catch(() => [])
         : Promise.resolve([]),
