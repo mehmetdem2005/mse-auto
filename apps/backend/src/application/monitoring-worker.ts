@@ -16,6 +16,7 @@ export interface MonitoringWorkerDeps {
   verifier?: EventVerifier | undefined;
   topics?: CanonicalTopicRepository;
   authority?: AuthorityResolver;
+  timeoutMs?: number | undefined;
 }
 
 /** Worker: check job'larını işler; tespit varsa teslim job'u kuyruğa alır. */
@@ -33,6 +34,7 @@ export async function registerMonitoringWorker(deps: MonitoringWorkerDeps): Prom
         topics: deps.topics,
         authority: deps.authority,
         verifier: deps.verifier,
+        timeoutMs: deps.timeoutMs,
       },
       topic,
     );

@@ -261,3 +261,18 @@ describe("bağımsız doğrulayıcı (ADR-060 A1)", () => {
     expect(res.deliveries).toBeGreaterThan(0);
   });
 });
+
+describe("A0 timeout guardrail (ADR-076)", () => {
+  it("checker zaman aşımına uğrarsa: tespit yok, 'zaman aşımı' CheckRun, topic checked", async () => {
+    const store = seed();
+    const monitoring = new InMemoryMonitoringRepository(store);
+    const hangingChecker: Checker = {
+      check: () => new Promise(() => {}), // hiç çözülmez → timeout tetiklenir
+    };
+    const res = await runTopicCheck({ checker: hangingChecker, monitoring, timeoutMs: 30 }, topic);
+    expect(res.detected).toBe(false);
+    expect(res.deliveries).toBe(0);
+    const runs = await monitoring.listCheckRuns("t1", 1);
+    expect(runs[0]?.summary).toBe("zaman aşımı");
+  });
+});

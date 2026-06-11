@@ -86,6 +86,7 @@ export interface Container {
   support: SupportRepository;
   checker: Checker;
   verifier: EventVerifier | undefined;
+  checkTimeoutMs: number | undefined;
   assistant: IntentAssistant;
   authority: AuthorityResolver;
   notifier: Notifier;
@@ -191,6 +192,7 @@ export function createContainer(env: Env): Container {
   const checker = buildChecker(env);
   // Doğrulayıcı (ADR-060 A1): GROQ varsa kur; yoksa undefined → doğrulama atlanır.
   const verifier = env.GROQ_API_KEY ? new GroqEventVerifier(env.GROQ_API_KEY) : undefined;
+  const checkTimeoutMs = env.CHECK_TIMEOUT_MS;
   const assistant = buildAssistant(env);
   const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
@@ -222,6 +224,7 @@ export function createContainer(env: Env): Container {
       support: new SupabaseSupportRepository(db),
       checker,
       verifier,
+      checkTimeoutMs,
       assistant,
       authority,
       notifier,
@@ -249,6 +252,7 @@ export function createContainer(env: Env): Container {
     support: new InMemorySupportRepository(store),
     checker,
     verifier,
+    checkTimeoutMs,
     assistant,
     authority,
     notifier,

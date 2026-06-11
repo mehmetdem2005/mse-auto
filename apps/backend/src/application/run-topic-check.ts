@@ -5,6 +5,7 @@ import type { EventFacts } from "../domain/personal";
 import type { CanonicalTopicRepository } from "../domain/ports";
 import type { CanonicalTopic } from "../domain/topic";
 import type { EventVerifier } from "../domain/verifier";
+import { TimeoutError, withTimeout } from "./guardrail";
 
 export interface RunTopicCheckDeps {
   checker: Checker;
@@ -14,6 +15,8 @@ export interface RunTopicCheckDeps {
   authority?: AuthorityResolver | undefined;
   /** Bağımsız doğrulayıcı (ADR-060 A1) — opsiyonel: yoksa tespit doğrudan geçer. */
   verifier?: EventVerifier | undefined;
+  /** Tarama zaman aşımı (ms) — A0 guardrail; varsayılan 60sn. */
+  timeoutMs?: number | undefined;
 }
 
 export interface RunTopicCheckResult {
@@ -74,17 +77,19 @@ export async function runTopicCheck(
 
   let outcome: CheckOutcome;
   try {
-    outcome = await deps.checker.check(topic, {
-      lastEventDescription,
-      authorityDomain,
-      sourcePref,
-    });
+    // A0 guardrail (ADR-076): wall-clock timeout — asılı/yavaş checker kuyruğu kilitlemez.
+    outcome = await withTimeout(
+      deps.checker.check(topic, { lastEventDescription, authorityDomain, sourcePref }),
+      deps.timeoutMs ?? 60_000,
+      `check(${topic.id})`,
+    );
   } catch (err) {
-    // Checker hatası (örn. arama/LLM kotası): topic'i sonsuz "due" döngüsünde
-    // bırakmamak için başarısız bir CheckRun kaydet + checked işaretle.
+    // Checker hatası/zaman aşımı: topic'i sonsuz "due" döngüsünde bırakmamak için
+    // başarısız bir CheckRun kaydet + checked işaretle.
+    const isTimeout = err instanceof TimeoutError;
     await deps.monitoring.recordCheckRun({
       topicId: topic.id,
-      resultSummary: "checker hatası",
+      resultSummary: isTimeout ? "zaman aşımı" : "checker hatası",
       reasoning: err instanceof Error ? err.message : "bilinmeyen hata",
       decision: false,
       confidence: 0,

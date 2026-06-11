@@ -757,3 +757,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Neden:** Bundan sonraki HER tespit iyileştirmesinin (A2 eskalasyon, doğrulayıcı, kaynak-çözümleme) etkisi artık sayıyla görülür — önceki kör-uçuş bitti.
 - **Yan:** Token sayacı statusLine'a eklendi (.claude/settings.json) — ürün sahibi isteği; model·token·ctx%.
 - **ISO:** 25010 *ölçülebilir kalite NFR* (tespit isabeti/yanlış-pozitif metriği) · 29148 (doğrulanabilir gereksinim) · 42010.
+
+## ADR-076 — Ajan mimarisi A0: wall-clock timeout guardrail
+- **Durum:** Kabul · ADR-060 A0 (kısmi — timeout); Dalga-1.
+- **Karar:** `application/guardrail.ts` — `withTimeout(promise, ms, label)` + ayırt edilebilir `TimeoutError`. run-topic-check checker.check'i bununla sarar (varsayılan 60sn, `env.CHECK_TIMEOUT_MS` ile ayarlanır → container.checkTimeoutMs → worker). Zaman aşımında: "zaman aşımı" CheckRun + topic checked işaretlenir → asılı/yavaş checker KUYRUĞU KİLİTLEMEZ, topic sonsuz "due" kalmaz. catch timeout'u checker-hatasından ayırır (iz şeffaf).
+- **Kapsam dürüstlüğü:** A0'ın 4 guardrail'inden bu turda **timeout** uygulandı; **tur limiti** zaten LiveChecker'da maks 2 (ADR-073); **token bütçesi** A3 (token izleri) gerektirir → henüz YOK, A3 sonrası; **ilerleme-yok** tek-geçişli akışta gereksiz (tur limiti kapsıyor). Abartı yok.
+- **Doğrulama:** 3 guardrail birim testi + 1 timeout entegrasyon testi (105 test).
+- **ISO:** 25010 *Reliability/Time-behaviour* (ölçülebilir: ≤timeout) · 27002 (kaynak tükenme koruması) · 42010.
