@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Switch, Text, View } from "react-native";
 
-const ACCENT = "#6366F1";
 const wrap = (n: number): number => ((n % 24) + 24) % 24;
 const fmt = (h: number): string => `${String(h).padStart(2, "0")}:00`;
 
@@ -32,7 +31,7 @@ export function QuietHoursCard() {
     <View className="bg-panel border border-line rounded-xl p-5 mb-4">
       <View className="flex-row items-center gap-3">
         <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-          <MoonStar size={18} color={ACCENT} />
+          <MoonStar size={18} color={theme.colors.accent} />
         </View>
         <View className="flex-1">
           <Text className="text-text text-sm font-semibold">{t("quiet.title")}</Text>
@@ -41,7 +40,7 @@ export function QuietHoursCard() {
         <Switch
           value={qh.enabled}
           onValueChange={(v) => update({ ...qh, enabled: v })}
-          trackColor={{ false: theme.colors.line, true: ACCENT }}
+          trackColor={{ false: theme.colors.line, true: theme.colors.accent }}
           thumbColor="#FFFFFF"
           accessibilityLabel={t("quiet.title")}
         />

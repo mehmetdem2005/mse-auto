@@ -1,5 +1,5 @@
 import { MiniBars } from "@/components/charts";
-import { EnterItem } from "@/components/motion";
+import { EnterItem, PressScale } from "@/components/motion";
 import {
   Badge,
   Card,
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
+import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
 import { GRADIENT, ON_ACCENT, useTheme } from "@/theme";
@@ -283,14 +284,17 @@ export default function Feed() {
                   <Text className="text-muted text-[11px] uppercase tracking-widest">
                     {t("feed.newCount", { n: unread })}
                   </Text>
-                  <Pressable
-                    onPress={() => markAll.mutate()}
-                    className="ml-auto min-h-[44px] justify-center px-2 active:opacity-60"
+                  <PressScale
+                    onPress={() => {
+                      haptic.light();
+                      markAll.mutate();
+                    }}
+                    className="ml-auto min-h-[44px] justify-center px-2"
                     accessibilityRole="button"
                     accessibilityLabel={t("feed.markAllA11y")}
                   >
                     <Text className="text-accent text-xs font-semibold">{t("feed.markAll")}</Text>
-                  </Pressable>
+                  </PressScale>
                 </View>
               ) : null}
             </View>

@@ -29,11 +29,14 @@ export function shutdownGracefully(logger: Logger, cleanup: () => Promise<void>)
     if (shuttingDown) return;
     shuttingDown = true;
     logger.info("shutdown_started", { signal });
-    const force = setTimeout(() => {
+    // Bilinçli unref'siz: her iki uç da (başarı/zaman aşımı) process.exit çağırır,
+    // dolayısıyla timer süreci asla gereksiz yaşatmaz; unref'li olsaydı cleanup
+    // handle bırakmadan asılı kaldığında döngü boşalır, süreç 0 koduyla "sessizce"
+    // çıkardı — zaman aşımı garantisi kaybolurdu.
+    setTimeout(() => {
       logger.error("shutdown_timeout", { ms: SHUTDOWN_TIMEOUT_MS });
       process.exit(1);
     }, SHUTDOWN_TIMEOUT_MS);
-    force.unref();
     cleanup()
       .then(() => {
         logger.info("shutdown_complete", {});

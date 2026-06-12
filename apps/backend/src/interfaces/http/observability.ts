@@ -65,11 +65,13 @@ export function errorHandler(logger: Logger): ErrorHandler<Vars> {
       };
       return c.json(body, err.status);
     }
+    // Error olmayan fırlatmalar (string vb.) iz kaybetmesin diye normalize edilir.
+    const e = err instanceof Error ? err : new Error(String(err));
     logger.error("unhandled", {
       requestId: reqId,
       path: c.req.path,
-      message: err.message,
-      stack: err.stack,
+      message: e.message,
+      stack: e.stack,
     });
     const body: ApiError = { error: "Sunucu hatası", requestId: reqId };
     return c.json(body, 500);
