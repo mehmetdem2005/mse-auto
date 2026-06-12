@@ -133,4 +133,28 @@ describe("çok-kanallı teslim (ADR-084)", () => {
     const out = await dispatchEventDeliveries(dNoCh, job);
     expect(out.sent).toBe(1);
   });
+
+  it("FIRLATAN push sağlayıcısı teslim partisini düşürmez (dayanıklılık)", async () => {
+    // FcmNotifier ağ/token hatasında fırlatabilir; bir token'ın fırlatması
+    // dispatchEventDeliveries'i çökertmemeli (aksi halde job retry'da mükerrer push).
+    const d = deps({
+      archetype: "shared",
+      channels: [],
+      prefs: EMPTY_USER_CHANNELS,
+      tokens: ["tok-a", "tok-b"],
+    });
+    const throwing: Notifier = {
+      async send() {
+        throw new Error("fcm ağ hatası");
+      },
+    };
+    const out = await dispatchEventDeliveries(
+      { monitoring: d.monitoring, devices: d.devices, notifier: throwing },
+      job,
+    );
+    // Tüm push'lar fırlattı → teslim "failed" işaretlenir ama AKIŞ çökmedi.
+    expect(out.failed).toBe(1);
+    expect(out.sent).toBe(0);
+    expect(d.statuses.d1).toBe("failed");
+  });
 });

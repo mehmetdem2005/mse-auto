@@ -73,7 +73,7 @@ function HourStepper({
   const theme = useTheme();
   return (
     <View className="flex-1 bg-ink border border-line rounded-xl p-3 items-center">
-      <Text className="text-muted text-[10px] uppercase tracking-wider mb-2">{label}</Text>
+      <Text className="text-muted text-overline uppercase mb-2">{label}</Text>
       <View className="flex-row items-center gap-3">
         <Pressable
           onPress={() => onChange(wrap(value - 1))}

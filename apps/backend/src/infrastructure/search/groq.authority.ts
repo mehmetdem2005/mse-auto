@@ -34,7 +34,15 @@ export class GroqAuthorityResolver implements AuthorityResolver {
       maxTokens: 128,
       fetchImpl: this.fetchImpl,
     });
-    const info = InfoSchema.parse(JSON.parse(content));
+    let info: z.infer<typeof InfoSchema>;
+    try {
+      info = InfoSchema.parse(JSON.parse(content));
+    } catch {
+      // LLM bozuk/şema-dışı JSON döndürürse: resmî kaynak YOK say (genel aramaya
+      // düş). Bir kaynak-çözümleme hatası kontrolü çökertmemeli — graceful, "emin
+      // değilsen domain=null" ilkesiyle aynı sonuç.
+      return { domain: null, name: null };
+    }
     // Güvenlik: alan adını normalize et (protokol/yol sızarsa kırp).
     const domain = info.domain
       ? (info.domain.replace(/^https?:\/\//, "").split("/")[0] ?? null)

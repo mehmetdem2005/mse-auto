@@ -51,8 +51,14 @@ export async function dispatchEventDeliveries(
     if (delivery.archetype === "personal") data.gate = "1";
     let anySuccess = false;
     for (const token of tokens) {
-      const result = await deps.notifier.send({ token, title: job.title, body: job.body, data });
-      if (result.success) anySuccess = true;
+      try {
+        const result = await deps.notifier.send({ token, title: job.title, body: job.body, data });
+        if (result.success) anySuccess = true;
+      } catch {
+        // Tek bir token/sağlayıcı FIRLATMASI tüm teslim partisini düşürmesin —
+        // aksi halde aynı partideki başarılı push'lar işaretlenemeden job retry
+        // edilir ve MÜKERRER bildirim gider. Fırlatma = o gönderim başarısız.
+      }
     }
     // Ek kanallar (ADR-084): YALNIZ paylaşılan (shared) teslimlerde sunucu-tarafı
     // gönderim yapılır. Kişisel (personal) teslimde eşleşme kararı CİHAZDA verilir
@@ -63,8 +69,12 @@ export async function dispatchEventDeliveries(
       for (const { kind, target } of resolveTargets(prefs)) {
         const sender = deps.channels.find((c) => c.kind === kind);
         if (!sender) continue;
-        const r = await sender.send(target, { title: job.title, body: job.body });
-        if (r.success) anySuccess = true;
+        try {
+          const r = await sender.send(target, { title: job.title, body: job.body });
+          if (r.success) anySuccess = true;
+        } catch {
+          // Bir kanalın fırlatması diğer kanalları/teslimleri etkilemesin.
+        }
       }
     }
     await deps.monitoring.markDeliveryStatus(delivery.id, anySuccess ? "sent" : "failed");

@@ -18,7 +18,15 @@ export class PgBossJobQueue implements JobQueue {
   }
 
   async enqueue<T extends object>(queue: string, data: T): Promise<void> {
-    await this.boss.send(queue, data);
+    // Poison-message koruması: sınırlı yeniden deneme + üstel backoff + süre aşımı.
+    // Aksi halde sürekli başarısız bir job (örn. kalıcı bozuk veri) sonsuz retry'da
+    // döner ya da asılı kalır. CHECK_TIMEOUT_MS zaten checker'ı kesiyor; 600 sn
+    // job-düzeyi son emniyet kemeri.
+    await this.boss.send(queue, data, {
+      retryLimit: 5,
+      retryBackoff: true,
+      expireInSeconds: 600,
+    });
   }
 
   async process<T extends object>(
