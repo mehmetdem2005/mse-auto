@@ -46,6 +46,7 @@ export const ar: Catalog = {
     terms: "باستمرارك تقبل شروط Whenly وسياسة الخصوصية.",
   },
   feed: {
+    why: "تم الاكتشاف بثقة {{n}}٪ — اضغط للتفاصيل",
     activity: "النشاط",
     last7days: "آخر 7 أيام",
     activityA11y: "{{total}} اكتشافًا خلال آخر 7 أيام",

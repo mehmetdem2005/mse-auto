@@ -46,6 +46,7 @@ export const zh: Catalog = {
     terms: "继续使用意味着你同意Whenly的条款和隐私政策。",
   },
   feed: {
+    why: "以 {{n}}% 置信度检测到 — 点按查看详情",
     activity: "活动",
     last7days: "最近 7 天",
     activityA11y: "最近 7 天共 {{total}} 次检测",

@@ -175,6 +175,7 @@ export interface FeedItem {
   description: string;
   detectedAt: string;
   facts: unknown;
+  confidence?: number | null;
   channel: string;
   status: string;
   readAt: string | null;

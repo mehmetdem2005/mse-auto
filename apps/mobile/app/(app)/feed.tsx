@@ -23,6 +23,7 @@ import {
   Eye,
   type LucideIcon,
   Radar,
+  ShieldCheck,
   Sparkles,
   ThumbsDown,
   ThumbsUp,
@@ -361,6 +362,16 @@ function FeedCard({
       <Text className="text-text text-[15px] leading-5 mt-2.5">
         {item.description || t("feed.fallback")}
       </Text>
+
+      {/* "Neden bu bildirim" (ADR-086): güven sinyali — şeffaflık */}
+      {typeof item.confidence === "number" ? (
+        <View className="flex-row items-center gap-1.5 mt-2" accessibilityRole="text">
+          <ShieldCheck size={13} color="#16A34A" />
+          <Text className="text-muted text-[11px] flex-1" numberOfLines={1}>
+            {t("feed.why", { n: Math.round(item.confidence * 100) })}
+          </Text>
+        </View>
+      ) : null}
 
       <FactChips raw={item.facts} />
 

@@ -46,6 +46,7 @@ export const ja: Catalog = {
     terms: "続行により、Whenlyの利用規約とプライバシーポリシーに同意します。",
   },
   feed: {
+    why: "{{n}}%の信頼度で検知 — 詳細はタップ",
     activity: "アクティビティ",
     last7days: "過去7日間",
     activityA11y: "過去7日間で{{total}}件の検知",

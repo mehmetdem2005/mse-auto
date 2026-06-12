@@ -161,6 +161,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
       .map((d) => {
         const e = this.store.events.find((x) => x.id === d.eventId);
         const w = this.store.watches.find((x) => x.id === d.watchId);
+        const run = e ? this.store.checkRuns.find((r) => r.id === e.checkRunId) : undefined;
         return {
           deliveryId: d.id,
           watchId: d.watchId,
@@ -169,6 +170,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
           description: e?.description ?? "",
           detectedAt: e?.detectedAt ?? "",
           facts: e?.facts ?? null,
+          confidence: run?.confidence ?? null,
           channel: d.channel,
           status: d.status,
           readAt: d.readAt,

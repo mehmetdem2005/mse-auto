@@ -46,6 +46,7 @@ export const pt: Catalog = {
     terms: "Ao continuar, você aceita os termos e a política de privacidade do Whenly.",
   },
   feed: {
+    why: "Detectado com {{n}}% de confiança — toque para detalhes",
     activity: "Atividade",
     last7days: "Últimos 7 dias",
     activityA11y: "{{total}} detecções nos últimos 7 dias",

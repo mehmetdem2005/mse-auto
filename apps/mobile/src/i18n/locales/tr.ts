@@ -45,6 +45,7 @@ export const tr = {
     terms: "Devam ederek Whenly'nin koşullarını ve gizlilik politikasını kabul edersin.",
   },
   feed: {
+    why: "%{{n}} güvenle tespit edildi — ayrıntı için dokun",
     activity: "Aktivite",
     last7days: "Son 7 gün",
     activityA11y: "Son 7 günde toplam {{total}} tespit",

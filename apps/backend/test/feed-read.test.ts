@@ -68,4 +68,30 @@ describe("feed read-state (read_at)", () => {
     // idempotent: tekrar çağır → 0
     expect(await repo.markAllRead("u1")).toBe(0);
   });
+
+  it("feed güven yüzdesini olayın check_run'ından taşır (ADR-086 'neden bu bildirim')", async () => {
+    const { store, repo } = setup();
+    store.checkRuns.push({
+      id: "r1",
+      topicId: "t1",
+      ranAt: "2026-06-12T00:00:00Z",
+      resultSummary: "ok",
+      reasoning: "r",
+      decision: true,
+      confidence: 0.92,
+      searchQuery: null,
+      hits: null,
+    });
+    store.events.push({
+      id: "e1",
+      topicId: "t1",
+      checkRunId: "r1",
+      description: "olay",
+      detectedAt: "2026-06-12T00:00:00Z",
+    });
+    const feed = await repo.listFeed("u1", 50);
+    expect(feed.find((f) => f.deliveryId === "d1")?.confidence).toBe(0.92);
+    // check_run'ı olmayan olay → confidence null (graceful)
+    expect(feed.find((f) => f.deliveryId === "d2")?.confidence).toBeNull();
+  });
 });

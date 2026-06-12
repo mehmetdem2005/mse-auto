@@ -206,7 +206,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
     const [eventsRes, watchesRes] = await Promise.all([
       this.db
         .from("detection_events")
-        .select("id, description, detected_at, facts")
+        .select("id, description, detected_at, facts, check_run_id")
         .in("id", eventIds),
       this.db.from("watches").select("id, raw_intent").in("id", watchIds),
     ]);
@@ -214,6 +214,15 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
     if (watchesRes.error) throw new Error(`feed watches: ${watchesRes.error.message}`);
     const eMap = new Map((eventsRes.data ?? []).map((e) => [e.id, e]));
     const wMap = new Map((watchesRes.data ?? []).map((w) => [w.id, w.raw_intent]));
+
+    // "Neden bu bildirim" (ADR-086): olayların check_run'larından güveni topla.
+    const runIds = [...new Set((eventsRes.data ?? []).map((e) => e.check_run_id).filter(Boolean))];
+    const confMap = new Map<string, number | null>();
+    if (runIds.length > 0) {
+      const runsRes = await this.db.from("check_runs").select("id, confidence").in("id", runIds);
+      if (runsRes.error) throw new Error(`feed runs: ${runsRes.error.message}`);
+      for (const r of runsRes.data ?? []) confMap.set(r.id, r.confidence ?? null);
+    }
 
     return rows.map((d) => {
       const e = eMap.get(d.event_id);
@@ -225,6 +234,7 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
         description: e?.description ?? "",
         detectedAt: e?.detected_at ?? d.sent_at ?? "",
         facts: (e?.facts as EventFacts | null) ?? null,
+        confidence: e ? (confMap.get(e.check_run_id) ?? null) : null,
         channel: d.channel,
         status: d.status,
         readAt: d.read_at ?? null,

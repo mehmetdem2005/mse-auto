@@ -66,6 +66,8 @@ export interface FeedItemRow {
   description: string;
   detectedAt: string;
   facts: EventFacts | null;
+  /** Tespitin güven yüzdesi (0–1) — "neden bu bildirim" sinyali (ADR-086). Yoksa null. */
+  confidence: number | null;
   channel: string;
   status: string;
   readAt: string | null;

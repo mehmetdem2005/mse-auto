@@ -9,6 +9,8 @@ export const feedItemSchema = z.object({
   description: z.string(),
   detectedAt: z.string(),
   facts: z.unknown().nullable(),
+  /** Tespitin güven yüzdesi (0–1) — "neden bu bildirim" (ADR-086). */
+  confidence: z.number().nullable().optional(),
   channel: z.string(),
   status: z.string(),
   readAt: z.string().nullable(),
