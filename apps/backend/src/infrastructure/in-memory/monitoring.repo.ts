@@ -84,6 +84,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         archetype: w.archetype,
         sourcePref: w.sourcePref,
         deepScan: w.deepScan,
+        stopAfterHit: w.stopAfterHit,
       }));
   }
 

@@ -2,12 +2,26 @@ import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { getAlarmConfig } from "./alarm-config";
 import { ALARM_SOUNDS } from "./alarm-sounds";
+import { api } from "./api";
 import { getCachedEntitlements } from "./entitlements-cache";
 import { shouldSurface } from "./notification-gate";
 import { isQuietNow } from "./quiet-hours";
 
 const DEFAULT_CHANNEL = "default";
 const MUTED_CHANNEL = "muted"; // sessiz saatler: düşük öncelik, ses yok
+
+/** ADR-092 — kişisel arketipte cihaz "sonuç" dedi: tercih açıksa izlemeyi durdur. */
+async function pauseIfStopAfterHit(watchId: string): Promise<void> {
+  try {
+    const watches = await api.watchers();
+    const w = watches.find((x) => x.id === watchId);
+    if (w && w.status === "active" && (w.stopAfterHit ?? true)) {
+      await api.setMyWatchStatus(watchId, "paused");
+    }
+  } catch {
+    // Telemetri-dışı yan etki: başarısızlık bildirimi engellemez; sonraki tespitte yinelenir.
+  }
+}
 
 function soundFile(soundId: string): string | null {
   return ALARM_SOUNDS.find((s) => s.id === soundId)?.file ?? null;
@@ -67,6 +81,10 @@ export async function handleIncomingData(data: Record<string, string | undefined
   if (data.gate === "1") {
     const { surface } = await shouldSurface(data);
     if (!surface) return;
+    // ADR-092 (kişisel arketip): gerçek "sonuç" kararı CİHAZDA verildi — kullanıcının
+    // sonuç-bulununca-durdur tercihi açıksa izleme sunucuda duraklatılır. Sunucu bunu
+    // kendisi yapamaz (kişisel kriteri bilmez, P1); hata kritik değil, sessiz geçilir.
+    if (data.watchId) void pauseIfStopAfterHit(data.watchId);
   }
   const watchId = data.watchId;
   const cfg = watchId ? await getAlarmConfig(watchId) : null;

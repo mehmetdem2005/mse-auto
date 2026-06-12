@@ -17,6 +17,9 @@ function toDomain(row: WatchRow): Watch {
     createdAt: row.created_at,
     sourcePref: row.source_pref,
     deepScan: row.deep_scan,
+    // Migration 0013 öncesi satırlarda kolon olmayabilir → güvenli varsayılanlar.
+    stopAfterHit: row.stop_after_hit ?? true,
+    completedAt: row.completed_at ?? null,
   };
 }
 
@@ -36,6 +39,8 @@ export class SupabaseWatchRepository implements WatchRepository {
         created_at: input.createdAt,
         source_pref: input.sourcePref,
         deep_scan: input.deepScan,
+        stop_after_hit: input.stopAfterHit,
+        completed_at: input.completedAt,
       })
       .select("*")
       .single();
@@ -65,11 +70,12 @@ export class SupabaseWatchRepository implements WatchRepository {
 
   async update(
     watchId: string,
-    patch: Partial<Pick<Watch, "frequencyMinutes" | "status">>,
+    patch: Partial<Pick<Watch, "frequencyMinutes" | "status" | "completedAt">>,
   ): Promise<Watch> {
     const row: Database["public"]["Tables"]["watches"]["Update"] = {};
     if (patch.frequencyMinutes !== undefined) row.frequency_minutes = patch.frequencyMinutes;
     if (patch.status !== undefined) row.status = patch.status;
+    if (patch.completedAt !== undefined) row.completed_at = patch.completedAt;
     const { data, error } = await this.db
       .from("watches")
       .update(row)

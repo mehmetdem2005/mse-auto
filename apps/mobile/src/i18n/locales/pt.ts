@@ -44,6 +44,9 @@ export const pt: Catalog = {
     showPass: "Mostrar senha",
     hidePass: "Esconder senha",
     signIn: "Entrar",
+    or: "ou",
+    google: "Continuar com o Google",
+    googleOff: "O login com Google ainda não está ativado — use o e-mail por enquanto.",
     devId: "ID do usuário de desenvolvimento",
     devNote: "Desenvolvimento · token = ID do usuário",
     terms: "Ao continuar, você aceita os termos e a política de privacidade do Whenly.",
@@ -91,6 +94,7 @@ export const pt: Catalog = {
     menuOpen: "Abrir pesquisa",
     pause: "Pausar",
     resume: "Reiniciar",
+    completed: "Resultado encontrado",
     shared: "Compartilhado",
     personal: "Pessoal",
     alert: "Alerta",
@@ -138,6 +142,9 @@ export const pt: Catalog = {
     sourceHint:
       "Qual fonte o motor deve priorizar? Auto: página oficial ao vivo → busca oficial → últimas 24h de notícias.",
     sonar: "Sonar — varredura profunda",
+    stopAfterHit: "Parar ao encontrar",
+    stopAfterHitHint:
+      "Após o primeiro resultado real, este monitoramento pausa sozinho; retome quando quiser.",
     sonarHint:
       "Verificação em várias etapas e mais fontes a cada verificação. Mais completo, um pouco mais lento.",
     srcAuto: "Auto",

@@ -2,7 +2,7 @@ import { composeEventAlert } from "../domain/alert-text";
 import type { AuthorityResolver } from "../domain/authority";
 import type { Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
-import type { CanonicalTopicRepository } from "../domain/ports";
+import type { CanonicalTopicRepository, WatchRepository } from "../domain/ports";
 import type { JobQueue } from "../domain/queue";
 import type { EventVerifier } from "../domain/verifier";
 import { DELIVERY_QUEUE, type DeliveryJob } from "./delivery";
@@ -16,6 +16,8 @@ export interface MonitoringWorkerDeps {
   verifier?: EventVerifier | undefined;
   topics?: CanonicalTopicRepository;
   authority?: AuthorityResolver;
+  /** Sonuç-bulununca-durdur (ADR-092). */
+  watches?: WatchRepository;
   timeoutMs?: number | undefined;
 }
 
@@ -34,6 +36,7 @@ export async function registerMonitoringWorker(deps: MonitoringWorkerDeps): Prom
         topics: deps.topics,
         authority: deps.authority,
         verifier: deps.verifier,
+        watches: deps.watches,
         timeoutMs: deps.timeoutMs,
       },
       topic,

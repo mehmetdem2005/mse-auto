@@ -45,6 +45,9 @@ export const de: Catalog = {
     showPass: "Passwort anzeigen",
     hidePass: "Passwort verstecken",
     signIn: "Anmelden",
+    or: "oder",
+    google: "Mit Google fortfahren",
+    googleOff: "Google-Anmeldung ist noch nicht aktiviert — nutze vorerst E-Mail.",
     devId: "Entwickler-Benutzer-ID",
     devNote: "Entwicklung · Token = Benutzer-ID",
     terms:
@@ -93,6 +96,7 @@ export const de: Catalog = {
     menuOpen: "Recherche öffnen",
     pause: "Pausieren",
     resume: "Fortsetzen",
+    completed: "Ergebnis gefunden",
     shared: "Gesammelt",
     personal: "Persönlich",
     alert: "Benachrichtigung",
@@ -141,6 +145,9 @@ export const de: Catalog = {
     sourceHint:
       "Welche Quelle soll der Motor priorisieren? Auto: Live-Offizielle Seite → Offizielle Suche → Letzte 24h Nachrichten.",
     sonar: "Sonar — Tiefenscan",
+    stopAfterHit: "Bei Fund stoppen",
+    stopAfterHitHint:
+      "Nach dem ersten echten Ergebnis pausiert diese Überwachung automatisch; jederzeit fortsetzbar.",
     sonarHint:
       "Mehrstufige Prüfung und mehr Quellen bei jeder Kontrolle. Gründlicher, etwas langsamer.",
     srcAuto: "Auto",

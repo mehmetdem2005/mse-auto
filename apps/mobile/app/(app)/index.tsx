@@ -239,9 +239,14 @@ function WatchRow({
       </BottomSheet>
       {/* Rozetler — taşarsa alt satıra sarar (taşma standardı: rozet asla kırpılmaz) */}
       <View className="flex-row flex-wrap items-center gap-2 mt-3">
-        <Badge tone={active ? "pos" : "muted"}>
-          {active ? t("common.active") : t("common.paused")}
-        </Badge>
+        {/* Sonuç bulundu → otomatik durdu (ADR-092); "duraklatıldı"dan ayrı, olumlu durum. */}
+        {!active && item.completedAt ? (
+          <Badge tone="pos">{t("watchers.completed")}</Badge>
+        ) : (
+          <Badge tone={active ? "pos" : "muted"}>
+            {active ? t("common.active") : t("common.paused")}
+          </Badge>
+        )}
         {hasAlert ? <Badge tone="neg">{t("watchers.alert")}</Badge> : null}
         <Badge tone="accent">
           {item.archetype === "shared" ? t("watchers.shared") : t("watchers.personal")}

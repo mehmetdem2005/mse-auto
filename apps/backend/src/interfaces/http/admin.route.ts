@@ -7,6 +7,7 @@ import {
   adminSystemSchema,
   adminTimeseriesQuerySchema,
   adminTimeseriesSchema,
+  adminTrafficSchema,
   adminUserListSchema,
   adminWatchListSchema,
   errorSchema,
@@ -23,6 +24,7 @@ import { getAdminStats } from "../../application/admin-stats";
 import { getPlans } from "../../application/get-plans";
 import { setPlanPrice } from "../../application/set-price";
 import type { Container } from "../../config/container";
+import { summarizeTraffic, windowStart } from "../../domain/traffic";
 import type { AuthVariables } from "./auth.middleware";
 
 const okSchema = z.object({ ok: z.boolean() });
@@ -64,6 +66,28 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
     async (c) => {
       const { days } = c.req.valid("query");
       return c.json(await container.adminConsole.getTimeseries(days), 200);
+    },
+  );
+
+  // ADR-091 — site + uygulama trafiği (kimliksiz edinim sinyali; dinamik, hardcode yok).
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/traffic",
+      tags: ["admin"],
+      summary: "Trafik özeti: site/uygulama gün serisi + kaynak kırılımı",
+      request: { query: adminTimeseriesQuerySchema },
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminTrafficSchema } },
+          description: "Trafik özeti",
+        },
+      },
+    }),
+    async (c) => {
+      const { days } = c.req.valid("query");
+      const events = await container.traffic.listSince(windowStart(days)).catch(() => []);
+      return c.json(summarizeTraffic(events, days), 200);
     },
   );
 

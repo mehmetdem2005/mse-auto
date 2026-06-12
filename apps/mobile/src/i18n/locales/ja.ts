@@ -44,6 +44,9 @@ export const ja: Catalog = {
     showPass: "パスワードを表示",
     hidePass: "パスワードを非表示",
     signIn: "ログイン",
+    or: "または",
+    google: "Googleで続行",
+    googleOff: "Googleログインはまだ有効になっていません。今はメールでログインしてください。",
     devId: "開発ユーザーID",
     devNote: "開発 · トークン = ユーザーID",
     terms: "続行により、Whenlyの利用規約とプライバシーポリシーに同意します。",
@@ -91,6 +94,7 @@ export const ja: Catalog = {
     menuOpen: "研究を開く",
     pause: "一時停止",
     resume: "再開",
+    completed: "結果が見つかりました",
     shared: "共有",
     personal: "プライベート",
     alert: "アラート",
@@ -138,6 +142,9 @@ export const ja: Catalog = {
     sourceHint:
       "エンジンが優先する{{mail}}のソースは何ですか? Auto: ライブオフィシャルページ → オフィシャル検索 → 最新24時間ニュース。",
     sonar: "Sonar — ディープスキャン",
+    stopAfterHit: "見つかったら停止",
+    stopAfterHitHint:
+      "最初の本当の結果が届くと、このウォッチは自動的に一時停止します。いつでも再開できます。",
     sonarHint:
       "毎回のチェックで多段階検証とより多くのソースを使用。より徹底的で、少し遅くなります。",
     srcAuto: "Auto",

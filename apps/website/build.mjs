@@ -20,7 +20,7 @@ import {
   useCaseBody,
   useCasesIndexBody,
 } from "./src/render.mjs";
-import { APP_URL, BRAND, CONTACT_EMAIL, INDEXNOW_KEY, SITE_URL } from "./src/site.mjs";
+import { API_URL, APP_URL, BRAND, CONTACT_EMAIL, INDEXNOW_KEY, SITE_URL } from "./src/site.mjs";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -378,7 +378,11 @@ export function buildSite(opts = {}) {
   cpSync(path.join(ROOT, "public"), outDir, { recursive: true });
   mkdirSync(path.join(outDir, "assets"), { recursive: true });
   cpSync(path.join(ROOT, "src/styles.css"), path.join(outDir, "assets/site.css"));
-  cpSync(path.join(ROOT, "src/client.js"), path.join(outDir, "assets/client.js"));
+  // client.js kopyalanırken beacon hedefi tek kaynaktan gömülür (ADR-091).
+  writeFileSync(
+    path.join(outDir, "assets/client.js"),
+    readFileSync(path.join(ROOT, "src/client.js"), "utf8").replaceAll("__API_URL__", API_URL),
+  );
 
   const pages = pageModel(siteUrl);
   for (const p of pages) {

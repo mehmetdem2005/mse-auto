@@ -18,7 +18,7 @@ export interface WatchRepository {
   listByUser(userId: string): Promise<Watch[]>;
   update(
     watchId: string,
-    patch: Partial<Pick<Watch, "frequencyMinutes" | "status">>,
+    patch: Partial<Pick<Watch, "frequencyMinutes" | "status" | "completedAt">>,
   ): Promise<Watch>;
   delete(watchId: string): Promise<void>;
 }

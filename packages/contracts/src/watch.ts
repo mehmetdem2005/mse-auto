@@ -20,6 +20,8 @@ export const createWatchInputSchema = z.object({
   sourcePref: watchSourcePrefSchema.default("auto"),
   /** "Sonar" derin tarama: her kontrolde çok-turlu doğrulama + daha fazla kaynak. */
   deepScan: z.boolean().default(false),
+  /** Sonuç bulununca izleme otomatik durur (varsayılan AÇIK — gereksiz tarama/bildirim biter). */
+  stopAfterHit: z.boolean().default(true),
 });
 export type CreateWatchInput = z.infer<typeof createWatchInputSchema>;
 
@@ -38,6 +40,10 @@ export const watchSchema = z.object({
   sourcePref: watchSourcePrefSchema.optional(),
   /** "Sonar" derin tarama açık mı (ADR-089). */
   deepScan: z.boolean().optional(),
+  /** Sonuç bulununca otomatik durdurma açık mı. */
+  stopAfterHit: z.boolean().optional(),
+  /** Sonuç bulunup izleme otomatik durdurulduysa zamanı (geri-uyumlu opsiyonel). */
+  completedAt: z.string().nullable().optional(),
 });
 export type Watch = z.infer<typeof watchSchema>;
 

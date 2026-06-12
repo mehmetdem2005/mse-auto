@@ -18,4 +18,8 @@ export interface Watch {
   sourcePref: WatchSourcePref;
   /** "Sonar" derin tarama (ADR-089): kontrolde çok-turlu doğrulama zorlanır. */
   deepScan: boolean;
+  /** Sonuç bulununca izleme otomatik durur (ADR-092; varsayılan açık). */
+  stopAfterHit: boolean;
+  /** Otomatik durdurma gerçekleştiyse zamanı (yoksa null). */
+  completedAt: string | null;
 }

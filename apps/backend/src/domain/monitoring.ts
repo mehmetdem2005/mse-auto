@@ -9,6 +9,8 @@ export interface Subscriber {
   sourcePref: "auto" | "news" | "official" | "web";
   /** "Sonar" derin tarama tercihi (ADR-089). */
   deepScan: boolean;
+  /** Sonuç bulununca izleme otomatik durur (ADR-092). */
+  stopAfterHit: boolean;
 }
 
 export interface PendingDelivery {

@@ -16,6 +16,12 @@ export const APP_URL = (process.env.APP_URL || "https://watcher-app-inky.vercel.
   "",
 );
 
+/** Backend adresi — yalnız kimliksiz trafik beacon'ı için (ADR-091); build'de client.js'e gömülür. */
+export const API_URL = (process.env.API_URL || "https://watcher-backend-p0hi.onrender.com").replace(
+  /\/$/,
+  "",
+);
+
 export const CONTACT_EMAIL = "mehmetdem782100@gmail.com";
 
 /** IndexNow anahtarı — herkese açık olması protokol gereği normaldir (sahiplik kanıtı). */

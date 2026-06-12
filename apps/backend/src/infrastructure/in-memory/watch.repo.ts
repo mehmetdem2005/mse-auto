@@ -22,12 +22,13 @@ export class InMemoryWatchRepository implements WatchRepository {
 
   async update(
     watchId: string,
-    patch: Partial<Pick<Watch, "frequencyMinutes" | "status">>,
+    patch: Partial<Pick<Watch, "frequencyMinutes" | "status" | "completedAt">>,
   ): Promise<Watch> {
     const w = this.store.watches.find((x) => x.id === watchId);
     if (!w) throw new Error(`watch yok: ${watchId}`);
     if (patch.frequencyMinutes !== undefined) w.frequencyMinutes = patch.frequencyMinutes;
     if (patch.status !== undefined) w.status = patch.status;
+    if (patch.completedAt !== undefined) w.completedAt = patch.completedAt;
     return w;
   }
 

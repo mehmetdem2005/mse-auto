@@ -5,10 +5,12 @@ import {
   type AdminSubscription,
   type AdminSupportTicket,
   type AdminTimeseriesPoint,
+  type AdminTraffic,
   type AdminUser,
   type AdminWatch,
   type BillingInterval,
   type Plans,
+  type TrafficBreakdown,
   api,
 } from "@/lib/api";
 import { qk } from "@/lib/query";
@@ -29,9 +31,10 @@ import {
 } from "react-native";
 import Svg, { Circle, Path } from "react-native-svg";
 
-type Tab = "analytics" | "stats" | "users" | "watches" | "subs" | "support" | "system";
+type Tab = "analytics" | "traffic" | "stats" | "users" | "watches" | "subs" | "support" | "system";
 const TABS: { id: Tab; label: string }[] = [
   { id: "analytics", label: "Analitik" },
+  { id: "traffic", label: "Trafik" },
   { id: "stats", label: "İstatistik" },
   { id: "users", label: "Kullanıcılar" },
   { id: "watches", label: "Watcher'lar" },
@@ -157,6 +160,7 @@ export default function AdminScreen(): ReactNode {
           ))}
         </View>
         {tab === "analytics" ? <AnalyticsTab /> : null}
+        {tab === "traffic" ? <TrafficTab /> : null}
         {tab === "stats" ? <StatsTab /> : null}
         {tab === "users" ? <UsersTab /> : null}
         {tab === "watches" ? <WatchesTab /> : null}
@@ -293,6 +297,227 @@ const RANGES: { d: number; label: string }[] = [
   { d: 14, label: "14 gün" },
   { d: 30, label: "30 gün" },
 ];
+
+// ----------------------------- Trafik (ADR-091) -----------------------------
+// Site + uygulama edinim sinyali — kimliksiz beacon'lardan DİNAMİK (hardcode yok).
+
+const TRAFFIC_COLORS = { site: "#6366F1", app: "#16A34A" } as const;
+
+function TrafficBars({ days }: { days: AdminTraffic["days"] }): ReactNode {
+  const reduce = useReduceMotion();
+  const anim = useRef(new Animated.Value(reduce ? 1 : 0)).current;
+  useEffect(() => {
+    if (reduce) {
+      anim.setValue(1);
+      return;
+    }
+    anim.setValue(0);
+    const a = Animated.timing(anim, { toValue: 1, duration: 650, useNativeDriver: false });
+    a.start();
+    return () => a.stop();
+  }, [reduce, anim]);
+  const max = Math.max(1, ...days.flatMap((d) => [d.site, d.app]));
+  const step = Math.max(1, Math.ceil(days.length / 7));
+  return (
+    <View>
+      <Text className="text-muted text-[10px] mb-2">en yüksek: {max.toLocaleString("tr-TR")}</Text>
+      <View className="flex-row items-end" style={{ height: 120 }}>
+        {days.map((d, i) => (
+          <View
+            key={d.date}
+            accessible
+            accessibilityLabel={`${day(d.date)}: site ${d.site}, uygulama ${d.app}`}
+            className="flex-1 flex-row items-end justify-center gap-px"
+          >
+            <Animated.View
+              style={{
+                width: "38%",
+                backgroundColor: TRAFFIC_COLORS.site,
+                borderTopLeftRadius: 2,
+                borderTopRightRadius: 2,
+                height: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, Math.max(d.site > 0 ? 3 : 1, (d.site / max) * 112)],
+                }),
+                opacity: d.site > 0 ? 1 : 0.25,
+              }}
+            />
+            <Animated.View
+              style={{
+                width: "38%",
+                backgroundColor: TRAFFIC_COLORS.app,
+                borderTopLeftRadius: 2,
+                borderTopRightRadius: 2,
+                height: anim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0, Math.max(d.app > 0 ? 3 : 1, (d.app / max) * 112)],
+                }),
+                opacity: d.app > 0 ? 1 : 0.25,
+              }}
+            />
+            {i % step === 0 ? (
+              <Text className="text-muted text-[8px] absolute -bottom-4" numberOfLines={1}>
+                {dayShort(d.date)}
+              </Text>
+            ) : null}
+          </View>
+        ))}
+      </View>
+      <View className="h-4" />
+    </View>
+  );
+}
+
+/** Kaynak kırılım listesi — anahtar + sayı + oransal bar (dinamik veriden). */
+function TopList({
+  title,
+  items,
+  total,
+}: {
+  title: string;
+  items: { key: string; count: number }[];
+  total: number;
+}): ReactNode {
+  if (items.length === 0) return null;
+  return (
+    <View className="bg-panel border border-line rounded-xl p-4 mt-3">
+      <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">{title}</Text>
+      {items.map((it) => {
+        const pct = total > 0 ? Math.round((it.count / total) * 100) : 0;
+        return (
+          <View key={it.key} className="mt-2">
+            <View className="flex-row items-center justify-between gap-2">
+              <Text className="text-text text-xs flex-1 min-w-0" numberOfLines={1}>
+                {it.key}
+              </Text>
+              <Text className="text-muted text-xs shrink-0">
+                {it.count.toLocaleString("tr-TR")} · %{pct}
+              </Text>
+            </View>
+            <View className="h-1.5 bg-panel2 rounded-full mt-1 overflow-hidden">
+              <View
+                className="h-1.5 bg-accent rounded-full"
+                style={{ width: `${Math.max(pct, 2)}%` }}
+              />
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
+function TrafficBreakdownView({
+  b,
+  kind,
+}: { b: TrafficBreakdown; kind: "site" | "app" }): ReactNode {
+  return (
+    <>
+      <TopList title="nereden geldi · yönlendiren" items={b.refs} total={b.total} />
+      <TopList title="kampanya · utm_source" items={b.utms} total={b.total} />
+      {kind === "site" ? (
+        <TopList title="en çok gezilen sayfalar" items={b.paths} total={b.total} />
+      ) : null}
+      {kind === "app" ? <TopList title="platform" items={b.platforms} total={b.total} /> : null}
+      <TopList title="dil" items={b.langs} total={b.total} />
+    </>
+  );
+}
+
+function TrafficTab(): ReactNode {
+  const [days, setDays] = useState(30);
+  const [seg, setSeg] = useState<"site" | "app">("site");
+  const q = useQuery({
+    queryKey: ["adminTraffic", days],
+    queryFn: () => api.adminTraffic(days),
+  });
+  if (q.isLoading) return <Loading />;
+  if (q.error) return <ErrText e={q.error} />;
+  const d = q.data;
+  if (!d) return null;
+  const empty = d.site.total === 0 && d.app.total === 0;
+  const active = seg === "site" ? d.site : d.app;
+  return (
+    <ScrollView className="flex-1 px-5" contentContainerClassName="pb-8">
+      <View className="flex-row gap-1.5 mb-3">
+        {[7, 30, 90].map((n) => (
+          <Pressable
+            key={n}
+            onPress={() => setDays(n)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: days === n }}
+            className={`rounded-lg px-3 py-2 ${days === n ? "bg-accent" : "border border-line"}`}
+          >
+            <Text
+              className="text-[11px] uppercase tracking-wider"
+              style={{ color: days === n ? "#FFFFFF" : "#64748B" }}
+            >
+              {n} gün
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <View className="flex-row flex-wrap gap-2.5">
+        <Stat n={d.site.total} l="site ziyareti" tone="accent" sub="tanıtım sitesi" />
+        <Stat n={d.app.total} l="uygulama açılışı" tone="pos" sub="web + Android" />
+      </View>
+
+      <View className="bg-panel border border-line rounded-xl p-4 mt-3">
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className="text-muted text-[10px] uppercase tracking-widest">
+            günlük trafik · son {days} gün
+          </Text>
+          <View className="flex-row items-center gap-3">
+            <LegendRow color={TRAFFIC_COLORS.site} label="Site" />
+            <LegendRow color={TRAFFIC_COLORS.app} label="Uygulama" />
+          </View>
+        </View>
+        {empty ? (
+          <Text className="text-muted text-xs py-6 text-center">
+            Henüz trafik sinyali yok — site ve uygulama ziyaret edildikçe burada birikir.
+          </Text>
+        ) : (
+          <TrafficBars days={d.days} />
+        )}
+      </View>
+
+      {/* Site / Uygulama kırılımı — ayrı ayrı (kullanıcı isteği) */}
+      <View className="flex-row gap-1.5 mt-5 mb-1">
+        {(
+          [
+            ["site", "Site kaynakları"],
+            ["app", "Uygulama kaynakları"],
+          ] as const
+        ).map(([v, l]) => (
+          <Pressable
+            key={v}
+            onPress={() => setSeg(v)}
+            accessibilityRole="button"
+            accessibilityState={{ selected: seg === v }}
+            className={`rounded-lg px-3 py-2 ${seg === v ? "bg-accent" : "border border-line"}`}
+          >
+            <Text
+              className="text-[11px] uppercase tracking-wider"
+              style={{ color: seg === v ? "#FFFFFF" : "#64748B" }}
+            >
+              {l}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      {active.total === 0 ? (
+        <Text className="text-muted text-xs mt-3">Bu kaynak için henüz veri yok.</Text>
+      ) : (
+        <TrafficBreakdownView b={active} kind={seg} />
+      )}
+      <Text className="text-muted text-[10px] mt-4">
+        Kimliksiz sinyal: IP, kullanıcı kimliği ve tam URL saklanmaz; yalnız yönlendiren alan adı,
+        utm etiketi, sayfa yolu, dil ve platform sayılır (ADR-091).
+      </Text>
+    </ScrollView>
+  );
+}
 
 type SeriesKey = "checkRuns" | "detections" | "deliveries";
 type Series = { key: SeriesKey; color: string; label: string };

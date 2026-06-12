@@ -53,6 +53,8 @@ export interface Database {
           created_at: string;
           source_pref: "auto" | "news" | "official" | "web";
           deep_scan: boolean;
+          stop_after_hit: boolean;
+          completed_at: string | null;
         };
         Insert: {
           user_id: string;
@@ -65,6 +67,8 @@ export interface Database {
           created_at?: string;
           source_pref?: "auto" | "news" | "official" | "web";
           deep_scan?: boolean;
+          stop_after_hit?: boolean;
+          completed_at?: string | null;
         };
         Update: {
           raw_intent?: string;
@@ -73,6 +77,8 @@ export interface Database {
           status?: "active" | "paused";
           source_pref?: "auto" | "news" | "official" | "web";
           deep_scan?: boolean;
+          stop_after_hit?: boolean;
+          completed_at?: string | null;
         };
         Relationships: [];
       };
@@ -342,6 +348,32 @@ export interface Database {
         Row: { user_id: string; created_at: string };
         Insert: { user_id: string; created_at?: string };
         Update: { created_at?: string };
+        Relationships: [];
+      };
+      traffic_events: {
+        Row: {
+          id: number;
+          day: string;
+          source: "site" | "app";
+          ref: string | null;
+          utm: string | null;
+          path: string | null;
+          lang: string | null;
+          platform: "web" | "android" | "ios" | null;
+          created_at: string;
+        };
+        Insert: {
+          day: string;
+          source: "site" | "app";
+          ref?: string | null;
+          utm?: string | null;
+          path?: string | null;
+          lang?: string | null;
+          platform?: "web" | "android" | "ios" | null;
+          id?: number;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
         Relationships: [];
       };
     };

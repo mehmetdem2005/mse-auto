@@ -43,6 +43,9 @@ export const tr = {
     showPass: "Parolayı göster",
     hidePass: "Parolayı gizle",
     signIn: "Giriş yap",
+    or: "veya",
+    google: "Google ile devam et",
+    googleOff: "Google girişi henüz etkin değil — şimdilik e-postayla giriş yap.",
     devId: "dev kullanıcı kimliği",
     devNote: "Geliştirme · token = kullanıcı kimliği",
     terms: "Devam ederek Whenly'nin koşullarını ve gizlilik politikasını kabul edersin.",
@@ -90,6 +93,7 @@ export const tr = {
     menuOpen: "Araştırmayı aç",
     pause: "Duraklat",
     resume: "Sürdür",
+    completed: "Sonuç bulundu",
     shared: "Paylaşılan",
     personal: "Kişisel",
     alert: "Uyarı",
@@ -137,6 +141,9 @@ export const tr = {
     sourceHint:
       "Motor hangi kaynağa öncelik versin? Otomatik: canlı resmî sayfa → resmî arama → son 24 saat haber.",
     sonar: "Sonar — derin tarama",
+    stopAfterHit: "Sonuç bulununca durdur",
+    stopAfterHitHint:
+      "İlk gerçek sonuç bildirilince izleme kendiliğinden durur; istediğinde sürdürebilirsin.",
     sonarHint:
       "Her kontrolde çok-turlu doğrulama ve daha fazla kaynak. Daha kapsamlı, biraz daha yavaş.",
     srcAuto: "Otomatik",

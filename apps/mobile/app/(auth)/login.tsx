@@ -4,7 +4,9 @@ import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import { GRADIENT, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
+import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import { Eye, EyeOff } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -41,6 +43,46 @@ export default function Login() {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setErr(error.message);
     setBusy(false);
+  }
+
+  /**
+   * Google ile giriş (ADR-093) — Supabase OAuth/PKCE.
+   * Web: tarayıcı yönlendirir, dönüşte oturum otomatik kurulur (detectSessionInUrl).
+   * Native: sistem tarayıcısında oturum açılır, dönen koddan oturum elle kurulur.
+   */
+  async function signInGoogle() {
+    if (!supabase) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      if (Platform.OS === "web") {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: { redirectTo: window.location.origin },
+        });
+        if (error) throw error;
+        return; // sayfa Google'a yönlenir; dönüşte oturum otomatik
+      }
+      const redirectTo = Linking.createURL("auth");
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo, skipBrowserRedirect: true },
+      });
+      if (error || !data?.url) throw error ?? new Error("OAuth URL alınamadı");
+      const res = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (res.type === "success" && res.url) {
+        const code = new URL(res.url).searchParams.get("code");
+        if (!code) throw new Error("Yetkilendirme kodu dönmedi");
+        const { error: exErr } = await supabase.auth.exchangeCodeForSession(code);
+        if (exErr) throw exErr;
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      // Sağlayıcı Supabase'de henüz açık değilse kullanıcıya dürüst, yerelleştirilmiş mesaj.
+      setErr(/provider is not enabled|validation_failed/i.test(msg) ? t("login.googleOff") : msg);
+    } finally {
+      setBusy(false);
+    }
   }
 
   // Web'de reanimated layout `entering` GPU artefaktı üretiyor → native'e kıstır.
@@ -157,6 +199,25 @@ export default function Login() {
                     disabled={busy || !email || !password}
                     onPress={signIn}
                   />
+
+                  {/* Ayraç + Google (ADR-093) — ikincil giriş yolu, outlined buton */}
+                  <View className="flex-row items-center gap-3 my-4">
+                    <View className="flex-1 h-px bg-line" />
+                    <Text className="text-muted2 text-xs">{t("login.or")}</Text>
+                    <View className="flex-1 h-px bg-line" />
+                  </View>
+                  <Pressable
+                    onPress={signInGoogle}
+                    disabled={busy}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("login.google")}
+                    className={`flex-row items-center justify-center gap-3 min-h-[48px] rounded-xl border border-line bg-ink active:bg-panel2 ${busy ? "opacity-60" : ""}`}
+                  >
+                    <View className="w-6 h-6 rounded-full border border-line items-center justify-center">
+                      <Text className="text-text text-[13px] font-extrabold">G</Text>
+                    </View>
+                    <Text className="text-text text-[15px] font-semibold">{t("login.google")}</Text>
+                  </Pressable>
                 </>
               ) : (
                 <>

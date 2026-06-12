@@ -26,6 +26,7 @@ export async function startWorkers(
     verifier: container.verifier,
     topics: container.topics,
     authority: container.authority,
+    watches: container.watches,
     timeoutMs: container.checkTimeoutMs,
   });
   await registerDeliveryWorker({

@@ -19,6 +19,28 @@ export interface Watch {
   createdAt: string;
   authorityDomain?: string | null;
   lastCheckedAt?: string | null;
+  /** Sonuç bulununca otomatik durdurma (ADR-092). */
+  stopAfterHit?: boolean;
+  /** Otomatik durdurma gerçekleştiyse anı — kartta "sonuç bulundu" rozeti. */
+  completedAt?: string | null;
+}
+/** Admin trafik özeti (ADR-091) — site/uygulama edinim sinyali. */
+export interface TrafficTopItem {
+  key: string;
+  count: number;
+}
+export interface TrafficBreakdown {
+  total: number;
+  refs: TrafficTopItem[];
+  utms: TrafficTopItem[];
+  paths: TrafficTopItem[];
+  langs: TrafficTopItem[];
+  platforms: TrafficTopItem[];
+}
+export interface AdminTraffic {
+  days: { date: string; site: number; app: number }[];
+  site: TrafficBreakdown;
+  app: TrafficBreakdown;
 }
 export interface MeStats {
   watchers: number;
@@ -256,10 +278,11 @@ export const api = {
     frequencyMinutes: number,
     sourcePref: "auto" | "news" | "official" | "web" = "auto",
     deepScan = false,
+    stopAfterHit = true,
   ) =>
     req<Watch>("/v1/watchers", {
       method: "POST",
-      body: JSON.stringify({ rawIntent, frequencyMinutes, sourcePref, deepScan }),
+      body: JSON.stringify({ rawIntent, frequencyMinutes, sourcePref, deepScan, stopAfterHit }),
     }),
   subscription: () => req<Subscription>("/v1/subscription"),
   plans: () => req<Plans>("/v1/plans"),
@@ -309,16 +332,17 @@ export const api = {
   adminSystem: () => req<AdminSystem>("/v1/admin/system"),
   adminStats: () => req<AdminStats>("/v1/admin/analytics"),
   adminTimeseries: (days = 14) => req<AdminTimeseries>(`/v1/admin/timeseries?days=${days}`),
+  adminTraffic: (days = 30) => req<AdminTraffic>(`/v1/admin/traffic?days=${days}`),
   adminPrices: () => req<Plans>("/v1/admin/prices"),
   setPrice: (interval: BillingInterval, amountCents: number, currency: string) =>
     req<Plans>("/v1/admin/prices", {
       method: "PUT",
       body: JSON.stringify({ plan: "pro", interval, amountCents, currency }),
     }),
-  assistChat: (messages: AssistMessage[]) =>
+  assistChat: (messages: AssistMessage[], lang?: string) =>
     req<AssistReply>("/v1/watchers/assist", {
       method: "POST",
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, lang }),
     }),
   setMyWatchStatus: (id: string, status: "active" | "paused") =>
     req<Watch>(`/v1/watchers/${id}/status`, {
@@ -358,3 +382,22 @@ export const api = {
     req<{ ok: boolean }>(`/v1/feed/${deliveryId}/read`, { method: "POST" }),
   markAllFeedRead: () => req<{ count: number }>("/v1/feed/read-all", { method: "POST" }),
 };
+
+/**
+ * Kimliksiz trafik sinyali (ADR-091) — auth başlığı YOK, kullanıcı kimliği gitmez;
+ * hata sessiz yutulur (telemetri kritik değildir, akışı asla etkilemez).
+ */
+export function sendTrafficBeacon(input: {
+  source: "site" | "app";
+  path?: string;
+  ref?: string;
+  utm?: string;
+  lang?: string;
+  platform?: "web" | "android" | "ios";
+}): void {
+  void fetch(`${BASE}/t`, {
+    method: "POST",
+    headers: { "content-type": "text/plain" },
+    body: JSON.stringify(input),
+  }).catch(() => undefined);
+}

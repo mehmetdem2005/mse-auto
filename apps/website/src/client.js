@@ -72,3 +72,29 @@
     });
   }
 })();
+
+// Edinim sinyali (ADR-091) — KİMLİKSİZ: yalnız yol + yönlendiren alan adı + utm + dil.
+// Çerez yok, kimlik yok; DNT'ye saygı duyulur; yerel önizlemede gönderilmez.
+(() => {
+  const dnt = navigator.doNotTrack === "1";
+  const local = ["localhost", "127.0.0.1"].includes(location.hostname);
+  if (dnt || local) return;
+  const payload = JSON.stringify({
+    source: "site",
+    path: location.pathname,
+    ref: document.referrer || undefined,
+    utm: new URLSearchParams(location.search).get("utm_source") || undefined,
+    lang: document.documentElement.lang,
+  });
+  const url = "__API_URL__/t";
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(url, payload);
+  } else {
+    void fetch(url, {
+      method: "POST",
+      headers: { "content-type": "text/plain" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => undefined);
+  }
+})();

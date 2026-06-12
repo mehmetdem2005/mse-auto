@@ -2,7 +2,7 @@ import type { AuthorityResolver } from "../domain/authority";
 import type { CheckOutcome, Checker } from "../domain/checker";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { EventFacts } from "../domain/personal";
-import type { CanonicalTopicRepository } from "../domain/ports";
+import type { CanonicalTopicRepository, WatchRepository } from "../domain/ports";
 import type { CanonicalTopic } from "../domain/topic";
 import type { EventVerifier } from "../domain/verifier";
 import { TimeoutError, withTimeout } from "./guardrail";
@@ -15,6 +15,8 @@ export interface RunTopicCheckDeps {
   authority?: AuthorityResolver | undefined;
   /** Bağımsız doğrulayıcı (ADR-060 A1) — opsiyonel: yoksa tespit doğrudan geçer. */
   verifier?: EventVerifier | undefined;
+  /** Sonuç-bulununca-durdur (ADR-092) — opsiyonel: yoksa otomatik durdurma atlanır. */
+  watches?: WatchRepository | undefined;
   /** Tarama zaman aşımı (ms) — A0 guardrail; varsayılan 60sn. */
   timeoutMs?: number | undefined;
 }
@@ -155,6 +157,22 @@ export async function runTopicCheck(
   });
   const subscribers = await deps.monitoring.listActiveSubscribers(topic.id);
   const deliveries = await deps.monitoring.createPendingDeliveries(event.id, subscribers);
+
+  // ADR-092 — sonuç bulununca durdur: teslim kuyruğa alındıktan sonra, tercihi açık
+  // PAYLAŞILAN izlemeler duraklatılır (bir daha taranmaz; scheduler aktifsiz topic'i
+  // zaten atlar). PERSONAL arketipte eşleşme kararı CİHAZDA verilir (ADR-015) —
+  // sunucu gerçek "sonuç"u bilemez; durdurma cihaz gate'i geçince istemciden yapılır.
+  if (deps.watches) {
+    const now = new Date().toISOString();
+    for (const s of subscribers) {
+      if (s.archetype !== "shared" || !s.stopAfterHit) continue;
+      try {
+        await deps.watches.update(s.watchId, { status: "paused", completedAt: now });
+      } catch {
+        // Tek izlemenin durdurulamaması tespiti/teslimi düşürmez; sonraki turda yinelenir.
+      }
+    }
+  }
   return {
     detected: true,
     eventId: event.id,

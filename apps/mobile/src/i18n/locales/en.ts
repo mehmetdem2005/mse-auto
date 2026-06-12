@@ -44,6 +44,9 @@ export const en: Catalog = {
     showPass: "Show password",
     hidePass: "Hide password",
     signIn: "Sign in",
+    or: "or",
+    google: "Continue with Google",
+    googleOff: "Google sign-in isn't enabled yet — use email for now.",
     devId: "dev user id",
     devNote: "Development · token = user id",
     terms: "By continuing you accept Whenly's terms and privacy policy.",
@@ -91,6 +94,7 @@ export const en: Catalog = {
     menuOpen: "Open research",
     pause: "Pause",
     resume: "Resume",
+    completed: "Result found",
     shared: "Shared",
     personal: "Personal",
     alert: "Alert",
@@ -138,6 +142,9 @@ export const en: Catalog = {
     sourceHint:
       "Which source should the engine prioritize? Auto: live official page → official search → last 24h news.",
     sonar: "Sonar — deep scan",
+    stopAfterHit: "Stop when found",
+    stopAfterHitHint:
+      "Once the first real result is delivered, this watch pauses itself; resume anytime.",
     sonarHint:
       "Multi-pass verification and more sources on every check. More thorough, a bit slower.",
     srcAuto: "Auto",

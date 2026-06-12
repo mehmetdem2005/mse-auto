@@ -16,7 +16,8 @@ const VAGUE_COMBINED_CHARS = 20;
 const VAGUE_FIRST_MSG_CHARS = 35;
 
 export class HeuristicIntentAssistant implements IntentAssistant {
-  async chat(history: AssistantMessage[]): Promise<AssistantReply> {
+  async chat(history: AssistantMessage[], lang?: string): Promise<AssistantReply> {
+    const tr = (lang ?? "tr").startsWith("tr");
     const userMsgs = history.filter((m) => m.role === "user");
     // Selamlama balonu geçmişin başında gelebilir; "soru soruldu mu" kararı
     // İLK KULLANICI mesajından SONRAKİ asistan mesajına bakar.
@@ -36,8 +37,9 @@ export class HeuristicIntentAssistant implements IntentAssistant {
     if (vague && !assistantAsked) {
       return {
         ready: false,
-        message:
-          "Biraz daha spesifik olalım: tam olarak neyi, hangi koşulda takip edeyim? Örneğin ürün/model, bir fiyat eşiği ya da şehir belirt.",
+        message: tr
+          ? "Biraz daha spesifik olalım: tam olarak neyi, hangi koşulda takip edeyim? Örneğin ürün/model, bir fiyat eşiği ya da şehir belirt."
+          : "Let's get a bit more specific: what exactly should I watch, and under what condition? For example a product/model, a price threshold, or a city.",
         intent: null,
         frequencyMinutes: null,
         confidence: 0.3,
@@ -47,7 +49,9 @@ export class HeuristicIntentAssistant implements IntentAssistant {
     const intent = lastUser.length >= combined.length ? lastUser : combined;
     return {
       ready: true,
-      message: `Şunu izleyeyim: "${intent}". Onaylıyorsan oluşturayım.`,
+      message: tr
+        ? `Şunu izleyeyim: "${intent}". Onaylıyorsan oluşturayım.`
+        : `I'll watch this: "${intent}". Confirm and I'll create it.`,
       intent,
       frequencyMinutes: 360,
       confidence: 0.6,

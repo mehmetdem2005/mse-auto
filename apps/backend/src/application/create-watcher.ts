@@ -64,6 +64,8 @@ export async function createWatcher(
     createdAt: new Date().toISOString(),
     sourcePref: input.sourcePref ?? "auto",
     deepScan: input.deepScan ?? false,
+    stopAfterHit: input.stopAfterHit ?? true,
+    completedAt: null,
   });
 
   return {
@@ -75,5 +77,7 @@ export async function createWatcher(
     createdAt: watch.createdAt,
     sourcePref: watch.sourcePref,
     deepScan: watch.deepScan,
+    stopAfterHit: watch.stopAfterHit,
+    completedAt: watch.completedAt,
   };
 }

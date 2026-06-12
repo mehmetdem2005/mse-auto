@@ -60,3 +60,13 @@ pnpm 9 · Node 22. Hesaplar: Supabase, Render, Vercel, Google Cloud, Expo, DeepS
 - **Arka plan push** (uygulama kapalı) + tam-ekran/loop alarm → native FCM arka-plan handler fazı (TaskManager).
 - **KVKK/GDPR**: gizlilik politikası, onam, hesap silme akışı + Play "data safety" formu.
 - Ses önizleme (`expo-audio`), gerçek Supabase/E2E entegrasyon testleri.
+
+## 8. Google ile giriş (tek seferlik, ~5 dk — yalnız hesap sahibi yapabilir)
+Kod hazır (ADR-093); eksik olan tek şey Google OAuth istemcisi:
+1. console.cloud.google.com → proje seç/oluştur → **APIs & Services → Credentials → Create OAuth client ID** (tip: Web application).
+2. **Authorized redirect URI**: `https://kozckegiwuaywqkkkntp.supabase.co/auth/v1/callback`
+3. Çıkan **Client ID + Secret**'ı Supabase Dashboard → Authentication → Providers → **Google**'a yapıştır ve etkinleştir.
+   (İstersen Management API ile: `PATCH /v1/projects/<ref>/config/auth` → `external_google_enabled:true, external_google_client_id, external_google_secret`.)
+4. Bitti — uygulamadaki "Google ile devam et" butonu çalışır (web yönlendirme + Android sistem tarayıcısı). Buton, sağlayıcı kapalıyken dürüst bir "henüz etkin değil" mesajı gösterir.
+
+Not: `site_url` ve yönlendirme allow-list'i canlıda düzeltildi (2026-06-12 — magic link artık localhost'a değil uygulamaya döner). Ek bildirim kanalları (Telegram/Resend/WhatsApp) için ilgili token'lar Render `watcher-secrets` grubuna girilene dek kanallar pasiftir.

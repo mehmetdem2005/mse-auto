@@ -21,6 +21,7 @@ import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
 import type { SubscriptionRepository } from "../domain/subscription";
 import type { SupportRepository } from "../domain/support";
+import type { TrafficRepository } from "../domain/traffic";
 import type { EventVerifier } from "../domain/verifier";
 import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
@@ -43,6 +44,7 @@ import { InMemoryStore } from "../infrastructure/in-memory/store";
 import { InMemorySubscriptionRepository } from "../infrastructure/in-memory/subscription.repo";
 import { InMemorySupportRepository } from "../infrastructure/in-memory/support.repo";
 import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/topic.repo";
+import { InMemoryTrafficRepository } from "../infrastructure/in-memory/traffic.repo";
 import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import { logger } from "../infrastructure/logging/logger";
@@ -73,6 +75,7 @@ import { SupabasePriceRepository } from "../infrastructure/supabase/price.repo";
 import { SupabaseSubscriptionRepository } from "../infrastructure/supabase/subscription.repo";
 import { SupabaseSupportRepository } from "../infrastructure/supabase/support.repo";
 import { SupabaseCanonicalTopicRepository } from "../infrastructure/supabase/topic.repo";
+import { SupabaseTrafficRepository } from "../infrastructure/supabase/traffic.repo";
 import { SupabaseUserChannelRepository } from "../infrastructure/supabase/user-channels.repo";
 import { SupabaseWatchRepository } from "../infrastructure/supabase/watch.repo";
 import { GroqEventVerifier } from "../infrastructure/verifier/groq.verifier";
@@ -92,6 +95,8 @@ export interface Container {
   support: SupportRepository;
   userChannels: UserChannelRepository;
   channels: ChannelSender[];
+  /** Kimliksiz trafik telemetrisi (ADR-091). */
+  traffic: TrafficRepository;
   checker: Checker;
   verifier: EventVerifier | undefined;
   checkTimeoutMs: number | undefined;
@@ -102,7 +107,14 @@ export interface Container {
   auth: AuthVerifier;
   payment: PaymentGateway;
   logger: Logger;
-  rateLimit: { global: RateLimiter; createWatch: RateLimiter; assist: RateLimiter };
+  rateLimit: {
+    global: RateLimiter;
+    createWatch: RateLimiter;
+    assist: RateLimiter;
+    telemetry: RateLimiter;
+    /** /t için tüm kaynaklar toplamı tavanı — XFF rotasyonuna karşı (ADR-091 güvenlik bulgusu). */
+    telemetryGlobal: RateLimiter;
+  };
   /** Env'den türetilen GERÇEK servis yapılandırma durumu (admin sistem görünümü). */
   serviceHealth: { name: string; ok: boolean }[];
 }
@@ -232,6 +244,10 @@ export function createContainer(env: Env): Container {
     global: new InMemoryRateLimiter(env.RATE_LIMIT_PER_MINUTE, 60_000),
     createWatch: new InMemoryRateLimiter(env.WATCH_CREATE_PER_HOUR, 3_600_000),
     assist: new InMemoryRateLimiter(env.ASSIST_PER_MINUTE, 60_000),
+    // Kimliksiz beacon ucu (IP başına) — kötüye kullanım tavanı (ADR-091).
+    telemetry: new InMemoryRateLimiter(60, 60_000),
+    // Tüm kaynaklar toplamı: XFF rotasyonuyla kova atlatılsa bile DB büyümesi sınırlı kalır.
+    telemetryGlobal: new InMemoryRateLimiter(600, 60_000),
   };
   const serviceHealth = buildServiceHealth(env);
 
@@ -251,6 +267,7 @@ export function createContainer(env: Env): Container {
       adminConsole: new SupabaseAdminConsoleRepository(db),
       analytics: new SupabaseAnalyticsRepository(db),
       support: new SupabaseSupportRepository(db),
+      traffic: new SupabaseTrafficRepository(db),
       checker,
       verifier,
       checkTimeoutMs,
@@ -281,6 +298,7 @@ export function createContainer(env: Env): Container {
     adminConsole: new InMemoryAdminConsoleRepository(),
     analytics: new InMemoryAnalyticsRepository(store),
     support: new InMemorySupportRepository(store),
+    traffic: new InMemoryTrafficRepository(),
     checker,
     verifier,
     checkTimeoutMs,

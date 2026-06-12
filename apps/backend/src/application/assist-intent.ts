@@ -10,7 +10,7 @@ export async function assistIntent(
   deps: AssistIntentDeps,
   input: AssistChatInput,
 ): Promise<AssistReply> {
-  const reply = await deps.assistant.chat(input.messages);
+  const reply = await deps.assistant.chat(input.messages, input.lang);
   // ready ise intent boş olamaz; tutarsızlığı normalize et.
   if (reply.ready && (!reply.intent || reply.intent.trim().length < 3)) {
     return { ...reply, ready: false, intent: null };

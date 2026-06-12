@@ -18,6 +18,7 @@ import { plansRoutes } from "./plans.route";
 import { onlyMethod, rateLimit } from "./rate-limit.middleware";
 import { subscriptionRoutes } from "./subscription.route";
 import { supportRoutes } from "./support.route";
+import { telemetryRoutes } from "./telemetry.route";
 import { watchersRoutes } from "./watchers.route";
 import { webhookRoutes } from "./webhook.route";
 
@@ -63,6 +64,20 @@ export function createApp(
 
   app.route("/health", healthRoute);
   app.route("/webhooks", webhookRoutes(container));
+
+  // Kimliksiz trafik beacon'ı (ADR-091): AUTH ÖNCESİ (site ziyaretçisinin hesabı yok).
+  // IP, X-Forwarded-For'un SAĞINDAN alınır: soldaki girdiler istemci-kontrollüdür
+  // (spoof ile kova atlatılır), sağdakini güvenilir edge proxy ekler (güvenlik bulgusu).
+  // Ek savunma: XFF rotasyonuna karşı tüm kaynaklar için KÜRESEL tavan.
+  app.use("/t", async (c, next) => {
+    const xff = c.req.header("x-forwarded-for") ?? "";
+    const ip = ((xff.split(",").at(-1) ?? "").trim() || "ip-yok").slice(0, 64);
+    const perIp = container.rateLimit.telemetry.hit(`t:${ip}`);
+    const global = container.rateLimit.telemetryGlobal.hit("t:tum");
+    if (!perIp.allowed || !global.allowed) return c.body(null, 429);
+    await next();
+  });
+  app.route("/t", telemetryRoutes(container));
 
   // Asılı istek bırakma: /v1/* 30 sn'de 504 (timeout HTTPException → errorHandler zarflar).
   // Webhook'lar hariç — yarıda kesilen ödeme işleme yerine sağlayıcının retry'ına güvenilir.

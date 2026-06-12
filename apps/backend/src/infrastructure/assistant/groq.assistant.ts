@@ -17,7 +17,7 @@ const ReplySchema = z.object({
 // İstem bilinçli İngilizce (evrensel taban); yanıt dili kuralla kullanıcının diline sabitlenir.
 // ADR-074: uydurma-yasağı (anti-invention) + yapabilirlik dürüstlüğü eklendi.
 const SYSTEM = [
-  "You are the setup assistant of 'Watcher'. The user describes, in natural language, a situation they want to be NOTIFIED about; you turn it into a web-searchable monitoring intent.",
+  "You are the setup assistant of 'Whenly'. The user describes, in natural language, a situation they want to be NOTIFIED about; you turn it into a web-searchable monitoring intent.",
   "",
   "RULE #1 — NEVER INVENT DETAILS (absolute, overrides everything):",
   "The final 'intent' may contain ONLY specifics the user actually stated in this conversation. NEVER add a city, district, institution, brand, model, price, date or any concrete detail the user did not say. If a detail that changes the search is missing, ASK for it — do not guess it, do not fill it with a 'typical' example. An intent with an invented detail is a critical failure.",
@@ -36,7 +36,7 @@ const SYSTEM = [
   "4) If you ask: ONE short, concrete question.",
   "",
   "CAPABILITY HONESTY (what the system can actually do):",
-  "Watcher monitors the PUBLIC web: official sites, news, announcements, publicly accessible pages. It CANNOT log into portals (appointment booking systems, member-only stock pages) and CANNOT guarantee second-level timing — checks run on a schedule (minutes to hours).",
+  "Whenly monitors the PUBLIC web: official sites, news, announcements, publicly accessible pages. It CANNOT log into portals (appointment booking systems, member-only stock pages) and CANNOT guarantee second-level timing — checks run on a schedule (minutes to hours).",
   "- If the user asks to watch something behind a login/booking portal (e.g. an appointment slot system), shape the intent to the PUBLIC signal: 'notify me when an announcement/news appears that X opened/became available'. Add ONE short honest sentence in 'message' that you watch public announcements, not the portal itself.",
   "- Never promise direct portal monitoring or instant (seconds) alerts.",
   "",
@@ -67,11 +67,16 @@ export class GroqIntentAssistant implements IntentAssistant {
     private readonly fetchImpl: typeof fetch = fetch,
   ) {}
 
-  async chat(history: AssistantMessage[]): Promise<AssistantReply> {
+  async chat(history: AssistantMessage[], lang?: string): Promise<AssistantReply> {
+    // Dile-uyum (ADR-093): kullanıcının ARAYÜZ dili açıkça bildirilir — kısa/muğlak
+    // cevaplarda ("ok", "evet") "son mesajın dili" sezgisi kaymasın diye.
+    const langRule = lang
+      ? `\nUSER INTERFACE LANGUAGE: "${lang}". Write 'message' and 'intent' in this language unless the user's last message is clearly written in a different language — then follow the user.`
+      : "";
     const content = await groqJsonChat({
       apiKey: this.apiKey,
       model: this.model,
-      messages: [{ role: "system", content: SYSTEM }, ...history],
+      messages: [{ role: "system", content: SYSTEM + langRule }, ...history],
       // Düşük sıcaklık (ADR-074): kurallara sadık, "yaratıcı" detay uydurmasını azaltır.
       temperature: 0.1,
       maxTokens: 512,

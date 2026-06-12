@@ -1,6 +1,7 @@
 import "@/i18n";
 import { ToastHost } from "@/components/feedback";
 import "../global.css";
+import { sendTrafficBeacon } from "@/lib/api";
 import { registerBackgroundNotifications } from "@/lib/background-notifications";
 import { queryClient } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
@@ -9,8 +10,9 @@ import { useTheme } from "@/theme";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import i18next from "i18next";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function RootLayout() {
@@ -22,6 +24,24 @@ export default function RootLayout() {
   useEffect(() => initAuth(), []);
   useEffect(() => {
     void registerBackgroundNotifications();
+  }, []);
+  // Edinim sinyali (ADR-091): oturum başına BİR kez, kimliksiz. Web'de yönlendiren
+  // ve utm_source yakalanır; native'de yalnız platform+dil (PII yok).
+  useEffect(() => {
+    const isWeb = Platform.OS === "web";
+    const loc = isWeb && typeof window !== "undefined" ? window.location : null;
+    sendTrafficBeacon({
+      source: "app",
+      platform: isWeb ? "web" : Platform.OS === "ios" ? "ios" : "android",
+      lang: i18next.language,
+      ...(loc
+        ? {
+            path: loc.pathname,
+            ref: typeof document !== "undefined" ? document.referrer : undefined,
+            utm: new URLSearchParams(loc.search).get("utm_source") ?? undefined,
+          }
+        : {}),
+    });
   }, []);
 
   if (!ready) return null;

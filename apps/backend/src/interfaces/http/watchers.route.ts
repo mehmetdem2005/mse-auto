@@ -123,6 +123,8 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
           lastCheckedAt: topic?.lastCheckedAt ?? null,
           sourcePref: w.sourcePref,
           deepScan: w.deepScan,
+          stopAfterHit: w.stopAfterHit,
+          completedAt: w.completedAt,
         };
       }),
     );
@@ -177,7 +179,11 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
       }
     }
 
-    const updated = await container.watches.update(id, { status });
+    // Sürdürme = yeni nöbet: önceki "sonuç bulundu" işareti temizlenir (ADR-092).
+    const updated = await container.watches.update(
+      id,
+      status === "active" ? { status, completedAt: null } : { status },
+    );
     return c.json(
       {
         id: updated.id,
@@ -186,6 +192,8 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
         frequencyMinutes: updated.frequencyMinutes,
         status: updated.status,
         createdAt: updated.createdAt,
+        stopAfterHit: updated.stopAfterHit,
+        completedAt: updated.completedAt,
       },
       200,
     );

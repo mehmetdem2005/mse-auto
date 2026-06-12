@@ -17,6 +17,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
+  CheckCircle2,
   FileMusic,
   Globe,
   Landmark,
@@ -117,7 +118,7 @@ function CInput(props: {
 }
 
 export default function NewWatcher() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
@@ -128,6 +129,8 @@ export default function NewWatcher() {
   const [sourcePref, setSourcePref] = useState<"auto" | "news" | "official" | "web">("auto");
   // Sonar derin tarama (ADR-089) — varsayılan kapalı.
   const [deepScan, setDeepScan] = useState(false);
+  // Sonuç bulununca otomatik durdur (ADR-092) — varsayılan AÇIK: gereksiz tarama biter.
+  const [stopAfterHit, setStopAfterHit] = useState(true);
   const [err, setErr] = useState<string | null>(null);
 
   // AI sohbeti (1. adım): geçmiş + taslak + netleşmiş niyet.
@@ -191,7 +194,8 @@ export default function NewWatcher() {
 
   const minFreq = sub?.limits.minFrequencyMinutes ?? 60;
   const assist = useMutation({
-    mutationFn: (history: AssistMessage[]) => api.assistChat(history.slice(-40)),
+    // Dile-uyum (ADR-093): asistan kullanıcının ARAYÜZ dilinde yazar.
+    mutationFn: (history: AssistMessage[]) => api.assistChat(history.slice(-40), i18n.language),
     onSuccess: (r) => {
       setAssistDown(false);
       setMessages((m) => [...m, { role: "assistant", content: r.message }]);
@@ -286,7 +290,7 @@ export default function NewWatcher() {
 
   const mutation = useMutation({
     mutationFn: (_criterion: PersonalCriterion | null) =>
-      api.createWatcher(rawIntent.trim(), freq, sourcePref, deepScan),
+      api.createWatcher(rawIntent.trim(), freq, sourcePref, deepScan, stopAfterHit),
     onSuccess: async (watch, criterion) => {
       haptic.success();
       if (criterion) await setCriterion(watch.id, criterion);
@@ -581,6 +585,27 @@ export default function NewWatcher() {
         {current.key === "frequency" ? (
           <>
             <Text className="text-muted text-sm mb-3">{t("wizard.freqHint")}</Text>
+            {/* Sonuç bulununca durdur (ADR-092): varsayılan AÇIK — bulunca nöbet biter. */}
+            <View className="mb-3 flex-row items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3.5">
+              <View className="w-9 h-9 rounded-xl bg-accent/10 items-center justify-center shrink-0">
+                <CheckCircle2 size={18} color={colors.accent} />
+              </View>
+              <View className="flex-1 min-w-0">
+                <Text className="text-text text-sm font-semibold" numberOfLines={1}>
+                  {t("wizard.stopAfterHit")}
+                </Text>
+                <Text className="text-muted text-caption mt-0.5" numberOfLines={2}>
+                  {t("wizard.stopAfterHitHint")}
+                </Text>
+              </View>
+              <Switch
+                value={stopAfterHit}
+                onValueChange={setStopAfterHit}
+                trackColor={{ false: colors.line, true: colors.accent }}
+                thumbColor="#FFFFFF"
+                accessibilityLabel={t("wizard.stopAfterHit")}
+              />
+            </View>
             <View className="flex-row flex-wrap gap-2">
               {FREQ.map((f) => {
                 const meta = FREQ_KEYS[f];

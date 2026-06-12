@@ -9,6 +9,8 @@ export type AssistMessage = z.infer<typeof assistMessageSchema>;
 
 export const assistChatInputSchema = z.object({
   messages: z.array(assistMessageSchema).min(1).max(40),
+  /** Kullanıcının arayüz dili (BCP-47 kısa kodu, ör. "tr", "en", "de") — asistan bu dilde yazar. */
+  lang: z.string().min(2).max(8).optional(),
 });
 export type AssistChatInput = z.infer<typeof assistChatInputSchema>;
 
