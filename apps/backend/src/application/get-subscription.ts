@@ -34,7 +34,6 @@ export async function getSubscription(
       minFrequencyMinutes: ent.minFrequencyMinutes,
       alarmChannel: ent.alarmChannel,
       allSounds: ent.allSounds,
-      personalFilters: ent.personalFilters,
     },
     usage: { activeWatches },
     subscription: sub

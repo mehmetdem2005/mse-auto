@@ -70,7 +70,6 @@ export interface Subscription {
     minFrequencyMinutes: number;
     alarmChannel: boolean;
     allSounds: boolean;
-    personalFilters: boolean;
   };
   usage: { activeWatches: number };
   subscription: SubscriptionDetail | null;

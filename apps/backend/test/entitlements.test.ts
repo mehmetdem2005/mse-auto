@@ -6,7 +6,6 @@ describe("plan entitlements (free vs pro)", () => {
     const e = entitlementsFor("free");
     expect(e.alarmChannel).toBe(false);
     expect(e.allSounds).toBe(false);
-    expect(e.personalFilters).toBe(false);
     expect(e.maxActiveWatches).toBe(3);
     expect(e.minFrequencyMinutes).toBe(60);
   });
@@ -15,7 +14,6 @@ describe("plan entitlements (free vs pro)", () => {
     const e = entitlementsFor("pro");
     expect(e.alarmChannel).toBe(true);
     expect(e.allSounds).toBe(true);
-    expect(e.personalFilters).toBe(true);
     expect(e.maxActiveWatches).toBe(100);
     expect(e.minFrequencyMinutes).toBe(1);
   });

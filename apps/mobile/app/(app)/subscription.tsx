@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, Crown, FileText, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
+import { BellRing, Crown, FileText, Gauge, Music } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
 
@@ -120,13 +120,6 @@ export default function SubscriptionScreen() {
                     Icon={Music}
                     label={s.entitlements.allSounds ? t("sub.soundsOn") : t("sub.soundsPro")}
                     on={s.entitlements.allSounds}
-                  />
-                  <Feature
-                    Icon={SlidersHorizontal}
-                    label={
-                      s.entitlements.personalFilters ? t("sub.filtersOn") : t("sub.filtersPro")
-                    }
-                    on={s.entitlements.personalFilters}
                   />
                 </View>
               ) : null}

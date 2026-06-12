@@ -27,7 +27,6 @@ export const subscriptionSchema = z.object({
     minFrequencyMinutes: z.number().int(),
     alarmChannel: z.boolean(),
     allSounds: z.boolean(),
-    personalFilters: z.boolean(),
   }),
   usage: z.object({ activeWatches: z.number().int() }),
   subscription: subscriptionDetailSchema.nullable(),

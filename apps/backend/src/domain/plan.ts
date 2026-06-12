@@ -16,7 +16,6 @@ export interface PlanEntitlements {
   minFrequencyMinutes: number;
   alarmChannel: boolean; // "alarm" (yüksek sesli) uyarı biçimi
   allSounds: boolean; // 100 sesin tamamı (false → yalnız varsayılan)
-  personalFilters: boolean; // arketip-B cihaz-üstü kriter (geo/numeric/keyword)
 }
 
 export const PLAN_ENTITLEMENTS: Record<Plan, PlanEntitlements> = {
@@ -25,7 +24,6 @@ export const PLAN_ENTITLEMENTS: Record<Plan, PlanEntitlements> = {
     minFrequencyMinutes: 60,
     alarmChannel: false,
     allSounds: false,
-    personalFilters: false,
   },
   pro: {
     maxActiveWatches: 100,
@@ -33,7 +31,6 @@ export const PLAN_ENTITLEMENTS: Record<Plan, PlanEntitlements> = {
     minFrequencyMinutes: 1,
     alarmChannel: true,
     allSounds: true,
-    personalFilters: true,
   },
 };
 

@@ -1,11 +1,9 @@
 import { EnterItem } from "@/components/motion";
 import { Btn, Card } from "@/components/ui";
 import { GradientHero, PrimaryButton } from "@/components/ui";
-import type { PersonalCriterion } from "@/domain/personal";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
 import { type AssistMessage, api } from "@/lib/api";
-import { setCriterion } from "@/lib/criteria-store";
 import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
@@ -52,15 +50,13 @@ const FREQ_META: Record<number, { name: string; desc: string }> = {
   720: { name: "12 saat", desc: "Çok düşük" },
   1440: { name: "Günlük", desc: "En düşük" },
 };
-type FilterType = "none" | "geo" | "numeric" | "keyword";
-
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
+// (ADR-094: cihaz-içi "kişisel filtre" adımı kaldırıldı — amacı belirsiz/karmaşıktı.)
 const STEPS = [
   { key: "intent", titleK: "wizard.titles.intent", shortK: "wizard.steps.intent" },
   { key: "source", titleK: "wizard.titles.source", shortK: "wizard.steps.source" },
   { key: "frequency", titleK: "wizard.titles.freq", shortK: "wizard.steps.freq" },
-  { key: "filter", titleK: "wizard.titles.filter", shortK: "wizard.steps.filter" },
   { key: "alert", titleK: "wizard.titles.alert", shortK: "wizard.steps.alert" },
   { key: "review", titleK: "wizard.titles.review", shortK: "wizard.steps.review" },
 ] as const;
@@ -98,25 +94,6 @@ const ALERT_LABEL: Record<AlarmChannel, string> = {
 const chip = (active: boolean): string =>
   `px-3 py-2 rounded-lg border ${active ? "border-accent bg-accent/10" : "border-line"}`;
 
-function CInput(props: {
-  value: string;
-  onChangeText: (s: string) => void;
-  placeholder: string;
-  numeric?: boolean;
-}) {
-  const { colors } = useTheme();
-  return (
-    <TextInput
-      value={props.value}
-      onChangeText={props.onChangeText}
-      placeholder={props.placeholder}
-      placeholderTextColor={colors.placeholder}
-      keyboardType={props.numeric === false ? "default" : "numeric"}
-      className="flex-1 bg-panel border border-line rounded-lg px-3 py-2 text-text"
-    />
-  );
-}
-
 export default function NewWatcher() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -143,15 +120,6 @@ export default function NewWatcher() {
   const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
   const chatScroll = useRef<ScrollView>(null);
 
-  // Kişisel filtre (ADR-015): CİHAZDA kalır, sunucuya gönderilmez.
-  const [filterType, setFilterType] = useState<FilterType>("none");
-  const [geoLat, setGeoLat] = useState("");
-  const [geoLng, setGeoLng] = useState("");
-  const [geoRadius, setGeoRadius] = useState("");
-  const [numDir, setNumDir] = useState<"below" | "above">("below");
-  const [numThreshold, setNumThreshold] = useState("");
-  const [numCurrency, setNumCurrency] = useState("");
-  const [keywords, setKeywords] = useState("");
   const [alarmChannel, setAlarmChannel] = useState<AlarmChannel>(DEFAULT_ALARM_CONFIG.channel);
   const [soundId, setSoundId] = useState(DEFAULT_ALARM_CONFIG.soundId);
   const [soundCat, setSoundCat] = useState<string>(ALARM_CATEGORIES[0]);
@@ -173,14 +141,12 @@ export default function NewWatcher() {
   }
   const { data: sub } = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const canAlarm = sub?.entitlements.alarmChannel ?? false;
-  const canPersonal = sub?.entitlements.personalFilters ?? false;
   const canAllSounds = sub?.entitlements.allSounds ?? false;
   useEffect(() => {
     if (!sub) return;
     void setCachedEntitlements({
       alarmChannel: sub.entitlements.alarmChannel,
       allSounds: sub.entitlements.allSounds,
-      personalFilters: sub.entitlements.personalFilters,
     });
   }, [sub]);
   // Adım değişince/ekrandan çıkınca önizlemeyi durdur (sızıntı/çakışma olmasın).
@@ -243,57 +209,10 @@ export default function NewWatcher() {
     assist.mutate(next);
   }
 
-  function buildCriterion(): PersonalCriterion | null {
-    if (filterType === "geo") {
-      if (geoLat.trim() === "" || geoLng.trim() === "" || geoRadius.trim() === "") return null;
-      const lat = Number(geoLat);
-      const lng = Number(geoLng);
-      const r = Number(geoRadius);
-      if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(r) || r <= 0)
-        return null;
-      return { kind: "geo_radius", lat, lng, radiusKm: r };
-    }
-    if (filterType === "numeric") {
-      if (numThreshold.trim() === "") return null;
-      const t = Number(numThreshold);
-      if (!Number.isFinite(t)) return null;
-      const cur = numCurrency.trim().toLowerCase();
-      if (numDir === "below") {
-        return cur
-          ? { kind: "numeric_below", threshold: t, currency: cur }
-          : { kind: "numeric_below", threshold: t };
-      }
-      return cur
-        ? { kind: "numeric_above", threshold: t, currency: cur }
-        : { kind: "numeric_above", threshold: t };
-    }
-    if (filterType === "keyword") {
-      const arr = keywords
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-      if (arr.length === 0) return null;
-      return { kind: "keyword", anyOf: arr };
-    }
-    return null;
-  }
-
-  function filterSummary(): string {
-    if (filterType === "none") return t("wizard.filterNone");
-    if (filterType === "geo")
-      return t("wizard.filterGeoSum", { lat: geoLat, lng: geoLng, r: geoRadius });
-    if (filterType === "numeric") {
-      return `${numDir === "below" ? "≤" : "≥"} ${numThreshold}${numCurrency ? ` ${numCurrency}` : ""}`;
-    }
-    return t("wizard.filterKeySum", { words: keywords });
-  }
-
   const mutation = useMutation({
-    mutationFn: (_criterion: PersonalCriterion | null) =>
-      api.createWatcher(rawIntent.trim(), freq, sourcePref, deepScan, stopAfterHit),
-    onSuccess: async (watch, criterion) => {
+    mutationFn: () => api.createWatcher(rawIntent.trim(), freq, sourcePref, deepScan, stopAfterHit),
+    onSuccess: async (watch) => {
       haptic.success();
-      if (criterion) await setCriterion(watch.id, criterion);
       preview.stop();
       await persistSound(watch.id, alarmChannel, soundId, customSound);
       await qc.invalidateQueries({ queryKey: qk.watchers });
@@ -303,10 +222,9 @@ export default function NewWatcher() {
     onError: (e) => setErr(e instanceof Error ? e.message : "oluşturulamadı"),
   });
 
-  /** FSM geçiş kuralı: mevcut adım geçerli mi? */
+  /** FSM geçiş kuralı: mevcut adım geçerli mi? (yalnız niyet adımı engelleyebilir) */
   function stepValid(i: number): boolean {
     if (i === 0) return readyIntent !== null && rawIntent.trim().length >= 3;
-    if (i === 2) return filterType === "none" || buildCriterion() !== null;
     return true;
   }
 
@@ -316,11 +234,11 @@ export default function NewWatcher() {
   function next() {
     setErr(null);
     if (!stepValid(step)) {
-      setErr(step === 0 ? t("wizard.needIntent") : t("wizard.badFilter"));
+      setErr(t("wizard.needIntent"));
       return;
     }
     if (isLast) {
-      mutation.mutate(buildCriterion());
+      mutation.mutate();
       return;
     }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
@@ -639,97 +557,6 @@ export default function NewWatcher() {
           </>
         ) : null}
 
-        {/* 3) Kişisel filtre */}
-        {current.key === "filter" ? (
-          <>
-            <Text className="text-muted text-sm mb-3">{t("wizard.filterHint")}</Text>
-            <View className="flex-row flex-wrap gap-2 mb-2">
-              {(
-                [
-                  ["none", t("wizard.fNone")],
-                  ["geo", t("wizard.fGeo")],
-                  ["numeric", t("wizard.fNum")],
-                  ["keyword", t("wizard.fKey")],
-                ] as const
-              ).map(([v, l]) => {
-                const locked = v !== "none" && !canPersonal;
-                let txt = "text-muted text-sm";
-                if (locked) txt = "text-muted text-sm opacity-50";
-                else if (filterType === v) txt = "text-accent text-sm";
-                return (
-                  <Pressable
-                    key={v}
-                    disabled={locked}
-                    onPress={locked ? undefined : () => setFilterType(v)}
-                    className={chip(filterType === v)}
-                    accessibilityRole="button"
-                  >
-                    <Text className={txt}>{locked ? `${l} (Pro)` : l}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-            {!canPersonal ? (
-              <Text className="text-muted text-[11px] mb-3">{t("wizard.proOnly")}</Text>
-            ) : null}
-
-            {filterType === "geo" ? (
-              <View className="flex-row gap-2 mt-2">
-                <CInput value={geoLat} onChangeText={setGeoLat} placeholder={t("wizard.lat")} />
-                <CInput value={geoLng} onChangeText={setGeoLng} placeholder={t("wizard.lng")} />
-                <CInput
-                  value={geoRadius}
-                  onChangeText={setGeoRadius}
-                  placeholder={t("wizard.km")}
-                />
-              </View>
-            ) : null}
-
-            {filterType === "numeric" ? (
-              <View className="gap-2 mt-2">
-                <View className="flex-row gap-2">
-                  {(["below", "above"] as const).map((d) => (
-                    <Pressable
-                      key={d}
-                      onPress={() => setNumDir(d)}
-                      className={chip(numDir === d)}
-                      accessibilityRole="button"
-                    >
-                      <Text className={numDir === d ? "text-accent text-xs" : "text-muted text-xs"}>
-                        {d === "below" ? t("wizard.below") : t("wizard.above")}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-                <View className="flex-row gap-2">
-                  <CInput
-                    value={numThreshold}
-                    onChangeText={setNumThreshold}
-                    placeholder={t("wizard.threshold")}
-                  />
-                  <CInput
-                    value={numCurrency}
-                    onChangeText={setNumCurrency}
-                    placeholder={t("wizard.unit")}
-                    numeric={false}
-                  />
-                </View>
-              </View>
-            ) : null}
-
-            {filterType === "keyword" ? (
-              <View className="mt-2">
-                <CInput
-                  value={keywords}
-                  onChangeText={setKeywords}
-                  placeholder={t("wizard.keywords")}
-                  numeric={false}
-                />
-              </View>
-            ) : null}
-          </>
-        ) : null}
-
         {/* 4) Uyarı şekli */}
         {current.key === "alert" ? (
           <>
@@ -911,7 +738,6 @@ export default function NewWatcher() {
               }
             />
             <ReviewRow label={t("wizard.rFreq")} value={labelFreq(freq)} />
-            <ReviewRow label={t("wizard.rFilter")} value={filterSummary()} />
             <ReviewRow label={t("wizard.rAlert")} value={t(ALERT_LABEL[alarmChannel])} last />
             <Text className="text-muted text-[11px] mt-4">{t("wizard.rNote")}</Text>
           </Card>

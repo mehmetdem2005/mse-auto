@@ -4,7 +4,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export interface CachedEntitlements {
   alarmChannel: boolean;
   allSounds: boolean;
-  personalFilters: boolean;
 }
 
 const KEY = "watcher:entitlements";
@@ -22,7 +21,6 @@ export async function getCachedEntitlements(): Promise<CachedEntitlements | null
     return {
       alarmChannel: p.alarmChannel === true,
       allSounds: p.allSounds === true,
-      personalFilters: p.personalFilters === true,
     };
   } catch {
     return null;

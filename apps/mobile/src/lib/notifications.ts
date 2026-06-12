@@ -4,7 +4,6 @@ import { getAlarmConfig } from "./alarm-config";
 import { ALARM_SOUNDS } from "./alarm-sounds";
 import { api } from "./api";
 import { getCachedEntitlements } from "./entitlements-cache";
-import { shouldSurface } from "./notification-gate";
 import { isQuietNow } from "./quiet-hours";
 
 const DEFAULT_CHANNEL = "default";
@@ -78,14 +77,10 @@ async function ensureAlarmChannel(soundId: string): Promise<string> {
  * gate=1 (kişisel) ise önce kriter; sonra watch'ın yerel uyarı tercihine göre sessiz/bildirim/alarm.
  */
 export async function handleIncomingData(data: Record<string, string | undefined>): Promise<void> {
-  if (data.gate === "1") {
-    const { surface } = await shouldSurface(data);
-    if (!surface) return;
-    // ADR-092 (kişisel arketip): gerçek "sonuç" kararı CİHAZDA verildi — kullanıcının
-    // sonuç-bulununca-durdur tercihi açıksa izleme sunucuda duraklatılır. Sunucu bunu
-    // kendisi yapamaz (kişisel kriteri bilmez, P1); hata kritik değil, sessiz geçilir.
-    if (data.watchId) void pauseIfStopAfterHit(data.watchId);
-  }
+  // ADR-092: kişisel arketip teslimi (gate=1) cihaza ulaştı → sonuç-bulununca-durdur
+  // tercihi açıksa izleme sunucuda duraklatılır (sunucu kişisel bağlamı bilmez, P1).
+  // Hata kritik değil, sessiz geçilir. (Cihaz-içi "kişisel filtre" ADR-094'te kaldırıldı.)
+  if (data.gate === "1" && data.watchId) void pauseIfStopAfterHit(data.watchId);
   const watchId = data.watchId;
   const cfg = watchId ? await getAlarmConfig(watchId) : null;
   let channel = cfg?.channel ?? "notify";

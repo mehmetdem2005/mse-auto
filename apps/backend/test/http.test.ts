@@ -55,7 +55,6 @@ describe("HTTP API (in-memory + dev auth)", () => {
     const s = (await res.json()) as Subscription;
     expect(s.plan).toBe("free");
     expect(s.entitlements.alarmChannel).toBe(false);
-    expect(s.entitlements.personalFilters).toBe(false);
     expect(s.limits.maxActiveWatches).toBe(3);
     expect(s.usage.activeWatches).toBe(0);
   });
