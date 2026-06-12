@@ -28,6 +28,8 @@ export const pt: Catalog = {
     minAgo: "{{n}}m atrás",
     hourAgo: "{{n}}h atrás",
     dayAgo: "{{n}}d atrás",
+    openMap: "abrir no mapa",
+    openMapA11y: "Abrir local no mapa: {{coords}}",
   },
   login: {
     tagline: "assistente inteligente",
@@ -37,6 +39,7 @@ export const pt: Catalog = {
     subtitle: "Entre na sua conta e continue onde parou.",
     devSubtitle: "Modo de desenvolvimento · ID do usuário",
     email: "e-mail",
+    emailPlaceholder: "nome@exemplo.com",
     password: "senha",
     showPass: "Mostrar senha",
     hidePass: "Esconder senha",

@@ -1,5 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
+import { timeout } from "hono/timeout";
 import type { Container } from "../../config/container";
 import { adminMiddleware } from "./admin.middleware";
 import { adminRoutes } from "./admin.route";
@@ -11,7 +13,7 @@ import { eventsRoutes } from "./events.route";
 import { feedRoutes } from "./feed.route";
 import { healthRoute } from "./health.route";
 import { meRoutes } from "./me.route";
-import { errorHandler, requestId, requestLogger } from "./observability";
+import { errorHandler, notFoundHandler, requestId, requestLogger } from "./observability";
 import { plansRoutes } from "./plans.route";
 import { onlyMethod, rateLimit } from "./rate-limit.middleware";
 import { subscriptionRoutes } from "./subscription.route";
@@ -42,20 +44,29 @@ export function createApp(
     }),
   );
 
-  // Güvenlik başlıkları (MIME-sniffing, clickjacking, referrer sızıntısı önle).
+  // Güvenlik başlıkları (MIME-sniffing, clickjacking, referrer sızıntısı,
+  // protokol düşürme, gereksiz tarayıcı yetkileri önle). HSTS yalnız HTTPS'te
+  // tarayıcı tarafından uygulanır; düz HTTP'de (lokal dev) spec gereği yok sayılır.
   app.use("*", async (c, next) => {
     c.header("X-Content-Type-Options", "nosniff");
     c.header("X-Frame-Options", "DENY");
     c.header("Referrer-Policy", "no-referrer");
+    c.header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     await next();
   });
 
   app.use("*", requestId());
   app.use("*", requestLogger(container.logger));
+  // DoS önlemi: JSON gövdeleri küçüktür; 1 MB üstü → 413 (errorHandler zarflar).
+  app.use("*", bodyLimit({ maxSize: 1024 * 1024 }));
 
   app.route("/health", healthRoute);
   app.route("/webhooks", webhookRoutes(container));
 
+  // Asılı istek bırakma: /v1/* 30 sn'de 504 (timeout HTTPException → errorHandler zarflar).
+  // Webhook'lar hariç — yarıda kesilen ödeme işleme yerine sağlayıcının retry'ına güvenilir.
+  app.use("/v1/*", timeout(30_000));
   app.use("/v1/*", authMiddleware(container.auth));
   app.use("/v1/*", rateLimit(container.rateLimit.global, "global"));
   app.use("/v1/admin/*", adminMiddleware(container.admin));
@@ -83,6 +94,7 @@ export function createApp(
   app.route("/v1/admin", adminRoutes(container));
 
   app.doc("/openapi.json", { openapi: "3.0.0", info: { title: "Watcher API", version: "0.0.0" } });
+  app.notFound(notFoundHandler());
   app.onError(errorHandler(container.logger));
 
   return app;

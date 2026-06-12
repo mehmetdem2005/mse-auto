@@ -1,3 +1,4 @@
+import type { Logger } from "../../domain/logger";
 import type { JobQueue } from "../../domain/queue";
 
 /**
@@ -11,6 +12,8 @@ export class InMemoryJobQueue implements JobQueue {
   private readonly handlers = new Map<string, (data: unknown) => Promise<void>>();
   private readonly pending: Array<{ queue: string; data: unknown }> = [];
   private draining = false;
+
+  constructor(private readonly logger?: Logger) {}
 
   async init(): Promise<void> {}
 
@@ -39,7 +42,11 @@ export class InMemoryJobQueue implements JobQueue {
         try {
           await handler(job.data);
         } catch (err) {
-          console.error(`queue '${job.queue}' işleyici hatası (yutuldu):`, err);
+          // İş düşürülür ama SESSİZCE değil — yapılandırılmış iz bırakılır.
+          this.logger?.error("queue_handler_failed", {
+            queue: job.queue,
+            message: err instanceof Error ? err.message : String(err),
+          });
         }
       }
     } finally {

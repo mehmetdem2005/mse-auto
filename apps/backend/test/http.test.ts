@@ -366,4 +366,65 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(doc.openapi).toBe("3.0.0");
     expect(Object.keys(doc.paths).length).toBeGreaterThan(0);
   });
+
+  it("tanımsız yol → 404 sözleşme zarfı ({error, requestId})", async () => {
+    const app = makeApp();
+    const open = await app.request("/olmayan-yol");
+    expect(open.status).toBe(404);
+    const body = (await open.json()) as { error: string; requestId?: string };
+    expect(body.error.length).toBeGreaterThan(0);
+    expect(body.requestId).toBeTruthy();
+    // /v1 altında da (auth'lu) aynı zarf
+    const v1 = await app.request("/v1/olmayan-yol", { headers: bearer("u1") });
+    expect(v1.status).toBe(404);
+    expect(((await v1.json()) as { error: string }).error.length).toBeGreaterThan(0);
+  });
+
+  it("güvenlik başlıkları her yanıtta (nosniff, frame-deny, HSTS, permissions)", async () => {
+    const res = await makeApp().request("/health");
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(res.headers.get("x-frame-options")).toBe("DENY");
+    expect(res.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(res.headers.get("strict-transport-security")).toContain("max-age=");
+    expect(res.headers.get("permissions-policy")).toContain("camera=()");
+  });
+
+  it("x-request-id: gelen taşınır, gelmeyen üretilir", async () => {
+    const app = makeApp();
+    const echoed = await app.request("/health", { headers: { "x-request-id": "test-iz-42" } });
+    expect(echoed.headers.get("x-request-id")).toBe("test-iz-42");
+    const generated = await app.request("/health");
+    expect(generated.headers.get("x-request-id")).toBeTruthy();
+  });
+
+  it("1 MB üstü gövde → 413 sözleşme zarfı (bodyLimit)", async () => {
+    const big = "x".repeat(1024 * 1024 + 1);
+    const res = await makeApp().request("/v1/watchers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...bearer("u1") },
+      body: JSON.stringify({ rawIntent: big, frequencyMinutes: 60 }),
+    });
+    expect(res.status).toBe(413);
+    const body = (await res.json()) as { error: string; requestId?: string };
+    expect(body.error.length).toBeGreaterThan(0);
+    expect(body.requestId).toBeTruthy();
+  });
+
+  it("webhook: gövde çözümlenemezse 400 (parse hatası ≠ işleme hatası)", async () => {
+    // In-memory gateway imza istemez ama bozuk JSON parse'ta fırlatır → 400.
+    // Geçerli-ama-bilinmeyen olay ise 'ignored' sayılır → 200 (sağlayıcı retry etmez).
+    const app = makeApp();
+    const bad = await app.request("/webhooks/stripe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "bozuk-json{",
+    });
+    expect(bad.status).toBe(400);
+    const ignored = await app.request("/webhooks/stripe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "evt" }),
+    });
+    expect(ignored.status).toBe(200);
+  });
 });

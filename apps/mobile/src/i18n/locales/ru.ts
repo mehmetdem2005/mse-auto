@@ -28,6 +28,8 @@ export const ru: Catalog = {
     minAgo: "{{n}}м назад",
     hourAgo: "{{n}}ч назад",
     dayAgo: "{{n}}д назад",
+    openMap: "открыть на карте",
+    openMapA11y: "Открыть место на карте: {{coords}}",
   },
   login: {
     tagline: "умный наблюдатель",
@@ -38,6 +40,7 @@ export const ru: Catalog = {
     subtitle: "Войдите в свою учетную запись и продолжите с того места, где остановились.",
     devSubtitle: "Режим разработки · идентификатор пользователя",
     email: "электронная почта",
+    emailPlaceholder: "imya@primer.ru",
     password: "пароль",
     showPass: "Показать пароль",
     hidePass: "Скрыть пароль",

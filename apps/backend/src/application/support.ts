@@ -1,8 +1,8 @@
 import type { AdminRepository } from "../domain/billing";
 import type { DeviceRepository } from "../domain/device";
+import type { Logger } from "../domain/logger";
 import type { Notifier } from "../domain/notifier";
 import type { SupportKind, SupportRepository, SupportTicketRow } from "../domain/support";
-import type { Logger } from "../infrastructure/logging/logger";
 
 export interface CreateSupportDeps {
   support: SupportRepository;

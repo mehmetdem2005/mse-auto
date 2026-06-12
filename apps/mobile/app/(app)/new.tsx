@@ -12,6 +12,7 @@ import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { persistSound, useSoundPreview } from "@/lib/sound-preview";
 import { SUGGESTION_ICONS, SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
+import { ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
@@ -93,12 +94,13 @@ function CInput(props: {
   placeholder: string;
   numeric?: boolean;
 }) {
+  const { colors } = useTheme();
   return (
     <TextInput
       value={props.value}
       onChangeText={props.onChangeText}
       placeholder={props.placeholder}
-      placeholderTextColor="#94A3B8"
+      placeholderTextColor={colors.placeholder}
       keyboardType={props.numeric === false ? "default" : "numeric"}
       className="flex-1 bg-panel border border-line rounded-lg px-3 py-2 text-text"
     />
@@ -107,6 +109,7 @@ function CInput(props: {
 
 export default function NewWatcher() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
   const reduce = useReduceMotion();
@@ -137,7 +140,7 @@ export default function NewWatcher() {
   const [keywords, setKeywords] = useState("");
   const [alarmChannel, setAlarmChannel] = useState<AlarmChannel>(DEFAULT_ALARM_CONFIG.channel);
   const [soundId, setSoundId] = useState(DEFAULT_ALARM_CONFIG.soundId);
-  const [soundCat, setSoundCat] = useState(ALARM_CATEGORIES[0] ?? "Klasik");
+  const [soundCat, setSoundCat] = useState<string>(ALARM_CATEGORIES[0]);
   // Cihazdan seçilen özel ses (ADR-083) — yereldedir, sunucuya gitmez.
   const [customSound, setCustomSound] = useState<{ uri: string; name: string } | null>(null);
   const preview = useSoundPreview();
@@ -340,7 +343,7 @@ export default function NewWatcher() {
               >
                 <Text
                   className="text-[11px] font-bold"
-                  style={{ color: i <= step ? "#FFFFFF" : "#94A3B8" }}
+                  style={{ color: i <= step ? ON_ACCENT : colors.muted2 }}
                 >
                   {i + 1}
                 </Text>
@@ -410,13 +413,13 @@ export default function NewWatcher() {
                         onPress={() => setSuggScope(sc)}
                         accessibilityRole="tab"
                         accessibilityState={{ selected: on }}
-                        className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
+                        className={`rounded-full px-3.5 py-2 min-h-11 justify-center ${
                           on ? "bg-accent" : "bg-panel border border-line"
                         }`}
                       >
                         <Text
                           className="text-[12px] font-semibold"
-                          style={{ color: on ? "#FFFFFF" : "#475569" }}
+                          style={{ color: on ? ON_ACCENT : colors.mutedIcon }}
                         >
                           {t(
                             sc === "personal" ? "wizard.suggestPersonal" : "wizard.suggestBusiness",
@@ -443,11 +446,11 @@ export default function NewWatcher() {
                         }}
                         accessibilityRole="button"
                         accessibilityLabel={sentence}
-                        className="flex-row items-center gap-1.5 border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-[40px] active:bg-accent/15"
+                        className="flex-row items-center gap-1.5 border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-11 active:bg-accent/15"
                       >
                         {(() => {
                           const Icon = SUGGESTION_ICONS[key];
-                          return Icon ? <Icon size={13} color="#6366F1" /> : null;
+                          return Icon ? <Icon size={13} color={colors.accent} /> : null;
                         })()}
                         <Text className="text-accent text-xs">{t(`suggest.${key}.label`)}</Text>
                       </Pressable>
@@ -458,7 +461,7 @@ export default function NewWatcher() {
             ) : null}
             {assist.isPending ? (
               <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
-                <ActivityIndicator size="small" color="#6366F1" />
+                <ActivityIndicator size="small" color={colors.accent} />
               </View>
             ) : null}
             {assistDown && messages.some((m) => m.role === "user") ? (
@@ -515,7 +518,7 @@ export default function NewWatcher() {
                       sel ? "border-accent bg-accent/10" : "border-line bg-panel"
                     }`}
                   >
-                    <Icon size={18} color={sel ? "#6366F1" : "#475569"} />
+                    <Icon size={18} color={sel ? colors.accent : colors.mutedIcon} />
                     <Text
                       className={`text-sm font-semibold mt-1.5 ${sel ? "text-accent" : "text-text"}`}
                     >
@@ -535,7 +538,7 @@ export default function NewWatcher() {
                   key={l}
                   className="w-[47%] rounded-xl border border-line bg-panel px-3 py-3 min-h-[72px] opacity-45"
                 >
-                  <Icon size={18} color="#94A3B8" />
+                  <Icon size={18} color={colors.muted2} />
                   <Text className="text-text text-sm font-semibold mt-1.5">{l}</Text>
                   <Text className="text-muted text-[10px] mt-0.5">{t("common.soon")}</Text>
                 </View>
@@ -701,13 +704,15 @@ export default function NewWatcher() {
             ) : null}
             {/* Maket: ek bildirim yöntemleri — entegrasyon hazır olana dek 'yakında' */}
             <View className="mt-3 border border-line rounded-xl overflow-hidden">
-              {(["E-posta", "WhatsApp", "Telegram"] as const).map((ch) => (
+              {(["email", "whatsapp", "telegram"] as const).map((ch) => (
                 <View
                   key={ch}
                   className="flex-row items-center justify-between px-4 py-3 border-b border-line opacity-50"
                 >
-                  <Text className="text-text text-sm">{ch}</Text>
-                  <Text className="text-muted text-[10px] font-semibold uppercase">yakında</Text>
+                  <Text className="text-text text-sm">{t(`channels.${ch}`)}</Text>
+                  <Text className="text-muted text-overline font-semibold uppercase">
+                    {t("common.soon")}
+                  </Text>
                 </View>
               ))}
             </View>
@@ -780,9 +785,9 @@ export default function NewWatcher() {
                             className="w-11 h-11 items-center justify-center"
                           >
                             {playing ? (
-                              <Pause size={16} color="#6366F1" />
+                              <Pause size={16} color={colors.accent} />
                             ) : (
-                              <Play size={16} color="#94A3B8" />
+                              <Play size={16} color={colors.muted2} />
                             )}
                           </Pressable>
                         ) : null}
@@ -802,7 +807,7 @@ export default function NewWatcher() {
                     accessibilityLabel={t("wizard.soundCustomPick")}
                     className="flex-row items-center gap-2 mt-2.5 border border-accent/40 bg-accent/5 rounded-xl px-3.5 py-3 min-h-[44px] active:bg-accent/15"
                   >
-                    <FileMusic size={16} color="#6366F1" />
+                    <FileMusic size={16} color={colors.accent} />
                     <Text className="text-accent text-xs font-semibold flex-1" numberOfLines={1}>
                       {customSound ? customSound.name : t("wizard.soundCustomPick")}
                     </Text>
@@ -821,9 +826,9 @@ export default function NewWatcher() {
                         className="w-9 h-9 items-center justify-center"
                       >
                         {preview.playingId === "custom" ? (
-                          <Pause size={15} color="#6366F1" />
+                          <Pause size={15} color={colors.accent} />
                         ) : (
-                          <Play size={15} color="#6366F1" />
+                          <Play size={15} color={colors.accent} />
                         )}
                       </Pressable>
                     ) : null}
@@ -868,7 +873,7 @@ export default function NewWatcher() {
             onChangeText={setDraft}
             multiline
             placeholder={t("wizard.chatPlaceholder")}
-            placeholderTextColor="#94A3B8"
+            placeholderTextColor={colors.placeholder}
             accessibilityLabel={t("wizard.chatA11y")}
             onSubmitEditing={sendChat}
             blurOnSubmit
@@ -890,7 +895,10 @@ export default function NewWatcher() {
               !draft.trim() || assist.isPending ? "bg-line" : "bg-accent"
             }`}
           >
-            <Send size={18} color={!draft.trim() || assist.isPending ? "#475569" : "#FFFFFF"} />
+            <Send
+              size={18}
+              color={!draft.trim() || assist.isPending ? colors.mutedIcon : ON_ACCENT}
+            />
           </Pressable>
         </View>
       ) : null}

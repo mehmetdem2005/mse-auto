@@ -1,5 +1,5 @@
 import type { BillingInterval, PriceRepository } from "../domain/billing";
-import type { PaymentGateway } from "../domain/payment";
+import type { PaymentEvent, PaymentGateway } from "../domain/payment";
 import type { WatchRepository } from "../domain/ports";
 import type { SubscriptionRepository } from "../domain/subscription";
 import { reconcilePlan } from "./reconcile-plan";
@@ -39,6 +39,18 @@ export async function handlePaymentWebhook(
   now: Date = new Date(),
 ): Promise<void> {
   const event = deps.payment.parseWebhook(rawBody, signature);
+  await applyPaymentEvent(deps, event, now);
+}
+
+/**
+ * Doğrulanmış ödeme olayını uygular. Route katmanı imza hatası (400, retry yok)
+ * ile işleme hatasını (500 → sağlayıcı retry eder) AYIRT edebilsin diye parse'tan ayrı.
+ */
+export async function applyPaymentEvent(
+  deps: WebhookDeps,
+  event: PaymentEvent,
+  now: Date = new Date(),
+): Promise<void> {
   if (event.type === "subscription_active") {
     await subscribeUser(deps, event.userId, "pro", event.interval, new Date(event.periodStart));
     await reconcilePlan(deps, event.userId, now);

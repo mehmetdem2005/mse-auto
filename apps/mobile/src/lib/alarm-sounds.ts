@@ -111,7 +111,7 @@ export const ALARM_SOUNDS: AlarmSound[] = [
 ];
 
 export const DEFAULT_ALARM_SOUND_ID = "alarm-001";
-export const ALARM_CATEGORIES: string[] = [
+export const ALARM_CATEGORIES = [
   "Klasik",
   "Dijital",
   "Yükselen",
@@ -119,4 +119,4 @@ export const ALARM_CATEGORIES: string[] = [
   "Siren",
   "Darbe",
   "Melodi",
-];
+] as const;

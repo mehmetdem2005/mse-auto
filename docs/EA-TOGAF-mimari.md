@@ -688,6 +688,8 @@ flowchart TB
 
 | C-007 | **Kuyruk hatası düzeltmesi** — `InMemoryJobQueue` enqueue'da otomatik işler (eskiden prod'da hiç işlenmiyordu → 0 check_run) + `runTopicCheck` checker hatasına dayanıklı + checker = Serper+DeepSeek (Gemini/OpenAI-checker çıkarıldı, kullanıcı yönlendirmesi) | Basitleştirme | SBB-3 İzleme Motoru — VS1/adım-3 fiilen çalışır hale geldi | P1✓·P3✓·P7✓(adaptör swap)·P8✓(Reliability) | ADR-026 | TA-1 · **deploy sonrası CheckRun ile doğrulanacak** |
 
+| C-008 | **Profesyonelleştirme sertleştirmesi** — HTTP kabuğu (bodyLimit 1MB/413 · /v1 timeout 30sn/504 · HSTS+Permissions-Policy · 404+hata zarfı `requestId`'li) + webhook parse(400)/apply(500) ayrımı (Stripe retry semantiği — olay kaybı giderildi) + `Logger` domain portu (hexagonal onarım) + süreç yaşam döngüsü (guard + 8sn sınırlı graceful shutdown) + mobil token/tip-ölçeği/motion/a11y/i18n sertleştirme (ja.ts 38 kırık değer onarımı; ham hex→token; 44pt hedefler; :focus-visible) | Artımlı | Phase G §8.7 runtime governance + §8.3 kalite kapıları fiilen güçlenir; P5 güvenlik prensibi derinleşir | P1✓(egress yok)·P2✓(dokunulmadı)·P3✓(framework içi araç)·P4✓(errorSchema.requestId opsiyonel — geri-uyumlu)·P5✓(başlık+limit+timeout)·P6✓(istemci değişmedi)·P7✓(tümü geri-alınabilir)·P8✓(Reliability+Security ölçülebilir NFR+test)·P9✓(admin bölme bilinçli ertelendi) | ADR-087 | TA-2 |
+
 > **Re-baseline notu:** C-001/002 TA-2 (Lansman) kapsamındaki kullanıcı-dönük olgunlaşmadır; mimari prensiplerde sapma yok (dispensation gerekmedi). C-005 ("Okundu" durumu): migration 0005 **kullanıcı tarafından canlı Supabase'de uygulandı** (anon REST ile `deliveries.read_at` varlığı doğrulandı) → main'e merge edildi.
 
 ## 10. Requirements Management (MERKEZ — sürekli)

@@ -114,7 +114,7 @@ export default function Watchers() {
                       onPress={() => setFilter(v)}
                       accessibilityRole="tab"
                       accessibilityState={{ selected: filter === v }}
-                      className={`rounded-full px-4 py-2 min-h-[36px] ${
+                      className={`rounded-full px-4 py-2 min-h-11 ${
                         filter === v ? "bg-accent" : "bg-panel border border-line"
                       }`}
                     >

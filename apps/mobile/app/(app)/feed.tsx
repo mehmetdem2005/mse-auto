@@ -15,7 +15,7 @@ import { type FeedItem, type FeedbackVerdict, api } from "@/lib/api";
 import { categoryOf, severityOf } from "@/lib/category";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
-import { useTheme } from "@/theme";
+import { GRADIENT, ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -31,8 +31,6 @@ import {
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
-
-const ACCENT = "#6366F1";
 
 type Filter = "all" | "detection" | "warning" | "unread";
 const FILTER_IDS: Filter[] = ["all", "detection", "warning", "unread"];
@@ -191,8 +189,8 @@ export default function Feed() {
             <RefreshControl
               refreshing={isRefetching}
               onRefresh={() => void refetch()}
-              tintColor="#6366F1"
-              colors={["#6366F1", "#7C3AED"]}
+              tintColor={theme.colors.accent}
+              colors={[...GRADIENT.brand]}
             />
           }
           ItemSeparatorComponent={() => <View className="h-3" />}
@@ -204,13 +202,13 @@ export default function Feed() {
                   Icon={Eye}
                   n={watchers.data?.length ?? 0}
                   label={t("feed.statWatchers")}
-                  tint="#6366F1"
+                  tint={theme.colors.accent}
                 />
                 <StatCard
                   Icon={Sparkles}
                   n={detectionsToday}
                   label={t("feed.statToday")}
-                  tint="#16A34A"
+                  tint={theme.colors.pos}
                 />
               </View>
               <View className="flex-row gap-2.5 mb-4">
@@ -218,13 +216,13 @@ export default function Feed() {
                   Icon={Radar}
                   n={stats.data?.checks24h ?? 0}
                   label={t("feed.statScans")}
-                  tint="#7C3AED"
+                  tint={theme.colors.accent2}
                 />
                 <StatCard
                   Icon={BellRing}
                   n={list.length}
                   label={t("feed.statNotifs")}
-                  tint="#D97706"
+                  tint={theme.colors.warn}
                 />
               </View>
 
@@ -265,13 +263,13 @@ export default function Feed() {
                       accessibilityRole="tab"
                       accessibilityState={{ selected: on }}
                       accessibilityLabel={t(FILTER_KEYS[id])}
-                      className={`rounded-full px-3.5 py-2 min-h-[36px] justify-center ${
+                      className={`rounded-full px-3.5 py-2 min-h-11 justify-center ${
                         on ? "bg-accent" : "bg-panel border border-line"
                       }`}
                     >
                       <Text
                         className="text-[12px] font-semibold"
-                        style={{ color: on ? "#FFFFFF" : theme.colors.muted }}
+                        style={{ color: on ? ON_ACCENT : theme.colors.muted }}
                       >
                         {t(FILTER_KEYS[id])}
                       </Text>
@@ -325,6 +323,7 @@ function FeedCard({
   onVote,
 }: { group: FeedGroup; onOpen: () => void; onVote: () => void }) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const ago = useAgo();
   const item = group.latest;
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
@@ -366,7 +365,7 @@ function FeedCard({
       {/* "Neden bu bildirim" (ADR-086): güven sinyali — şeffaflık */}
       {typeof item.confidence === "number" ? (
         <View className="flex-row items-center gap-1.5 mt-2" accessibilityRole="text">
-          <ShieldCheck size={13} color="#16A34A" />
+          <ShieldCheck size={13} color={colors.pos} />
           <Text className="text-muted text-[11px] flex-1" numberOfLines={1}>
             {t("feed.why", { n: Math.round(item.confidence * 100) })}
           </Text>

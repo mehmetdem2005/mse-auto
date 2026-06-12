@@ -2,6 +2,7 @@
 // Giriş öncesi de erişilebilir (login'deki bağlantılar) — Stack.Protected dışı.
 import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type LegalDocId, getLegalDoc } from "@/legal";
+import { useTheme } from "@/theme";
 import { useLocalSearchParams } from "expo-router";
 import { Info } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -9,6 +10,7 @@ import { ScrollView, Text, View } from "react-native";
 
 export default function LegalScreen() {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   // Bilinmeyen param gizlilik politikasına düşer (güvenli varsayılan).
   const params = useLocalSearchParams<{ doc: string }>();
   const id: LegalDocId = params.doc === "terms" ? "terms" : "privacy";
@@ -27,7 +29,7 @@ export default function LegalScreen() {
               accessibilityRole="alert"
               className="flex-row items-start gap-2.5 bg-accent/10 border border-accent/30 rounded-xl px-4 py-3 mb-4"
             >
-              <Info size={16} color="#6366F1" />
+              <Info size={16} color={colors.accent} />
               <Text className="text-text text-xs flex-1 leading-4">{t("legal.noticeEn")}</Text>
             </View>
           ) : null}

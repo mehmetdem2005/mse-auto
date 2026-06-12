@@ -28,6 +28,8 @@ export const ar: Catalog = {
     minAgo: "{{n}}دقيقة منذ",
     hourAgo: "{{n}}ساعة منذ",
     dayAgo: "{{n}}يوم منذ",
+    openMap: "افتح في الخريطة",
+    openMapA11y: "افتح الموقع في الخريطة: {{coords}}",
   },
   login: {
     tagline: "مشاهد المتصفح الذكي",
@@ -37,6 +39,7 @@ export const ar: Catalog = {
     subtitle: "تسجيل الدخول إلى حسابك واختيار ما تركت.",
     devSubtitle: " режим التطوير ·  id المستخدم",
     email: "البريد الإلكتروني",
+    emailPlaceholder: "name@example.com",
     password: "كلمة المرور",
     showPass: "إظهار كلمة المرور",
     hidePass: "إخفاء كلمة المرور",

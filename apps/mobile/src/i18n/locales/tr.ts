@@ -27,6 +27,8 @@ export const tr = {
     minAgo: "{{n}} dk önce",
     hourAgo: "{{n}} sa önce",
     dayAgo: "{{n}} gün önce",
+    openMap: "haritada aç",
+    openMapA11y: "Konumu haritada aç: {{coords}}",
   },
   login: {
     tagline: "akıllı izleyici",
@@ -36,6 +38,7 @@ export const tr = {
     subtitle: "Hesabınla giriş yap, kaldığın yerden devam et.",
     devSubtitle: "Geliştirme modu · kullanıcı kimliği",
     email: "e-posta",
+    emailPlaceholder: "ad@ornek.com",
     password: "parola",
     showPass: "Parolayı göster",
     hidePass: "Parolayı gizle",

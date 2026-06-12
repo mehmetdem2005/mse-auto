@@ -11,6 +11,7 @@ import type { ChannelSender, UserChannelRepository } from "../domain/channels";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
 import type { IntentAssistant } from "../domain/intent-assistant";
+import type { Logger } from "../domain/logger";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { Notifier } from "../domain/notifier";
 import type { PaymentGateway } from "../domain/payment";
@@ -45,7 +46,6 @@ import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/to
 import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import { logger } from "../infrastructure/logging/logger";
-import type { Logger } from "../infrastructure/logging/logger";
 import { FcmNotifier } from "../infrastructure/notifier/fcm.notifier";
 import { NoopNotifier } from "../infrastructure/notifier/noop.notifier";
 import { GoogleAuthTokenProvider } from "../infrastructure/notifier/token";
@@ -139,6 +139,7 @@ function buildChecker(env: Env): Checker {
       reasoner,
       env.RENDER_FETCH_TEMPLATE ?? null,
       env.CHECK_TOKEN_BUDGET ?? null,
+      logger,
     );
   }
   return new StubChecker();
@@ -164,7 +165,7 @@ function buildNotifier(env: Env): Notifier {
       new GoogleAuthTokenProvider(env.GOOGLE_SERVICE_ACCOUNT_JSON),
     );
   }
-  return new NoopNotifier();
+  return new NoopNotifier(logger);
 }
 
 /** Ek teslim kanalları (ADR-084) — yalnız env'i dolu olanlar kurulur (graceful). */
@@ -226,7 +227,7 @@ export function createContainer(env: Env): Container {
   const payment = buildPayment(env);
   const queue: JobQueue = env.DATABASE_URL
     ? new PgBossJobQueue(env.DATABASE_URL)
-    : new InMemoryJobQueue();
+    : new InMemoryJobQueue(logger);
   const rateLimit = {
     global: new InMemoryRateLimiter(env.RATE_LIMIT_PER_MINUTE, 60_000),
     createWatch: new InMemoryRateLimiter(env.WATCH_CREATE_PER_HOUR, 3_600_000),

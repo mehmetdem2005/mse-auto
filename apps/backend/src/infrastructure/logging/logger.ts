@@ -1,10 +1,6 @@
-type Level = "info" | "warn" | "error";
+import type { Logger } from "../../domain/logger";
 
-export interface Logger {
-  info(msg: string, fields?: Record<string, unknown>): void;
-  warn(msg: string, fields?: Record<string, unknown>): void;
-  error(msg: string, fields?: Record<string, unknown>): void;
-}
+type Level = "info" | "warn" | "error";
 
 function emit(level: Level, msg: string, fields?: Record<string, unknown>): void {
   const line = JSON.stringify({ level, msg, time: new Date().toISOString(), ...(fields ?? {}) });

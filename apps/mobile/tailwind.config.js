@@ -18,6 +18,18 @@ module.exports = {
         muted2: "rgb(var(--muted2) / <alpha-value>)",
         pos: "rgb(var(--pos) / <alpha-value>)",
         neg: "rgb(var(--neg) / <alpha-value>)",
+        warn: "rgb(var(--warn) / <alpha-value>)",
+      },
+      // Sabit tip ölçeği (web-design standardı): ara değer uydurulmaz, bu
+      // adımlardan seçilir. Gövde satır-yüksekliği ≥1.45×, başlık ≈1.2×.
+      fontSize: {
+        overline: ["10px", { lineHeight: "14px", letterSpacing: "1.5px" }],
+        caption: ["11px", { lineHeight: "15px" }],
+        "body-sm": ["13px", { lineHeight: "19px" }],
+        body: ["15px", { lineHeight: "22px" }],
+        title: ["17px", { lineHeight: "22px" }],
+        headline: ["22px", { lineHeight: "27px" }],
+        display: ["26px", { lineHeight: "31px" }],
       },
     },
   },

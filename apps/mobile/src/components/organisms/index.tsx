@@ -1,5 +1,6 @@
 // Organisms — ekran-düzeyi imza parçalar (AAA görsel dil, ADR-054).
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { GRADIENT, ON_GRADIENT } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Bell } from "lucide-react-native";
@@ -30,7 +31,7 @@ export function GradientHero({
   const router = useRouter();
   return (
     <LinearGradient
-      colors={["#6366F1", "#7C3AED", "#4F46E5"]}
+      colors={GRADIENT.hero}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
@@ -50,7 +51,7 @@ export function GradientHero({
               accessibilityLabel={t("common.back")}
               className="w-12 h-12 -ml-2 mr-1 rounded-full items-center justify-center active:bg-white/15"
             >
-              <ArrowLeft size={22} color="#FFFFFF" />
+              <ArrowLeft size={22} color={ON_GRADIENT} />
             </Pressable>
           ) : null}
           <View
@@ -59,7 +60,7 @@ export function GradientHero({
           >
             <Text className="text-white text-base font-extrabold">W</Text>
           </View>
-          <Text className="text-white/90 text-[15px] font-bold ml-2.5 tracking-tight">Whenly</Text>
+          <Text className="text-white/90 text-body font-bold ml-2.5 tracking-tight">Whenly</Text>
           <View className="ml-auto">
             {right ?? (
               <Pressable
@@ -68,19 +69,19 @@ export function GradientHero({
                 accessibilityLabel={t("settings.supportTitle")}
                 className="w-12 h-12 rounded-full bg-white/15 items-center justify-center active:bg-white/25"
               >
-                <Bell size={19} color="#FFFFFF" />
+                <Bell size={19} color={ON_GRADIENT} />
               </Pressable>
             )}
           </View>
         </View>
         <Text
-          className="text-white text-[22px] font-extrabold tracking-tight mt-3"
+          className="text-white text-headline font-extrabold tracking-tight mt-3"
           numberOfLines={1}
         >
           {title}
         </Text>
         {subtitle ? (
-          <Text className="text-white/80 text-[13px] mt-0.5 leading-5" numberOfLines={1}>
+          <Text className="text-white/80 text-body-sm mt-0.5" numberOfLines={1}>
             {subtitle}
           </Text>
         ) : null}

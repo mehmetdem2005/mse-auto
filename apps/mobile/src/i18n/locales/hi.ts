@@ -28,6 +28,8 @@ export const hi: Catalog = {
     minAgo: "{{n}} मिनट पहले",
     hourAgo: "{{n}} घंटे पहले",
     dayAgo: "{{n}} दिन पहले",
+    openMap: "मानचित्र में खोलें",
+    openMapA11y: "स्थान मानचित्र में खोलें: {{coords}}",
   },
   login: {
     tagline: "बुद्धिमान निगरानी",
@@ -37,6 +39,7 @@ export const hi: Catalog = {
     subtitle: "अपने खाते में लॉगिन करें और जहां से आप छोड़ गए थे वहीं से आगे बढ़ें.",
     devSubtitle: "विकास मोड · यूजर आईडी",
     email: "ईमेल",
+    emailPlaceholder: "naam@example.com",
     password: "पासवर्ड",
     showPass: "पासवर्ड दिखाएं",
     hidePass: "पासवर्ड छुपाएं",

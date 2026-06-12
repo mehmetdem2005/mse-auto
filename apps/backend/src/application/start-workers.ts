@@ -43,9 +43,11 @@ export async function startWorkers(
         queue: container.queue,
         monitoring: container.monitoring,
       });
-      if (n > 0) console.log(`scheduler: ${n} topic kuyruğa alındı`);
+      if (n > 0) container.logger.info("scheduler_enqueued", { topics: n });
     } catch (err) {
-      console.error("scheduler tick hatası (yutuldu, süreç ayakta kalır):", err);
+      container.logger.error("scheduler_tick_failed", {
+        message: err instanceof Error ? err.message : String(err),
+      });
     }
   };
   await tick();

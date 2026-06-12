@@ -3,6 +3,7 @@ import { type EventFacts, parseEventFacts } from "@/domain/personal";
 import { haptic } from "@/lib/haptics";
 // Molecules — atom + primitive bileşimleri (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { GRADIENT, SHADOW, SHADOW_LG, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { type LucideIcon, MapPin, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { type ReactNode, useEffect } from "react";
@@ -15,22 +16,6 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-
-// Yükseltilmiş yüzey gölge token'ları (elevation ölçeği).
-const SHADOW = {
-  shadowColor: "#0F172A",
-  shadowOpacity: 0.06,
-  shadowRadius: 12,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 2,
-} as const;
-const SHADOW_LG = {
-  shadowColor: "#0F172A",
-  shadowOpacity: 0.1,
-  shadowRadius: 20,
-  shadowOffset: { width: 0, height: 10 },
-  elevation: 6,
-} as const;
 
 export function Card({
   children,
@@ -50,15 +35,18 @@ export function Card({
   const shadow = elevated ? SHADOW_LG : SHADOW;
   if (onPress) {
     return (
-      <Pressable
-        onPress={onPress}
-        className={`${cls} active:opacity-70`}
+      <PressScale
+        onPress={() => {
+          haptic.light();
+          onPress();
+        }}
+        className={cls}
         style={shadow}
         accessibilityRole="button"
         accessibilityLabel={accessibilityLabel}
       >
         {children}
-      </Pressable>
+      </PressScale>
     );
   }
   return (
@@ -69,7 +57,7 @@ export function Card({
 }
 
 export function SectionLabel({ children }: { children: ReactNode }) {
-  return <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">{children}</Text>;
+  return <Text className="text-muted text-overline uppercase mb-2">{children}</Text>;
 }
 
 export function EmptyState({
@@ -77,12 +65,13 @@ export function EmptyState({
   hint,
   Icon = Sparkles,
 }: { title: string; hint?: string; Icon?: LucideIcon }) {
+  const { colors } = useTheme();
   return (
     <View className="items-center py-16 px-6">
       {/* İllüstratif madalyon — gradyan halka + yumuşak iç daire (AAA görsel). */}
       <View className="mb-5 items-center justify-center">
         <LinearGradient
-          colors={["#6366F1", "#7C3AED"]}
+          colors={GRADIENT.brand}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
@@ -94,7 +83,7 @@ export function EmptyState({
           }}
         >
           <View className="w-[68px] h-[68px] rounded-full bg-panel items-center justify-center">
-            <Icon size={28} color="#6366F1" />
+            <Icon size={28} color={colors.accent} />
           </View>
         </LinearGradient>
       </View>
@@ -135,6 +124,9 @@ export function FactChips({ raw }: { raw: unknown }) {
 }
 
 function GeoChip({ geo }: { geo: NonNullable<EventFacts["geo"]> }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const coords = `${geo.lat.toFixed(3)}, ${geo.lng.toFixed(3)}`;
   const open = () => {
     void Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${geo.lat},${geo.lng}`);
   };
@@ -144,11 +136,11 @@ function GeoChip({ geo }: { geo: NonNullable<EventFacts["geo"]> }) {
       // HIG dokunma hedefi
       className="bg-pos/10 px-3 py-2 min-h-[44px] rounded-lg flex-row items-center gap-1.5 active:opacity-70"
       accessibilityRole="link"
-      accessibilityLabel={`Konumu haritada aç: ${geo.lat.toFixed(3)}, ${geo.lng.toFixed(3)}`}
+      accessibilityLabel={t("common.openMapA11y", { coords })}
     >
-      <MapPin size={14} color="#16A34A" />
+      <MapPin size={14} color={colors.pos} />
       <Text className="text-pos text-xs font-semibold">
-        {geo.lat.toFixed(3)}, {geo.lng.toFixed(3)} · haritada aç
+        {coords} · {t("common.openMap")}
       </Text>
     </Pressable>
   );
@@ -193,6 +185,7 @@ export function Vote({
   label,
   onPress,
 }: { kind: "up" | "down"; label: string; onPress: () => void }) {
+  const { colors } = useTheme();
   return (
     <PressScale
       onPress={() => {
@@ -204,9 +197,9 @@ export function Vote({
       accessibilityLabel={label}
     >
       {kind === "up" ? (
-        <ThumbsUp size={18} color="#16A34A" />
+        <ThumbsUp size={18} color={colors.pos} />
       ) : (
-        <ThumbsDown size={18} color="#64748B" />
+        <ThumbsDown size={18} color={colors.mutedIcon} />
       )}
     </PressScale>
   );

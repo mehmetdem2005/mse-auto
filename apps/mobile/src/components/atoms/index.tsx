@@ -1,6 +1,8 @@
 // Atoms — en küçük, tek-sorumluluklu UI parçaları (Atomic Design).
+import { PressScale } from "@/components/motion";
 import { haptic } from "@/lib/haptics";
 import { useReduceMotion } from "@/lib/reduce-motion";
+import { GRADIENT, ON_GRADIENT } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, Plus } from "lucide-react-native";
 import { type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
@@ -21,7 +23,7 @@ export function Field({ label, children }: { label: string; children: ReactNode 
       : children;
   return (
     <View className="mb-3.5">
-      <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">{label}</Text>
+      <Text className="text-muted text-overline uppercase mb-2">{label}</Text>
       {labelled}
     </View>
   );
@@ -54,17 +56,20 @@ export function Btn({
 }) {
   const cls = BTN_BG[tone];
   return (
-    <Pressable
-      onPress={onPress}
+    <PressScale
+      onPress={() => {
+        haptic.light();
+        onPress();
+      }}
       disabled={disabled}
-      // WCAG 2.5.5 AAA: dokunma hedefi ≥48px
+      // WCAG 2.5.5 AAA: dokunma hedefi ≥48px; bası geri bildirimi PressScale (M3 state layer).
       className={`rounded-xl px-4 py-3 min-h-[48px] items-center justify-center ${cls} ${disabled ? "opacity-50" : ""}`}
       accessibilityRole="button"
       accessibilityState={{ disabled: !!disabled }}
       accessibilityLabel={accessibilityLabel}
     >
       {children}
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -99,7 +104,7 @@ export function Fab({
       })}
     >
       <LinearGradient
-        colors={["#6366F1", "#7C3AED"]}
+        colors={GRADIENT.brand}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -112,7 +117,7 @@ export function Fab({
           justifyContent: "center",
         }}
       >
-        <Plus size={26} color="#FFFFFF" strokeWidth={2.5} />
+        <Plus size={26} color={ON_GRADIENT} strokeWidth={2.5} />
       </LinearGradient>
     </Pressable>
   );
@@ -124,14 +129,14 @@ const BADGE: Record<BadgeTone, string> = {
   neg: "bg-neg/10 text-neg",
   muted: "bg-panel2 text-muted",
   accent: "bg-accent/10 text-accent",
-  warn: "bg-amber-500/10 text-amber-600",
+  warn: "bg-warn/10 text-warn",
 };
 
 export function Badge({ tone = "muted", children }: { tone?: BadgeTone; children: ReactNode }) {
   const [bg, fg] = BADGE[tone].split(" ");
   return (
     <View className={`${bg} px-2 py-1 rounded-full self-start`}>
-      <Text className={`${fg} text-[11px] font-medium`}>{children}</Text>
+      <Text className={`${fg} text-caption font-medium`}>{children}</Text>
     </View>
   );
 }
@@ -151,16 +156,19 @@ export function PrimaryButton({
   icon?: boolean;
 }) {
   return (
-    <Pressable
-      onPress={onPress}
+    <PressScale
+      onPress={() => {
+        haptic.light();
+        onPress();
+      }}
       disabled={disabled || busy}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled: !!disabled, busy: !!busy }}
-      className={`mt-2 rounded-xl overflow-hidden ${disabled ? "opacity-50" : "active:opacity-90"}`}
+      className={`mt-2 rounded-xl overflow-hidden ${disabled ? "opacity-50" : ""}`}
     >
       <LinearGradient
-        colors={["#6366F1", "#7C3AED"]}
+        colors={GRADIENT.brand}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{
@@ -172,14 +180,14 @@ export function PrimaryButton({
         }}
       >
         {busy ? (
-          <ActivityIndicator color="#FFFFFF" />
+          <ActivityIndicator color={ON_GRADIENT} />
         ) : (
           <>
-            <Text className="text-white font-semibold text-[15px]">{label}</Text>
-            {icon ? <ArrowRight size={18} color="#FFFFFF" /> : null}
+            <Text className="text-white font-semibold text-body">{label}</Text>
+            {icon ? <ArrowRight size={18} color={ON_GRADIENT} /> : null}
           </>
         )}
       </LinearGradient>
-    </Pressable>
+    </PressScale>
   );
 }

@@ -28,6 +28,8 @@ export const en: Catalog = {
     minAgo: "{{n}}m ago",
     hourAgo: "{{n}}h ago",
     dayAgo: "{{n}}d ago",
+    openMap: "open in maps",
+    openMapA11y: "Open location in maps: {{coords}}",
   },
   login: {
     tagline: "smart watcher",
@@ -37,6 +39,7 @@ export const en: Catalog = {
     subtitle: "Sign in to your account and pick up where you left off.",
     devSubtitle: "Development mode · user id",
     email: "email",
+    emailPlaceholder: "name@example.com",
     password: "password",
     showPass: "Show password",
     hidePass: "Hide password",

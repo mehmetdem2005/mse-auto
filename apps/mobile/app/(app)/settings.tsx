@@ -149,7 +149,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <Globe2 size={18} color="#6366F1" />
+                <Globe2 size={18} color={theme.colors.accent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("settings.language")}</Text>
@@ -179,7 +179,7 @@ export default function Settings() {
                     <Text className={`text-[15px] ${sel ? "text-accent font-bold" : "text-text"}`}>
                       {l.native}
                     </Text>
-                    {sel ? <Check size={17} color="#6366F1" /> : null}
+                    {sel ? <Check size={17} color={theme.colors.accent} /> : null}
                   </Pressable>
                 );
               })}
@@ -259,7 +259,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <LifeBuoy size={18} color="#6366F1" />
+                <LifeBuoy size={18} color={theme.colors.accent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">
@@ -296,7 +296,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <Radio size={18} color="#6366F1" />
+                <Radio size={18} color={theme.colors.accent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("channels.title")}</Text>
@@ -315,7 +315,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-pos/10 items-center justify-center">
-                <ShieldCheck size={18} color="#16A34A" />
+                <ShieldCheck size={18} color={theme.colors.pos} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("settings.privacy")}</Text>
@@ -333,7 +333,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <ScrollText size={18} color="#6366F1" />
+                <ScrollText size={18} color={theme.colors.accent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("legal.termsTitle")}</Text>
@@ -352,7 +352,7 @@ export default function Settings() {
           >
             <View className="flex-row items-center gap-3">
               <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
-                <FileDown size={18} color="#6366F1" />
+                <FileDown size={18} color={theme.colors.accent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("legal.exportTitle")}</Text>

@@ -4,7 +4,7 @@ import { Badge, Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
-import { useTheme } from "@/theme";
+import { ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Crown, FileText, Gauge, Music, SlidersHorizontal } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -77,7 +77,7 @@ export default function SubscriptionScreen() {
                 isPro ? "bg-accent/10 border-accent/30" : "bg-panel border-line"
               }`}
               style={{
-                shadowColor: "#6366F1",
+                shadowColor: theme.colors.accent,
                 shadowOpacity: isPro ? 0.15 : 0.05,
                 shadowRadius: 16,
                 shadowOffset: { width: 0, height: 6 },
@@ -91,12 +91,12 @@ export default function SubscriptionScreen() {
                     isPro ? "bg-accent" : "bg-panel2"
                   }`}
                 >
-                  <Crown size={22} color={isPro ? "#FFFFFF" : "#94A3B8"} />
+                  <Crown size={22} color={isPro ? ON_ACCENT : theme.colors.muted2} />
                 </View>
               </View>
               <Text
                 className="text-4xl font-extrabold mt-1"
-                style={{ color: isPro ? "#6366F1" : "#0F172A" }}
+                style={{ color: isPro ? theme.colors.accent : theme.colors.text }}
               >
                 {isPro ? "PRO" : "FREE"}
               </Text>
@@ -248,13 +248,14 @@ export default function SubscriptionScreen() {
 }
 
 function Feature({ Icon, label, on = true }: { Icon: typeof Crown; label: string; on?: boolean }) {
+  const { colors } = useTheme();
   return (
     <View
       className={`flex-row items-center gap-1.5 rounded-full px-3 py-1.5 ${
         on ? "bg-pos/10" : "bg-panel2"
       }`}
     >
-      <Icon size={12} color={on ? "#16A34A" : "#94A3B8"} />
+      <Icon size={12} color={on ? colors.pos : colors.muted2} />
       <Text className={`text-[11px] font-medium ${on ? "text-pos" : "text-muted"}`}>{label}</Text>
     </View>
   );

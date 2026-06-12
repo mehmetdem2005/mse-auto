@@ -28,6 +28,8 @@ export const zh: Catalog = {
     minAgo: "{{n}}分钟前",
     hourAgo: "{{n}}小时前",
     dayAgo: "{{n}}天前",
+    openMap: "在地图中打开",
+    openMapA11y: "在地图中打开位置:{{coords}}",
   },
   login: {
     tagline: "智能监控者",
@@ -37,6 +39,7 @@ export const zh: Catalog = {
     subtitle: "登录你的账户并继续上次的工作。",
     devSubtitle: "开发模式 · 用户 ID",
     email: "电子邮件",
+    emailPlaceholder: "name@example.com",
     password: "密码",
     showPass: "显示密码",
     hidePass: "隐藏密码",

@@ -5,14 +5,12 @@ import { toast } from "@/components/feedback";
 import { Btn, GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
 import { type ChannelKind, type UserChannels, api } from "@/lib/api";
 import { qk } from "@/lib/query";
-import { useTheme } from "@/theme";
+import { BRAND, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Mail, MessageCircle, Phone } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Switch, Text, TextInput, View } from "react-native";
-
-const ACCENT = "#6366F1";
 
 export default function Channels() {
   const { t } = useTranslation();
@@ -82,7 +80,7 @@ export default function Channels() {
 
           <ChannelCard
             Icon={MessageCircle}
-            tint="#229ED9"
+            tint={BRAND.telegram}
             title={t("channels.telegram")}
             note={t("channels.telegramNote")}
             on={enabled.has("telegram")}
@@ -94,7 +92,7 @@ export default function Channels() {
           />
           <ChannelCard
             Icon={Mail}
-            tint="#16A34A"
+            tint={theme.colors.pos}
             title={t("channels.email")}
             note={t("channels.emailNote")}
             on={enabled.has("email")}
@@ -106,7 +104,7 @@ export default function Channels() {
           />
           <ChannelCard
             Icon={Phone}
-            tint="#25D366"
+            tint={BRAND.whatsapp}
             title={t("channels.whatsapp")}
             note={t("channels.whatsappNote")}
             on={enabled.has("whatsapp")}
@@ -167,7 +165,7 @@ function ChannelCard({
         <Switch
           value={on}
           onValueChange={onToggle}
-          trackColor={{ false: theme.colors.line, true: ACCENT }}
+          trackColor={{ false: theme.colors.line, true: theme.colors.accent }}
           thumbColor="#FFFFFF"
           accessibilityLabel={title}
         />

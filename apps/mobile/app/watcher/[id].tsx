@@ -202,6 +202,7 @@ function EventCard({
   canVote,
 }: { e: DetectionEventView; times: string[]; canVote: boolean }): ReactNode {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const [voted, setVoted] = useState<FeedbackVerdict | null>(null);
   const mutation = useMutation({
     mutationFn: (verdict: FeedbackVerdict) => api.feedback(e.id, verdict),
@@ -220,7 +221,7 @@ function EventCard({
         <Text className="text-text text-[15px] leading-5">{e.description}</Text>
         {times.length > 1 ? (
           <View className="flex-row items-center gap-1 mt-1.5">
-            <RotateCw size={11} color="#475569" />
+            <RotateCw size={11} color={colors.mutedIcon} />
             <Text className="text-muted text-[11px]">
               {t("detail.repeatNote", {
                 n: times.length,
@@ -283,7 +284,9 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
           className="min-h-[44px] justify-center"
         >
           <View className="flex-row items-center gap-2">
-            <Text style={{ color: hit ? "#16A34A" : "#94A3B8" }}>{hit ? "●" : "○"}</Text>
+            <Text style={{ color: hit ? runTheme.colors.pos : runTheme.colors.muted2 }}>
+              {hit ? "●" : "○"}
+            </Text>
             <Text className="text-text text-xs">
               {hit ? t("detail.detected") : t("detail.noChange")}
             </Text>
@@ -295,9 +298,9 @@ function RunCard({ r }: { r: CheckRunView }): ReactNode {
             ) : null}
             <Text className="text-muted text-[11px] ml-auto">{when(r.ranAt, i18n.language)}</Text>
             {open ? (
-              <ChevronDown size={15} color="#475569" />
+              <ChevronDown size={15} color={runTheme.colors.mutedIcon} />
             ) : (
-              <ChevronRight size={15} color="#475569" />
+              <ChevronRight size={15} color={runTheme.colors.mutedIcon} />
             )}
           </View>
         </Pressable>

@@ -2,7 +2,7 @@ import { Field, PrimaryButton } from "@/components/ui";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
-import { useTheme } from "@/theme";
+import { GRADIENT, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
@@ -52,7 +52,7 @@ export default function Login() {
     <View className="flex-1 bg-ink">
       {/* Üst marka bloğu — derinlikli gradyan (premium ilk izlenim) */}
       <LinearGradient
-        colors={["#6366F1", "#7C3AED", "#4F46E5"]}
+        colors={GRADIENT.hero}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{ paddingTop: 72, paddingBottom: 96, paddingHorizontal: 24 }}
@@ -120,7 +120,7 @@ export default function Login() {
                       autoCapitalize="none"
                       autoComplete="email"
                       keyboardType="email-address"
-                      placeholder="ornek@whenly.app"
+                      placeholder={t("login.emailPlaceholder")}
                       placeholderTextColor={theme.colors.placeholder}
                       className="bg-ink border border-line rounded-xl px-4 py-3.5 text-text text-[15px]"
                     />
