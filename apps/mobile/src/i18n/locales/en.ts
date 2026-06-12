@@ -137,6 +137,9 @@ export const en: Catalog = {
     badFilter: "Filter fields are invalid.",
     sourceHint:
       "Which source should the engine prioritize? Auto: live official page → official search → last 24h news.",
+    sonar: "Sonar — deep scan",
+    sonarHint:
+      "Multi-pass verification and more sources on every check. More thorough, a bit slower.",
     srcAuto: "Auto",
     srcAutoD: "Recommended",
     srcOfficial: "Official",

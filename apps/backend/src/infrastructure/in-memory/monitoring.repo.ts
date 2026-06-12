@@ -83,6 +83,7 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
         watchId: w.id,
         archetype: w.archetype,
         sourcePref: w.sourcePref,
+        deepScan: w.deepScan,
       }));
   }
 

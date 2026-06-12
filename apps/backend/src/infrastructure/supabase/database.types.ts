@@ -52,6 +52,7 @@ export interface Database {
           status: "active" | "paused";
           created_at: string;
           source_pref: "auto" | "news" | "official" | "web";
+          deep_scan: boolean;
         };
         Insert: {
           user_id: string;
@@ -63,6 +64,7 @@ export interface Database {
           status?: "active" | "paused";
           created_at?: string;
           source_pref?: "auto" | "news" | "official" | "web";
+          deep_scan?: boolean;
         };
         Update: {
           raw_intent?: string;
@@ -70,6 +72,7 @@ export interface Database {
           frequency_minutes?: number;
           status?: "active" | "paused";
           source_pref?: "auto" | "news" | "official" | "web";
+          deep_scan?: boolean;
         };
         Relationships: [];
       };

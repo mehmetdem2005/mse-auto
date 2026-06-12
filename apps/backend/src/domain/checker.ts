@@ -24,6 +24,8 @@ export interface CheckContext {
   authorityDomain?: string | null;
   /** Abonelerin çoğunluk kaynak tercihi (ADR-050) — arama sırasını değiştirir. */
   sourcePref?: "news" | "official" | "web" | null;
+  /** "Sonar" derin tarama (ADR-089): abonelerden biri açtıysa eskalasyon zorlanır. */
+  deepScan?: boolean;
 }
 
 /** Checker port'u — arama + muhakeme; ctx verilirse yalnız YENİ gelişme tespit sayılır. */

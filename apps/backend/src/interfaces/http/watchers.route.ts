@@ -121,6 +121,8 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
           createdAt: w.createdAt,
           authorityDomain: auth.domain,
           lastCheckedAt: topic?.lastCheckedAt ?? null,
+          sourcePref: w.sourcePref,
+          deepScan: w.deepScan,
         };
       }),
     );

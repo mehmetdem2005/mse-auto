@@ -136,6 +136,9 @@ export const tr = {
     badFilter: "Filtre alanları geçersiz.",
     sourceHint:
       "Motor hangi kaynağa öncelik versin? Otomatik: canlı resmî sayfa → resmî arama → son 24 saat haber.",
+    sonar: "Sonar — derin tarama",
+    sonarHint:
+      "Her kontrolde çok-turlu doğrulama ve daha fazla kaynak. Daha kapsamlı, biraz daha yavaş.",
     srcAuto: "Otomatik",
     srcAutoD: "Önerilen",
     srcOfficial: "Resmî Açıklama",

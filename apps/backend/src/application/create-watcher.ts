@@ -63,6 +63,7 @@ export async function createWatcher(
     status: "active",
     createdAt: new Date().toISOString(),
     sourcePref: input.sourcePref ?? "auto",
+    deepScan: input.deepScan ?? false,
   });
 
   return {
@@ -73,5 +74,6 @@ export async function createWatcher(
     status: watch.status,
     createdAt: watch.createdAt,
     sourcePref: watch.sourcePref,
+    deepScan: watch.deepScan,
   };
 }

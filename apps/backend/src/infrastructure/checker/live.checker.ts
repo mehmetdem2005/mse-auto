@@ -98,10 +98,13 @@ export class LiveChecker implements Checker {
     // tek opsiyonel LLM çağrısı budur; atlama izde şeffafça işaretlenir.
     let escalated = false;
     let budgetSkipped = false;
+    // SONAR derin tarama (ADR-089): abone açtıysa güven bandına bakılmaksızın
+    // 2. derin tur ZORLANIR (daha kapsamlı). Token bütçesine yine SAYGI duyulur.
     const inBand = r.confidence >= ESCALATE_LOW && r.confidence <= ESCALATE_HIGH;
+    const doEscalate = ctx?.deepScan === true || inBand;
     const overBudget = this.tokenBudget !== null && (tokensUsed ?? 0) >= this.tokenBudget;
-    if (inBand && overBudget) budgetSkipped = true;
-    if (inBand && !overBudget) {
+    if (doEscalate && overBudget) budgetSkipped = true;
+    if (doEscalate && !overBudget) {
       escalated = true;
       const extra = await this.search.search(q).catch(this.searchFailed("escalation"));
       const known = new Set(finalHits.map((h) => h.url));
@@ -121,7 +124,7 @@ export class LiveChecker implements Checker {
     return {
       detected: r.detected,
       description: r.description,
-      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})${escalated ? " · eskalasyon (2. tur)" : ""}${budgetSkipped ? " · token bütçesi (eskalasyon atlandı)" : ""}`,
+      resultSummary: `${finalHits.length} sonuç (canlı: ${liveHit.length} · resmî: ${Math.min(official.length, 4)} · haber: ${news.length})${ctx?.deepScan ? " · sonar (derin)" : ""}${escalated ? " · eskalasyon (2. tur)" : ""}${budgetSkipped ? " · token bütçesi (eskalasyon atlandı)" : ""}`,
       reasoning: escalated ? `[ESKALASYON — belirsiz güven, 2. tur] ${r.reasoning}` : r.reasoning,
       confidence: r.confidence,
       searchQuery: ctx?.authorityDomain ? `${q} (+ site:${ctx.authorityDomain})` : q,

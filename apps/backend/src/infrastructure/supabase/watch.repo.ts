@@ -16,6 +16,7 @@ function toDomain(row: WatchRow): Watch {
     status: row.status,
     createdAt: row.created_at,
     sourcePref: row.source_pref,
+    deepScan: row.deep_scan,
   };
 }
 
@@ -34,6 +35,7 @@ export class SupabaseWatchRepository implements WatchRepository {
         status: input.status,
         created_at: input.createdAt,
         source_pref: input.sourcePref,
+        deep_scan: input.deepScan,
       })
       .select("*")
       .single();

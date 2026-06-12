@@ -23,6 +23,7 @@ import {
   Newspaper,
   Pause,
   Play,
+  Radar,
   Send,
   ShoppingBag,
   Sparkles,
@@ -30,7 +31,15 @@ import {
 } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Switch,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 const FREQ = [1, 15, 60, 360, 720, 1440];
 /** Sıklık kartı metası: ad + açıklama (maket dili). */
@@ -117,6 +126,8 @@ export default function NewWatcher() {
   const [rawIntent, setRawIntent] = useState("");
   const [freq, setFreq] = useState(60);
   const [sourcePref, setSourcePref] = useState<"auto" | "news" | "official" | "web">("auto");
+  // Sonar derin tarama (ADR-089) — varsayılan kapalı.
+  const [deepScan, setDeepScan] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   // AI sohbeti (1. adım): geçmiş + taslak + netleşmiş niyet.
@@ -275,7 +286,7 @@ export default function NewWatcher() {
 
   const mutation = useMutation({
     mutationFn: (_criterion: PersonalCriterion | null) =>
-      api.createWatcher(rawIntent.trim(), freq, sourcePref),
+      api.createWatcher(rawIntent.trim(), freq, sourcePref, deepScan),
     onSuccess: async (watch, criterion) => {
       haptic.success();
       if (criterion) await setCriterion(watch.id, criterion);
@@ -493,10 +504,7 @@ export default function NewWatcher() {
         {/* 2) Kaynak tercihi (ADR-050 — aramanın sırasını gerçekten değiştirir) */}
         {current.key === "source" ? (
           <>
-            <Text className="text-muted text-sm mb-3">
-              Motor hangi kaynağa öncelik versin? Otomatik: canlı resmî sayfa → resmî arama → son 24
-              saat haber.
-            </Text>
+            <Text className="text-muted text-sm mb-3">{t("wizard.sourceHint")}</Text>
             <View className="flex-row flex-wrap gap-2">
               {(
                 [
@@ -543,6 +551,28 @@ export default function NewWatcher() {
                   <Text className="text-muted text-[10px] mt-0.5">{t("common.soon")}</Text>
                 </View>
               ))}
+            </View>
+
+            {/* Sonar derin tarama (ADR-089): güven bandından bağımsız çok-turlu doğrulama. */}
+            <View className="mt-3 flex-row items-center gap-3 rounded-xl border border-line bg-panel px-4 py-3.5">
+              <View className="w-9 h-9 rounded-xl bg-accent/10 items-center justify-center shrink-0">
+                <Radar size={18} color={colors.accent} />
+              </View>
+              <View className="flex-1 min-w-0">
+                <Text className="text-text text-sm font-semibold" numberOfLines={1}>
+                  {t("wizard.sonar")}
+                </Text>
+                <Text className="text-muted text-caption mt-0.5" numberOfLines={2}>
+                  {t("wizard.sonarHint")}
+                </Text>
+              </View>
+              <Switch
+                value={deepScan}
+                onValueChange={setDeepScan}
+                trackColor={{ false: colors.line, true: colors.accent }}
+                thumbColor="#FFFFFF"
+                accessibilityLabel={t("wizard.sonar")}
+              />
             </View>
           </>
         ) : null}

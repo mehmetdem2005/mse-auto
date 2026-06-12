@@ -16,4 +16,6 @@ export interface Watch {
   status: WatchStatus;
   createdAt: string;
   sourcePref: WatchSourcePref;
+  /** "Sonar" derin tarama (ADR-089): kontrolde çok-turlu doğrulama zorlanır. */
+  deepScan: boolean;
 }

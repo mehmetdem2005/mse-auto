@@ -137,6 +137,9 @@ export const fr: Catalog = {
     badFilter: "Les champs de filtre sont invalides.",
     sourceHint:
       "Quelle source devrait l'engin prioriser ? Auto : page officielle en direct → recherche officielle → dernières 24h de nouvelles.",
+    sonar: "Sonar — analyse approfondie",
+    sonarHint:
+      "Vérification en plusieurs passes et plus de sources à chaque contrôle. Plus complet, un peu plus lent.",
     srcAuto: "Auto",
     srcAutoD: "Recommandé",
     srcOfficial: "Officiel",

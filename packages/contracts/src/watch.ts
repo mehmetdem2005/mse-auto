@@ -18,6 +18,8 @@ export const createWatchInputSchema = z.object({
   rawIntent: z.string().min(3).max(500),
   frequencyMinutes: z.number().int().min(1).max(1440),
   sourcePref: watchSourcePrefSchema.default("auto"),
+  /** "Sonar" derin tarama: her kontrolde çok-turlu doğrulama + daha fazla kaynak. */
+  deepScan: z.boolean().default(false),
 });
 export type CreateWatchInput = z.infer<typeof createWatchInputSchema>;
 
@@ -34,6 +36,8 @@ export const watchSchema = z.object({
   /** Konunun son kontrol zamanı (ADR-072) — kartta "son kontrol" nabzı. */
   lastCheckedAt: z.string().nullable().optional(),
   sourcePref: watchSourcePrefSchema.optional(),
+  /** "Sonar" derin tarama açık mı (ADR-089). */
+  deepScan: z.boolean().optional(),
 });
 export type Watch = z.infer<typeof watchSchema>;
 

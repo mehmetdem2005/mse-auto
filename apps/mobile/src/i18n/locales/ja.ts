@@ -137,6 +137,9 @@ export const ja: Catalog = {
     badFilter: "フィルターフィールドが無効です。",
     sourceHint:
       "エンジンが優先する{{mail}}のソースは何ですか? Auto: ライブオフィシャルページ → オフィシャル検索 → 最新24時間ニュース。",
+    sonar: "Sonar — ディープスキャン",
+    sonarHint:
+      "毎回のチェックで多段階検証とより多くのソースを使用。より徹底的で、少し遅くなります。",
     srcAuto: "Auto",
     srcAutoD: "推奨",
     srcOfficial: "オフィシャル",

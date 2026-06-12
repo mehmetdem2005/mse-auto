@@ -151,6 +151,26 @@ describe("eskalasyon turu (ADR-073/A2)", () => {
     expect(out.resultSummary).not.toContain("eskalasyon");
   });
 
+  it("SONAR (deepScan) açıkken NET güvende bile eskalasyon ZORLANIR (ADR-089)", async () => {
+    const { reasoner, calls } = reasonerWith([0.95, 0.9]); // net güven → normalde tek tur
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner);
+    const out = await checker.check(topic, { lastEventDescription: null, deepScan: true });
+    expect(calls.length).toBe(2); // deepScan → band dışı olsa da 2. tur
+    expect(out.resultSummary).toContain("sonar (derin)");
+    expect(out.resultSummary).toContain("eskalasyon (2. tur)");
+  });
+
+  it("SONAR token bütçesine SAYGI duyar — bütçe dolduysa derinleşmez", async () => {
+    const { reasoner, calls } = reasonerWith([0.95], 5000);
+    const p = provider({ news: [hit("https://a.com")], general: [hit("https://b.com")] });
+    const checker = new LiveChecker(p, reasoner, null, 4000); // bütçe < ilk tur
+    const out = await checker.check(topic, { lastEventDescription: null, deepScan: true });
+    expect(calls.length).toBe(1); // bütçe doldu → 2. tur yok
+    expect(out.resultSummary).toContain("sonar (derin)");
+    expect(out.resultSummary).toContain("token bütçesi");
+  });
+
   it("belirsiz güvende YENİ kaynak yoksa 2. muhakeme boşa çağrılmaz (token tasarrufu)", async () => {
     const { reasoner, calls } = reasonerWith([0.5]);
     // Genel arama da aynı url'i döner → merge yeni kaynak eklemez.

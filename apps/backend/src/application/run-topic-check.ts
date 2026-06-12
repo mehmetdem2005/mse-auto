@@ -59,8 +59,11 @@ export async function runTopicCheck(
   }
 
   // Kaynak tercihi (ADR-050): konunun aktif abonelerinin çoğunluk tercihi
-  // ('auto' sayılmaz) arama sırasını belirler.
+  // ('auto' sayılmaz) arama sırasını belirler. Sonar derin tarama (ADR-089):
+  // abonelerden HERHANGİ biri açtıysa topic derin taranır (paylaşılan check'te
+  // herkese fayda; OR mantığı).
   let sourcePref: "news" | "official" | "web" | null = null;
+  let deepScan = false;
   try {
     const subs = await deps.monitoring.listActiveSubscribers(topic.id);
     const counts = new Map<string, number>();
@@ -68,6 +71,7 @@ export async function runTopicCheck(
       if (sub.sourcePref !== "auto") {
         counts.set(sub.sourcePref, (counts.get(sub.sourcePref) ?? 0) + 1);
       }
+      if (sub.deepScan) deepScan = true;
     }
     const top = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
     sourcePref = (top?.[0] as "news" | "official" | "web") ?? null;
@@ -79,7 +83,7 @@ export async function runTopicCheck(
   try {
     // A0 guardrail (ADR-076): wall-clock timeout — asılı/yavaş checker kuyruğu kilitlemez.
     outcome = await withTimeout(
-      deps.checker.check(topic, { lastEventDescription, authorityDomain, sourcePref }),
+      deps.checker.check(topic, { lastEventDescription, authorityDomain, sourcePref, deepScan }),
       deps.timeoutMs ?? 60_000,
       `check(${topic.id})`,
     );

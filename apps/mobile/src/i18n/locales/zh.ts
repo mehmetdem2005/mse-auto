@@ -135,6 +135,8 @@ export const zh: Catalog = {
     needIntent: "首先与助手讨论一下主题。",
     badFilter: "过滤器字段无效。",
     sourceHint: "引擎应该优先考虑哪个来源？ Auto：实时官方页面 → 官方搜索 → 最近 24 小时新闻。",
+    sonar: "Sonar — 深度扫描",
+    sonarHint: "每次检查进行多轮验证并使用更多来源。更全面,稍慢。",
     srcAuto: "自动",
     srcAutoD: "推荐",
     srcOfficial: "官方",

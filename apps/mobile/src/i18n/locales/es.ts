@@ -137,6 +137,9 @@ export const es: Catalog = {
     badFilter: "Campos de filtro inválidos.",
     sourceHint:
       "¿Qué fuente debe priorizar el motor? Auto: página oficial en vivo → búsqueda oficial → noticias 24h.",
+    sonar: "Sonar — escaneo profundo",
+    sonarHint:
+      "Verificación multironda y más fuentes en cada control. Más exhaustivo, algo más lento.",
     srcAuto: "Auto",
     srcAutoD: "Recomendado",
     srcOfficial: "Oficial",

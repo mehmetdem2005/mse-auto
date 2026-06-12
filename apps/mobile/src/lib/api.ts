@@ -255,10 +255,11 @@ export const api = {
     rawIntent: string,
     frequencyMinutes: number,
     sourcePref: "auto" | "news" | "official" | "web" = "auto",
+    deepScan = false,
   ) =>
     req<Watch>("/v1/watchers", {
       method: "POST",
-      body: JSON.stringify({ rawIntent, frequencyMinutes, sourcePref }),
+      body: JSON.stringify({ rawIntent, frequencyMinutes, sourcePref, deepScan }),
     }),
   subscription: () => req<Subscription>("/v1/subscription"),
   plans: () => req<Plans>("/v1/plans"),

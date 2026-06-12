@@ -7,6 +7,8 @@ export interface Subscriber {
   watchId: string;
   archetype: WatchArchetype;
   sourcePref: "auto" | "news" | "official" | "web";
+  /** "Sonar" derin tarama tercihi (ADR-089). */
+  deepScan: boolean;
 }
 
 export interface PendingDelivery {

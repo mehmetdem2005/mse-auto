@@ -140,6 +140,9 @@ export const de: Catalog = {
     badFilter: "Filterfelder sind ungültig.",
     sourceHint:
       "Welche Quelle soll der Motor priorisieren? Auto: Live-Offizielle Seite → Offizielle Suche → Letzte 24h Nachrichten.",
+    sonar: "Sonar — Tiefenscan",
+    sonarHint:
+      "Mehrstufige Prüfung und mehr Quellen bei jeder Kontrolle. Gründlicher, etwas langsamer.",
     srcAuto: "Auto",
     srcAutoD: "Empfohlen",
     srcOfficial: "Offiziell",
