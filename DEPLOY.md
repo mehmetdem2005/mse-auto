@@ -1,7 +1,7 @@
 # Watcher — Canlıya Alma Rehberi (v1)
 
-**Mimari:** Supabase (DB/Auth) · Render (web + worker) · Vercel (dashboard) · Google Cloud (FCM) · Expo EAS (mobil) · DeepSeek + Serper/Tavily.
-Tüm deploy artefaktları repoda: `render.yaml`, `apps/dashboard/vercel.json`, `apps/mobile/eas.json`, `apps/*/.env.example`.
+**Mimari:** Supabase (DB/Auth) · Render (web + worker) · Vercel (mobil-web + tanıtım sitesi) · Google Cloud (FCM) · Expo EAS (mobil) · DeepSeek + Serper/Tavily.
+Tüm deploy artefaktları repoda: `render.yaml`, `.github/workflows/deploy.yml` (mobil-web + site), `apps/website` (statik çıktı kendi `vercel.json`'ını üretir), `apps/mobile/eas.json`, `apps/*/.env.example`.
 
 ## 0. Ön koşul
 pnpm 9 · Node 22. Hesaplar: Supabase, Render, Vercel, Google Cloud, Expo, DeepSeek, Serper (+Tavily).
@@ -33,10 +33,14 @@ pnpm 9 · Node 22. Hesaplar: Supabase, Render, Vercel, Google Cloud, Expo, DeepS
 3. Deploy. Sağlık: `GET https://watcher-backend.onrender.com/health` → `{"status":"ok"}`.
 4. Scheduler tick worker içinde 60 sn'de bir döner (ayrı cron gerekmez).
 
-## 5. Vercel (dashboard)
-1. New Project → repo → **Root Directory = `apps/dashboard`**.
-2. Env: `VITE_API_BASE_URL` (Render web URL), `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
-3. Deploy (`vercel.json` SPA rewrite'ı uygular).
+## 5. Vercel — mobil-web + tanıtım sitesi
+**Mobil-web (mevcut, otomatik):** `main`'e push → `.github/workflows/deploy.yml` Expo web export'unu mevcut Vercel projesine yayınlar (tek secret: `VERCEL_TOKEN`). (Dashboard kaldırıldı — ADR-032.)
+
+**Tanıtım sitesi (`apps/website`, ADR-090) — tek seferlik kurulum:**
+1. Vercel'de yeni proje aç (ör. `whenly-site`; framework: Other, build YOK — hazır statik çıktı deploy edilir) → proje ID'sini (prj_…) al.
+2. GitHub repo → Settings → **Variables** → `VERCEL_PROJECT_ID_SITE` = prj_… ekle. (Variable tanımlı değilken workflow'daki `site` job'u zarifçe atlanır.)
+3. Özel alan adı alınınca: Vercel projesine bağla + repo Variable `SITE_URL` = `https://alanadi` ekle (canonical/sitemap/JSON-LD otomatik düzelir); **uygulamanın adresi değişirse** Variable `APP_URL` da güncellenir (sitedeki tüm CTA/JSON-LD/llms.txt hedefi tek kaynaktan gelir). Cloudflare kullanılıyorsa **AI-crawler varsayılan engelini** kapat (1 Tem 2025 sonrası yeni alanlarda varsayılan açık).
+4. İlk yayın sonrası: **Bing Webmaster Tools** + Google Search Console kaydı (IndexNow ping'i workflow'da otomatik). Site-dışı görünürlük adımları: `docs/GEO-pazarlama-mimarisi.md` §3.
 
 ## 6. Mobil (Expo EAS)
 1. `npm i -g eas-cli && eas login`.

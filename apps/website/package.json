@@ -1,0 +1,16 @@
+{
+  "name": "@watcher/website",
+  "private": true,
+  "type": "module",
+  "description": "Whenly tanıtım/pazarlama sitesi — sıfır-bağımlılıklı statik üretici (SSG). GEO/SEO mimarisi: docs/GEO-pazarlama-mimarisi.md",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --serve",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test test.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

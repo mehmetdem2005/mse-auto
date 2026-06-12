@@ -21,7 +21,7 @@ Kanonik dokümanlar: `docs/EA-TOGAF-mimari.md` (ADM+Requirements Mgmt) · `docs/
 - **Makinece denetlenemeyen** (TOGAF P1–P9, ISO, Atomic, react-query): hatırlatıcı + bu dosya + footer disipliniyle; bilinçli atlanan gerekçesiyle yazılır, "yapıldı" diye ABARTILMAZ.
 
 ## Mimari
-- **Monorepo (pnpm):** `apps/backend` (Hono, hexagonal), `apps/mobile` (Expo/expo-router, nativewind — **tek/asıl ürün; Android + mobil-web aynı koddan**), `packages/contracts` (zod). (Dashboard kaldırıldı; admin dahil her şey mobil uygulamada — ADR-032.)
+- **Monorepo (pnpm):** `apps/backend` (Hono, hexagonal), `apps/mobile` (Expo/expo-router, nativewind — **tek/asıl ürün; Android + mobil-web aynı koddan**), `apps/website` (tanıtım sitesi — sıfır-bağımlılık SSG; GEO/pazarlama stratejisi `docs/GEO-pazarlama-mimarisi.md`, ADR-090), `packages/contracts` (zod). (Dashboard kaldırıldı; admin dahil her şey mobil uygulamada — ADR-032.)
 - Backend: domain port → application → infrastructure (supabase/in-memory) → interfaces/http route; sözleşmeler `@watcher/contracts`.
 - Gizlilik zonları: PII (profiles, watches.raw_intent, personal_criteria, deliveries) vs paylaşılan (canonical_topics, check_runs, detection_events). Backend service-role; istemci anon + RLS.
 

@@ -4,6 +4,10 @@
  * yerelleştirilmiş bir "bağlayıcı sürüm İngilizce" notu basar (makine çevirisi
  * yasal metinde riskli — bilinçli karar). İçerik gerçek mimariyle birebirdir:
  * abartı yok, vermediğimiz garanti yazılmaz (ADR-074 dürüstlük ilkesi).
+ *
+ * DİKKAT — BURASI KANONİK KAYNAK: tanıtım sitesi aynı metnin kopyasını taşır
+ * (`apps/website/src/legal.mjs`, ADR-090). Metin/version/updated değişirse İKİ
+ * dosya birlikte güncellenir; website testi sürüm kaymasında kırılır (bekçi).
  */
 
 export type LegalDocId = "privacy" | "terms";

@@ -6,8 +6,8 @@ AI-destekli olay-izleme uygulaması. Kullanıcı doğal dille "şu olunca haber 
 
 ## Yapı
 - **`apps/backend`** — Hono + Zod (`@hono/zod-openapi`). DDD/Clean katmanlar (domain / application / infrastructure / interfaces). Elle DI: `createContainer(env)` backing service'leri **env'den** seçer (12-factor). İki giriş: `src/main.ts` (web) + `src/worker.ts` (kuyruk worker'ları + scheduler tick — ayrı cron gerekmez).
-- **`apps/dashboard`** — Vite + React admin paneli (analytics, fiyatlar).
-- **`apps/mobile`** — Expo Router (React Native). `(auth)/login` + `(app)/{index,new,settings,subscription}`. Push/alarm: foreground listener + arka-plan task (`expo-task-manager`).
+- **`apps/mobile`** — Expo Router (React Native). `(auth)/login` + `(app)/{index,new,settings,subscription}`. Push/alarm: foreground listener + arka-plan task (`expo-task-manager`). (Dashboard kaldırıldı — ADR-032; admin dahil her şey mobil uygulamada.)
+- **`apps/website`** — tanıtım/pazarlama sitesi: sıfır-bağımlılık statik üretici (`node build.mjs`), TR+EN 36 sayfa, GEO mimarisi (robots/sitemap/llms.txt/JSON-LD/IndexNow). Strateji: `docs/GEO-pazarlama-mimarisi.md` (ADR-090).
 - **`packages/contracts`** — paylaşılan Zod şemaları + tipler. **`packages/config`** — paylaşılan tsconfig/biome.
 - **`supabase/migrations`** — `0001_init`, `0002_billing_admin`, `0003_event_facts` (RLS açık; PGlite ile doğrulandı).
 
@@ -17,7 +17,7 @@ AI-destekli olay-izleme uygulaması. Kullanıcı doğal dille "şu olunca haber 
     pnpm dev                   # tüm app'ler (turbo)
     pnpm typecheck             # 4 paket
     pnpm test                  # backend vitest (50 test)
-    pnpm build                 # dashboard
+    pnpm build                 # tanıtım sitesi (apps/website → dist/)
     pnpm biome ci .            # lint/format kontrol
 Backend tek başına: `pnpm -F @watcher/backend dev` (web) + `pnpm -F @watcher/backend worker:start` (worker).
 
@@ -25,7 +25,7 @@ Backend tek başına: `pnpm -F @watcher/backend dev` (web) + `pnpm -F @watcher/b
 Hiçbiri yoksa backend **tamamen in-memory/stub** çalışır (tek kod yolu; dev + prod aynı). Her app'te `.env.example` var.
 - **backend:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` (yoksa in-memory repo) · `DATABASE_URL` (pg-boss; yoksa in-memory kuyruk) · `SERPER_API_KEY`, `TAVILY_API_KEY`, `DEEPSEEK_API_KEY` (yoksa StubChecker) · `FCM_PROJECT_ID`, `GOOGLE_SERVICE_ACCOUNT_JSON` (yoksa NoopNotifier) · `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO_MONTH`, `STRIPE_PRICE_PRO_YEAR`, `APP_URL` (yoksa in-memory ödeme) · `ADMIN_USER_IDS` · `RATE_LIMIT_PER_MINUTE`, `WATCH_CREATE_PER_HOUR`.
 - **mobile:** `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
-- **dashboard:** `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+- **website:** `SITE_URL` (kanonik adres) + `APP_URL` (CTA hedefi) — ikisi de opsiyonel, varsayılanları var.
 
 ## Mimari ilkeler
 - **Portlar + adaptörler:** Checker (arama+DeepSeek), Notifier (FCM), PaymentGateway (Stripe), AccountGateway (KVKK silme), repolar. Her birinin **gerçek + in-memory** impl'i var (mock değil — env'e göre seçilir).
@@ -34,7 +34,7 @@ Hiçbiri yoksa backend **tamamen in-memory/stub** çalışır (tek kod yolu; dev
 - **Bildirim:** sunucu data-only FCM yollar; cihaz watch-başına tercihe göre sunar (sessiz/bildirim/alarm + özel ses kanalı). Foreground + arka-plan tek `handleIncomingData` mantığı (ADR-016, ADR-020).
 
 ## Ne DOĞRULANDI (bu ortamda, gerçekten çalıştırılarak)
-`biome ci` temiz · `typecheck` 4/4 · **50 backend testi** (HTTP entegrasyon + ödeme + hesap silme + reconcile + entitlements dahil) · dashboard build · migration'lar PGlite/WASM ile (RLS açık).
+`biome ci` temiz · `typecheck` 4/4 · **124 backend testi** (HTTP entegrasyon + ödeme + hesap silme + reconcile + entitlements dahil) + **website testleri** · website build · migration'lar PGlite/WASM ile (RLS açık).
 
 ## Ne DOĞRULANMADI — canlıda / Claude Code'da yapılacak
 **Uygulama HİÇ canlı çalışmadı.** Şunlar yalnız typecheck/yapısal doğrulandı; gerçek davranış canlıda ortaya çıkar:
@@ -46,7 +46,7 @@ Hiçbiri yoksa backend **tamamen in-memory/stub** çalışır (tek kod yolu; dev
 ## Sıradaki (öncelik sırası)
 1. **`DEPLOY.md`'yi uygula → ilk uçtan-uca canlı koşu** (en kritik de-risk; asıl bilinmeyenler burada çıkar).
 2. Stripe **müşteri portalı + customer-id kalıcılığı** (`billing_customers` tablosu + portal route) — şu an YOK.
-3. Dashboard entitlements matrisi gösterimi; ses önizleme (expo-audio); `plan_prices` pro fiyatı seed.
+3. Ses önizleme (expo-audio); `plan_prices` pro fiyatı seed. (Dashboard kaldırıldı — ADR-032; admin görünümleri mobil uygulamada.)
 4. Full-screen locked alarm (custom native modül — Expo-managed ötesi).
 5. (Politika) Uygulama-içi dijital abonelikte Google Play çoğu durumda **Play Billing** ister (Stripe değil) — değerlendir.
 

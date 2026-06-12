@@ -101,3 +101,52 @@ jobs:
           }
           JSON
           vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
+
+  # ---------------- Tanıtım sitesi (apps/website — statik SSG) ----------------
+  # GEO mimarisi (docs/GEO-pazarlama-mimarisi.md): AI crawler'lar JS çalıştırmadığı
+  # için tanıtım içeriği statik HTML olarak ayrı Vercel projesinde yayımlanır.
+  # Tek seferlik kurulum: Vercel'de "whenly-site" projesi aç → repo Variables'a
+  # VERCEL_PROJECT_ID_SITE (prj_...) ve (özel alan adı alınınca) SITE_URL ekle.
+  # Değişken tanımlı değilse iş zarifçe atlanır.
+  site:
+    runs-on: ubuntu-latest
+    if: vars.VERCEL_PROJECT_ID_SITE != ''
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build site (SSG)
+        working-directory: apps/website
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          APP_URL: ${{ vars.APP_URL }}
+        run: node build.mjs && node --test test.mjs
+
+      - name: Vercel CLI
+        run: pnpm add -g vercel@latest
+
+      - name: Deploy site → Vercel
+        env:
+          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID_SITE }}
+        run: |
+          cd apps/website/dist
+          vercel deploy . --prod --yes --token "$VERCEL_TOKEN" --scope "$VERCEL_ORG_ID"
+
+      # IndexNow: Bing'e (ChatGPT aramasının dizini) güncellenen URL'leri bildir.
+      # Anahtar/URL listesi build ile aynı tek kaynaktan (tools/indexnow.mjs);
+      # anahtar dosyası sitede yayında (sahiplik kanıtı); hata deploy'u düşürmez.
+      - name: IndexNow ping (Bing/ChatGPT dizini)
+        continue-on-error: true
+        working-directory: apps/website
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: node tools/indexnow.mjs
