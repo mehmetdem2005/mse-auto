@@ -1,11 +1,14 @@
-// Türkçe içerik — TEK KAYNAK. GEO yazım kuralları (docs/GEO-pazarlama-mimarisi.md):
-// her sayfa "önce cevap" 40-60 kelimelik bağımsız paragrafla açılır; H2'ler soru
-// biçimindedir (sohbet sorgularıyla eşleşir); istatistik/alıntılar saha araştırmamızdan
-// (docs/gercek-talepler.md, 2026-06) gelir ve abartılmaz; her sayfa kısa tutulur.
+// Türkçe içerik — TEK KAYNAK. İlke (kullanıcı yönergesi): siteyi NE yaptığına odakla,
+// NASIL yaptığını açma — yalnız "açık web kaynaklarını belirli aralıklarla tarar" denir;
+// iç mekanik/strateji (güven yüzdesi, kanonik sorgu, derin tarama, saha araştırması)
+// siteye yazılmaz. Yalnızca GERÇEKTEN erişilebilir senaryolar: giriş/şifre/captcha
+// arkasındaki sistemler (vize randevu portalı, MHRS, e-Devlet) dahil edilmez.
+// GEO: her sayfa "önce cevap" 40-60 kelimelik bağımsız paragrafla açılır; H2'ler soru
+// biçimindedir; sayfa kısadır; örnekler evrensel (ülkeye/kuruma kilitli değil).
 
 /** @typedef {{ q: string, a: string }} Faq */
 /** @typedef {{ slug: string, icon: string, name: string, metaTitle: string,
- *   metaDescription: string, h1: string, answer: string, pains: string[],
+ *   metaDescription: string, h1: string, answer: string, context: string[],
  *   examples: string[], faq: Faq[], related: string[] }} UseCase */
 
 export const tr = {
@@ -28,356 +31,153 @@ export const tr = {
 
   footer: {
     tagline:
-      "Whenly, doğal dille tarif ettiğin olayları yapay zekâ ile izler ve gerçekleştiği an haber verir.",
+      "Whenly, izlemesini istediğin gelişmeyi senin yerine takip eder ve gerçekleştiğinde haber verir.",
     useCases: "Çözümler",
     product: "Ürün",
     legal: "Hukuki",
     privacy: "Gizlilik Politikası",
     terms: "Kullanım Koşulları",
     contact: "İletişim",
-    forAi: "AI asistanlar için: llms.txt",
+    forAi: "Yapay zekâ asistanları için: llms.txt",
     langSwitch: "English version",
   },
 
   home: {
-    metaTitle: "Whenly — Şu olunca haber ver: yapay zekâ destekli olay izleme",
+    metaTitle: "Whenly — Şu olunca haber ver: izleme ve bildirim uygulaması",
     metaDescription:
-      '"Şu olunca haber ver" de, gerisini Whenly yapsın: interneti düzenli tarar, olayı yapay zekâ ile doğrular, anında bildirim veya alarm gönderir. Ücretsiz başla.',
-    heroOverline: "Yapay zekâ destekli olay izleme",
+      '"Şu olunca haber ver" de: Whenly açık web kaynaklarını belirli aralıklarla tarar ve gelişme göründüğünde bildirim — istersen alarm — gönderir. Ücretsiz başla.',
+    heroOverline: "İzleme ve bildirim uygulaması",
     heroTitle: "Şu olunca <em>haber ver.</em>",
     heroSub:
-      "İzlemek istediğin şeyi kendi cümlelerinle anlat. Whenly açık web kaynaklarını düzenli tarar, gelişmeyi yapay zekâ ile doğrular ve gerçekleştiği an telefonuna bildirim — istersen alarm — gönderir.",
+      "İzlemek istediğin şeyi kendi cümlenle anlat. Whenly açık web kaynaklarını senin yerine belirli aralıklarla kontrol eder ve aradığın gelişme göründüğünde telefonuna bildirim — istersen alarm — gönderir.",
     heroCta: "Ücretsiz başla",
     heroCtaNote: "Kredi kartı gerekmez · Web'de ve telefonda çalışır",
     heroSecondary: "Nasıl çalışır?",
     phone: {
       watcherLabel: "İZLENİYOR",
-      watcherText: "İtalya Schengen vize randevusu İstanbul'da açılınca anında haber ver",
-      watcherMeta: "Sık kontrol · Resmî kaynak önceliği",
+      watcherText: "Beklediğim ürün resmî satıcıda 5.000 TL altına stoğa girince haber ver",
+      watcherMeta: "Belirli aralıklarla kontrol",
       notifTitle: "Whenly · şimdi",
-      notifText: "Randevu açıldı: İstanbul başvuru merkezi takviminde yeni slot görünüyor.",
-      notifMeta: "%92 güvenle tespit edildi",
+      notifText: "Stoğa girdi: ürün belirlediğin fiyatın altında yeniden satışta görünüyor.",
+      notifMeta: "Bildirim gönderildi",
     },
-    statHeading: "Neden böyle bir araç?",
-    stats: [
-      {
-        n: "50",
-        unit: "gerçek talep",
-        t: 'Saha araştırmamızda forum ve şikâyet platformlarından, "böyle bir uygulama olsa" diyenler değil, sorunu bizzat yaşayanlar derlendi.',
-      },
-      {
-        n: "dakikalar",
-        unit: "içinde tükeniyor",
-        t: "Vize randevusu, konser bileti ve stok düşüşleri çoğu zaman dakikalar içinde kapanıyor; elle yenileyen kaçırıyor.",
-      },
-      {
-        n: "7/24",
-        unit: "nöbet",
-        t: "İnsanlar aynı sayfayı günde onlarca kez elle yeniliyor. Bu nöbeti senin yerine bir yazılım tutmalı.",
-      },
-    ],
     howHeading: "Whenly nasıl çalışır?",
     how: [
       {
         icon: "messageSquare",
-        t: "Cümleyle anlat",
-        d: '"Kadıköy\'de 2+1, 30.000 TL altı kiralık ilan çıkınca haber ver" gibi doğal bir cümle yaz. Form yok, kural motoru ezberi yok.',
+        t: "Ne izleyeceğini yaz",
+        d: '"Kadıköy\'de 30.000 TL altı kiralık ilan çıkınca haber ver" gibi doğal bir cümle yaz. Form yok, kural ezberi yok.',
       },
       {
-        icon: "search",
-        t: "Whenly izler",
-        d: "Açık web kaynakları (resmî siteler, haberler, duyurular) seçtiğin sıklıkta taranır. Kişisel ayrıntıların dışarı gönderilmez; arama yalnız arındırılmış konuyla yapılır.",
-      },
-      {
-        icon: "sparkles",
-        t: "Yapay zekâ doğrular",
-        d: 'Bulunan sonuçları model değerlendirir: olay gerçekten gerçekleşti mi? Her tespitin güven yüzdesi ve gerekçesi kaydedilir — "neden bu bildirim" her zaman görünür.',
+        icon: "refresh",
+        t: "Whenly takip eder",
+        d: "Açık web kaynaklarını (siteler, haberler, duyurular) senin yerine belirli aralıklarla kontrol eder.",
       },
       {
         icon: "bellRing",
-        t: "Anında haber al",
-        d: "Gerçekleştiği an push bildirimi gelir; kritik konularda alarm moduyla telefon çalar. Gece sessiz saatler, watcher başına ses seçimi senin elinde.",
+        t: "Haber al",
+        d: "Aradığın gelişme göründüğünde telefonuna bildirim gelir; kritik konularda alarm moduyla telefon çalar.",
       },
     ],
     featuresHeading: "Öne çıkanlar",
     features: [
       {
         icon: "zap",
-        t: "Bileşik koşullar",
-        d: '"Stok VE 65.000 TL altı", "ilan VE bu semt" gibi basit alarmların beceremediği birleşik kuralları doğal dilden anlar.',
-      },
-      {
-        icon: "shieldCheck",
-        t: "Gizlilik sınırı tasarımda",
-        d: "Serbest metnin kişisel-veri bölgesinde kalır; dış arama ve yapay zekâ servislerine yalnız kişisel ayrıntılardan arındırılmış konu gider.",
+        t: "Doğal dille kurulum",
+        d: '"Stokta VE belirlediğim fiyatın altında" gibi birleşik koşulları doğal cümleden anlar; kural motoru öğrenmen gerekmez.',
       },
       {
         icon: "languages",
-        t: "11 dil",
-        d: "Türkçe dahil 11 arayüz dili; izleme cümleni kendi dilinde yazarsın, kaynaklar dil fark etmeksizin taranır.",
+        t: "Kendi dilinde",
+        d: "Türkçe dahil 11 arayüz dili. İzleme cümleni kendi dilinde yazarsın.",
       },
       {
-        icon: "eye",
-        t: "Şeffaf tespit",
-        d: "Her bildirimde güven yüzdesi ve kaynak izi var. Ne arandı, ne bulundu, neden karar verildi — hepsi açık.",
+        icon: "bellRing",
+        t: "Alarm modu",
+        d: "Kritik izlemelerde bildirim sessizce düşmek yerine telefonu gerçekten çaldırır.",
       },
       {
         icon: "clock",
         t: "Sessiz saatler",
-        d: "Gece bildirimleri sessiz bildirime iner; sabah kaldığın yerden devam edersin. Acil watcher'a istersen alarm yetkisi verirsin.",
+        d: "Gece bildirimleri sessize iner; sabah kaldığın yerden devam edersin.",
       },
       {
-        icon: "layers",
-        t: "Sonar derin tarama",
-        d: "Kritik konularda opsiyonel ikinci derin tur: daha fazla kaynak, yeniden muhakeme — kıl payı kaçırmalara karşı.",
+        icon: "smartphone",
+        t: "Web ve telefon",
+        d: "Tarayıcıda hemen çalışır; Android uygulaması da var. Bildirimler telefona gelir.",
+      },
+      {
+        icon: "shieldCheck",
+        t: "Gizlilik önce",
+        d: "Verini satmayız, reklam için kullanmayız. İstediğin an tüm verini indirir veya kalıcı silersin.",
       },
     ],
     pricingHeading: "Fiyatlandırma basit",
     pricing: {
       freeName: "Ücretsiz",
       freeBullets: [
-        "3 aktif watcher",
-        "Saatte bire kadar kontrol sıklığı",
-        "Push bildirimleri + sessiz saatler",
-        "Yapay zekâ doğrulamalı tespit",
+        "3 aktif izleme",
+        "Düzenli kontrol",
+        "Bildirimler + sessiz saatler",
+        "Web ve Android",
       ],
       freeCta: "Ücretsiz başla",
       proName: "Pro",
       proBullets: [
-        "100 aktif watcher",
-        "Dakikada bire kadar kontrol sıklığı",
-        "Alarm modu — telefon gerçekten çalar",
-        "100 bildirim sesi + kişisel filtreler",
+        "100 aktif izleme",
+        "Daha sık kontrol",
+        "Alarm modu — telefon çalar",
+        "Kişiselleştirme + ek seçenekler",
       ],
       proCta: "Uygulamada yükselt",
-      note: "Ücretsiz plan süresiz; kart bilgisi istemez. Pro'ya uygulama içinden geçersin, istediğin an iptal edersin.",
+      note: "Ücretsiz plan süresiz ve kart bilgisi istemez. Pro'ya uygulama içinden geçer, istediğin an iptal edersin.",
     },
     useCasesHeading: "Ne için kullanılıyor?",
-    useCasesSub:
-      "Aşağıdakilerin hepsi gerçek kullanıcı taleplerinden geliyor — saha araştırmamızdaki en sık ve en acil senaryolar.",
+    useCasesSub: "Aşağıdakilerin hepsi açık web kaynaklarında takip edilebilen gerçek ihtiyaçlar.",
     useCasesAll: "Tüm çözümleri gör",
     faqHeading: "Sık sorulan sorular",
     faq: [
       {
         q: "Whenly nedir?",
-        a: 'Whenly, doğal dille tarif ettiğin bir olayı (örn. "PS5 resmî satıcıda stoğa girince haber ver") senin yerine izleyen bir uygulamadır. Açık web kaynaklarını düzenli tarar, gelişmeyi yapay zekâ ile doğrular ve gerçekleştiği an bildirim ya da alarm gönderir.',
+        a: 'Whenly, doğal dille tarif ettiğin bir gelişmeyi (örneğin "bu ürün stoğa girince haber ver") senin yerine takip eden bir uygulamadır. Açık web kaynaklarını belirli aralıklarla kontrol eder ve aradığın şey göründüğünde bildirim ya da alarm gönderir.',
       },
       {
         q: "Whenly ücretsiz mi?",
-        a: "Evet — ücretsiz planda 3 aktif watcher ve saatte bire kadar kontrol sıklığı süresiz kullanılır, kart bilgisi istenmez. Pro plan daha çok watcher (100), dakikada bire kadar sıklık, alarm modu ve kişisel filtreler ekler.",
+        a: "Evet — ücretsiz planda 3 aktif izleme süresiz kullanılır, kart bilgisi istenmez. Pro plan daha çok izleme, daha sık kontrol ve alarm modu ekler.",
       },
       {
-        q: "Hangi kaynakları izleyebilir?",
-        a: "Kamuya açık web kaynaklarını: resmî kurum siteleri, haber siteleri, duyuru ve ilan sayfaları. Giriş/şifre gerektiren portallara, kişisel hesaplara ve captcha arkasındaki sayfalara erişmez — bu sınırı açıkça belirtiyoruz.",
+        q: "Hangi kaynakları takip edebilir?",
+        a: "Kamuya açık web kaynaklarını: siteler, haber ve duyuru sayfaları, ilanlar. Giriş/şifre gerektiren portallara, kişisel hesaplara ve captcha (robot doğrulaması) arkasındaki sayfalara erişmez — bu sınırı açıkça belirtiyoruz.",
       },
       {
-        q: "Bildirimler ne kadar hızlı gelir?",
-        a: "Watcher'ın kontrol sıklığına bağlıdır: ücretsiz planda saatte bire, Pro'da dakikada bire kadar. Tespit, kaynağın yayımlamasından sonraki ilk kontrolde yapılır. Saniyesinde garanti vermeyiz; kaynaklar geç yayımlayabilir, dizinler gecikebilir — bu dürüst sınırı kullanım koşullarımızda da yazıyoruz.",
+        q: "Ne kadar hızlı haber verir?",
+        a: "Whenly kaynakları belirli aralıklarla kontrol eder; gelişmeyi yayımlandıktan sonraki ilk kontrolde yakalar. Saniyesinde haber almayı garanti etmeyiz; kaynaklar geç yayımlayabilir. Bildirimi, kendin doğrulayacağın bir işaret olarak kullan.",
       },
       {
         q: "Verilerim güvende mi?",
-        a: "İzleme cümlen kişisel-veri bölgesinde kalır; dış arama ve yapay zekâ servislerine yalnız kişisel ayrıntılardan arındırılmış genel konu gönderilir. Verini satmayız, reklam için kullanmayız. Ayarlardan tüm verini indirebilir veya hesabınla birlikte kalıcı silebilirsin.",
+        a: "Verini satmayız, reklam için kullanmayız. Ayarlardan tüm verini makinece okunabilir biçimde indirebilir veya hesabınla birlikte kalıcı silebilirsin. Ayrıntılar Gizlilik Politikası'nda.",
       },
       {
         q: "Telefonda mı, web'de mi çalışır?",
-        a: "İkisinde de. Web uygulaması her tarayıcıda çalışır; Android uygulaması aynı koddan üretilir. Bildirimler telefona push olarak gelir; Pro'da kritik watcher'lar için alarm modu vardır.",
+        a: "İkisinde de. Web uygulaması her tarayıcıda çalışır; Android uygulaması da vardır. Bildirimler telefona gelir; Pro'da kritik izlemeler için alarm modu vardır.",
       },
     ],
-    ctaHeading: "Nöbeti Whenly devralsın",
-    ctaText: "Bir cümle yaz, gerisini bırak. Olay gerçekleştiğinde ilk öğrenen sen ol.",
-  },
-
-  /** Çözüm sayfası ortak dizgileri — render'da ternary/elle eşleme YOK (tek kaynak). */
-  ucStrings: {
-    pains: "Sorun ne kadar gerçek?",
-    examples: "Whenly'ye böyle söylersin",
-    exHint: "Cümleyi kopyala, uygulamada yapıştır — watcher hazır.",
-    related: "İlgili çözümler",
-    faq: "Sık sorulanlar",
-    copy: "Kopyala",
-    copied: "Kopyalandı",
+    ctaHeading: "Takibi Whenly devralsın",
+    ctaText: "Bir cümle yaz, gerisini bırak. Gelişme olduğunda ilk öğrenen sen ol.",
   },
 
   useCasesIndex: {
     slug: "cozumler",
     metaTitle: "Whenly çözümleri — neyi izleyebilirsin?",
     metaDescription:
-      "Vize randevusundan stok takibine, ihaleden mevzuata: Whenly'nin yapay zekâ destekli izleme senaryoları. Hepsi gerçek kullanıcı taleplerinden derlendi.",
+      "Fiyat ve stoktan ilanlara, ihaleden mevzuata: Whenly'nin açık web üzerinde takip edebildiği izleme senaryoları.",
     h1: "Neyi izleyebilirsin?",
     intro:
-      "Whenly konu-bazlı çalışır: bir sayfa adresi vermek zorunda değilsin, ne olmasını beklediğini anlatırsın. Aşağıdaki senaryoların tamamı saha araştırmamızdaki gerçek taleplerden geliyor.",
+      "Whenly konu-bazlı çalışır: bir sayfa adresi vermek zorunda değilsin, ne olmasını beklediğini anlatırsın. Aşağıdakilerin hepsi kamuya açık web kaynaklarında takip edilebilir.",
   },
 
   /** @type {UseCase[]} */
   useCases: [
-    {
-      slug: "vize-randevu-takibi",
-      icon: "calendarClock",
-      name: "Vize randevusu takibi",
-      metaTitle: "Vize randevusu açılınca haber veren uygulama — Whenly",
-      metaDescription:
-        "Schengen/VFS vize randevusu bulamıyor musun? Whenly randevu takvimini senin yerine izler, slot açıldığı an bildirim veya alarm gönderir. Ücretsiz başla.",
-      h1: "Vize randevusu açılınca anında haber al",
-      answer:
-        "Whenly, vize randevu duyurularını ve takvim sayfalarını senin yerine düzenli tarar; yeni slot veya iptalden boşalan randevu tespit edildiğinde telefonuna anında bildirim — Pro'da alarm — gönderir. Kurulum tek cümledir: hangi ülke, hangi şehir, ne olunca haber istediğini yazarsın.",
-      pains: [
-        'Saha araştırmamızda en keskin talep buydu: "Uyarı düştüğü an bakıyorum, 2 dakika geçsin tükenmiş oluyor" — slotlar dakikalar içinde kapanıyor.',
-        "Randevu bulamayanlar bot ve aracılara 100€'dan fazla ödemek zorunda kalıyor; gün içinde iptalden düşen 5-10 slot saniyeler içinde kapılıyor.",
-        "Elle takip sürdürülebilir değil: insanlar haftalarca her gün, günde onlarca kez aynı takvimi yeniliyor.",
-      ],
-      examples: [
-        "İtalya Schengen vize randevusu İstanbul'da açılınca anında haber ver.",
-        "Almanya vize randevusunda iptal düşüp slot açılırsa anında bildir.",
-        "İngiltere vizesi için İstanbul'da standart (premium olmayan) randevu açılınca haber ver.",
-      ],
-      faq: [
-        {
-          q: "Whenly vize randevusunu benim yerime alıyor mu?",
-          a: "Hayır — Whenly izler ve haber verir; randevuyu sen alırsın. Giriş gerektiren randevu portallarının içine erişmez; kamuya açık duyuru ve takvim sayfalarını, açılış haberlerini ve resmî duyuruları tarar. Bot karaborsasına alternatif, meşru bir erken-uyarı katmanıdır.",
-        },
-        {
-          q: "Hangi vize randevuları izlenebilir?",
-          a: "Kamuya açık duyuru yapan her randevu sistemi: Schengen başvuru merkezleri, konsolosluk duyuruları, ülke bazlı vize haber kaynakları. Cümleni ülke, şehir ve randevu tipiyle ne kadar netleştirirsen tespit o kadar isabetli olur.",
-        },
-        {
-          q: "Slot saniyeler içinde kapanıyorsa bildirim yetişir mi?",
-          a: "Dürüst cevap: her zaman değil. Whenly kaynağın yayımlamasından sonraki ilk kontrolde tespit eder; Pro'da bu dakikada bire kadar iner ve alarm modu telefonu gerçekten çaldırır. Garanti yerine, elle yenilemeye göre ölçülebilir bir hız avantajı sunar.",
-        },
-      ],
-      related: ["doktor-randevu-takibi", "sonuc-takibi", "konser-bileti-takibi"],
-    },
-    {
-      slug: "doktor-randevu-takibi",
-      icon: "heartPulse",
-      name: "Doktor randevusu takibi",
-      metaTitle: "MHRS doktor randevusu açılınca haber veren uygulama — Whenly",
-      metaDescription:
-        "MHRS'de randevu bulamıyor musun? Whenly istediğin bölüm ve bölge için randevu açılışını izler, slot düştüğü an bildirim gönderir. Doğal dille kur, ücretsiz dene.",
-      h1: "Doktor randevusu açılınca anında haber al",
-      answer:
-        'Whenly, doktor randevusu açılışlarını ve iptalden boşalan slot duyurularını senin yerine izler; aradığın bölüm ve bölgede uygunluk tespit edildiğinde anında bildirim gönderir. "Kadıköy\'de kardiyoloji randevusu açılınca haber ver" gibi tek bir cümleyle kurulur.',
-      pains: [
-        'Saha araştırmamızdan: "8 gündür her gün giriyorum" — açılan slotlar dakikalar içinde doluyor, gece yarısı nöbetleri normalleşmiş durumda.',
-        "İptalden boşalan randevular en hızlı kapananlar; tam o anda bakmayan kaçırıyor.",
-        "Kronik hastalar ve düzenli kontrol gerekenler için bu belirsizlik sağlık riski demek.",
-      ],
-      examples: [
-        "Kadıköy'de kardiyoloji randevusu açılınca anında haber ver.",
-        "İstanbul'da NVİ pasaport randevusu açılınca haber ver.",
-        "Hepatit A aşısı Üsküdar'daki sağlık kuruluşlarında uygulanmaya başlayınca bildir.",
-      ],
-      faq: [
-        {
-          q: "Whenly MHRS hesabıma giriyor mu?",
-          a: "Hayır. Whenly giriş gerektiren sistemlerin içine erişmez; kamuya açık duyuruları, açılış haberlerini ve uygunluk bilgisi yayımlayan sayfaları izler. Randevuyu her zaman kendi hesabınla kendin alırsın.",
-        },
-        {
-          q: "Randevu izleme ücretsiz mi?",
-          a: "Evet — ücretsiz planda 3 watcher'a kadar süresiz kullanırsın; kontrol sıklığı saatte bire kadardır. Slotların çok hızlı kapandığı durumlar için Pro, dakikada bire kadar sıklık ve alarm modu ekler.",
-        },
-      ],
-      related: ["vize-randevu-takibi", "ilac-stok-takibi", "sonuc-takibi"],
-    },
-    {
-      slug: "ilac-stok-takibi",
-      icon: "pill",
-      name: "İlaç stok takibi",
-      metaTitle: "İlaç stoğa girince haber veren uygulama — Whenly",
-      metaDescription:
-        "Aradığın ilaç hiçbir eczanede yok mu? Whenly ilaç stok ve temin duyurularını izler, bulunabilirlik tespit edilince anında bildirim gönderir. Ücretsiz başla.",
-      h1: "Aradığın ilaç stoğa girince haber al",
-      answer:
-        "Whenly, ilaç bulunabilirlik duyurularını, eczane ve dağıtıcı kaynaklarını, temin haberlerini senin yerine düzenli izler; aradığın ilacın bölgendeki bulunabilirliğine dair bir gelişme tespit edildiğinde anında bildirim gönderir. Tek cümleyle kurulur, 7/24 senin yerine bakar.",
-      pains: [
-        'Saha araştırmamızdaki en ağır hikâyelerden: "6 aydır arıyorum, 150 eczane gezdim" — kronik hastalar için ilaç bulmak tam zamanlı işe dönüşüyor.',
-        "Stok geldiğinde haber veren merkezi bir kanal yok; insanlar tek tek eczane arıyor.",
-        "Temin krizleri dalga dalga geliyor: doğru anı yakalayan alıyor, sonra yine tükeniyor.",
-      ],
-      examples: [
-        "Pentasa 2g İstanbul Anadolu yakasındaki eczanelerde bulunur hâle gelince haber ver.",
-        "Aradığım ilacın Türkiye'ye yeniden temin edildiğine dair duyuru çıkınca anında bildir.",
-        "X ilacının muadili eczanelerde satışa sunulunca haber ver.",
-      ],
-      faq: [
-        {
-          q: "Whenly eczane stoklarını birebir görebilir mi?",
-          a: 'Eczanelerin iç stok sistemlerine erişimi yoktur — bu dürüst sınırımız. İzlediği şey kamuya açık sinyallerdir: temin duyuruları, dağıtıcı/üretici açıklamaları, bulunabilirlik haberleri ve ilan sayfaları. Bu sinyaller çoğu zaman "eczane eczane gezmeden" önce davranmanı sağlar.',
-        },
-        {
-          q: "Sağlık verilerim paylaşılıyor mu?",
-          a: "İzleme cümlen kişisel-veri bölgesinde kalır; dış servislere yalnız kişisel ayrıntılardan arındırılmış genel konu gider. Verin satılmaz, reklam için kullanılmaz; istediğin an kalıcı silebilirsin.",
-        },
-      ],
-      related: ["doktor-randevu-takibi", "stok-takibi", "fiyat-takibi"],
-    },
-    {
-      slug: "stok-takibi",
-      icon: "pkg",
-      name: "Stok / restock takibi",
-      metaTitle: "Stoğa girince haber veren uygulama (PS5, ekran kartı) — Whenly",
-      metaDescription:
-        'PS5, ekran kartı veya sneaker stoğa girince anında haber al. Whenly restock\'u yapay zekâ ile doğrular; "stok VE fiyat altı" bileşik koşullarını anlar.',
-      h1: "Ürün stoğa girince anında haber al",
-      answer:
-        'Whenly, ürün stok durumunu ve satışa çıkış duyurularını senin yerine izler; ürün resmî satıcıda yeniden satışa sunulduğunda anında bildirim gönderir. Farkı bileşik koşullardır: "stoğa girince VE 65.000 TL altındaysa" gibi kuralları doğal dilden anlar.',
-      pains: [
-        'Saha araştırmamızdan: "Sepete attım, ödeme yaparken tükendi" — restock\'lar dakikalar, bazen saniyeler içinde bitiyor.',
-        "Scalper'lar (karaborsacılar) botlarla alıp fahiş fiyata satıyor; sıradan alıcının tek şansı erken haber.",
-        'Mevcut restock uygulamalarının 1 numaralı şikâyeti: "bildirim çok geç geldi, tıkladığımda stok bitmişti."',
-      ],
-      examples: [
-        "PS5 Türkiye'de resmî satıcıda stoğa girince anında haber ver.",
-        "RTX 5090, 65.000 TL altına stoğa girince haber ver.",
-        "Jordan 4 Bred retail fiyatına stoğa girince veya raffle açılınca bildir.",
-      ],
-      faq: [
-        {
-          q: "Hangi mağazalar izlenebilir?",
-          a: 'Kamuya açık ürün ve duyuru sayfası olan her satıcı. Whenly konu-bazlı çalıştığı için tek bir sayfa adresine bağlı kalmazsın: "resmî satıcıda" dersen açık web\'deki stok sinyallerini birlikte değerlendirir.',
-        },
-        {
-          q: "Fiyat koşulunu da aynı anda kontrol edebilir mi?",
-          a: "Evet — bileşik koşullar Whenly'nin çekirdek özelliği: \"stokta VE şu fiyatın altında\" tek watcher'da tanımlanır. Basit stok alarmlarının yapamadığı tam olarak bu.",
-        },
-        {
-          q: "Alarm modu nedir?",
-          a: "Pro'da kritik watcher'lara alarm yetkisi verirsin: bildirim sessizce düşmek yerine telefonu gerçekten çaldırır — saniyelerin önemli olduğu restock'lar için tasarlandı. 100 ses arasından seçebilir veya sessiz saat kuralı koyabilirsin.",
-        },
-      ],
-      related: ["fiyat-takibi", "konser-bileti-takibi", "ilac-stok-takibi"],
-    },
-    {
-      slug: "konser-bileti-takibi",
-      icon: "ticket",
-      name: "Konser bileti takibi",
-      metaTitle: "Konser bileti satışa çıkınca haber veren uygulama — Whenly",
-      metaDescription:
-        "Bilet satış açılışını kaçırma: Whenly konser, maç ve etkinlik biletlerinin satışa çıkışını ve iade biletleri izler, açıldığı an bildirim veya alarm gönderir.",
-      h1: "Bilet satışa çıkınca anında haber al",
-      answer:
-        'Whenly, konser ve etkinlik biletlerinin satış açılışını, yeni tarih duyurularını ve iadeden düşen biletleri senin yerine izler; satış açıldığı an bildirim — Pro\'da telefonu çaldıran alarm — gönderir. "Satış açılmadan 5 dakika önce hatırlat" gibi zamanlı kurallar da kurabilirsin.',
-      pains: [
-        'Saha araştırmamızdan: "2 saat bekledim, sıram gelmeden tükendi" — popüler konserlerde açılış anını kaçıran bilet bulamıyor.',
-        "İade/yeniden satış biletleri rastgele anlarda düşüyor; sürekli bakmayan göremiyor.",
-        "Karaborsa fiyatları resmî fiyatın katlarına çıkıyor; erken haber doğrudan para tasarrufu.",
-      ],
-      examples: [
-        "Tarkan Ankara konseri biletleri satışa açılınca anında haber ver.",
-        "Şebnem Ferah konserine resmî fiyatına iade bilet düşünce bildir.",
-        "Galatasaray - Fenerbahçe derbisinin biletleri genel satışa çıkınca haber ver.",
-      ],
-      faq: [
-        {
-          q: "Bileti benim yerime alıyor mu?",
-          a: "Hayır — Whenly haber verir, satın almayı sen yaparsın. Hesabına erişmez, sıraya senin yerine girmez; meşru bir erken-uyarı aracıdır.",
-        },
-        {
-          q: "Satış tarihi belli değilse işe yarar mı?",
-          a: 'Tam da o durumda işe yarar: "satışa açılınca haber ver" dersin, duyuru ve satış sayfası sinyallerini Whenly takip eder. Tarih açıklanınca da, satış başlayınca da haber alırsın.',
-        },
-      ],
-      related: ["stok-takibi", "fiyat-takibi", "vize-randevu-takibi"],
-    },
     {
       slug: "fiyat-takibi",
       icon: "trendingDown",
@@ -387,28 +187,60 @@ export const tr = {
         "Belirlediğin eşiğin altına inince haber al: e-ticaret ürünleri, uçak bileti, otel, kripto ve döviz. Whenly eşik kurallarını doğal dilden anlar. Ücretsiz başla.",
       h1: "Fiyat eşiğin altına inince haber al",
       answer:
-        'Whenly, bir ürünün, uçak biletinin veya varlığın fiyatını senin belirlediğin eşiğe göre izler; eşik aşıldığında anında bildirim gönderir. "Dyson V15 12.000 TL altına inince haber ver" gibi tek cümleyle kurulur; düşüş de yükseliş de izlenebilir.',
-      pains: [
-        "Fiyat alarmı kurmayan kaçırıyor: indirimler ve hata fiyatları (error fare) saatler içinde kapanıyor.",
-        "Uçak biletinde rezervasyon sonrası fiyat düşerse fark iadesi mümkün olabiliyor — ama ancak fark edersen.",
-        'Kripto ve dövizde "fark ettiğimde geçmişti" en sık yakınma; eşik bildirimi temel ihtiyaç.',
+        'Whenly, bir ürünün, uçak biletinin veya varlığın kamuya açık fiyatını senin belirlediğin eşiğe göre takip eder; eşik aşıldığında bildirim gönderir. "Şu ürün 12.000 TL altına inince haber ver" gibi tek cümleyle kurulur; düşüş de yükseliş de izlenebilir.',
+      context: [
+        "Fiyat alarmı kurmadan indirimleri ve fırsatları yakalamak elle takip gerektirir; iyi fırsatlar saatler içinde kapanır.",
+        "Uçak ve otel fiyatları sık değişir; eşiğe yaklaşan fiyatı sürekli kontrol etmek zaman alır.",
+        'Kripto ve dövizde "fark ettiğimde geçmişti" sık yaşanır; eşik bildirimi bu işi senin yerine yapar.',
       ],
       examples: [
-        "Dyson V15 herhangi bir büyük e-ticaret sitesinde 12.000 TL altına inince haber ver.",
-        "İstanbul–Bangkok uçak bileti 8.000 TL altına düşünce anında bildir.",
+        "Şu ürün herhangi bir büyük e-ticaret sitesinde 12.000 TL altına inince haber ver.",
+        "İstanbul–Bangkok uçak bileti 8.000 TL altına düşünce bildir.",
         "Bitcoin 1.500.000 TL üstüne çıkınca haber ver.",
       ],
       faq: [
         {
           q: "Hangi fiyatlar izlenebilir?",
-          a: "Kamuya açık fiyat gösteren her şey: e-ticaret ürünleri, uçak/otel fiyatları, kripto ve döviz kurları. Eşik kuralını doğal dille verirsin; Whenly açık web'deki güncel fiyat sinyallerini değerlendirir.",
+          a: "Kamuya açık fiyat gösteren her şey: e-ticaret ürünleri, uçak/otel fiyatları, kripto ve döviz kurları. Eşik kuralını doğal dille verirsin.",
         },
         {
           q: "Sürekli mi kontrol ediyor?",
-          a: "Watcher'ın sıklığında: ücretsiz planda saatte bire, Pro'da dakikada bire kadar. Eşiğe yaklaşan oynak fiyatlar için sıklığı artırmak Pro'nun tipik kullanım nedeni.",
+          a: "Belirli aralıklarla kontrol eder. Oynak ve eşiğe yakın fiyatlar için daha sık kontrol, Pro'nun tipik kullanım nedenidir.",
         },
       ],
-      related: ["stok-takibi", "kiralik-ev-ilan-takibi", "konser-bileti-takibi"],
+      related: ["stok-takibi", "kiralik-ev-ilan-takibi", "bilet-takibi"],
+    },
+    {
+      slug: "stok-takibi",
+      icon: "pkg",
+      name: "Stok / restock takibi",
+      metaTitle: "Stoğa girince haber veren uygulama (PS5, ekran kartı) — Whenly",
+      metaDescription:
+        'PS5, ekran kartı veya sneaker stoğa girince haber al. Whenly açık satış sayfalarını takip eder; "stokta VE fiyat altı" bileşik koşullarını anlar. Ücretsiz başla.',
+      h1: "Ürün stoğa girince haber al",
+      answer:
+        'Whenly, ürün satış ve duyuru sayfalarını senin yerine takip eder; ürün resmî satıcıda yeniden satışa sunulduğunda bildirim gönderir. Farkı bileşik koşullardır: "stoğa girince VE şu fiyatın altındaysa" gibi kuralları doğal dilden anlar.',
+      context: [
+        "Popüler ürünlerin yeniden stoğu hızlı kapanır; sayfayı elle yenileyen çoğu zaman kaçırır.",
+        "Birden çok satıcıyı aynı anda takip etmek zaman alır; Whenly bunu senin yerine yapar.",
+        "Sadece stok değil, stok + fiyat koşulunu birlikte izlemek basit alarmların yapamadığı şeydir.",
+      ],
+      examples: [
+        "PS5 resmî satıcıda stoğa girince haber ver.",
+        "RTX 5090 ekran kartı 65.000 TL altına stoğa girince haber ver.",
+        "Şu sneaker retail fiyatına yeniden satışa çıkınca bildir.",
+      ],
+      faq: [
+        {
+          q: "Hangi mağazalar izlenebilir?",
+          a: 'Kamuya açık ürün ve duyuru sayfası olan her satıcı. Whenly konu-bazlı çalıştığı için tek bir sayfa adresine bağlı kalmazsın: "resmî satıcıda" dersin, açık web\'deki satış sinyallerini birlikte değerlendirir.',
+        },
+        {
+          q: "Fiyat koşulunu da aynı anda kontrol edebilir mi?",
+          a: 'Evet — bileşik koşullar Whenly\'nin çekirdek özelliği: "stokta VE şu fiyatın altında" tek izlemede tanımlanır.',
+        },
+      ],
+      related: ["fiyat-takibi", "bilet-takibi", "duyuru-takibi"],
     },
     {
       slug: "kiralik-ev-ilan-takibi",
@@ -416,17 +248,17 @@ export const tr = {
       name: "Kiralık ev ilanı takibi",
       metaTitle: "Yeni kiralık ilan çıkınca haber veren uygulama — Whenly",
       metaDescription:
-        "İyi kiralık ilanlar saatler içinde gidiyor. Whenly bölge + fiyat + oda kriterlerine uyan yeni ilanları izler, yayınlandığı an bildirim gönderir. Doğal dille kur.",
-      h1: "Kriterine uyan kiralık ilan çıkınca anında haber al",
+        "İyi kiralık ilanlar saatler içinde gidiyor. Whenly bölge, fiyat ve oda kriterlerine uyan yeni ilanları takip eder, yayınlandığında haber verir. Doğal dille kur.",
+      h1: "Kriterine uyan kiralık ilan çıkınca haber al",
       answer:
-        'Whenly, emlak ilan kaynaklarını bölge, fiyat ve oda sayısı gibi kriterlerine göre senin yerine izler; uyan yeni ilan yayımlandığında anında bildirim gönderir. "Kadıköy\'de 2+1, 30.000 TL altı yeni kiralık ilan çıkınca haber ver" — kurulum bu kadar.',
-      pains: [
-        'Saha araştırmamızdan: "İyi ilan saatler içinde gidiyor" — makul fiyatlı ilanlar aynı gün kapanıyor.',
-        "İlan sitelerinin kendi bildirimleri gecikebiliyor veya kriter esnekliği sınırlı kalıyor.",
-        "Birden çok semti ve koşulu elle taramak günde saatler alıyor.",
+        'Whenly, kamuya açık emlak ilan kaynaklarını bölge, fiyat ve oda sayısı gibi kriterlerine göre senin yerine takip eder; uyan yeni ilan yayımlandığında bildirim gönderir. "Kadıköy\'de 2+1, 30.000 TL altı kiralık ilan çıkınca haber ver" — kurulum bu kadar.',
+      context: [
+        "Makul fiyatlı ilanlar çoğu zaman aynı gün kapanır; ilk görenler avantajlı olur.",
+        "İlan sitelerinin kendi bildirimleri gecikebilir veya kriter esnekliği sınırlı kalır.",
+        "Birden çok semti ve koşulu elle taramak her gün saatler alır.",
       ],
       examples: [
-        "Kadıköy'de 2+1, 30.000 TL altı yeni kiralık ilan çıkınca anında haber ver.",
+        "Kadıköy'de 2+1, 30.000 TL altı yeni kiralık ilan çıkınca haber ver.",
         "Beşiktaş veya Şişli'de eşyalı 1+1 kiralık ilan yayımlanınca bildir.",
         "Ankara Çankaya'da 5 milyon TL altı satılık 3+1 ilanı çıkınca haber ver.",
       ],
@@ -437,43 +269,42 @@ export const tr = {
         },
         {
           q: "Bölge ve fiyatı aynı anda süzebilir mi?",
-          a: "Evet — bileşik koşul desteği tam olarak bunun için var: semt + fiyat üst sınırı + oda sayısı tek cümlede tanımlanır. Pro'da kişisel filtrelerle (bölge/sayısal eşik) tespitler cihazında bir kez daha süzülür.",
+          a: "Evet — semt + fiyat üst sınırı + oda sayısı tek cümlede tanımlanır.",
         },
       ],
-      related: ["fiyat-takibi", "ihale-takibi", "stok-takibi"],
+      related: ["fiyat-takibi", "ihale-takibi", "duyuru-takibi"],
     },
     {
-      slug: "sonuc-takibi",
-      icon: "gradCap",
-      name: "Sonuç ve başvuru takibi",
-      metaTitle: "Sonuçlar açıklanınca haber veren uygulama (KYK, YKS, TOKİ) — Whenly",
+      slug: "bilet-takibi",
+      icon: "ticket",
+      name: "Etkinlik bileti takibi",
+      metaTitle: "Konser/etkinlik bileti satışa çıkınca haber veren uygulama — Whenly",
       metaDescription:
-        "KYK bursu, YKS ek yerleştirme, TOKİ kurası, burs başvurusu: sonuç ve başvuru pencerelerini Whenly izler, açıklandığı an bildirim gönderir. Ücretsiz başla.",
-      h1: "Sonuçlar açıklanınca ilk sen öğren",
+        "Bilet satış açılışını kaçırma: Whenly konser, maç ve etkinlik biletlerinin satışa çıkış duyurusunu takip eder, açıldığında haber verir.",
+      h1: "Bilet satışa çıkınca haber al",
       answer:
-        'Whenly, sınav sonuçlarını, kura listelerini, burs ve başvuru duyurularını senin yerine izler; açıklama yayımlandığı an bildirim gönderir. "KYK burs sonuçları açıklanınca haber ver" veya "KPSS başvurusu açılınca ve son güne 2 gün kala hatırlat" gibi kurallar tek cümleyle kurulur.',
-      pains: [
-        'Saha araştırmamızdan: "e-Devlet\'i sürekli kontrol ediyorum" — sonuç bekleyenler günlerce F5 nöbeti tutuyor.',
-        "Başvuru pencereleri kısa; son gün sistemler yoğunluktan çöküyor, erken davranan kazanıyor.",
-        "Ek yerleştirme ve boş kontenjan listeleri açıklandıktan sonra hızla doluyor.",
+        'Whenly, konser ve etkinlik biletlerinin kamuya açık satış açılış duyurularını ve yeni tarih ilanlarını senin yerine takip eder; satış açıldığı duyurulduğunda bildirim — istersen alarm — gönderir. Tarih belli değilse "satışa açılınca haber ver" dersin.',
+      context: [
+        "Popüler etkinliklerde satış açılış anını kaçıran bilet bulamıyor.",
+        "Satış tarihi çoğu zaman önceden net değil; duyuruyu sürekli takip etmek zor.",
+        "Yeni tarih veya ek seans duyuruları rastgele anlarda yayımlanıyor.",
       ],
       examples: [
-        "KYK burs sonuçları açıklanınca anında haber ver.",
-        "ÖSYM ek yerleştirme boş kontenjan listesi yayımlanınca bildir.",
-        "TOKİ Bursa kurası hak sahibi listesi açıklanınca haber ver.",
-        "KPSS başvuruları açılınca ve son güne 2 gün kala hatırlat.",
+        "Bu sanatçının konseri satışa açıldığı duyurulunca haber ver.",
+        "Takip ettiğim etkinliğe ek tarih/seans açıklanınca bildir.",
+        "Şu maçın biletleri genel satışa çıktığı duyurulunca haber ver.",
       ],
       faq: [
         {
-          q: "e-Devlet'teki kişisel sonucumu görebilir mi?",
-          a: 'Hayır — Whenly giriş gerektiren sistemlere erişmez. İzlediği şey kamuya açık duyurulardır: "sonuçlar açıklandı" haberi, resmî duyuru sayfası, liste yayını. Sonucunu kendi hesabınla saniyeler içinde kontrol edersin; Whenly sana doğru anı kazandırır.',
+          q: "Bileti benim yerime alıyor mu?",
+          a: "Hayır — Whenly haber verir, satın almayı sen yaparsın. Hesabına erişmez, sıraya senin yerine girmez.",
         },
         {
-          q: "Hatırlatma kuralları da var mı?",
-          a: 'Evet — "son güne 2 gün kala hatırlat" gibi zamana bağlı kurallar desteklenir; başvuru pencerelerini kaçırmamak için açılış ve kapanışı aynı watcher\'da izleyebilirsin.',
+          q: "Satış tarihi belli değilse işe yarar mı?",
+          a: 'Evet — "satışa açılınca haber ver" dersin, kamuya açık duyuru ve satış sayfası sinyallerini takip eder.',
         },
       ],
-      related: ["vize-randevu-takibi", "hibe-destek-takibi", "doktor-randevu-takibi"],
+      related: ["stok-takibi", "fiyat-takibi", "duyuru-takibi"],
     },
     {
       slug: "ihale-takibi",
@@ -481,29 +312,28 @@ export const tr = {
       name: "İhale ve RFP takibi",
       metaTitle: "Yeni ihale yayımlanınca haber veren uygulama (EKAP, RFP) — Whenly",
       metaDescription:
-        "EKAP ihaleleri, zeyilnameler, RFP'ler: kriterine uyan ihale yayımlandığı an Whenly haber verir; değişiklikleri ve son teklif tarihlerini de izler.",
+        "Kamu ihale ilanları, düzeltmeler ve RFP'ler: kriterine uyan ihale yayımlandığında Whenly haber verir; değişiklikleri ve son teklif tarihlerini de takip eder.",
       h1: "Sektörüne uyan ihale yayımlanınca haber al",
       answer:
-        "Whenly, kamu ihale ilanlarını (EKAP), zeyilname ve düzeltmeleri, özel sektör RFP duyurularını senin yerine izler; kriterlerine uyan yeni ilan veya değişiklik tespit edildiğinde anında bildirim gönderir. Takım arkadaşların olmadan da 7/24 ihale masası gibi çalışır.",
-      pains: [
-        'Saha araştırmamızdan: "İhaleyi bulmak kolay, değişikliği kaçırmamak zor" — zeyilname ve tarih değişikliğini kaçıran diskalifiye oluyor.',
-        "İtiraz süreleri hak düşürücü: sonuç ilanını geç gören, 10 günlük penceresini kaybediyor.",
-        "Pasif bakılan panolarda yeni ilanlar günler sonra fark ediliyor; rekabet erken görenin.",
+        "Whenly, kamuya açık ihale ilanlarını, düzeltme/zeyilname duyurularını ve özel sektör RFP ilanlarını senin yerine takip eder; kriterlerine uyan yeni ilan veya değişiklik yayımlandığında bildirim gönderir.",
+      context: [
+        "İlanı bulmak kolay, sonraki değişikliği (zeyilname, tarih) kaçırmamak zordur.",
+        "Pasif bakılan panolarda yeni ilanlar günler sonra fark edilir; rekabet erken görenindir.",
+        "Son teklif tarihini kaçırmak doğrudan elenme demektir.",
       ],
       examples: [
-        "EKAP'ta İstanbul'da inşaat malzemesi ihalesi yayımlanınca haber ver.",
-        "Takip ettiğim ihalede zeyilname veya teklif tarihi değişikliği olursa anında bildir.",
-        "Katıldığım ihalenin sonuç ilanı yayımlanınca haber ver.",
+        "İstanbul'da inşaat malzemesi ihalesi yayımlanınca haber ver.",
+        "Takip ettiğim ihalede düzeltme veya teklif tarihi değişikliği olursa bildir.",
         "Takip ettiğim RFP'nin son teklif tarihine 48 saat kala hatırlat.",
       ],
       faq: [
         {
-          q: "EKAP hesabımla bağlanıyor mu?",
-          a: "Hayır — kamuya açık ilan ve duyuru sayfaları izlenir; giriş gerektiren ekranlara erişilmez. İlan metnine her zaman kaynağından kendin ulaşırsın; Whenly sana zamanı kazandırır.",
+          q: "Hesabımla bağlanıyor mu?",
+          a: "Hayır — kamuya açık ilan ve duyuru sayfaları takip edilir; giriş gerektiren ekranlara erişilmez. İlan metnine kaynağından kendin ulaşırsın.",
         },
         {
-          q: "Ekipçe kullanabilir miyiz?",
-          a: "Bugün hesaplar bireyseldir; aynı konuyu izleyen herkes kendi watcher'ını kurar. Takım hesapları yol haritamızda — yapılmamış bir şeyi yapılmış gibi anlatmıyoruz.",
+          q: "Son tarih hatırlatması yapar mı?",
+          a: 'Evet — "son teklif tarihine 2 gün kala hatırlat" gibi zamana bağlı kurallar tanımlanabilir.',
         },
       ],
       related: ["hibe-destek-takibi", "mevzuat-takibi", "rakip-takibi"],
@@ -514,32 +344,31 @@ export const tr = {
       name: "Hibe ve destek takibi",
       metaTitle: "Hibe çağrısı açılınca haber veren uygulama (KOSGEB, TÜBİTAK) — Whenly",
       metaDescription:
-        "KOSGEB, TÜBİTAK, kalkınma ajansı ve Horizon Europe çağrılarını Whenly izler; çağrı açıldığı an ve son başvuru yaklaşınca haber verir. Yılda tek pencereyi kaçırma.",
-      h1: "Hibe çağrısı açıldığı an haber al",
+        "Hibe ve destek programlarının çağrı duyurularını Whenly takip eder; çağrı açıldığında ve son başvuru yaklaşınca haber verir. Yılda tek pencereyi kaçırma.",
+      h1: "Hibe çağrısı açıldığında haber al",
       answer:
-        "Whenly, hibe ve destek programlarının çağrı duyurularını senin yerine izler; başvuru penceresi açıldığında ve son tarihe yaklaşıldığında bildirim gönderir. KOSGEB, TÜBİTAK, kalkınma ajansları, AB/Horizon Europe — hangi kaynağa uyuyorsan tek cümleyle tanımlarsın.",
-      pains: [
-        'Saha araştırmamızdan: bazı çağrılar bütçe dolunca son tarihten önce kapanıyor — "son günden 1 gün önce kapandı" gerçek bir vaka.',
-        "Kalkınma ajansı destekleri çoğu zaman yılda tek çağrı; kaçıran 12 ay bekliyor.",
-        "Araştırmalar fon sağlayıcıların büyük bölümünün geç başvuruyu kabul etmediğini gösteriyor; 2 günlük gecikmeyle on binlerce dolarlık hibe kaçıyor.",
+        "Whenly, hibe ve destek programlarının kamuya açık çağrı duyurularını senin yerine takip eder; başvuru penceresi açıldığında ve son tarihe yaklaşıldığında bildirim gönderir. Hangi kaynağa uyuyorsan tek cümleyle tanımlarsın.",
+      context: [
+        "Bazı çağrılar bütçe dolunca son tarihten önce kapanır; açıldığı an başvurmak en güvenlisidir.",
+        "Birçok program yılda yalnız bir kez çağrı açar; kaçıran uzun süre bekler.",
+        "Son başvuru gününü kaçırmak çoğu programda doğrudan elenme demektir.",
       ],
       examples: [
-        "KOSGEB Ar-Ge destek çağrısı açılınca anında haber ver.",
-        "İSTKA'nın yeni mali destek programı duyurulunca bildir.",
-        "TÜBİTAK 1501 yeni dönem çağrısı açılınca haber ver.",
-        "Horizon Europe'ta izlediğim konu 'forthcoming'ten 'open'a geçince anında bildir.",
+        "Ar-Ge destek çağrısı açılınca haber ver.",
+        "Yeni mali destek programı duyurulunca bildir.",
+        "Takip ettiğim çağrı açıldığında ve son başvuruya 1 hafta kala hatırlat.",
       ],
       faq: [
         {
           q: "Son başvuru hatırlatması yapar mı?",
-          a: 'Evet — açılışı ve son tarihi aynı watcher mantığıyla izlersin: "çağrı açılınca haber ver" + "son başvuruya 1 hafta kala hatırlat". Erken kapanma riskine karşı açıldığı an başvurmak en güvenlisi.',
+          a: 'Evet — açılışı ve son tarihi aynı izlemeyle takip edersin: "çağrı açılınca haber ver" + "son başvuruya 1 hafta kala hatırlat".',
         },
         {
           q: "Hangi fon kaynakları izlenebilir?",
-          a: "Kamuya açık duyuru yapan her program: ulusal ajanslar, bakanlık destekleri, kalkınma ajansları, AB programları, vakıf hibeleri. Sektör ve uygunluk kriterini cümlene eklersen yalnız sana uyan çağrılar bildirilir.",
+          a: "Kamuya açık duyuru yapan her program: ulusal ajanslar, bakanlık destekleri, AB programları, vakıf hibeleri. Sektör ve uygunluk kriterini cümlene eklersin.",
         },
       ],
-      related: ["ihale-takibi", "mevzuat-takibi", "sonuc-takibi"],
+      related: ["ihale-takibi", "mevzuat-takibi", "duyuru-takibi"],
     },
     {
       slug: "mevzuat-takibi",
@@ -547,28 +376,28 @@ export const tr = {
       name: "Mevzuat takibi",
       metaTitle: "Resmî Gazete ve mevzuat değişikliğinde haber veren uygulama — Whenly",
       metaDescription:
-        "Sektörünü ilgilendiren yönetmelik, tebliğ veya KVKK kararı yayımlandığı an haber al. Whenly Resmî Gazete ve kurum duyurularını yapay zekâ ile izler.",
-      h1: "Sektörünü ilgilendiren mevzuat değişince haber al",
+        "Seni ilgilendiren yönetmelik, tebliğ veya karar yayımlandığında haber al. Whenly Resmî Gazete ve kurum duyurularını takip eder. Uyum riskini azalt.",
+      h1: "Seni ilgilendiren mevzuat değişince haber al",
       answer:
-        'Whenly, Resmî Gazete\'yi ve düzenleyici kurum duyurularını senin tanımladığın konu çerçevesinde izler; sektörünü ilgilendiren yönetmelik, tebliğ veya karar yayımlandığında anında bildirim gönderir. "Kanunu bilmemek mazeret sayılmaz" riskini sistematik takiple yönetirsin.',
-      pains: [
-        "Uyum cezaları ağır: KVKK idari para cezaları milyonlarca TL'ye ulaşabiliyor; değişikliği geç fark eden cezayı öğrenince fark ediyor.",
-        "Resmî Gazete her gün yayımlanıyor; ilgili tek maddeyi elle ayıklamak sürdürülebilir değil.",
-        "Gümrük tarifesi ve ithalat tebliği değişiklikleri yanlış beyana ve ek maliyete yol açıyor.",
+        "Whenly, Resmî Gazete'yi ve düzenleyici kurum duyurularını senin tanımladığın konu çerçevesinde takip eder; ilgili yönetmelik, tebliğ veya karar yayımlandığında bildirim gönderir.",
+      context: [
+        "Resmî Gazete her gün yayımlanır; ilgili tek maddeyi elle ayıklamak sürdürülebilir değildir.",
+        "Değişikliği geç fark etmek uyum cezası veya ek maliyet riski doğurur.",
+        "Birden çok kurumun duyurusunu aynı anda izlemek zaman alır.",
       ],
       examples: [
-        "Resmî Gazete'de gıda sektörünü ilgilendiren yönetmelik yayımlanınca haber ver.",
-        "KVKK yeni tebliğ veya ilke kararı yayımlayınca anında bildir.",
-        "Gümrük tarifesinde elektronik ürünleri etkileyen değişiklik olursa haber ver.",
+        "Resmî Gazete'de sektörümü ilgilendiren yönetmelik yayımlanınca haber ver.",
+        "Düzenleyici kurum yeni bir tebliğ veya karar yayımlayınca bildir.",
+        "Gümrük tarifesinde ürün grubumu etkileyen değişiklik olursa haber ver.",
       ],
       faq: [
         {
           q: "Hukuki danışmanlık yerine geçer mi?",
-          a: "Hayır — Whenly erken-uyarı katmanıdır: değişikliği ilk anda görmeni sağlar, yorumunu hukukçun yapar. Her bildirimde kaynak izi vardır; ilgili metne doğrudan gidersin.",
+          a: "Hayır — Whenly erken-uyarı katmanıdır: değişikliği ilk anda görmeni sağlar, yorumunu uzmanın yapar. Bildirimden kaynağa giderek metni kendin okursun.",
         },
         {
           q: "Yalnız Türkiye mevzuatı mı?",
-          a: "Hayır — kamuya açık duyuru yapan her düzenleyici izlenebilir: AB direktifleri (NIS2, DORA, GDPR rehberleri), sektör otoriteleri, standart kuruluşları. Cümleni hangi ülke ve konuyla kurarsan onu izler.",
+          a: "Hayır — kamuya açık duyuru yapan her düzenleyici takip edilebilir: AB direktifleri, sektör otoriteleri, standart kuruluşları. Cümleni hangi ülke ve konuyla kurarsan onu izler.",
         },
       ],
       related: ["ihale-takibi", "rakip-takibi", "hibe-destek-takibi"],
@@ -577,74 +406,99 @@ export const tr = {
       slug: "rakip-takibi",
       icon: "eye",
       name: "Rakip ve marka takibi",
-      metaTitle: "Rakip fiyat, lansman ve marka krizi takibi — Whenly",
+      metaTitle: "Rakip fiyat, lansman ve marka takibi uygulaması — Whenly",
       metaDescription:
-        "Rakibin fiyat değiştirdiğinde, ürün duyurduğunda veya markan hakkında olumsuz dalga başladığında ilk sen öğren. Whenly açık web'i yapay zekâ ile izler.",
-      h1: "Rakibin hamlesini ve markanın nabzını ilk sen gör",
+        "Rakibin fiyat değiştirdiğinde, ürün duyurduğunda veya markan kamuya açık olarak konuşulduğunda haber al. Whenly açık web'i senin yerine takip eder.",
+      h1: "Rakibin hamlesini ve markanın nabzını gör",
       answer:
-        "Whenly, rakiplerinin fiyat sayfalarındaki değişiklikleri, ürün ve basın duyurularını, işe alım sinyallerini ve markan hakkındaki kamuya açık konuşmaları izler; kayda değer bir gelişme tespit edildiğinde anında bildirim gönderir. Pazarlama ekibi olmayanlar için de çalışan bir istihbarat hattıdır.",
-      pains: [
-        "Rakip fiyat değişikliğini geç fark etmek doğrudan kayıp: teklif ve tahminler eski fiyata göre yapılmış oluyor.",
-        "İş ilanları erken sinyaldir — şirketler ürünü duyurmadan aylar önce o ürün için işe alır.",
-        "Kriz iletişimi araştırmaları krizlerin üçte ikisinden fazlasının mesai saatleri dışında başladığını gösteriyor; ilk saatler kritik.",
+        "Whenly, rakiplerinin kamuya açık fiyat sayfalarındaki değişiklikleri, ürün ve basın duyurularını ve markan hakkında kamuya açık konuşmaları takip eder; kayda değer bir gelişme yayımlandığında bildirim gönderir.",
+      context: [
+        "Rakip fiyat değişikliğini geç fark etmek tekliflerin ve tahminlerin eski veriye dayanması demektir.",
+        "Ürün ve basın duyuruları kaçırıldığında pazardaki hamleyi geç öğrenirsin.",
+        "Marka hakkında olumsuz konuşma erken görülürse, büyümeden yanıt verme şansın olur.",
       ],
       examples: [
-        "Rakibimin fiyat sayfasında değişiklik olursa haber ver.",
-        "Rakibim yeni ürün veya basın açıklaması duyurursa anında bildir.",
-        "Markam hakkında sosyal medyada olumsuz tonda yoğunlaşma olursa haber ver.",
+        "Rakibimin kamuya açık fiyat sayfasında değişiklik olursa haber ver.",
+        "Rakibim yeni ürün veya basın açıklaması duyurursa bildir.",
+        "Markam kamuya açık platformlarda olumsuz tonda öne çıkarsa haber ver.",
       ],
       faq: [
         {
           q: "Bu etik mi?",
-          a: "Evet — yalnız kamuya açık bilgiler izlenir: rakibin kendi yayımladığı fiyat sayfası, basın bülteni, ilanlar ve herkese açık konuşmalar. Gizli veriye, kapalı hesaplara veya kişisel takibe asla girilmez; kişileri izlemek kullanım koşullarımızda açıkça yasaktır.",
+          a: "Evet — yalnız kamuya açık bilgiler izlenir: rakibin kendi yayımladığı fiyat sayfası, basın bülteni ve herkese açık konuşmalar. Gizli veriye, kapalı hesaplara veya kişisel takibe girilmez; kişileri izlemek kullanım koşullarında açıkça yasaktır.",
         },
         {
           q: "Marka takibi neleri kapsar?",
-          a: "Markanın adının geçtiği kamuya açık içerikler: haberler, forumlar, şikâyet platformları. Olumsuz yoğunlaşma erken tespit edilirse kriz büyümeden yanıt verirsin.",
+          a: "Markanın adının geçtiği kamuya açık içerikler: haberler, forumlar, herkese açık paylaşımlar.",
         },
       ],
       related: ["mevzuat-takibi", "ihale-takibi", "fiyat-takibi"],
+    },
+    {
+      slug: "duyuru-takibi",
+      icon: "megaphone",
+      name: "Duyuru ve sayfa takibi",
+      metaTitle: "Bir sayfa yeni duyuru/sonuç yayımlayınca haber veren uygulama — Whenly",
+      metaDescription:
+        "Takip ettiğin sayfa yeni bir duyuru, sonuç listesi veya güncelleme yayımlayınca haber al. Whenly kamuya açık sayfaları senin yerine takip eder.",
+      h1: "Bir sayfa yeni bir şey yayımlayınca haber al",
+      answer:
+        "Whenly, takip ettiğin kamuya açık sayfayı veya konuyu senin yerine kontrol eder; yeni bir duyuru, sonuç listesi ya da kayda değer bir güncelleme yayımlandığında bildirim gönderir. Sürekli F5'lemeyi bırakırsın.",
+      context: [
+        "Bir duyuruyu beklerken aynı sayfayı günde onlarca kez yenilemek zaman kaybıdır.",
+        "Önemli güncellemeler çoğu zaman sessizce yayımlanır; bakmadığın an kaçar.",
+        "Aynı anda birden çok kaynağı izlemek elle sürdürülebilir değildir.",
+      ],
+      examples: [
+        "Takip ettiğim sayfada yeni bir duyuru yayımlanınca haber ver.",
+        "Beklediğim sonuç listesi kamuya açık olarak yayımlanınca bildir.",
+        "Bu sitede fiyat veya koşul güncellenince haber ver.",
+      ],
+      faq: [
+        {
+          q: "Giriş gerektiren sayfaları da izler mi?",
+          a: "Hayır — yalnız kamuya açık, giriş/şifre/captcha gerektirmeyen sayfalar takip edilir. Kişisel hesabındaki bir sonucu sen kontrol edersin; Whenly sana doğru anı kazandırır.",
+        },
+        {
+          q: "Belirli bir sayfayı mı izliyor?",
+          a: "Hem belirli bir sayfayı hem de bir konuyu izleyebilir: ister adresini ver, ister ne beklediğini anlat.",
+        },
+      ],
+      related: ["mevzuat-takibi", "fiyat-takibi", "stok-takibi"],
     },
   ],
 
   compare: {
     slug: "karsilastirma",
-    metaTitle: "Whenly vs Google Alerts vs Visualping vs Distill — karşılaştırma",
+    metaTitle: "Whenly vs Google Alerts, Visualping, Distill — karşılaştırma",
     metaDescription:
-      "Olay izleme araçları karşılaştırması: Whenly, Google Alerts, Visualping ve Distill hangi işte iyi? Doğal dil kuralları, yapay zekâ doğrulaması ve alarm farkları.",
-    h1: "Whenly'yi alternatifleriyle dürüstçe karşılaştırdık",
+      "Olay izleme araçları karşılaştırması: Whenly, Google Alerts, Visualping ve Distill hangi işte iyi? Doğal dil kuralları, bileşik koşullar ve alarm farkları.",
+    h1: "Whenly'yi alternatifleriyle karşılaştırdık",
     answer:
-      'Kısa cevap: belirli BİR sayfanın değişimini izlemek istiyorsan Visualping ve Distill olgun araçlardır; Google\'da yeni içerik e-postası istiyorsan Google Alerts ücretsizdir. Whenly farklı bir soruyu çözer: "şu OLAY gerçekleşince haber ver" — sayfa adresi bilmeden, doğal dille, yapay zekâ doğrulamasıyla ve telefonu çaldıran alarmla.',
+      'Kısa cevap: belirli BİR sayfanın değişimini izlemek istiyorsan Visualping ve Distill olgun araçlardır; Google\'da yeni içerik e-postası istiyorsan Google Alerts ücretsizdir. Whenly farklı bir soruyu çözer: "şu OLAY gerçekleşince haber ver" — sayfa adresi bilmeden, doğal dille, bileşik koşullarla ve telefonu çaldıran alarmla.',
     intro:
       "Karşılaştırmayı kendi lehimize eğmeden yazdık; her aracın iyi olduğu işi açıkça söylüyoruz. Yanlış gördüğün bir bilgi varsa bize yaz, düzeltelim.",
-    tableCaption: "Olay izleme araçlarının özellik karşılaştırması (Haziran 2026)",
+    tableCaption: "Olay izleme araçlarının özellik karşılaştırması",
     colSelf: "Whenly",
     rows: [
       {
         f: "Temel yaklaşım",
-        self: 'Konu/olay-bazlı: "şu olunca haber ver" cümlesi',
-        ga: "Anahtar kelime: Google dizinine giren yeni içerik",
-        vp: "Sayfa-bazlı: belirli URL'deki değişiklik",
-        di: "Sayfa-bazlı: belirli URL'deki değişiklik",
+        self: '"Şu olunca haber ver" cümlesi (konu/olay-bazlı)',
+        ga: "Anahtar kelime: yeni içerik",
+        vp: "Belirli URL'deki değişiklik",
+        di: "Belirli URL'deki değişiklik",
       },
       {
         f: 'Doğal dilde bileşik koşul ("stok VE fiyat altı")',
         self: "Var — çekirdek özellik",
         ga: "Yok",
-        vp: "Sınırlı (alan/anahtar kelime seçimi)",
-        di: "Sınırlı (seçici/regex ile teknik kurulum)",
-      },
-      {
-        f: 'Yapay zekâ ile "olay gerçekleşti mi" doğrulaması',
-        self: "Var — güven yüzdesi ve gerekçeyle",
-        ga: "Yok",
-        vp: "Kısmi (değişiklik özeti)",
-        di: "Yok",
+        vp: "Sınırlı",
+        di: "Sınırlı (teknik kurulum)",
       },
       {
         f: "Sayfa adresi bilmek gerekir mi?",
-        self: "Gerekmez — açık web'de konu izlenir",
-        ga: "Gerekmez (Google dizini)",
+        self: "Gerekmez — konu izlenir",
+        ga: "Gerekmez",
         vp: "Gerekir",
         di: "Gerekir",
       },
@@ -652,29 +506,29 @@ export const tr = {
         f: "Telefonu çaldıran alarm modu",
         self: "Var (Pro)",
         ga: "Yok (e-posta)",
-        vp: "Yok (e-posta/entegrasyon)",
-        di: "Kısmi (uygulama içi sesli bildirim)",
+        vp: "Yok",
+        di: "Kısmi",
       },
       {
-        f: "Tespit gerekçesi/şeffaflık",
-        self: "Her bildirimde güven yüzdesi + kaynak izi",
-        ga: "Bağlantı listesi",
-        vp: "Görsel fark (diff)",
-        di: "Metin farkı (diff)",
+        f: "Kendi dilinde kurulum (11 dil)",
+        self: "Var",
+        ga: "Kısmi",
+        vp: "Kısmi",
+        di: "Kısmi",
       },
       {
         f: "Ücretsiz plan",
-        self: "3 watcher, saatte bire kadar kontrol",
+        self: "3 izleme",
         ga: "Tamamen ücretsiz",
-        vp: "Sınırlı ücretsiz kontenjan",
-        di: "Sınırlı yerel izleme",
+        vp: "Sınırlı kontenjan",
+        di: "Sınırlı",
       },
       {
         f: "Şunda iyi",
-        self: "Olay bekleme: randevu, stok, sonuç, ihale, mevzuat",
-        ga: "Marka/konu hakkında yeni içerik e-postası",
+        self: "Olay bekleme: fiyat, stok, ilan, ihale, mevzuat",
+        ga: "Konu hakkında yeni içerik",
         vp: "Tek sayfanın görsel değişimi",
-        di: "Teknik kullanıcı için sayfa diff'i",
+        di: "Teknik kullanıcı için sayfa farkı",
       },
     ],
     afterTable:
@@ -682,34 +536,34 @@ export const tr = {
     faq: [
       {
         q: "Whenly, Google Alerts'ün yerine geçer mi?",
-        a: "Farklı işler: Google Alerts, Google dizinine giren yeni içeriği e-postayla listeler; olay olup olmadığına karar vermez. Whenly olayı tanımlamanı ister, gerçekleşip gerçekleşmediğini yapay zekâ ile değerlendirir ve telefonuna anında bildirim/alarm gönderir. Birçok kullanıcı ikisini birlikte kullanır.",
+        a: "Farklı işler: Google Alerts yeni içeriği e-postayla listeler. Whenly olayı tanımlamanı ister ve gerçekleştiğinde telefonuna bildirim/alarm gönderir. Birçok kullanıcı ikisini birlikte kullanır.",
       },
       {
         q: "Visualping/Distill dururken neden Whenly?",
-        a: 'O araçlar sayfa-bazlıdır: izlenecek URL\'yi senin bulman gerekir ve "değişiklik" her zaman "beklediğin olay" değildir. Whenly konu-bazlıdır: "İstanbul\'da standart İngiltere vize randevusu açılınca" dersin; hangi sayfada görünürse görünsün olayı arar ve yapay zekâ "gerçekten açıldı mı" kararını verir.',
+        a: 'O araçlar sayfa-bazlıdır: izlenecek URL\'yi senin bulman gerekir. Whenly konu-bazlıdır: "şu olunca" dersin, gelişmeyi hangi sayfada görünürse görünsün arar; bileşik koşul ve alarm ekler.',
       },
     ],
   },
 
   about: {
     slug: "hakkinda",
-    metaTitle: "Whenly hakkında — kim yapıyor, nasıl çalışıyor, neye inanıyoruz",
+    metaTitle: "Whenly hakkında — ne yapar, kimler için",
     metaDescription:
-      "Whenly bağımsız geliştirilen, gizlilik sınırı mimariye gömülü bir olay-izleme uygulamasıdır. Dürüst sınırlarımızı ve çalışma ilkelerimizi açıkça yazıyoruz.",
+      "Whenly, izlemesini istediğin gelişmeyi senin yerine takip eden bağımsız bir uygulamadır. Ne yaptığını ve sınırlarını açıkça yazıyoruz.",
     h1: "Whenly hakkında",
     paras: [
-      "Whenly, tek bir gözlemden doğdu: insanlar hayatlarını etkileyen bir gelişmeyi beklerken aynı sayfayı günde onlarca kez elle yeniliyor — vize randevusu, ilaç stoğu, sınav sonucu, ihale ilanı. Bu nöbeti yazılım tutabilir.",
-      'Ürünü şekillendiren şey saha araştırmasıdır: forumlardan, şikâyet platformlarından ve mağaza yorumlarından, "böyle bir uygulama olsa" diyenler değil, sorunu bizzat yaşayan insanların 50 gerçek talebi derlendi. Özellik listesi bu talep listesidir.',
-      "Mimari iki ilkeye oturur. Birincisi gizlilik sınırı: serbest metnin kişisel-veri bölgesinde kalır; dış arama ve yapay zekâ servislerine yalnız kişisel ayrıntılardan arındırılmış konu gider. İkincisi dürüstlük: vermediğimiz garantiyi yazmayız — saniyesinde bildirim, hiç kaçırmama, sıfır yanlış alarm vadetmiyoruz; güven yüzdesi ve kaynak iziyle her tespitin hesabını veriyoruz.",
-      "Whenly bağımsız olarak geliştiriliyor; arkasında reklam bütçesi değil, gerçek taleplerden damıtılmış bir ürün var. Sorular, düzeltmeler ve istekler için her zaman ulaşabilirsin.",
+      "Whenly basit bir fikirden doğdu: hayatını etkileyen bir gelişmeyi beklerken aynı sayfayı sürekli yenilemek zorunda kalmamalısın. Bu takibi bir yazılım yapabilir.",
+      "İzlemek istediğin şeyi kendi cümlenle anlatırsın; Whenly açık web kaynaklarını belirli aralıklarla senin yerine kontrol eder ve aradığın gelişme göründüğünde bildirim — istersen alarm — gönderir.",
+      "İki ilkeye bağlıyız. Birincisi gizlilik: verini satmayız, reklam için kullanmayız; istediğin an indirir veya kalıcı silersin. İkincisi dürüstlük: vermediğimiz garantiyi yazmayız — saniyesinde bildirim veya hiçbir şeyi kaçırmama sözü vermeyiz, ve giriş/şifre arkasındaki sayfalara erişmediğimizi açıkça belirtiriz.",
+      "Whenly bağımsız olarak geliştiriliyor. Sorular, düzeltmeler ve istekler için her zaman ulaşabilirsin.",
     ],
     factsHeading: "Künye",
     facts: [
-      { k: "Ürün", v: "Whenly — yapay zekâ destekli olay izleme ve bildirim uygulaması" },
-      { k: "Platformlar", v: "Web uygulaması + Android (aynı koddan); bildirimler telefona push" },
+      { k: "Ürün", v: "Whenly — izleme ve bildirim uygulaması" },
+      { k: "Platformlar", v: "Web uygulaması + Android; bildirimler telefona gelir" },
       { k: "Diller", v: "Türkçe dahil 11 arayüz dili" },
-      { k: "Fiyat", v: "Ücretsiz plan (3 watcher) + Pro abonelik" },
-      { k: "Veri ilkesi", v: "PII dış servislere gitmez; sat-ma, reklam-yok, profilleme-yok" },
+      { k: "Fiyat", v: "Ücretsiz plan (3 izleme) + Pro abonelik" },
+      { k: "Veri ilkesi", v: "Satılmaz, reklam yok; istediğin an indir veya sil" },
       { k: "İletişim", v: "__EMAIL__" },
     ],
   },
@@ -725,6 +579,17 @@ export const tr = {
     updatedLabel: "Son güncelleme",
     versionLabel: "Sürüm",
     canonicalNote:
-      "Bu metin uygulama içindeki kanonik metnin birebir kopyasıdır; fark olursa uygulamadaki sürüm geçerlidir.",
+      "Bu metin uygulama içindeki metnin kopyasıdır; fark olursa uygulamadaki sürüm geçerlidir.",
+  },
+
+  /** Çözüm sayfası ortak dizgileri — render'da ternary/elle eşleme YOK (tek kaynak). */
+  ucStrings: {
+    context: "Nerede işine yarar?",
+    examples: "Whenly'ye böyle söylersin",
+    exHint: "Cümleyi kopyala, uygulamada yapıştır — izleme hazır.",
+    related: "İlgili çözümler",
+    faq: "Sık sorulanlar",
+    copy: "Kopyala",
+    copied: "Kopyalandı",
   },
 };

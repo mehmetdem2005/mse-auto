@@ -31,9 +31,11 @@ tabanı: **`docs/GEO-pazarlama-mimarisi.md`** (kanonik) · mimari karar: ADR-090
 ## Yeni use-case sayfası eklemek
 
 1. `content.tr.mjs` → `useCases`'e nesne ekle (slug/icon/metaTitle/metaDescription/h1/
-   answer/pains/examples/faq/related). `content.en.mjs`'e eşleniğini ekle.
+   answer/context/examples/faq/related). `content.en.mjs`'e eşleniğini ekle.
 2. `build.mjs` → `SLUG_MAP`'e TR↔EN slug çiftini ekle (test simetriyi zorlar).
-3. Yazım kuralları (GEO): ilk paragraf 40-60 kelimelik bağımsız cevap · H2'ler soru
-   biçiminde · istatistikler yalnız saha araştırmasından (uydurma yok) · kıtlık/aciliyet
+3. Yazım kuralları (GEO + kullanıcı yönergesi): ilk paragraf 40-60 kelimelik bağımsız
+   cevap · H2'ler soru biçiminde · NE yaptığını anlat, NASIL'ı açma (yalnız "belirli
+   aralıklarla tarar") · iç mekanik/strateji yazma · **yalnız gerçekten erişilebilir
+   (giriş/şifre/captcha'sız) senaryo** ekle · uydurma istatistik yok · kıtlık/aciliyet
    dili yok · vermediğimiz garanti yazılmaz · sayfa <1000 kelime.
-4. `node --test test.mjs` — kırık link/uzunluk/simetri testleri geçmeli.
+4. `node --test test.mjs` — kırık link/uzunluk/simetri/ikon-parite testleri geçmeli.

@@ -226,25 +226,6 @@ export function homeBody(L) {
   </div>
 </section>
 
-<section class="sec" aria-labelledby="why-h">
-  <div class="wrap">
-    <h2 id="why-h" class="sec-h rv">${esc(H.statHeading)}</h2>
-    <div class="grid3">
-      ${H.stats
-        .map(
-          (
-            /** @type {any} */ s,
-            /** @type {number} */ i,
-          ) => `<div class="stat rv" style="--d:${i * 70}ms">
-        <p class="stat-n">${esc(s.n)} <span>${esc(s.unit)}</span></p>
-        <p class="stat-t">${esc(s.t)}</p>
-      </div>`,
-        )
-        .join("\n      ")}
-    </div>
-  </div>
-</section>
-
 <section class="sec" id="how" aria-labelledby="how-h">
   <div class="wrap">
     <h2 id="how-h" class="sec-h rv">${esc(H.howHeading)}</h2>
@@ -357,7 +338,7 @@ function breadcrumb(L, items) {
 export function useCaseBody(L, u) {
   const related = L.useCases.filter((/** @type {any} */ r) => u.related.includes(r.slug));
   const S = L.ucStrings;
-  const painsHeading = S.pains;
+  const contextHeading = S.context;
   const exHeading = S.examples;
   const exHint = S.exHint;
   const relHeading = S.related;
@@ -375,14 +356,14 @@ export function useCaseBody(L, u) {
   </div>
 </section>
 
-<section class="sec" aria-labelledby="pain-h">
+<section class="sec" aria-labelledby="ctx-h">
   <div class="wrap narrow">
-    <h2 id="pain-h" class="sec-h rv">${esc(painsHeading)}</h2>
+    <h2 id="ctx-h" class="sec-h rv">${esc(contextHeading)}</h2>
     <ul class="pains">
-      ${u.pains
+      ${u.context
         .map(
           (/** @type {string} */ p, /** @type {number} */ i) =>
-            `<li class="rv" style="--d:${i * 70}ms">${icon("alertTriangle", 18)}<span>${esc(p)}</span></li>`,
+            `<li class="rv" style="--d:${i * 70}ms">${icon("check", 18)}<span>${esc(p)}</span></li>`,
         )
         .join("\n      ")}
     </ul>

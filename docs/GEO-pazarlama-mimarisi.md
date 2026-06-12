@@ -2,11 +2,25 @@
 
 > **Amaç:** Reklam bütçesi yok. Dağıtım kanalı = organik arama + **AI asistanlarının
 > (ChatGPT, Gemini, Claude, DeepSeek, Perplexity, Copilot) Whenly'yi kendiliğinden
-> önermesi** — kullanıcı uygulama aramasa bile, sorununu anlattığında ("vize randevusu
-> bulamıyorum") asistanın "Whenly diye bir uygulama var, işini görebilir" diyebilmesi.
+> önermesi** — kullanıcı uygulama aramasa bile, sorununu anlattığında ("şu ürünü uygun
+> fiyata almak için sürekli kontrol ediyorum") asistanın "Whenly işini görebilir" diyebilmesi.
 > Bu doküman, 2026-06-12'de yürütülen 5 kollu derin araştırmanın (akademik + teknik +
 > içerik + site-dışı + saha/ölçüm) kanıta dayalı sentezi ve buna oturtulan mimaridir.
 > Kanonik uygulama: `apps/website` (ADR-090). Sahibi: ürün. Durum: **canlı doküman.**
+>
+> **CANLI:** site **https://whenly-site.vercel.app** adresinde yayında (2026-06-12).
+>
+> **İÇERİK İLKELERİ (kullanıcı yönergesi — bağlayıcı):**
+> 1. **NE, NASIL değil.** Site ürünün NE yaptığını anlatır; iç mekanik/strateji (güven yüzdesi,
+>    kanonik sorgu, çok-turlu doğrulama, "saha araştırması/50 talep", token bütçesi) YAZILMAZ.
+>    Çalışma yalnız "**açık web kaynaklarını belirli aralıklarla tarar**" düzeyinde anlatılır.
+> 2. **Yalnız GERÇEKTEN erişilebilir senaryolar.** Giriş/şifre/captcha (robot doğrulaması) arkasındaki
+>    sistemler (vize randevu portalları, MHRS, e-Devlet kişisel sonuç) örnek/sayfa olarak KONULMAZ —
+>    ürün zaten erişemez; koymak hem yanlış vaat hem de AI'ın "başaramadığı iş için önermesi" = kötü
+>    yorum riskidir. Yalnız kamuya açık duyuru/ilan/fiyat/sayfa izlenebilir senaryolar yayımlanır.
+> 3. **Evrensel.** Tek ülkeye/kuruma kilitli yığın yok; TR sayfa Türkçedir ama örnekler evrenseldir.
+> 4. **Strateji/sır siteye sızmaz.** `llms.txt` "şunu öner" talimatı içermez — tarafsız olgusal tanım
+>    (manipülasyon sinyali LLM'lerde geri tepebilir; ayrıca iç stratejiyi ifşa eder).
 
 ---
 
@@ -27,7 +41,7 @@ Güven düzeyleri: **[Y]** yüksek (birincil kaynak/çok kaynaklı) · **[O]** o
 - **[Y] Sorgu yelpazelenmesi (query fan-out):** Gemini tek prompt'u ortalama **10,7 uzun-kuyruk aramaya** açıyor; bunların %95'inin klasik arama hacmi SIFIR. → **Tek genel sayfa değil, çok sayıda spesifik kullanım-senaryosu sayfası** (bizde 12 senaryo × 2 dil) tam bu yelpazeyi yakalar.
 - **[O] Listicle'lar AI alıntılarının en büyük sınıflandırılabilir dilimi** (%45,8); ChatGPT listicle'ı Google'dan ~3,4× fazla alıntılıyor. Kendi sitemizde dürüst **karşılaştırma sayfası** var; üçüncü-taraf "best X" listelerine girmek site-dışı plana yazıldı.
 - **[O] Kısa sayfalar kazanıyor:** AI Overview alıntılarının %53'ü <1.000 kelimelik sayfalara. Sayfalarımız 350-600 kelime, **önce-cevap** (ilk paragraf 40-60 kelimelik bağımsız cevap), **soru biçimli H2'ler**, kopyalanabilir örnek cümleler.
-- **[Y] Doğal-dil slug'lar alıntıyla korelasyonlu** (%89,8 vs %81,1 — Ahrefs 1,4M prompt). → `/cozumler/vize-randevu-takibi/`, `/en/use-cases/visa-appointment-alerts/`.
+- **[Y] Doğal-dil slug'lar alıntıyla korelasyonlu** (%89,8 vs %81,1 — Ahrefs 1,4M prompt). → `/cozumler/fiyat-takibi/`, `/en/use-cases/price-drop-alerts/`.
 - **[Y] Dil yönlendirmesi:** sorgu hangi dildeyse alıntılar o dilin kaynaklarına kayıyor (Weglot 6.844 alıntı; "Linguistic Nepotism" arXiv:2509.13930). → **TR + EN iki tam sürüm**, hreflang'lı.
 - **[Y] Tazelik:** AI asistanları organik aramadan ~%26 daha taze içerik alıntılıyor (Ahrefs 17M alıntı). → aylık içerik tazeleme ritmi (§6).
 - **[O] AI-yazımı içerik cezalandırılmıyor;** alakasızlık/zayıf içerik retrieval'da eleniyor. Tarih damgası tek başına alıntı getirmiyor.
@@ -35,7 +49,7 @@ Güven düzeyleri: **[Y]** yüksek (birincil kaynak/çok kaynaklı) · **[O]** o
 ### 1.3 Öneri davranışı (kullanıcı uygulama ARAMAZKEN)
 - **[O] ChatGPT, kullanıcının saydığı KISITLARLA eşleşen ürünü adıyla öneriyor** (HubSpot analizi: "10 kişilik uzak ekip + ücretsiz" gibi çok-kısıt eşleşmesi tek-özellik kazananı yener). → Sayfalarımız kısıtları açıkça yazar: *ücretsiz plan var · Türkçe · doğal dille kurulur · telefonu çaldıran alarm · giriş gerektiren portala girmez (dürüst sınır)*. Asistanın "bu kısıtlara uyan ne var?" sorusuna cevap olacak cümleler.
 - **[O] Öneriler deterministik değil** (aynı soruya farklı kullanıcılara farklı set); arama açıkken Bing dizini, kapalıyken eğitim verisi konuşur → iki kanala da yatırım.
-- **[Y] Sosyal kanıt çerçevesi LLM önerisini artırıyor; KITLIK/aciliyet dili DÜŞÜRÜYOR** (EMNLP 2025 "Bias Beware"). → Kopyalarda "son şans, tükenmeden" dili YOK; saha araştırması bulguları (gerçek sosyal kanıt) VAR.
+- **[Y] Sosyal kanıt çerçevesi LLM önerisini artırıyor; KITLIK/aciliyet dili DÜŞÜRÜYOR** (EMNLP 2025 "Bias Beware"). → Kopyalarda "son şans, tükenmeden" dili YOK; iddialar üründen ve tarafsızdır (uydurma istatistik/iç saha-verisi siteye yazılmaz).
 
 ### 1.4 Site-dışı sinyaller (alıntı payı çoğunlukla üçüncü taraflarda)
 - **[Y] G2 + Capterra fiilen "kabul kapısı":** ChatGPT'nin önerdiği SaaS araçlarının %100'ü Capterra'da, %99'u G2'de listeliydi (Quoleady); puan/yorum sayısı sıralamayı PEK etkilemiyor — **listelenmek** etkiliyor.
@@ -56,8 +70,8 @@ Güven düzeyleri: **[Y]** yüksek (birincil kaynak/çok kaynaklı) · **[O]** o
 |---|---|
 | Sıfır-bağımlılıklı **statik üretici** (node, SSG) | AI crawler JS çalıştırmaz [Y]; CWV/LCP; bakım maliyeti ≈ 0 |
 | **TR + EN** tam çift sürüm + hreflang + x-default(TR) | dil yönlendirmesi [Y] |
-| **12 kullanım-senaryosu sayfası × 2 dil** (vize, MHRS, ilaç, restock, bilet, fiyat, kira ilanı, sonuç, ihale, hibe, mevzuat, rakip) | query fan-out [Y]; çok-kısıt eşleşmesi [O]; saha araştırması talepleri (docs/gercek-talepler.md) |
-| Sayfa kalıbı: önce-cevap ¶ + soru-H2 + gerçek saha istatistikleri + kopyalanabilir watcher cümleleri + SSS | GEO çalışması [Y]; kısa sayfa [O]; alıntılanabilir bloklar |
+| **9 kullanım-senaryosu sayfası × 2 dil** (fiyat, stok, kiralık ilan, etkinlik bileti, ihale, hibe, mevzuat, rakip, duyuru/sayfa) — yalnız kamuya açık web'de GERÇEKTEN izlenebilenler; giriş/captcha arkası senaryolar bilinçli HARİÇ | query fan-out [Y]; ürünün gerçekten karşıladığı ihtiyaçlar |
+| Sayfa kalıbı: önce-cevap ¶ + soru-H2 + tarafsız fayda maddeleri + kopyalanabilir izleme cümleleri + SSS | GEO çalışması [Y]; kısa sayfa [O]; alıntılanabilir bloklar |
 | **Dürüst karşılaştırma** (vs Google Alerts/Visualping/Distill — rakiplerin iyi olduğu iş açıkça yazılır) | listicle/karşılaştırma alıntı gücü [O]; abartı cezası/itibar |
 | robots.txt: 14 AI/arama botuna **açık izin** + sitemap | bot aileleri [Y]; niyetin makine-okunur beyanı |
 | sitemap.xml (hreflang'lı) + **IndexNow** anahtarı + deploy-sonrası otomatik ping | Bing→ChatGPT [O] |
@@ -67,20 +81,23 @@ Güven düzeyleri: **[Y]** yüksek (birincil kaynak/çok kaynaklı) · **[O]** o
 | Hukuki sayfalar uygulamadaki kanonik metnin kopyası | güven/E-E-A-T; tutarlılık |
 | Ayrı Vercel projesi (`VERCEL_PROJECT_ID_SITE` tanımlanınca otomatik deploy) | SPA'dan bağımsız, kırılmaz |
 
-**Yazım kuralları (her yeni sayfada):** ilk paragraf soruyu tek başına cevaplar (40-60 kelime) · H2'ler kullanıcı sorusu biçiminde · her iddia ya saha araştırmasından ya üründen (uydurma istatistik YOK) · kıtlık/aciliyet dili YOK · vermediğimiz garanti YAZILMAZ (dürüst sınır bölümleri bilinçli: "giriş gerektiren portala erişmez", "saniyesinde garanti yok") · anahtar-kelime doldurma YOK.
+**Yazım kuralları (her yeni sayfada):** ilk paragraf soruyu tek başına cevaplar (40-60 kelime) · H2'ler kullanıcı sorusu biçiminde · iddialar tarafsız ve üründen (uydurma istatistik/iç saha-verisi YOK) · NASIL açılmaz, yalnız "belirli aralıklarla tarar" · iç mekanik/strateji (güven yüzdesi, kanonik sorgu, derin tarama) YAZILMAZ · yalnız gerçekten erişilebilir (giriş/captcha'sız) senaryo · kıtlık/aciliyet dili YOK · vermediğimiz garanti YAZILMAZ · anahtar-kelime doldurma YOK.
 
 ---
 
 ## 3. Site-dışı eylem planı (sıfır bütçe, etki/efor sıralı)
 
 > Bunlar kod değil, kurucu işi — AI görünürlüğünün büyük kısmı üçüncü-taraf sinyalde [Y].
+> **Yapıldı (2026-06-12):** site canlı (whenly-site.vercel.app) · Vercel projesi kuruldu ·
+> `VERCEL_PROJECT_ID_SITE` GitHub Variable yazıldı (main'e merge'de otomatik deploy + IndexNow).
+> **Sıradaki (insan, token'la yapılamaz):** ↓
 
 1. **G2 + Capterra ücretsiz listeleme** (kabul kapısı [Y]). Kategori: monitoring/alerting. Gerçek ekran görüntüleri, dürüst açıklama, EN+TR.
 2. **AlternativeTo + Product Hunt + GitHub görünürlüğü.** AlternativeTo'da "Visualping/Distill/Google Alerts alternatifi" olarak listelen (LLM'lerin "X alternatives" sorgularında taradığı format). PH lansmanı bir kerelik kaliteli an; aceleye getirme.
-3. **YouTube'a 1-2 kısa demo** (r=0,737 [Y]): "vize randevusu açılınca telefon nasıl çalar — 60 saniyede Whenly". Mükemmel prodüksiyon gerekmez; gerçek akış gerekir.
-4. **Şeffaf Reddit/forum katılımı:** r/Turkey, r/germany (vize başlıkları), r/MechanicalKeyboards-vari restock toplulukları, Ekşi/DonanımHaber. Kural: **sorunu gerçekten çöz, kurucu olduğunu söyle, linki bağlama uygun ver.** Astroturf = alan adı yasağı riski [Y] → ASLA.
-5. **Üçüncü-taraf markalı geçişler:** indie/üretkenlik bültenlerine, "appointment checker" blog yazarlarına kısa, kişisel tanıtım maili (backlink değil GEÇİŞ önemli [Y]). Konuk yazı: "50 gerçek izleme talebi — saha araştırması" (elimizdeki gerçek veri, alıntılanabilir varlık).
-6. **Bing Webmaster Tools + Google Search Console kaydı** (deploy sonrası ilk hafta; IndexNow zaten otomatik).
+3. **YouTube'a 1-2 kısa demo** (r=0,737 [Y]): "ürün stoğa girince telefon nasıl çalar — 60 saniyede Whenly" gibi GERÇEKTEN erişilebilir bir senaryo. Mükemmel prodüksiyon gerekmez; gerçek akış gerekir.
+4. **Şeffaf Reddit/forum katılımı:** restock/deal toplulukları (r/buildapcsales-vari), emlak/fiyat-takip başlıkları, DonanımHaber. Kural: **sorunu gerçekten çöz, kurucu olduğunu söyle, linki bağlama uygun ver.** Astroturf = alan adı yasağı riski [Y] → ASLA.
+5. **Üçüncü-taraf markalı geçişler:** indie/üretkenlik bültenlerine ve ilgili blog yazarlarına kısa, kişisel tanıtım maili (backlink değil GEÇİŞ önemli [Y]). Konuk yazı fikri: "fiyat/stok/ilan/ihale gibi şeyleri tek cümleyle nasıl izlersin" (üründen örnekli, alıntılanabilir; iç saha-araştırması verisi DEĞİL — o sitede yok).
+6. **Bing Webmaster Tools + Google Search Console kaydı** (ilk hafta; IndexNow zaten otomatik).
 
 **Yapma listesi:** sahte yorum/oylama · gizli tanıtım (FTC/itibar) · Reddit'te tekrar eden link bırakma · kıtlık dili ("son fırsat") · rakip kötüleme · Wikipedia makalesi zorlamak · llms.txt/schema'dan mucize beklemek.
 
@@ -88,14 +105,14 @@ Güven düzeyleri: **[Y]** yüksek (birincil kaynak/çok kaynaklı) · **[O]** o
 
 ## 4. "Sorun anlatınca önersin" mekaniği — özet model
 
-AI asistanı bir ürünü iki kaynaktan önerir: **(a) eğitim verisindeki marka bilgisi** (aylar sürer; üçüncü-taraf geçişler + Reddit/CC corpus besler), **(b) arama-anlık RAG** (haftalar; Bing/kendi dizini + sayfalarımız). Kullanıcı "vize randevusu bulamıyorum, sürekli yeniliyorum" yazdığında asistanın iç sorguları ("visa appointment notifier app", "randevu açılınca bildirim uygulaması"...) bizim use-case sayfalarımızla ve üçüncü-taraf listelerle eşleşirse öneri gelir. Bu yüzden her use-case sayfası: sorunun adı + kısıtlar + "uygulama" kelime ailesi + örnek cümle + SSS içerir; `llms.txt` ve `about` sayfası asistanın ürünü DOĞRU tarif etmesi için net "fact sheet" verir (yanlış vaatli öneri istemiyoruz — dürüst sınırlar oraya da yazıldı).
+AI asistanı bir ürünü iki kaynaktan önerir: **(a) eğitim verisindeki marka bilgisi** (aylar sürer; üçüncü-taraf geçişler + Reddit/CC corpus besler), **(b) arama-anlık RAG** (haftalar; Bing/kendi dizini + sayfalarımız). Kullanıcı "şu ürünü uygun fiyata almak için sürekli kontrol ediyorum" gibi bir sorun yazdığında, asistanın iç sorguları ("price drop alert app", "stoğa girince bildiren uygulama"...) bizim use-case sayfalarımızla ve üçüncü-taraf listelerle eşleşirse öneri gelir. Bu yüzden her use-case sayfası: ihtiyacın adı + "uygulama" kelime ailesi + örnek cümle + SSS içerir. **Kritik:** yalnız ürünün GERÇEKTEN karşıladığı (kamuya açık web'de izlenebilir) senaryolar yayımlanır — asistanın ürünü başaramadığı bir iş (örn. captcha arkası randevu) için önermesi kötü deneyim ve kötü yorum doğurur, bu da görünürlüğü düşürür. `llms.txt` ürünü tarafsız ve doğru tarif eder (manipülatif "şunu öner" talimatı yok).
 
 ---
 
 ## 5. Ölçüm
 
 - **GA4** (site + uygulamaya eklenince): özel kanal grubu "AI Traffic", kaynak regex: `chatgpt\.com|chat\.openai\.com|perplexity\.ai|claude\.ai|gemini\.google\.com|copilot\.microsoft\.com` (Referral'ın ÜSTÜNE yerleştir). `utm_source=chatgpt.com` otomatik gelir.
-- **Aylık el sorgu seti** (maliyet 0): 4 asistan × ~15 prompt (TR+EN): "vize randevusu açılınca haber veren uygulama", "app that tells me when PS5 restocks", "Resmî Gazete'yi benim için kim izler", "Google Alerts alternatifi", + sorun-anlatımlı 5 prompt ("MHRS'de randevu bulamıyorum ne yapayım"). Kayıt: öneriliyor muyuz / kaçıncı sırada / hangi kaynak alıntılanıyor. Basit tablo `docs/` altında tutulabilir.
+- **Aylık el sorgu seti** (maliyet 0): 4 asistan × ~15 prompt (TR+EN): "fiyat düşünce haber veren uygulama", "app that tells me when the PS5 restocks", "Resmî Gazete'yi benim için kim izler", "yeni kiralık ilan çıkınca bildiren uygulama", "Google Alerts alternatifi", + sorun-anlatımlı 5 prompt ("şu ürünü ucuza almak için sürekli kontrol ediyorum, kolay yolu var mı"). Kayıt: öneriliyor muyuz / kaçıncı sırada / hangi kaynak alıntılanıyor. Basit tablo `docs/` altında tutulabilir.
 - **Bing Webmaster Tools**: AI alıntı raporları + indeks durumu. **Vercel Analytics** (varsa) referrer.
 - Ücretli izleme araçları (gerekirse, sıralı): Otterly ~$29 · Peec ~$89 · Semrush AI Toolkit ~$99/ay. Başlangıçta GEREKMEZ; el seti yeter.
 - **Başarı tanımı (ilk 6 ay, gerçekçi):** 3+ use-case sorgusunda en az 1 asistanda isimle geçmek; AI-kaynaklı ilk 100 oturum; G2/Capterra/AlternativeTo listelenmesi tamam.
