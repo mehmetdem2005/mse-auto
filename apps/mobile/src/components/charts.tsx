@@ -7,7 +7,7 @@
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { useTheme } from "@/theme";
 import { useState } from "react";
-import { type LayoutChangeEvent, Pressable, Text, View } from "react-native";
+import { type LayoutChangeEvent, Platform, Pressable, Text, View } from "react-native";
 import Animated, { FadeIn } from "react-native-reanimated";
 import Svg, { Circle, Line, Polyline } from "react-native-svg";
 
@@ -16,7 +16,7 @@ export function ValueChip({ text }: { text: string }) {
   const reduce = useReduceMotion();
   return (
     <Animated.View
-      entering={reduce ? undefined : FadeIn.duration(160)}
+      entering={reduce || Platform.OS === "web" ? undefined : FadeIn.duration(160)}
       className="self-start bg-text rounded-lg px-2.5 py-1.5 mb-1.5"
       accessibilityLiveRegion="polite"
     >
