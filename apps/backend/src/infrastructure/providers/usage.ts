@@ -38,8 +38,10 @@ async function getWithTimeout(
 }
 
 function errMsg(e: unknown): string {
-  if (e instanceof Error) return e.name === "AbortError" ? "zaman aşımı (6 sn)" : e.message;
-  return String(e);
+  // Üst-akış hata metni kırpılır: uzun/iç-detaylı gövdeler admin yüzeyine taşınmaz.
+  if (e instanceof Error)
+    return e.name === "AbortError" ? "zaman aşımı (6 sn)" : e.message.slice(0, 200);
+  return String(e).slice(0, 200);
 }
 
 const usd = (n: number): string =>
@@ -189,11 +191,12 @@ export class HttpProviderUsageService implements ProviderUsagePort {
         );
         if (u.ok) {
           const s = (await u.json()) as { size_bytes?: number };
+          // limit yazılmaz: plan kotası API'den gelmiyor — uydurma eşik göstermeyiz.
           if (typeof s.size_bytes === "number")
             metrics.push({
               label: "Veritabanı boyutu",
               value: `${(s.size_bytes / 1024 / 1024).toFixed(1)} MB`,
-              limit: "/ 500 MB (free)",
+              limit: null,
             });
         }
       } catch {
@@ -250,11 +253,12 @@ export class HttpProviderUsageService implements ProviderUsagePort {
             const total = series
               .flatMap((s) => s.values ?? [])
               .reduce((a, v) => a + (v.value ?? 0), 0);
+            // limit yazılmaz: plan kotası API'den gelmiyor — uydurma eşik göstermeyiz.
             if (total > 0)
               metrics.push({
                 label: "Bant genişliği (dönem)",
                 value: `${(total / 1024 / 1024 / 1024).toFixed(2)} GB`,
-                limit: "/ 100 GB (free)",
+                limit: null,
               });
           }
         }

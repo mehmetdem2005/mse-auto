@@ -63,14 +63,16 @@ function ProviderCard({ p }: { p: ProviderUsage }): ReactNode {
             {tone.label}
           </Text>
         </View>
-        <Pressable
-          onPress={() => void Linking.openURL(p.consoleUrl)}
-          accessibilityRole="link"
-          accessibilityLabel={`${p.name} konsolunu aç`}
-          className="w-11 h-11 -mr-2 items-center justify-center rounded-full active:bg-panel2"
-        >
-          <ExternalLink size={16} color={theme.colors.mutedIcon} />
-        </Pressable>
+        {p.consoleUrl ? (
+          <Pressable
+            onPress={() => void Linking.openURL(p.consoleUrl)}
+            accessibilityRole="link"
+            accessibilityLabel={`${p.name} konsolunu aç`}
+            className="w-11 h-11 -mr-2 items-center justify-center rounded-full active:bg-panel2"
+          >
+            <ExternalLink size={16} color={theme.colors.mutedIcon} />
+          </Pressable>
+        ) : null}
       </View>
 
       {!p.configured ? (
