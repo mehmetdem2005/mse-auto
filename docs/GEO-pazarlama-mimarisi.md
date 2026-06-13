@@ -129,3 +129,39 @@ AI asistanı bir ürünü iki kaynaktan önerir: **(a) eğitim verisindeki marka
 arxiv.org/abs/2311.09735 (GEO, KDD 2024) · arxiv.org/abs/2502.01349 (Bias Beware, EMNLP 2025) · vercel.com/blog/the-rise-of-the-ai-crawler · developers.openai.com/api/docs/bots · docs.perplexity.ai/guides/bots · support.claude.com (crawler) · seroundtable.com/google-ai-llms-txt-39607.html · ahrefs.com/blog/why-chatgpt-cites-pages · ahrefs.com/blog/ai-brand-visibility-correlations · ahrefs.com/blog/schema-ai-citations · ahrefs.com/blog/ai-search-traffic-conversions-ahrefs · seerinteractive.com/insights/gemini-3-query-fan-outs-research · seerinteractive.com (ChatGPT CR case) · semrush.com/blog/most-cited-domains-ai · tryprofound.com/blog/ai-platform-citation-patterns · quoleady.com/llmo-research · weglot.com/blog/wikipedia-llm-visibility · blog.adobe.com (GenAI referral +1200%) · searchengineland.com/llms-google-referral-conversion-study-463747 · cloudflare.com (AI bot default block) · help.openai.com/en/articles/11128490 (ChatGPT shopping).
 
 **Standartlar:** ISO 29148 (kanıt→karar izlenebilirliği) · 25012 (güven düzeyi etiketli, uydurmasız veri) · TOGAF Phase B/C (yeni dağıtım yeteneği → website bileşeni) — ayrıntı ADR-090.
+
+---
+
+## §7 — ABD pazarı AI-atıf stratejisi (2026-06, ADR-097)
+Kaynak: kullanıcı tarafından getirilen ASO+GEO strateji raporu (Whenly'ye uyarlandı; rapordaki "Notiq" marka önerisi REDDEDİLDİ — Whenly markası canlı ve ADR'lidir).
+
+### 7.1 Rekabet bulgusu (Google Play, 2026-06 anlık)
+- **Visualping'in Play'de Android uygulaması YOK** (yalnız extension+web) → kategori liderinin mobil aramada görünmediği boşluk bizim ana fırsatımız.
+- HotStock 500K+/3.7★ (restock nişi) · Distill 100K+ (marka-only başlık = ASO zayıf) · Web Alert 100K+/4.3★ (solo geliştirici — yapılabilirlik kanıtı).
+- Boşluk: "natural language web monitoring / notify me when X / AI app that monitors the web" prompt'larında net lider yok — Whenly'nin diferansiyatörü tam bu.
+
+### 7.2 Hedef prompt listesi (25 — citation tracking + ASO keyword master taksonomisi)
+Website monitoring: best app to monitor website changes · app that alerts me when a website updates · how to get notified when a web page changes · track changes on any website automatically · website change detection app for Android
+Restock: best app for restock alerts · app that alerts me when a product is back in stock · how to get notified when something is back in stock · notify me when out of stock item returns
+Price: best price drop alert app · app that tells me when a price drops · track a price and notify me when it falls · price drop tracker for any website (not just Amazon)
+News/topic: app to monitor news about a topic · get alerts when something is mentioned online · monitor a keyword across the web and notify me
+Ticket/availability: how to get notified when concert tickets go on sale · app that alerts me when tickets become available · notify me when appointment slots open up · alert when reservation availability opens
+Genel: app that watches a page and notifies me when something happens · natural language web monitoring app · AI app that monitors the web for me · set up an alert for anything on the internet · best "notify me when" app 2026
+
+### 7.3 Sitede UYGULANAN teknik karşılıklar (bu commit)
+robots.txt'e `anthropic-ai` + `Applebot` eklendi (tam AI-bot allowlist) · çözüm sayfalarına **HowTo** JSON-LD · ana sayfa SSS'ine 2 doğal-dil prompt'u birebir soru olarak · **rakip-bazlı derin karşılaştırma sayfaları** (/compare/{google-alerts,visualping,distill} + /tr eşlenikleri — atıf mıknatısı "Whenly vs X") · footer'da görünür **tazelik damgası** (atıf önceliği ~14 günde düşüyor; her deploy yeniler).
+Zaten vardı (ADR-090/096): statik HTML (SSR'dan iyi), llms.txt/llms-full.txt, SoftwareApplication+FAQPage+Breadcrumb LD, answer-block ilk paragraf, soru-H2'ler, IndexNow, global-first EN kök.
+**Bilinçli YAPILMADI:** aggregateRating şeması (gerçek puan verimiz yok — uydurma puan = manuel ceza + dürüstlük ihlali; Play'de organik puan birikince eklenecek) · "appointment slot" senaryo sayfası (login'li portal vaadi verilemez — mevcut kapsam-dışılık dürüstlüğü korunur).
+
+### 7.4 Kaynak/kanal stratejisi (insan eliyle — koddan yürütülemez)
+- **Reddit birincil** (kategori atıflarının ana kaynağı; Perplexity top-10'da ~%47, AIO'da ~%21): r/androidapps, r/productivity, r/webscraping, r/selfhosted, r/Frugal, r/buildapcsales. **Yalnız otantik, değer-önce katılım — astroturf/oy manipülasyonu kalıcı AI-izi riski (Reddit içeriği OpenAI/Google'a lisanslı; silinen post bile firehose'da).**
+- YouTube demo/review (AIO %18.8 · Perplexity %13.9 atıf payı) → mikro-influencer erken erişim.
+- Product Hunt launch (ilk 2 saat kritik) · AlternativeTo/G2/Capterra/SaaSHub/Indie Hackers profilleri · listicle outreach: UptimeRobot Hub, Geekflare, Robotalp, PageCrawl.
+- Wikipedia: notability yetersiz — ERTELENDİ (önce bağımsız atıf birikecek).
+
+### 7.5 Ölçüm (haftalık ~30 dk, manuel)
+Her Pazartesi 25 prompt'tan rotasyonla 5'i × {ChatGPT, Perplexity, Claude, Gemini}: (a) mention var mı, (b) site linki (citation) var mı, (c) cevap sırası, (d) sentiment, (e) hangi rakip + hangi kaynak sürüklemiş. Tek ölçüme değil haftalık trende bak (query fan-out gürültüsü). KPI: 60 günde near-zero → çift haneli citation rate; 60 günde hâlâ ~0 ise teknik erişimi (bot 200/şema) yeniden denetle.
+Araçlar: GSC (baseline) ücretsiz; Otterly (~$29/ay) opsiyonel; Profound şimdilik gereksiz.
+
+### 7.6 Veri uyarıları
+Atıf-payı kaynakları çelişir (Semrush vs Profound — metodoloji farkı): mutlak yüzdeyi değil YÖNÜ kullan (Reddit+YouTube önce). llms.txt'i Google resmen kullanmıyor — düşük maliyetli opsiyon olarak tutuyoruz, kanal sayma. Play install/puan verileri 2026-06 anlık fotoğraf.

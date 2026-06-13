@@ -26,9 +26,9 @@ function walk(dir) {
 }
 const htmlFiles = walk(OUT).filter((f) => f.endsWith(".html"));
 
-test("her sayfa üretildi (TR+EN: 2 ana + 2 dizin + 18 çözüm + 2 karşılaştırma + 2 hakkında + 4 hukuki)", () => {
-  assert.equal(result.pageCount, 30);
-  assert.equal(htmlFiles.length, 31); // + 404.html
+test("her sayfa üretildi (TR+EN: 2 ana + 2 dizin + 18 çözüm + 2 karşılaştırma + 6 rakip-karşılaştırma + 2 hakkında + 4 hukuki)", () => {
+  assert.equal(result.pageCount, 36);
+  assert.equal(htmlFiles.length, 37); // + 404.html
 });
 
 test("TR↔EN çözüm eşleniği tam ve simetrik", () => {
