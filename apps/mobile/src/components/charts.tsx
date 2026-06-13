@@ -11,16 +11,26 @@ import { type LayoutChangeEvent, Platform, Pressable, Text, View } from "react-n
 import Animated, { FadeIn } from "react-native-reanimated";
 import Svg, { Circle, Line, Polyline } from "react-native-svg";
 
-/** Dokunulan noktanın değer çipi — grafiklerin ortak "değer balonu". */
+/** Dokunulan noktanın değer çipi — grafiklerin ortak "değer balonu".
+ *  Web'de düz View (reanimated katmanı GPU tile cızırtısı üretir — ADR-099). */
 export function ValueChip({ text }: { text: string }) {
   const reduce = useReduceMotion();
+  const body = <Text className="text-ink text-[11px] font-bold">{text}</Text>;
+  const cls = "self-start bg-text rounded-lg px-2.5 py-1.5 mb-1.5";
+  if (Platform.OS === "web") {
+    return (
+      <View className={cls} accessibilityLiveRegion="polite">
+        {body}
+      </View>
+    );
+  }
   return (
     <Animated.View
-      entering={reduce || Platform.OS === "web" ? undefined : FadeIn.duration(160)}
-      className="self-start bg-text rounded-lg px-2.5 py-1.5 mb-1.5"
+      entering={reduce ? undefined : FadeIn.duration(160)}
+      className={cls}
       accessibilityLiveRegion="polite"
     >
-      <Text className="text-ink text-[11px] font-bold">{text}</Text>
+      {body}
     </Animated.View>
   );
 }
