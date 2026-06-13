@@ -61,8 +61,10 @@ pnpm 9 · Node 22. Hesaplar: Supabase, Render, Vercel, Google Cloud, Expo, DeepS
 - **KVKK/GDPR**: gizlilik politikası, onam, hesap silme akışı + Play "data safety" formu.
 - Ses önizleme (`expo-audio`), gerçek Supabase/E2E entegrasyon testleri.
 
-## 8. Google ile giriş (tek seferlik, ~5 dk — yalnız hesap sahibi yapabilir)
-Kod hazır (ADR-093); eksik olan tek şey Google OAuth istemcisi:
+## 8. Google ile giriş — ✓ TAMAMLANDI (2026-06-13)
+OAuth istemcisi (Web application) oluşturuldu; Supabase'de sağlayıcı Management API ile
+etkinleştirildi ve `/authorize?provider=google` ucunun accounts.google.com'a doğru
+client_id ile yönlendirdiği canlıda doğrulandı. Adımlar tarihçe/yeniden-kurulum içindir:
 1. console.cloud.google.com → proje seç/oluştur → **APIs & Services → Credentials → Create OAuth client ID** (tip: Web application).
 2. **Authorized redirect URI**: `https://kozckegiwuaywqkkkntp.supabase.co/auth/v1/callback`
 3. Çıkan **Client ID + Secret**'ı Supabase Dashboard → Authentication → Providers → **Google**'a yapıştır ve etkinleştir.
@@ -70,3 +72,20 @@ Kod hazır (ADR-093); eksik olan tek şey Google OAuth istemcisi:
 4. Bitti — uygulamadaki "Google ile devam et" butonu çalışır (web yönlendirme + Android sistem tarayıcısı). Buton, sağlayıcı kapalıyken dürüst bir "henüz etkin değil" mesajı gösterir.
 
 Not: `site_url` ve yönlendirme allow-list'i canlıda düzeltildi (2026-06-12 — magic link artık localhost'a değil uygulamaya döner). Ek bildirim kanalları (Telegram/Resend/WhatsApp) için ilgili token'lar Render `watcher-secrets` grubuna girilene dek kanallar pasiftir.
+
+## 9. Global LLM modeli + Kaynaklar panosu (ADR-095)
+**Model seçimi:** Admin konsolu → **Model**. Seçilen model (Groq Llama 3.3 70B ·
+DeepSeek V4 Flash · V4 Pro · Reasoner) TÜM kullanıcıların muhakeme + doğrulama +
+asistan çağrılarını sürer; yeniden başlatma gerekmez.
+1. `DEEPSEEK_API_KEY`'i Render → Environment → **watcher-secrets** grubuna ekle
+   (anahtar repoya ASLA yazılmaz). Groq zaten tanımlıysa ikisi de seçilebilir olur.
+2. Seçimin deploy'lar arasında KALICI olması için migration `supabase/migrations/0014_app_settings.sql`
+   gerekir — **✓ UYGULANDI (2026-06-13, kullanıcı izniyle; `app_settings` + RLS canlıda doğrulandı).**
+
+**Kaynaklar panosu (gerçek kullanım verisi):** Admin → **Kaynaklar**. Her kart
+sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart dürüstçe
+"token yok" der. İsteğe bağlı token'lar (hepsi watcher-secrets grubuna):
+- `SUPABASE_ACCESS_TOKEN` — supabase.com/dashboard/account/tokens (proje durumu + DB boyutu)
+- `RENDER_API_KEY` — dashboard.render.com → Account Settings → API Keys (servis durumu + bant genişliği)
+- `VERCEL_TOKEN` (+ `VERCEL_TEAM_ID`) — vercel.com/account/tokens (dönem maliyeti / proje sayısı)
+- DeepSeek bakiyesi mevcut `DEEPSEEK_API_KEY` ile gelir; Groq kullanım API'si sunmuyor (konsol bağlantısı verilir).

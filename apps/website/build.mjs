@@ -13,6 +13,7 @@ import { privacy, terms } from "./src/legal.mjs";
 import {
   aboutBody,
   compareBody,
+  compareToolBody,
   homeBody,
   layout,
   legalBody,
@@ -87,6 +88,39 @@ function softwareLd(siteUrl, L) {
     },
     featureList: L.home.features.map((/** @type {any} */ f) => f.t),
     publisher: orgLd(siteUrl),
+  };
+}
+
+/**
+ * HowTo şeması (GEO/ADR-097): "how to get notified when …" prompt'ları için
+ * çözüm sayfalarına kurulum adımları — örnek cümle gerçek içerikten gelir.
+ * @param {any} L @param {any} u
+ */
+function howToLd(L, u) {
+  const tr = L.lang === "tr";
+  const steps = [
+    {
+      name: tr ? "Whenly'yi aç" : "Open Whenly",
+      text: tr
+        ? "Web uygulamasını tarayıcıda ya da Android uygulamasını aç — ücretsiz plan kart istemez."
+        : "Open the web app in your browser or the Android app — the free plan needs no card.",
+    },
+    {
+      name: tr ? "Olayı tek cümleyle tarif et" : "Describe the event in one sentence",
+      text: tr ? `Örneğin: "${u.examples[0]}"` : `For example: "${u.examples[0]}"`,
+    },
+    {
+      name: tr ? "Gerçekleşince haber al" : "Get notified when it happens",
+      text: tr
+        ? "Whenly açık kaynakları belirli aralıklarla kontrol eder; olay göründüğünde bildirim gönderir, istersen alarm çaldırır."
+        : "Whenly checks public sources at regular intervals and sends a notification — or rings an alarm — when your event appears.",
+    },
+  ];
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: tr ? `Whenly ile ${u.name} kurulumu` : `How to set up ${u.name} with Whenly`,
+    step: steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, ...s })),
   };
 }
 
@@ -187,6 +221,7 @@ export function pageModel(siteUrl) {
             [ucPath(L, u.slug), u.name],
           ]),
           faqLd(u.faq),
+          howToLd(L, u),
         ],
         md: `${u.answer}\n\n${u.context.map((/** @type {string} */ p) => `- ${p}`).join("\n")}\n\n${
           L.lang === "tr" ? "Örnek izleme cümleleri" : "Example watch sentences"
@@ -215,6 +250,30 @@ export function pageModel(siteUrl) {
         )
         .join("\n")}\n\n${L.compare.afterTable}`,
     });
+
+    // Rakip-bazlı derin karşılaştırmalar (GEO/ADR-097) — slug iki dilde aynı.
+    for (const t of L.compare.tools) {
+      pages.push({
+        path: `${L.prefix}/${L.compare.slug}/${t.slug}/`,
+        altPath: `${other.prefix}/${other.compare.slug}/${t.slug}/`,
+        L,
+        title: t.metaTitle,
+        desc: t.metaDescription,
+        body: compareToolBody(L, t),
+        ld: [
+          breadcrumbLd(siteUrl, [
+            [`${L.prefix}/${L.compare.slug}/`, L.nav.compare],
+            [`${L.prefix}/${L.compare.slug}/${t.slug}/`, t.h1],
+          ]),
+          faqLd(t.faq),
+        ],
+        md: `${t.answer}\n\n${L.compare.strengthsHeading.replace("{name}", t.name)}:\n${t.strengths
+          .map((/** @type {string} */ s) => `- ${s}`)
+          .join("\n")}\n\n${L.compare.whenHeading}:\n${t.whenWhenly
+          .map((/** @type {string} */ s) => `- ${s}`)
+          .join("\n")}\n\n${t.faq.map((/** @type {any} */ f) => `**${f.q}** ${f.a}`).join("\n\n")}`,
+      });
+    }
 
     // Hakkında
     pages.push({
@@ -256,12 +315,13 @@ function sitemapXml(pages, siteUrl) {
     .map((p) => {
       const trPath = p.L.lang === "tr" ? p.path : p.altPath;
       const enPath = p.L.lang === "en" ? p.path : p.altPath;
+      // x-default → EN (ADR-096 global-first): dil eşleşmeyen ziyaretçi EN görür.
       return `  <url>
     <loc>${siteUrl}${p.path}</loc>
     <lastmod>${today}</lastmod>
     <xhtml:link rel="alternate" hreflang="tr" href="${siteUrl}${trPath}"/>
     <xhtml:link rel="alternate" hreflang="en" href="${siteUrl}${enPath}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${trPath}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${enPath}"/>
   </url>`;
     })
     .join("\n");
@@ -281,9 +341,11 @@ function robotsTxt(siteUrl) {
     "ClaudeBot",
     "Claude-SearchBot",
     "Claude-User",
+    "anthropic-ai",
     "PerplexityBot",
     "Perplexity-User",
     "Google-Extended",
+    "Applebot",
     "CCBot",
     "Meta-ExternalAgent",
     "Meta-ExternalFetcher",
@@ -343,6 +405,18 @@ function llmsFullTxt(pages, siteUrl) {
 
 const VERCEL_CONFIG = {
   trailingSlash: true,
+  // ADR-096 global-first taşınması: eski kök-TR ve /en yolları 301 ile yeni
+  // adreslerine gider — indekslenmiş bağlantı kırılmaz, SEO değeri devrolur.
+  redirects: [
+    { source: "/en", destination: "/", permanent: true },
+    { source: "/en/:path*", destination: "/:path*", permanent: true },
+    { source: "/cozumler", destination: "/tr/cozumler", permanent: true },
+    { source: "/cozumler/:path*", destination: "/tr/cozumler/:path*", permanent: true },
+    { source: "/karsilastirma", destination: "/tr/karsilastirma", permanent: true },
+    { source: "/hakkinda", destination: "/tr/hakkinda", permanent: true },
+    { source: "/gizlilik", destination: "/tr/gizlilik", permanent: true },
+    { source: "/kullanim-kosullari", destination: "/tr/kullanim-kosullari", permanent: true },
+  ],
   headers: [
     {
       source: "/(.*)",
@@ -392,17 +466,17 @@ export function buildSite(opts = {}) {
     writeFileSync(file, html);
   }
 
-  // 404 (Vercel statikte 404.html'i otomatik kullanır)
+  // 404 (Vercel statikte 404.html'i otomatik kullanır) — kök dil EN (ADR-096).
   writeFileSync(
     path.join(outDir, "404.html"),
     layout({
-      L: tr,
+      L: en,
       path: "/404.html",
-      altPath: "/en/",
-      title: tr.notFound.metaTitle,
-      desc: tr.notFound.text,
+      altPath: "/tr/",
+      title: en.notFound.metaTitle,
+      desc: en.notFound.text,
       siteUrl,
-      body: notFoundBody(tr),
+      body: notFoundBody(en),
       noindex: true,
     }),
   );

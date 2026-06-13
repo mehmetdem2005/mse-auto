@@ -11,10 +11,12 @@
  *   metaDescription: string, h1: string, answer: string, context: string[],
  *   examples: string[], faq: Faq[], related: string[] }} UseCase */
 
+// Global-first (ADR-096): kök dil EN'dir; TR /tr altında tam eşlenik yaşar
+// (eski kök TR yolları vercel.json 301'leriyle /tr'ye taşınır — bağlantı kırılmaz).
 export const tr = {
   lang: "tr",
-  prefix: "",
-  useCaseBase: "/cozumler",
+  prefix: "/tr",
+  useCaseBase: "/tr/cozumler",
   langName: "Türkçe",
   otherLangLabel: "English",
 
@@ -40,6 +42,7 @@ export const tr = {
     contact: "İletişim",
     forAi: "Yapay zekâ asistanları için: llms.txt",
     langSwitch: "English version",
+    updated: "İçerik güncellendi",
   },
 
   home: {
@@ -48,9 +51,10 @@ export const tr = {
       '"Şu olunca haber ver" de: Whenly açık web kaynaklarını belirli aralıklarla tarar ve gelişme göründüğünde bildirim — istersen alarm — gönderir. Ücretsiz başla.',
     heroOverline: "İzleme ve bildirim uygulaması",
     heroTitle: "Şu olunca <em>haber ver.</em>",
+    // Çözümü sat (copywriting skill): ürün özelliği değil, kurtulduğun iş — "yenilemeyi bırak".
     heroSub:
-      "İzlemek istediğin şeyi kendi cümlenle anlat. Whenly açık web kaynaklarını senin yerine belirli aralıklarla kontrol eder ve aradığın gelişme göründüğünde telefonuna bildirim — istersen alarm — gönderir.",
-    heroCta: "Ücretsiz başla",
+      "Sayfayı yenileyip durma. Beklediğin anı — fiyat düşüşü, stok, ilan, duyuru — tek bir cümleyle Whenly'ye anlat. Açık web kaynaklarını belirli aralıklarla senin yerine kontrol eder; o an geldiğinde telefonunu çaldırır.",
+    heroCta: "Ücretsiz izlemeye başla",
     heroCtaNote: "Kredi kartı gerekmez · Web'de ve telefonda çalışır",
     heroSecondary: "Nasıl çalışır?",
     phone: {
@@ -79,37 +83,38 @@ export const tr = {
         d: "Aradığın gelişme göründüğünde telefonuna bildirim gelir; kritik konularda alarm moduyla telefon çalar.",
       },
     ],
-    featuresHeading: "Öne çıkanlar",
+    // Fayda-önce (copywriting skill: benefits over features) — her madde "sana ne kazandırır".
+    featuresHeading: "Sana ne kazandırır",
     features: [
       {
         icon: "zap",
-        t: "Doğal dille kurulum",
-        d: '"Stokta VE belirlediğim fiyatın altında" gibi birleşik koşulları doğal cümleden anlar; kural motoru öğrenmen gerekmez.',
+        t: "Tek cümle, kurulumun tamamı",
+        d: '"Stokta VE belirlediğim fiyatın altında" gibi birleşik kuralları doğal cümleden anlar. Kural motoru öğrenmek, filtre kurmak yok.',
       },
       {
         icon: "languages",
-        t: "Kendi dilinde",
-        d: "Türkçe dahil 11 arayüz dili. İzleme cümleni kendi dilinde yazarsın.",
+        t: "Kendi dilinde çalışır",
+        d: "Türkçe dahil 11 arayüz dili. İzlemeyi, yüksek sesle söyler gibi yazarsın.",
       },
       {
         icon: "bellRing",
-        t: "Alarm modu",
-        d: "Kritik izlemelerde bildirim sessizce düşmek yerine telefonu gerçekten çaldırır.",
+        t: "Kritik anlar için alarm modu",
+        d: "Bazı anlar sessiz bildirim tepsisinde bekleyemez: Pro'da uyarı telefonu gerçekten çaldırır.",
       },
       {
         icon: "clock",
-        t: "Sessiz saatler",
-        d: "Gece bildirimleri sessize iner; sabah kaldığın yerden devam edersin.",
+        t: "Sessiz saatler, senin şartınla",
+        d: "Gece uyarıları sabaha bekler — uykudan feragat etmeden takipte kalırsın.",
       },
       {
         icon: "smartphone",
-        t: "Web ve telefon",
-        d: "Tarayıcıda hemen çalışır; Android uygulaması da var. Bildirimler telefona gelir.",
+        t: "Web'de ve telefonda",
+        d: "Herhangi bir tarayıcıda bir dakikada başlarsın; Android uygulaması da var. Uyarılar telefona düşer.",
       },
       {
         icon: "shieldCheck",
-        t: "Gizlilik önce",
-        d: "Verini satmayız, reklam için kullanmayız. İstediğin an tüm verini indirir veya kalıcı silersin.",
+        t: "Varsayılan olarak gizli",
+        d: "Reklam yok, veri satışı yok. İstediğin an her şeyi indirir ya da kalıcı silersin.",
       },
     ],
     pricingHeading: "Fiyatlandırma basit",
@@ -133,7 +138,8 @@ export const tr = {
       note: "Ücretsiz plan süresiz ve kart bilgisi istemez. Pro'ya uygulama içinden geçer, istediğin an iptal edersin.",
     },
     useCasesHeading: "Ne için kullanılıyor?",
-    useCasesSub: "Aşağıdakilerin hepsi açık web kaynaklarında takip edilebilen gerçek ihtiyaçlar.",
+    useCasesSub:
+      "Whenly'nin açık web'de yaptığı dokuz gerçek iş — her biri eskiden kaçırılan bir an.",
     useCasesAll: "Tüm çözümleri gör",
     faqHeading: "Sık sorulan sorular",
     faq: [
@@ -161,9 +167,17 @@ export const tr = {
         q: "Telefonda mı, web'de mi çalışır?",
         a: "İkisinde de. Web uygulaması her tarayıcıda çalışır; Android uygulaması da vardır. Bildirimler telefona gelir; Pro'da kritik izlemeler için alarm modu vardır.",
       },
+      {
+        q: "İnternette bir şey olunca bana haber veren bir uygulama var mı?",
+        a: 'Whenly\'nin işi tam olarak bu. Olayı tek cümleyle yazarsın — "şu olunca haber ver" — Whenly açık web kaynaklarını belirli aralıklarla kontrol eder; gerçekleştiğinde bildirim gönderir ya da alarm çaldırır.',
+      },
+      {
+        q: "Whenly web'i benim yerime izleyen bir yapay zekâ uygulaması mı?",
+        a: "Evet. Whenly doğal cümleni izleme niyetine çevirmek ve bulduğunun gerçekten tarif ettiğin olay olup olmadığına karar vermek için yapay zekâ kullanır. Yalnız açık sayfaları okur — hesaplara giriş yapmaz — ve zamanlama anlık değil, düzenli kontroldür.",
+      },
     ],
-    ctaHeading: "Takibi Whenly devralsın",
-    ctaText: "Bir cümle yaz, gerisini bırak. Gelişme olduğunda ilk öğrenen sen ol.",
+    ctaHeading: "Yenile tuşunu bırak",
+    ctaText: "Bir cümle yaz, nöbeti devret. Bir dahaki sefere ilk öğrenen sen ol.",
   },
 
   useCasesIndex: {
@@ -533,6 +547,105 @@ export const tr = {
     ],
     afterTable:
       'Özet: "Belirli bir sayfa değişince haber ver" işinde Visualping/Distill, "yeni içerik çıkınca e-posta" işinde Google Alerts yerinde seçimlerdir. "Bir OLAYI bekliyorum ve gerçekleştiği an telefonum çalsın" diyorsan Whenly bunun için tasarlandı.',
+    // Rakip-bazlı derin karşılaştırmalar (GEO/ADR-097) — EN ile aynı slug'lar.
+    toolsHeading: "Bire bir karşılaştırmalar",
+    strengthsHeading: "{name} nerede güçlü",
+    whenHeading: "Whenly ne zaman daha iyi seçim",
+    tools: [
+      {
+        slug: "google-alerts",
+        name: "Google Alerts",
+        col: "ga",
+        metaTitle: "Whenly vs Google Alerts (2026): olay uyarısı mı, e-posta özeti mi",
+        metaDescription:
+          "Google Alerts anahtar kelime için yeni içeriği e-postalar; Whenly tarif ettiğin olayı izler, gerçekleşince telefonunu çaldırır. Dürüst bir karşılaştırma.",
+        h1: "Whenly vs Google Alerts",
+        answer:
+          'Google Alerts ücretsizdir ve bir anahtar kelimeyle ilgili yeni içerik çıktığında e-posta atar. Whenly başka bir soruya cevap verir: koşullu bir OLAY tarif edersin — "400 doların altına düşünce haber ver" — ve olay gerçekleştiğinde bildirim gönderir ya da alarm çaldırır. Birçok kişi ikisini birlikte kullanır.',
+        strengths: [
+          "Tamamen ücretsiz; kota derdi yok",
+          "Google dizini arkasında — haber ve açık web kapsamı geniş",
+          "Günde bir göz atılacak e-posta özetleri pratik",
+        ],
+        whenWhenly: [
+          "Makale akışı değil, KOŞULLU bir olay bekliyorsun (X fiyatın altı, stokta)",
+          "E-posta özeti değil, anlık bildirim ya da gerçek alarm istiyorsun",
+          "Doğal dilde bileşik kural ve 11 arayüz dili istiyorsun",
+        ],
+        faq: [
+          {
+            q: "Whenly, Google Alerts'ün yerine geçer mi?",
+            a: "Farklı işler yaparlar. Bir konunun haber akışını e-postayla izlemek için Google Alerts iyidir. Whenly belirli bir ânı yakalamak için kuruldu — eşik anlar, telefonu çaldırır. Birçok kişi ikisini birden kullanır.",
+          },
+          {
+            q: "Whenly de Google Alerts gibi ücretsiz mi?",
+            a: "Whenly'nin ücretsiz planında 3 aktif izleme süresiz kullanılır, kart istenmez. Pro daha çok izleme, daha sık kontrol ve alarm modu ekler.",
+          },
+        ],
+      },
+      {
+        slug: "visualping",
+        name: "Visualping",
+        col: "vp",
+        metaTitle: "Whenly vs Visualping (2026): sayfa farkı mı, doğal dilde olay mı",
+        metaDescription:
+          "Visualping belirttiğin sayfadaki görsel değişimi yakalamakta güçlüdür. Whenly konu-bazlıdır: olayı doğal dille tarif edersin, telefonunda alarm çalar.",
+        h1: "Whenly vs Visualping",
+        answer:
+          "Visualping olgun bir değişiklik-izleme aracıdır: URL verirsin, o sayfanın görsel farklarını gösterir. Whenly işe öbür uçtan başlar — olayı doğal dille tarif edersin, URL gerekmez; olay açık kaynaklarda göründüğünde bildirim gönderir ya da alarm çaldırır.",
+        strengths: [
+          "Ekran görüntülü, vurgulamalı güçlü görsel sayfa-farkı motoru",
+          "Yaygın kullanılan, cilalı tarayıcı eklentisi ve web uygulaması",
+          "Hangi sayfayı izleyeceğini tam biliyorsan iyi seçim",
+        ],
+        whenWhenly: [
+          "Doğru URL'yi aramak yerine sonucu tarif etmek istiyorsun",
+          '"Stokta VE 500 doların altında" gibi doğal dilde bileşik koşul istiyorsun',
+          "Alarm modlu, mobil-öncelikli uygulama istiyorsun; 2026 ortası itibarıyla Visualping'in Google Play'de Android uygulaması yok (değişirse yaz, düzeltelim)",
+        ],
+        faq: [
+          {
+            q: "Whenly bir Visualping alternatifi mi?",
+            a: 'Sayfa-düzeyi görsel fark için Visualping güçlü bir seçim olmayı sürdürüyor. İhtiyacın "şu OLAY gerçekleşince haber ver" ise — koşullu, telefonda, alarmlı — Whenly tam bunun için kuruldu.',
+          },
+          {
+            q: "Whenly'ye URL vermem gerekir mi?",
+            a: "Hayır. İstersen verirsin ama düz bir cümle yeterli; Whenly eşleşen açık web sinyallerini birlikte tartar.",
+          },
+        ],
+      },
+      {
+        slug: "distill",
+        name: "Distill Web Monitor",
+        col: "di",
+        metaTitle: "Whenly vs Distill Web Monitor (2026): dürüst karşılaştırma",
+        metaDescription:
+          "Distill teknik kullanıcıya seçicilerle ince ayarlı sayfa izleme sunar. Whenly seçici kurulumu yerine doğal dil, alarm modu ve mobil-öncelikli deneyim koyar.",
+        h1: "Whenly vs Distill Web Monitor",
+        answer:
+          "Distill teknik kullanıcılar için güçlü bir sayfa izleyicidir: öğeleri seçicilerle işaretler, yerel ya da bulutta kontrol koşturur, her şeyi ince ayarlarsın. Whenly tam tersi yolu seçer — tek düz cümle, seçici yok; açık webde olay tespiti, bildirim ve telefonu çaldıran gerçek alarm.",
+        strengths: [
+          "Öğe-düzeyi seçim, neyin 'değişiklik' sayılacağında hassas kontrol verir",
+          "Yerel izleme seçenekleri gizlilik-odaklı teknik kullanıcıya hitap eder",
+          "İleri kullanıcı için esnek zamanlama ve koşullar",
+        ],
+        whenWhenly: [
+          "Site tasarımı değişince kırılan seçicilerle uğraşmak istemiyorsun",
+          "Olayı yapılandırmak yerine tarif etmeyi tercih ediyorsun",
+          "11 dilde, telefon-öncelikli deneyim ve alarm modu istiyorsun",
+        ],
+        faq: [
+          {
+            q: "Whenly'nin kurulumu Distill'den kolay mı?",
+            a: "Tasarım gereği evet: kurulum tek cümledir. Karşılığı, seçici-tabanlı araçlardaki ince kontrolün olmamasıdır — sayfa-öğesi farkı isteyen ileri kullanıcı Distill'i tercih edebilir.",
+          },
+          {
+            q: "Whenly, Distill gibi belirli bir sayfayı izleyebilir mi?",
+            a: "Evet — URL verebilir ya da sadece konuyu tarif edebilirsin. Whenly yalnız açık sayfaları izler ve bu sınırı açıkça söyler.",
+          },
+        ],
+      },
+    ],
     faq: [
       {
         q: "Whenly, Google Alerts'ün yerine geçer mi?",

@@ -1,3 +1,4 @@
+import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
 import type { AuthVerifier } from "../domain/auth";
 import type { AuthorityResolver } from "../domain/authority";
@@ -16,14 +17,15 @@ import type { MonitoringRepository } from "../domain/monitoring";
 import type { Notifier } from "../domain/notifier";
 import type { PaymentGateway } from "../domain/payment";
 import type { CanonicalTopicRepository, WatchRepository } from "../domain/ports";
+import type { ProviderUsagePort } from "../domain/providers";
 import type { JobQueue } from "../domain/queue";
 import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
+import type { SettingsRepository } from "../domain/settings";
 import type { SubscriptionRepository } from "../domain/subscription";
 import type { SupportRepository } from "../domain/support";
 import type { TrafficRepository } from "../domain/traffic";
 import type { EventVerifier } from "../domain/verifier";
-import { GroqIntentAssistant } from "../infrastructure/assistant/groq.assistant";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { DevAuthVerifier } from "../infrastructure/auth/dev.verifier";
 import { SupabaseJwtVerifier } from "../infrastructure/auth/supabase.verifier";
@@ -40,6 +42,7 @@ import { InMemoryDeviceRepository } from "../infrastructure/in-memory/device.rep
 import { InMemoryMonitoringRepository } from "../infrastructure/in-memory/monitoring.repo";
 import { InMemoryPaymentGateway } from "../infrastructure/in-memory/payment.gateway";
 import { InMemoryPriceRepository } from "../infrastructure/in-memory/price.repo";
+import { InMemorySettingsRepository } from "../infrastructure/in-memory/settings.repo";
 import { InMemoryStore } from "../infrastructure/in-memory/store";
 import { InMemorySubscriptionRepository } from "../infrastructure/in-memory/subscription.repo";
 import { InMemorySupportRepository } from "../infrastructure/in-memory/support.repo";
@@ -47,16 +50,21 @@ import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/to
 import { InMemoryTrafficRepository } from "../infrastructure/in-memory/traffic.repo";
 import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
+import {
+  type ProviderKeys,
+  SwitchableEventReasoner,
+  SwitchableEventVerifier,
+  SwitchableIntentAssistant,
+} from "../infrastructure/llm/switchable";
 import { logger } from "../infrastructure/logging/logger";
 import { FcmNotifier } from "../infrastructure/notifier/fcm.notifier";
 import { NoopNotifier } from "../infrastructure/notifier/noop.notifier";
 import { GoogleAuthTokenProvider } from "../infrastructure/notifier/token";
 import { StripePaymentGateway } from "../infrastructure/payment/stripe.gateway";
+import { HttpProviderUsageService } from "../infrastructure/providers/usage";
 import { InMemoryJobQueue } from "../infrastructure/queue/in-memory.queue";
 import { PgBossJobQueue } from "../infrastructure/queue/pgboss.queue";
 import { InMemoryRateLimiter } from "../infrastructure/rate-limit/in-memory.limiter";
-import { DeepSeekEventReasoner } from "../infrastructure/reasoner/deepseek.reasoner";
-import { GroqEventReasoner } from "../infrastructure/reasoner/groq.reasoner";
 import { FallbackSearchProvider } from "../infrastructure/search/fallback.search";
 import {
   GroqAuthorityResolver,
@@ -72,13 +80,13 @@ import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
 import { SupabaseDeviceRepository } from "../infrastructure/supabase/device.repo";
 import { SupabaseMonitoringRepository } from "../infrastructure/supabase/monitoring.repo";
 import { SupabasePriceRepository } from "../infrastructure/supabase/price.repo";
+import { SupabaseSettingsRepository } from "../infrastructure/supabase/settings.repo";
 import { SupabaseSubscriptionRepository } from "../infrastructure/supabase/subscription.repo";
 import { SupabaseSupportRepository } from "../infrastructure/supabase/support.repo";
 import { SupabaseCanonicalTopicRepository } from "../infrastructure/supabase/topic.repo";
 import { SupabaseTrafficRepository } from "../infrastructure/supabase/traffic.repo";
 import { SupabaseUserChannelRepository } from "../infrastructure/supabase/user-channels.repo";
 import { SupabaseWatchRepository } from "../infrastructure/supabase/watch.repo";
-import { GroqEventVerifier } from "../infrastructure/verifier/groq.verifier";
 import type { Env } from "./env";
 
 export interface Container {
@@ -101,6 +109,12 @@ export interface Container {
   verifier: EventVerifier | undefined;
   checkTimeoutMs: number | undefined;
   assistant: IntentAssistant;
+  /** Uygulama-geneli ayarlar (ADR-095) — ilk kullanım: seçili LLM modeli. */
+  settings: SettingsRepository;
+  /** Admin'in seçtiği global LLM modeli; reasoner/verifier/asistanı sürer (ADR-095). */
+  llmRouter: LlmModelRouter;
+  /** Sağlayıcı kullanım panosu (ADR-095) — gerçek API verisi. */
+  providerUsage: ProviderUsagePort;
   authority: AuthorityResolver;
   notifier: Notifier;
   queue: JobQueue;
@@ -133,18 +147,12 @@ function buildServiceHealth(env: Env): { name: string; ok: boolean }[] {
   ];
 }
 
-function buildChecker(env: Env): Checker {
-  // Arama = Serper/Tavily. Karar (reasoner): Groq geçici (varsa öncelikli),
-  // yoksa DeepSeek (kalıcı). OpenAI yalnız embedding; Gemini bilinçli devre dışı.
+function buildChecker(env: Env, reasoner: SwitchableEventReasoner | null): Checker {
+  // Arama = Serper/Tavily. Karar (reasoner): admin'in seçtiği global model
+  // (ADR-095 — Groq/DeepSeek, çağrı anında yönlendirilir). Gemini bilinçli devre dışı.
   const providers: SearchProvider[] = [];
   if (env.SERPER_API_KEY) providers.push(new SerperSearchProvider(env.SERPER_API_KEY));
   if (env.TAVILY_API_KEY) providers.push(new TavilySearchProvider(env.TAVILY_API_KEY));
-  // Model yönlendirme (ADR-078 A5): rol başına model env'den; boşsa sınıf varsayılanı.
-  const reasoner = env.GROQ_API_KEY
-    ? new GroqEventReasoner(env.GROQ_API_KEY, env.GROQ_REASONER_MODEL)
-    : env.DEEPSEEK_API_KEY
-      ? new DeepSeekEventReasoner(env.DEEPSEEK_API_KEY)
-      : null;
   if (providers.length > 0 && reasoner) {
     return new LiveChecker(
       new FallbackSearchProvider(providers),
@@ -161,13 +169,6 @@ function buildAuthority(env: Env): AuthorityResolver {
   return env.GROQ_API_KEY
     ? new GroqAuthorityResolver(env.GROQ_API_KEY)
     : new NullAuthorityResolver();
-}
-
-function buildAssistant(env: Env): IntentAssistant {
-  // Niyet asistanı: Groq (varsa) yoksa sezgisel fallback (anahtarsız dev).
-  return env.GROQ_API_KEY
-    ? new GroqIntentAssistant(env.GROQ_API_KEY, env.GROQ_ASSISTANT_MODEL)
-    : new HeuristicIntentAssistant();
 }
 
 function buildNotifier(env: Env): Notifier {
@@ -225,13 +226,41 @@ function adminIdsFromEnv(env: Env): ReadonlySet<string> {
  * Repo'lar: SUPABASE_* varsa Supabase; yoksa paylaşılan in-memory store.
  */
 export function createContainer(env: Env): Container {
-  const checker = buildChecker(env);
-  // Doğrulayıcı (ADR-060 A1): GROQ varsa kur; yoksa undefined → doğrulama atlanır.
-  const verifier = env.GROQ_API_KEY
-    ? new GroqEventVerifier(env.GROQ_API_KEY, env.GROQ_VERIFIER_MODEL)
-    : undefined;
+  // Supabase istemcisi erkende kurulur: hem repo'lar hem ayar deposu kullanır.
+  const db =
+    env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY
+      ? createSupabaseAdminClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
+      : null;
+  const settings: SettingsRepository = db
+    ? new SupabaseSettingsRepository(db)
+    : new InMemorySettingsRepository();
+
+  // Global LLM modeli (ADR-095): admin seçer, app_settings'te kalıcı; tüm roller
+  // (reasoner + verifier + asistan) çağrı anında aktif modele yönlenir.
+  const llmKeys: ProviderKeys = { groq: env.GROQ_API_KEY, deepseek: env.DEEPSEEK_API_KEY };
+  const llmRouter = new LlmModelRouter(settings, {
+    groq: !!env.GROQ_API_KEY,
+    deepseek: !!env.DEEPSEEK_API_KEY,
+  });
+  const anyLlm = !!(env.GROQ_API_KEY || env.DEEPSEEK_API_KEY);
+  const reasoner = anyLlm ? new SwitchableEventReasoner(llmRouter, llmKeys) : null;
+  const checker = buildChecker(env, reasoner);
+  // Doğrulayıcı (ADR-060 A1): LLM anahtarı varsa kur; yoksa undefined → doğrulama atlanır.
+  const verifier = anyLlm ? new SwitchableEventVerifier(llmRouter, llmKeys) : undefined;
   const checkTimeoutMs = env.CHECK_TIMEOUT_MS;
-  const assistant = buildAssistant(env);
+  // Niyet asistanı: LLM anahtarı varsa seçili model; yoksa sezgisel fallback (anahtarsız dev).
+  const assistant: IntentAssistant = anyLlm
+    ? new SwitchableIntentAssistant(llmRouter, llmKeys)
+    : new HeuristicIntentAssistant();
+  const providerUsage = new HttpProviderUsageService({
+    deepseekKey: env.DEEPSEEK_API_KEY,
+    groqKey: env.GROQ_API_KEY,
+    supabaseAccessToken: env.SUPABASE_ACCESS_TOKEN,
+    supabaseUrl: env.SUPABASE_URL,
+    renderApiKey: env.RENDER_API_KEY,
+    vercelToken: env.VERCEL_TOKEN,
+    vercelTeamId: env.VERCEL_TEAM_ID,
+  });
   const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
   const channels = buildChannels(env);
@@ -251,8 +280,7 @@ export function createContainer(env: Env): Container {
   };
   const serviceHealth = buildServiceHealth(env);
 
-  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
-    const db = createSupabaseAdminClient(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY);
+  if (db) {
     return {
       topics: new SupabaseCanonicalTopicRepository(db),
       watches: new SupabaseWatchRepository(db),
@@ -272,6 +300,9 @@ export function createContainer(env: Env): Container {
       verifier,
       checkTimeoutMs,
       assistant,
+      settings,
+      llmRouter,
+      providerUsage,
       authority,
       notifier,
       queue,
@@ -303,6 +334,9 @@ export function createContainer(env: Env): Container {
     verifier,
     checkTimeoutMs,
     assistant,
+    settings,
+    llmRouter,
+    providerUsage,
     authority,
     notifier,
     queue,

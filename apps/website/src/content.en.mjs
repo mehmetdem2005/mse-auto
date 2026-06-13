@@ -3,10 +3,12 @@
 // on the site. Only genuinely reachable scenarios (nothing behind login/captcha).
 // Universal examples (not locked to one country). Answer-first, question H2s, short pages.
 
+// Global-first (ADR-096): EN kök dildir (/) — site "yalnız bir ülkeye özel" görünmez;
+// TR /tr altında tam eşlenik yaşar. x-default → EN.
 export const en = {
   lang: "en",
-  prefix: "/en",
-  useCaseBase: "/en/use-cases",
+  prefix: "",
+  useCaseBase: "/use-cases",
   langName: "English",
   otherLangLabel: "Türkçe",
 
@@ -31,6 +33,7 @@ export const en = {
     contact: "Contact",
     forAi: "For AI assistants: llms.txt",
     langSwitch: "Türkçe sürüm",
+    updated: "Content updated",
   },
 
   home: {
@@ -39,9 +42,10 @@ export const en = {
       'Say "tell me when this happens": Whenly checks public web sources at intervals and alerts you — with a real alarm if you want — when it appears. Free to start.',
     heroOverline: "Monitoring & alerts app",
     heroTitle: "Tell me <em>when.</em>",
+    // Çözümü sat (copywriting skill): ürün özelliği değil, kurtulduğun iş — "yenilemeyi bırak".
     heroSub:
-      "Describe what you want to watch in your own words. Whenly checks public web sources for you at regular intervals and sends a notification — or rings a real alarm — when what you are waiting for appears.",
-    heroCta: "Start free",
+      "Stop refreshing the page. Tell Whenly the moment you are waiting for — the price drop, the restock, the listing, the announcement — in one plain sentence. It checks public web sources at regular intervals and rings your phone when that moment arrives.",
+    heroCta: "Start watching free",
     heroCtaNote: "No credit card · Works on web and phone",
     heroSecondary: "How does it work?",
     phone: {
@@ -71,37 +75,38 @@ export const en = {
         d: "When what you are waiting for appears, you get a notification; for critical topics, alarm mode rings your phone.",
       },
     ],
-    featuresHeading: "What stands out",
+    // Fayda-önce (copywriting skill: benefits over features) — her madde "sana ne kazandırır".
+    featuresHeading: "What you get",
     features: [
       {
         icon: "zap",
-        t: "Plain-language setup",
-        d: 'Understands compound rules from a sentence — "in stock AND under $500" — with no rule engine to learn.',
+        t: "One sentence is the whole setup",
+        d: 'Compound rules straight from plain words — "in stock AND under $500". No rule engine to learn, no filters to build.',
       },
       {
         icon: "languages",
-        t: "In your language",
-        d: "Eleven interface languages including English and Turkish. Write your watch in your own words.",
+        t: "Works in your language",
+        d: "Eleven interface languages. Describe the watch the way you would say it out loud.",
       },
       {
         icon: "bellRing",
-        t: "Alarm mode",
-        d: "For critical watches, the alert rings your phone instead of arriving as a silent banner.",
+        t: "Alarm mode for the critical ones",
+        d: "Some moments can't wait in a silent tray: with Pro, the alert makes your phone actually ring.",
       },
       {
         icon: "clock",
-        t: "Quiet hours",
-        d: "Night-time alerts go silent; you catch up in the morning, on your terms.",
+        t: "Quiet hours, your terms",
+        d: "Night alerts hold until morning — you keep the coverage without trading away your sleep.",
       },
       {
         icon: "smartphone",
-        t: "Web and phone",
-        d: "Runs in any browser right away; there is an Android app too. Alerts arrive on your phone.",
+        t: "On web and phone",
+        d: "Start in any browser in a minute; there is an Android app too. Alerts land on your phone.",
       },
       {
         icon: "shieldCheck",
-        t: "Privacy first",
-        d: "We do not sell your data or use it for ads. Download all of it or delete it permanently anytime.",
+        t: "Private by default",
+        d: "No ads, no selling your data. Export everything or delete it permanently, anytime.",
       },
     ],
     pricingHeading: "Pricing is simple",
@@ -125,7 +130,8 @@ export const en = {
       note: "The free plan has no time limit and asks for no card. Upgrade to Pro inside the app; cancel anytime.",
     },
     useCasesHeading: "What people use it for",
-    useCasesSub: "Each scenario below is a real need you can track on public web sources.",
+    useCasesSub:
+      "Nine real jobs Whenly does on the public web — each one a moment people used to miss.",
     useCasesAll: "See all use cases",
     faqHeading: "Frequently asked questions",
     faq: [
@@ -153,9 +159,17 @@ export const en = {
         q: "Does it work on phone or web?",
         a: "Both. The web app runs in any browser; there is an Android app too. Alerts arrive on your phone, and Pro adds alarm mode for critical watches.",
       },
+      {
+        q: "Is there an app that just notifies me when something happens online?",
+        a: 'That is Whenly\'s whole job. You write the event in one sentence — "tell me when X happens" — and Whenly checks public web sources at regular intervals, then sends a push notification or rings an alarm when it occurs.',
+      },
+      {
+        q: "Is Whenly an AI app that monitors the web for me?",
+        a: "Yes. Whenly uses AI to turn your plain-language sentence into a monitoring intent and to judge whether what it finds really is the event you described. It reads public pages only — it never logs into accounts — and check timing is best-effort, not instant.",
+      },
     ],
-    ctaHeading: "Let Whenly keep watch",
-    ctaText: "Write one sentence and let go. Be the first to know when it happens.",
+    ctaHeading: "Let go of the refresh button",
+    ctaText: "Write one sentence and hand the watch over. Next time it happens, you know first.",
   },
 
   useCasesIndex: {
@@ -524,6 +538,106 @@ export const en = {
     ],
     afterTable:
       'Summary: for "alert me when this page changes", Visualping/Distill are the right choice; for "email me new content", Google Alerts. If your need is "I am waiting for an EVENT and my phone should ring the moment it happens", Whenly was designed for exactly that.',
+    // Rakip-bazlı derin karşılaştırmalar (GEO/ADR-097): "Whenly vs X" prompt'ları
+    // için ayrı, atıflanabilir sayfalar. Dürüstlük: rakibin güçlü yanı açıkça yazılır.
+    toolsHeading: "Head-to-head, one tool at a time",
+    strengthsHeading: "Where {name} shines",
+    whenHeading: "When Whenly is the better fit",
+    tools: [
+      {
+        slug: "google-alerts",
+        name: "Google Alerts",
+        col: "ga",
+        metaTitle: "Whenly vs Google Alerts (2026): event alerts vs email digests",
+        metaDescription:
+          "Google Alerts emails new content for a keyword; Whenly watches for the event you describe and rings your phone when it happens. An honest comparison.",
+        h1: "Whenly vs Google Alerts",
+        answer:
+          'Google Alerts is free and emails you when new content mentions a keyword. Whenly answers a different question: you describe an event with conditions — "tell me when it drops below $400" — and it pushes a notification or rings an alarm when that event happens. Many people use both.',
+        strengths: [
+          "Completely free, with no quotas to think about",
+          "Backed by Google's index — broad coverage of news and the open web",
+          "Email digests are easy to skim once a day",
+        ],
+        whenWhenly: [
+          "You wait for an EVENT with a condition (price under X, back in stock) — not a stream of articles",
+          "You need a push notification or a real alarm, not an email digest",
+          "You want compound rules in plain language, in 11 interface languages",
+        ],
+        faq: [
+          {
+            q: "Does Whenly replace Google Alerts?",
+            a: "They do different jobs. Google Alerts is great for following coverage of a topic by email. Whenly is built for catching a specific moment — it understands thresholds and rings your phone. Many people keep both.",
+          },
+          {
+            q: "Is Whenly free like Google Alerts?",
+            a: "Whenly's free plan includes 3 active watches with no time limit and no card required. Pro adds more watches, more frequent checks and alarm mode.",
+          },
+        ],
+      },
+      {
+        slug: "visualping",
+        name: "Visualping",
+        col: "vp",
+        metaTitle: "Whenly vs Visualping (2026): page diffs vs plain-language events",
+        metaDescription:
+          "Visualping excels at visual change detection on a page you specify. Whenly is topic-based: describe the event in plain language and get an alarm on your phone.",
+        h1: "Whenly vs Visualping",
+        answer:
+          "Visualping is a mature change-detection tool: give it a URL and it shows visual diffs of that page. Whenly starts from the other end — you describe the event in plain language, no URL required, and it pushes a notification or rings an alarm when the event appears on public sources.",
+        strengths: [
+          "Strong visual page-diff engine with screenshots and change highlighting",
+          "Polished, widely used browser extension and web app",
+          "A good fit when you know exactly which page to watch",
+        ],
+        whenWhenly: [
+          "You'd rather describe the outcome than hunt for the right URL",
+          'You want compound plain-language conditions — "in stock AND under $500"',
+          "You want a mobile-first app with alarm mode; as of mid-2026 Visualping does not offer an Android app on Google Play (tell us if this changes and we will correct it)",
+        ],
+        faq: [
+          {
+            q: "Is Whenly a Visualping alternative?",
+            a: 'For page-level visual diffs, Visualping remains a strong choice. If your need is "tell me when this event happens" — with conditions, on your phone, with an alarm — that is exactly what Whenly is built for.',
+          },
+          {
+            q: "Do I need to give Whenly a URL?",
+            a: "No. You can give one, but a plain sentence is enough; Whenly weighs matching public web signals together.",
+          },
+        ],
+      },
+      {
+        slug: "distill",
+        name: "Distill Web Monitor",
+        col: "di",
+        metaTitle: "Whenly vs Distill Web Monitor (2026): an honest comparison",
+        metaDescription:
+          "Distill offers fine-grained page monitoring for technical users. Whenly trades selector setup for plain language, alarm mode and a mobile-first experience.",
+        h1: "Whenly vs Distill Web Monitor",
+        answer:
+          "Distill is a powerful page monitor for technical users: pick elements with selectors, run local or cloud checks, fine-tune everything. Whenly takes the opposite path — one plain sentence, no selectors, public-web event detection with notifications and a real alarm on your phone.",
+        strengths: [
+          "Element-level selection gives precise control over what counts as a change",
+          "Local monitoring options appeal to privacy-minded technical users",
+          "Flexible scheduling and conditions for power users",
+        ],
+        whenWhenly: [
+          "You don't want to maintain selectors that break when a site changes layout",
+          "You prefer describing the event over configuring it",
+          "You want alarm mode and a phone-first experience in 11 languages",
+        ],
+        faq: [
+          {
+            q: "Is Whenly easier to set up than Distill?",
+            a: "Yes, by design: setup is one sentence. The trade-off is less fine-grained control than selector-based tools — power users may still prefer Distill for page-element diffs.",
+          },
+          {
+            q: "Can Whenly watch a specific page like Distill?",
+            a: "Yes — give it a URL or just describe the topic. Whenly watches public pages only, and says that limit plainly.",
+          },
+        ],
+      },
+    ],
     faq: [
       {
         q: "Does Whenly replace Google Alerts?",

@@ -36,7 +36,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="canonical" href="${canonical}">
 <link rel="alternate" hreflang="tr" href="${trUrl}">
 <link rel="alternate" hreflang="en" href="${enUrl}">
-<link rel="alternate" hreflang="x-default" href="${trUrl}">
+<link rel="alternate" hreflang="x-default" href="${enUrl}">
 <meta name="theme-color" content="${BRAND.ink}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${BRAND.name}">
@@ -140,10 +140,14 @@ function footer(L, altPath) {
         </ul>
       </nav>
     </div>
-    <p class="ftr-note">© ${new Date().getFullYear()} ${BRAND.name}</p>
+    <p class="ftr-note">© ${new Date().getFullYear()} ${BRAND.name} · ${esc(L.footer.updated)}: <time datetime="${BUILD_DAY}">${BUILD_DAY}</time></p>
   </div>
 </footer>`;
 }
+
+/** Görünür tazelik damgası (GEO/ADR-097): AI atıf önceliği ~14 günde düştüğünden
+ *  her build'de yenilenen tarih tüm sayfaların footer'ında işaretlenir. */
+const BUILD_DAY = new Date().toISOString().slice(0, 10);
 
 /** Bası-geri-bildirimli birincil/ikincil buton atomu. @param {string} href @param {string} label @param {"primary"|"ghost"} kind @param {boolean} [withIcon] */
 function btn(href, label, kind, withIcon = true) {
@@ -452,8 +456,94 @@ export function compareBody(L) {
     <p class="lead rv">${esc(C.afterTable)}</p>
   </div>
 </section>
+
+<section class="sec" aria-labelledby="cmp-deep-h">
+  <div class="wrap">
+    <h2 id="cmp-deep-h" class="sec-h rv">${esc(C.toolsHeading)}</h2>
+    <div class="grid3">
+      ${C.tools
+        .map(
+          (/** @type {any} */ t, /** @type {number} */ i) =>
+            `<a class="card uc-card rv" style="--d:${(i % 3) * 70}ms" href="${L.prefix}/${C.slug}/${t.slug}/">
+        <h3>${esc(t.h1)}</h3>
+        <p>${esc(t.metaDescription)}</p>
+        <span class="uc-more">${icon("arrowRight", 16)}</span>
+      </a>`,
+        )
+        .join("\n      ")}
+    </div>
+  </div>
+</section>
 ${faqSection(C.faq, L.home.faqHeading, "cmp-faq")}
 ${ctaBand(L)}`;
+}
+
+/** Rakip-bazlı derin karşılaştırma sayfası (GEO/ADR-097) — dürüstlük: rakibin
+ *  güçlü yanları açıkça listelenir; tablo ana sayfanın TEK kaynağındaki satırlardan türer.
+ *  @param {any} L @param {any} t */
+export function compareToolBody(L, t) {
+  const C = L.compare;
+  return `<article>
+<section class="sec sec-first">
+  <div class="wrap narrow">
+    ${breadcrumb(L, [
+      [`${L.prefix}/${C.slug}/`, L.nav.compare],
+      ["", t.h1],
+    ])}
+    <h1 class="rv">${esc(t.h1)}</h1>
+    <p class="lead answer rv">${esc(t.answer)}</p>
+    <div class="hero-actions rv">${btn(APP_URL, L.home.heroCta, "primary")}</div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="ct-table-h">
+  <div class="wrap narrow">
+    <h2 id="ct-table-h" class="sec-h rv">${esc(C.tableCaption)}</h2>
+    <div class="tscroll rv" role="region" aria-label="${esc(C.tableCaption)}" tabindex="0">
+      <table>
+        <caption>${esc(t.h1)}</caption>
+        <thead>
+          <tr><th scope="col"></th><th scope="col" class="t-self">${esc(C.colSelf)}</th><th scope="col">${esc(t.name)}</th></tr>
+        </thead>
+        <tbody>
+          ${C.rows
+            .map(
+              (/** @type {any} */ r) =>
+                `<tr><th scope="row">${esc(r.f)}</th><td class="t-self">${esc(r.self)}</td><td>${esc(r[t.col])}</td></tr>`,
+            )
+            .join("\n          ")}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="sec" aria-labelledby="ct-str-h">
+  <div class="wrap narrow">
+    <h2 id="ct-str-h" class="sec-h rv">${esc(C.strengthsHeading.replace("{name}", t.name))}</h2>
+    <ul class="pains">
+      ${t.strengths
+        .map(
+          (/** @type {string} */ s, /** @type {number} */ i) =>
+            `<li class="rv" style="--d:${i * 70}ms">${icon("check", 18)}<span>${esc(s)}</span></li>`,
+        )
+        .join("\n      ")}
+    </ul>
+    <h2 class="sec-h rv">${esc(C.whenHeading)}</h2>
+    <ul class="pains">
+      ${t.whenWhenly
+        .map(
+          (/** @type {string} */ s, /** @type {number} */ i) =>
+            `<li class="rv" style="--d:${i * 70}ms">${icon("zap", 18)}<span>${esc(s)}</span></li>`,
+        )
+        .join("\n      ")}
+    </ul>
+  </div>
+</section>
+
+${faqSection(t.faq, L.home.faqHeading, "ct-faq")}
+${ctaBand(L)}
+</article>`;
 }
 
 /** Hakkında sayfası. @param {any} L */

@@ -158,6 +158,40 @@ export interface AdminTimeseries {
   totals: { checkRuns: number; detections: number; deliveries: number };
 }
 
+// ---- LLM model seçimi + sağlayıcı kullanım panosu (ADR-095) ----
+export interface LlmModel {
+  id: string;
+  provider: "groq" | "deepseek";
+  model: string;
+  label: string;
+  note: string;
+  available: boolean;
+}
+export interface LlmConfig {
+  active: string | null;
+  /** false → app_settings migration'ı canlıda yok; seçim deploy'da sıfırlanır. */
+  persisted: boolean;
+  models: LlmModel[];
+}
+export interface ProviderMetric {
+  label: string;
+  value: string;
+  limit: string | null;
+}
+export interface ProviderUsage {
+  id: "deepseek" | "groq" | "supabase" | "render" | "vercel";
+  name: string;
+  configured: boolean;
+  ok: boolean;
+  metrics: ProviderMetric[];
+  error: string | null;
+  consoleUrl: string;
+  fetchedAt: string;
+}
+export interface AdminProviders {
+  providers: ProviderUsage[];
+}
+
 // ---- Watcher "araştırma" geçmişi ----
 export interface SearchHitView {
   title: string;
@@ -332,6 +366,10 @@ export const api = {
   adminStats: () => req<AdminStats>("/v1/admin/analytics"),
   adminTimeseries: (days = 14) => req<AdminTimeseries>(`/v1/admin/timeseries?days=${days}`),
   adminTraffic: (days = 30) => req<AdminTraffic>(`/v1/admin/traffic?days=${days}`),
+  adminModel: () => req<LlmConfig>("/v1/admin/model"),
+  setAdminModel: (model: string) =>
+    req<LlmConfig>("/v1/admin/model", { method: "PUT", body: JSON.stringify({ model }) }),
+  adminProviders: () => req<AdminProviders>("/v1/admin/providers"),
   adminPrices: () => req<Plans>("/v1/admin/prices"),
   setPrice: (interval: BillingInterval, amountCents: number, currency: string) =>
     req<Plans>("/v1/admin/prices", {

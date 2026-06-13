@@ -26,6 +26,12 @@ const EnvSchema = z.object({
   GROQ_ASSISTANT_MODEL: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
+  // Sağlayıcı kullanım panosu (ADR-095) — admin "Kaynaklar" kartları; hepsi opsiyonel,
+  // tanımsız olan kart dürüstçe "token yok" gösterir.
+  SUPABASE_ACCESS_TOKEN: z.string().min(1).optional(), // Management API (sbp_…)
+  RENDER_API_KEY: z.string().min(1).optional(), // rnd_… (dashboard → API Keys)
+  VERCEL_TOKEN: z.string().min(1).optional(),
+  VERCEL_TEAM_ID: z.string().min(1).optional(),
   // FCM push (yoksa NoopNotifier — dev)
   FCM_PROJECT_ID: z.string().min(1).optional(),
   GOOGLE_SERVICE_ACCOUNT_JSON: z.string().min(1).optional(),

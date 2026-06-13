@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
 import { groqJsonChatWithUsage } from "../groq/groq-json";
+import { buildReasonPrompt } from "../llm/prompts";
 
 const ReasonSchema = z.object({
   detected: z.boolean(),
@@ -11,7 +12,7 @@ const ReasonSchema = z.object({
 
 /**
  * Groq (OpenAI-uyumlu, JSON modu) olay muhakemesi. PII'siz girdi.
- * Geçici reasoner (ücretsiz/hızlı); DeepSeek fonlanınca kalıcıya geçilir.
+ * İstem tek kaynaktan (llm/prompts — ADR-095): model değişse de sözleşme aynı.
  */
 export class GroqEventReasoner implements EventReasoner {
   constructor(
@@ -21,25 +22,7 @@ export class GroqEventReasoner implements EventReasoner {
   ) {}
 
   async reason(input: ReasonInput): Promise<ReasonResult> {
-    const system = [
-      "Bir olay-tespit asistanısın. Kullanıcının izlediği konuyla ilgili web arama sonuçları verilir.",
-      "Olayın GERÇEKLEŞİP gerçekleşmediğine yalnızca sonuçlara dayanarak karar ver; tahmin yürütme.",
-      'Çıktıyı şu JSON şemasıyla ver: {"detected": boolean, "description": string|null, "reasoning": string, "confidence": number 0..1}.',
-      "detected=true ise description olayın kısa, PII'siz açıklamasıdır; aksi halde null.",
-      "ÖNEMLİ: 'Daha önce bildirilen olay' verilirse, yalnızca ondan FARKLI/YENİ bir gelişme tespittir; aynı olayın tekrarı/teyidi için detected=false ver ve reasoning'de 'daha önce bildirildi' de.",
-      "KAYNAK GÜVENİLİRLİĞİ: '[CANLI]' etiketli içerik kurumun sitesinden TARAMA ANINDA alınmıştır — en güncel ve en güçlü kanıttır. '[RESMÎ]' etiketli sonuçlar kurumun sitesinden indekslenmiştir — ikinci en güçlü. Haber siteleriyle çelişirse canlı/resmî esastır; hiçbiri yoksa en YENİ tarihli habere ağırlık ver.",
-      "TARİH: Sana bugünün tarihi verilir. Sonuçların tarihlerini bugünle kıyasla — bugüne yakın tarihli kanıt olmadan detected=true verme; eski tarihli (geçen yıl/aylar önce) haber güncel olayın kanıtı DEĞİLDİR.",
-    ].join(" ");
-    const user = [
-      `Bugünün tarihi: ${new Date().toISOString().slice(0, 10)}`,
-      `İzlenen konu: ${input.canonicalQuery}`,
-      ...(input.lastEventDescription
-        ? [`Daha önce bildirilen olay: ${input.lastEventDescription}`]
-        : []),
-      "Arama sonuçları:",
-      ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
-    ].join("\n");
-
+    const { system, user } = buildReasonPrompt(input);
     const { content, tokensUsed } = await groqJsonChatWithUsage({
       apiKey: this.apiKey,
       model: this.model,

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isoTimestamp } from "./common";
 import { billingIntervalSchema } from "./subscription";
 
 export const setPriceInputSchema = z.object({
@@ -128,3 +129,63 @@ export const giftProInputSchema = z.object({ interval: billingIntervalSchema });
 export type SetAdminInput = z.infer<typeof setAdminInputSchema>;
 export type SetWatchStatusInput = z.infer<typeof setWatchStatusInputSchema>;
 export type GiftProInput = z.infer<typeof giftProInputSchema>;
+
+// ---- LLM model seçimi (ADR-095) ----
+// Admin global modeli seçer; reasoner + verifier + asistan seçili modelle çalışır.
+
+export const llmModelSchema = z.object({
+  /** Katalog kimliği: "<provider>/<model>" (örn. "deepseek/deepseek-v4-pro"). */
+  id: z.string(),
+  provider: z.enum(["groq", "deepseek"]),
+  /** Sağlayıcıya giden gerçek model adı. */
+  model: z.string(),
+  label: z.string(),
+  /** Kısa nitelik notu (hız/derinlik) — pazarlama değil, dürüst beklenti. */
+  note: z.string(),
+  /** API anahtarı env'de tanımlı mı — değilse seçilemez. */
+  available: z.boolean(),
+});
+export type LlmModel = z.infer<typeof llmModelSchema>;
+
+export const llmConfigSchema = z.object({
+  /** Aktif katalog kimliği; hiçbir sağlayıcı anahtarı yoksa null. */
+  active: z.string().nullable(),
+  /** Seçim kalıcı depoda mı (app_settings) — false ise deploy'da sıfırlanır. */
+  persisted: z.boolean(),
+  models: z.array(llmModelSchema),
+});
+export type LlmConfig = z.infer<typeof llmConfigSchema>;
+
+export const setLlmModelInputSchema = z.object({ model: z.string().min(1) });
+export type SetLlmModelInput = z.infer<typeof setLlmModelInputSchema>;
+
+// ---- Sağlayıcı kullanım panosu (ADR-095) ----
+// GERÇEK çekilen veri: her kart sağlayıcının kendi API'sinden gelir; token yoksa
+// veya uç hata verirse durum DÜRÜSTÇE gösterilir (uydurma metrik yazılmaz).
+
+export const providerMetricSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+  /** Varsa kota/limit bağlamı (örn. "/ 100 GB"). */
+  limit: z.string().nullable(),
+});
+export type ProviderMetric = z.infer<typeof providerMetricSchema>;
+
+export const providerUsageSchema = z.object({
+  id: z.enum(["deepseek", "groq", "supabase", "render", "vercel"]),
+  name: z.string(),
+  /** İlgili token/anahtar env'de tanımlı mı. */
+  configured: z.boolean(),
+  /** Veri çekimi başarılı mı (configured=false iken her zaman false). */
+  ok: z.boolean(),
+  metrics: z.array(providerMetricSchema),
+  /** configured=false → hangi env eksik; ok=false → uç hatası. */
+  error: z.string().nullable(),
+  /** Panele gidilecek konsol adresi (dürüst yönlendirme). */
+  consoleUrl: z.string(),
+  fetchedAt: isoTimestamp,
+});
+export type ProviderUsage = z.infer<typeof providerUsageSchema>;
+
+export const adminProvidersSchema = z.object({ providers: z.array(providerUsageSchema) });
+export type AdminProviders = z.infer<typeof adminProvidersSchema>;

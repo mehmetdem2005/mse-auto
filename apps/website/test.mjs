@@ -26,9 +26,9 @@ function walk(dir) {
 }
 const htmlFiles = walk(OUT).filter((f) => f.endsWith(".html"));
 
-test("her sayfa üretildi (TR+EN: 2 ana + 2 dizin + 18 çözüm + 2 karşılaştırma + 2 hakkında + 4 hukuki)", () => {
-  assert.equal(result.pageCount, 30);
-  assert.equal(htmlFiles.length, 31); // + 404.html
+test("her sayfa üretildi (TR+EN: 2 ana + 2 dizin + 18 çözüm + 2 karşılaştırma + 6 rakip-karşılaştırma + 2 hakkında + 4 hukuki)", () => {
+  assert.equal(result.pageCount, 36);
+  assert.equal(htmlFiles.length, 37); // + 404.html
 });
 
 test("TR↔EN çözüm eşleniği tam ve simetrik", () => {
@@ -87,7 +87,7 @@ test("iç bağlantıların tamamı üretilen bir sayfaya/dosyaya gider", () => {
 });
 
 test("sayfa-içi çapa hedefleri mevcut (#how, #faq)", () => {
-  for (const home of ["index.html", "en/index.html"]) {
+  for (const home of ["index.html", "tr/index.html"]) {
     const html = readFileSync(path.join(OUT, home), "utf8");
     for (const anchor of html.matchAll(/href="[^"]*#([\w-]+)"/g)) {
       assert.match(html, new RegExp(`id="${anchor[1]}"`), `${home} → #${anchor[1]}`);
@@ -129,7 +129,7 @@ test("tüm JSON-LD blokları geçerli JSON ve @context taşır", () => {
 });
 
 test("ana sayfalar SoftwareApplication + FAQPage şeması içerir", () => {
-  for (const home of ["index.html", "en/index.html"]) {
+  for (const home of ["index.html", "tr/index.html"]) {
     const html = readFileSync(path.join(OUT, home), "utf8");
     assert.match(html, /"@type":"SoftwareApplication"/, home);
     assert.match(html, /"@type":"FAQPage"/, home);
