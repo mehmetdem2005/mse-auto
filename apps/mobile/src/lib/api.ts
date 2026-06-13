@@ -206,6 +206,17 @@ export interface AdminProviders {
   providers: ProviderUsage[];
 }
 
+// ---- Gelir & büyüme (ADR-103) ----
+export interface AdminGrowth {
+  days: number;
+  signups: { date: string; count: number }[];
+  totalUsers: number;
+  newUsersInRange: number;
+  funnel: { free: number; pro: number; conversionRate: number };
+  churn: { canceled: number };
+  mrrCents: number;
+}
+
 // ---- Operasyon & sağlık (ADR-102) ----
 export interface AdminOps {
   days: number;
@@ -359,6 +370,16 @@ async function req<T>(path: string, init?: ReqInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+/** Auth'lu ham metin (CSV dışa aktarım — ADR-103). */
+async function reqText(path: string): Promise<string> {
+  const token = useAuth.getState().session?.token;
+  const res = await fetch(`${BASE}${path}`, {
+    headers: token ? { authorization: `Bearer ${token}` } : {},
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.text();
+}
+
 export const api = {
   me: () => req<Me>("/v1/me"),
   meStats: () => req<MeStats>("/v1/me/stats"),
@@ -399,6 +420,9 @@ export const api = {
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),
   adminUserDetail: (id: string) => req<AdminUserDetail>(`/v1/admin/users/${id}`),
   adminOps: (days = 7) => req<AdminOps>(`/v1/admin/ops?days=${days}`),
+  adminGrowth: (days = 30) => req<AdminGrowth>(`/v1/admin/growth?days=${days}`),
+  exportUsersCsv: () => reqText("/v1/admin/export/users.csv"),
+  exportSubscriptionsCsv: () => reqText("/v1/admin/export/subscriptions.csv"),
   setUserAdmin: (id: string, makeAdmin: boolean) =>
     req<{ ok: boolean }>(`/v1/admin/users/${id}/admin`, {
       method: "POST",

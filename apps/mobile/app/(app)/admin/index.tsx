@@ -13,6 +13,7 @@ import {
   CreditCard,
   Gauge,
   LifeBuoy,
+  LineChart,
   type LucideIcon,
   Megaphone,
   Server,
@@ -26,6 +27,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 const SECTIONS: {
   href:
     | "/admin/analytics"
+    | "/admin/growth"
     | "/admin/traffic"
     | "/admin/stats"
     | "/admin/ops"
@@ -42,6 +44,7 @@ const SECTIONS: {
   desc: string;
 }[] = [
   { href: "/admin/analytics", Icon: TrendingUp, title: "Analitik", desc: "Kullanıcı · MRR · plan" },
+  { href: "/admin/growth", Icon: LineChart, title: "Büyüme", desc: "Kayıt trendi · huni · CSV" },
   { href: "/admin/traffic", Icon: Gauge, title: "Trafik", desc: "Site + uygulama edinimi" },
   { href: "/admin/stats", Icon: BarChart3, title: "İstatistik", desc: "Kontrol · tespit · teslim" },
   { href: "/admin/ops", Icon: Activity, title: "Operasyon", desc: "Sağlık · teslimat · token" },
