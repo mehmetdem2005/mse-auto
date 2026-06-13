@@ -89,7 +89,7 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
     if (authErr || !authData?.user) return null;
     const u = authData.user;
     const nowIso = new Date().toISOString();
-    const [adminRes, subRes, watchRes, chanRes, devRes, ticketRes] = await Promise.all([
+    const [adminRes, subRes, watchRes, chanRes, devRes, ticketRes, profileRes] = await Promise.all([
       this.db.from("admins").select("user_id").eq("user_id", userId).maybeSingle(),
       this.db.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
       this.db
@@ -104,6 +104,7 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         .eq("user_id", userId)
         .order("created_at", { ascending: false }),
       this.db.from("support_tickets").select("status").eq("user_id", userId),
+      this.db.from("profiles").select("banned").eq("id", userId).maybeSingle(),
     ]);
 
     const sub = subRes.data;
@@ -156,6 +157,7 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         open: tickets.filter((t) => t.status === "open").length,
         total: tickets.length,
       },
+      banned: profileRes.data?.banned ?? false,
     };
   }
 
@@ -258,6 +260,17 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       churn: { canceled: canceledSubs.count ?? 0 },
       mrrCents,
     };
+  }
+
+  async segmentTokens(segment: "all" | "free" | "pro"): Promise<string[]> {
+    const { data, error } = await this.db.from("device_tokens").select("fcm_token, user_id");
+    if (error) throw new Error(`segment tokens: ${error.message}`);
+    const rows = data ?? [];
+    if (segment === "all") return rows.map((r) => r.fcm_token);
+    const proIds = await this.activeProUserIds();
+    return rows
+      .filter((r) => (segment === "pro" ? proIds.has(r.user_id) : !proIds.has(r.user_id)))
+      .map((r) => r.fcm_token);
   }
 
   async setAdmin(userId: string, makeAdmin: boolean): Promise<void> {

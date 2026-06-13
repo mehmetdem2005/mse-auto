@@ -14,6 +14,7 @@ import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
 import type { IntentAssistant } from "../domain/intent-assistant";
 import type { Logger } from "../domain/logger";
+import type { ModerationRepository } from "../domain/moderation";
 import type { MonitoringRepository } from "../domain/monitoring";
 import type { Notifier } from "../domain/notifier";
 import type { PaymentGateway } from "../domain/payment";
@@ -41,6 +42,7 @@ import { InMemoryAdminRepository } from "../infrastructure/in-memory/admin.repo"
 import { InMemoryAnalyticsRepository } from "../infrastructure/in-memory/analytics.repo";
 import { InMemoryAnnouncementRepository } from "../infrastructure/in-memory/announcement.repo";
 import { InMemoryDeviceRepository } from "../infrastructure/in-memory/device.repo";
+import { InMemoryModerationRepository } from "../infrastructure/in-memory/moderation.repo";
 import { InMemoryMonitoringRepository } from "../infrastructure/in-memory/monitoring.repo";
 import { InMemoryPaymentGateway } from "../infrastructure/in-memory/payment.gateway";
 import { InMemoryPriceRepository } from "../infrastructure/in-memory/price.repo";
@@ -81,6 +83,7 @@ import { SupabaseAnalyticsRepository } from "../infrastructure/supabase/analytic
 import { SupabaseAnnouncementRepository } from "../infrastructure/supabase/announcement.repo";
 import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
 import { SupabaseDeviceRepository } from "../infrastructure/supabase/device.repo";
+import { SupabaseModerationRepository } from "../infrastructure/supabase/moderation.repo";
 import { SupabaseMonitoringRepository } from "../infrastructure/supabase/monitoring.repo";
 import { SupabasePriceRepository } from "../infrastructure/supabase/price.repo";
 import { SupabaseSettingsRepository } from "../infrastructure/supabase/settings.repo";
@@ -122,6 +125,10 @@ export interface Container {
   providerUsage: ProviderUsagePort;
   authority: AuthorityResolver;
   notifier: Notifier;
+  /** Moderasyon + denetim günlüğü (ADR-104). */
+  moderation: ModerationRepository;
+  /** FCM yapılandırıldı mı? false ise push yayını "kanal pasif" döner (ADR-104, dürüst). */
+  pushActive: boolean;
   queue: JobQueue;
   auth: AuthVerifier;
   payment: PaymentGateway;
@@ -268,6 +275,7 @@ export function createContainer(env: Env): Container {
   });
   const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
+  const pushActive = !!(env.FCM_PROJECT_ID && env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const channels = buildChannels(env);
   const auth = buildAuth(env);
   const payment = buildPayment(env);
@@ -298,6 +306,8 @@ export function createContainer(env: Env): Container {
       prices: new SupabasePriceRepository(db),
       admin: new SupabaseAdminRepository(db),
       adminConsole: new SupabaseAdminConsoleRepository(db),
+      moderation: new SupabaseModerationRepository(db),
+      pushActive,
       analytics: new SupabaseAnalyticsRepository(db),
       support: new SupabaseSupportRepository(db),
       announcements: new SupabaseAnnouncementRepository(db),
@@ -333,6 +343,8 @@ export function createContainer(env: Env): Container {
     prices: new InMemoryPriceRepository(store),
     admin: new InMemoryAdminRepository(adminIdsFromEnv(env)),
     adminConsole: new InMemoryAdminConsoleRepository(),
+    moderation: new InMemoryModerationRepository(),
+    pushActive,
     analytics: new InMemoryAnalyticsRepository(store),
     support: new InMemorySupportRepository(store),
     announcements: new InMemoryAnnouncementRepository(),

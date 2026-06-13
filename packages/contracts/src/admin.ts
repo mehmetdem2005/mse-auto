@@ -84,6 +84,7 @@ export const adminUserDetailSchema = adminUserSchema.extend({
     .nullable(),
   devices: z.array(z.object({ id: z.string(), platform: z.string(), createdAt: z.string() })),
   support: z.object({ open: z.number().int(), total: z.number().int() }),
+  banned: z.boolean(),
 });
 export type AdminUserDetail = z.infer<typeof adminUserDetailSchema>;
 
@@ -120,6 +121,48 @@ export const adminGrowthSchema = z.object({
   mrrCents: z.number().int(),
 });
 export type AdminGrowth = z.infer<typeof adminGrowthSchema>;
+
+// ---- Etkileşim & moderasyon (ADR-104) ----
+
+/** Push yayın segmenti: tüm kullanıcılar / yalnız ücretsiz / yalnız pro. */
+export const broadcastSegmentSchema = z.enum(["all", "free", "pro"]);
+export type BroadcastSegment = z.infer<typeof broadcastSegmentSchema>;
+
+/** Admin push yayını girişi — başlık + metin (FCM bildirim gövdesi sınırlarına yakın). */
+export const adminBroadcastInputSchema = z.object({
+  title: z.string().min(2).max(80),
+  body: z.string().min(2).max(240),
+  segment: broadcastSegmentSchema.default("all"),
+});
+export type AdminBroadcastInput = z.infer<typeof adminBroadcastInputSchema>;
+
+/** Yayın sonucu — kanal pasifse (FCM yok) `channel: "inactive"` ve sayılar 0. */
+export const adminBroadcastResultSchema = z.object({
+  channel: z.enum(["fcm", "inactive"]),
+  segment: broadcastSegmentSchema,
+  recipients: z.number().int(),
+  sent: z.number().int(),
+  failed: z.number().int(),
+});
+export type AdminBroadcastResult = z.infer<typeof adminBroadcastResultSchema>;
+
+/** Moderasyon: kullanıcı ban/aktif. */
+export const adminBanInputSchema = z.object({ banned: z.boolean() });
+export type AdminBanInput = z.infer<typeof adminBanInputSchema>;
+
+/** Denetim günlüğü satırı (salt-okunur, değiştirilemez). */
+export const adminAuditRowSchema = z.object({
+  id: z.string(),
+  actorId: z.string(),
+  action: z.string(),
+  targetType: z.string(),
+  targetId: z.string().nullable(),
+  meta: z.record(z.string(), z.unknown()).nullable(),
+  createdAt: z.string(),
+});
+export type AdminAuditRow = z.infer<typeof adminAuditRowSchema>;
+
+export const adminAuditListSchema = z.array(adminAuditRowSchema);
 
 export const adminSystemSchema = z.object({
   now: z.string(),

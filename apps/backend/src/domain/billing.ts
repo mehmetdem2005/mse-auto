@@ -173,6 +173,8 @@ export interface AdminUserDetail extends AdminUserRow {
   channels: { telegram: boolean; email: boolean; whatsapp: boolean; enabled: string[] } | null;
   devices: { id: string; platform: string; createdAt: string }[];
   support: { open: number; total: number };
+  /** Moderasyon (ADR-104): banlıysa kullanıcı tüm /v1'de 403 alır. */
+  banned: boolean;
 }
 
 /** Operasyon & sağlık anlık görüntüsü (ADR-102) — son `days` günlük işleyiş özeti. */
@@ -211,6 +213,8 @@ export interface AdminConsoleRepository {
   getOps(days: number): Promise<AdminOps>;
   /** Gelir & büyüme analitiği (son `days` gün). */
   getGrowth(days: number): Promise<AdminGrowth>;
+  /** Push yayın hedefi: segmentteki kullanıcıların cihaz token'ları (ADR-104). */
+  segmentTokens(segment: "all" | "free" | "pro"): Promise<string[]>;
   /** Tek kullanıcının 360° detayı; yoksa null. */
   getUserDetail(userId: string): Promise<AdminUserDetail | null>;
   setAdmin(userId: string, makeAdmin: boolean): Promise<void>;
