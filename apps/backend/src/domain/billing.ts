@@ -192,11 +192,25 @@ export interface AdminOps {
   };
 }
 
+/** Gelir & büyüme analitiği (ADR-103). */
+export interface AdminGrowth {
+  days: number;
+  /** Günlük yeni kayıt (eskiden yeniye), son `days` gün. */
+  signups: { date: string; count: number }[];
+  totalUsers: number;
+  newUsersInRange: number;
+  funnel: { free: number; pro: number; conversionRate: number };
+  churn: { canceled: number };
+  mrrCents: number;
+}
+
 /** Admin paneli için yönetim işlemleri (yalnız admin middleware arkasında). */
 export interface AdminConsoleRepository {
   listUsers(): Promise<AdminUserRow[]>;
   /** Operasyon & sağlık özeti (son `days` gün). */
   getOps(days: number): Promise<AdminOps>;
+  /** Gelir & büyüme analitiği (son `days` gün). */
+  getGrowth(days: number): Promise<AdminGrowth>;
   /** Tek kullanıcının 360° detayı; yoksa null. */
   getUserDetail(userId: string): Promise<AdminUserDetail | null>;
   setAdmin(userId: string, makeAdmin: boolean): Promise<void>;

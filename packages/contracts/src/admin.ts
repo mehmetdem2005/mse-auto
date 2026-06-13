@@ -105,6 +105,22 @@ export const adminOpsSchema = z.object({
 });
 export type AdminOps = z.infer<typeof adminOpsSchema>;
 
+/** Gelir & büyüme (ADR-103). */
+export const adminGrowthSchema = z.object({
+  days: z.number().int(),
+  signups: z.array(z.object({ date: z.string(), count: z.number().int() })),
+  totalUsers: z.number().int(),
+  newUsersInRange: z.number().int(),
+  funnel: z.object({
+    free: z.number().int(),
+    pro: z.number().int(),
+    conversionRate: z.number(),
+  }),
+  churn: z.object({ canceled: z.number().int() }),
+  mrrCents: z.number().int(),
+});
+export type AdminGrowth = z.infer<typeof adminGrowthSchema>;
+
 export const adminSystemSchema = z.object({
   now: z.string(),
   backend: z.string(),

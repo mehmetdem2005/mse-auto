@@ -1,5 +1,6 @@
 import type {
   AdminConsoleRepository,
+  AdminGrowth,
   AdminOps,
   AdminSubscriptionRow,
   AdminSystemInfo,
@@ -27,6 +28,17 @@ export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
       days,
       checks: { total: 0, detections: 0, detectionRate: 0, avgConfidence: null, tokensUsed: 0 },
       deliveries: { total: 0, byStatus: [], byChannel: [] },
+    };
+  }
+  async getGrowth(days: number): Promise<AdminGrowth> {
+    return {
+      days,
+      signups: [],
+      totalUsers: 0,
+      newUsersInRange: 0,
+      funnel: { free: 0, pro: 0, conversionRate: 0 },
+      churn: { canceled: 0 },
+      mrrCents: 0,
     };
   }
   async setAdmin(): Promise<void> {}

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AdminConsoleRepository,
+  AdminGrowth,
   AdminOps,
   AdminSubscriptionRow,
   AdminSystemInfo,
@@ -200,6 +201,62 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         byStatus: tally(dels.map((d) => ({ key: d.status }))),
         byChannel: tally(dels.map((d) => ({ key: d.channel }))),
       },
+    };
+  }
+
+  async getGrowth(days: number): Promise<AdminGrowth> {
+    const since = sinceIso(days);
+    const nowIso = new Date().toISOString();
+    const [users, proIds, activeSubs, canceledSubs] = await Promise.all([
+      this.authUserList(),
+      this.activeProUserIds(),
+      // MRR kaynağı analytics.repo ile AYNI kanon: status=active + süresi geçmemiş + yıllık /12.
+      this.db
+        .from("subscriptions")
+        .select("amount_cents, billing_interval")
+        .eq("status", "active")
+        .gt("current_period_end", nowIso),
+      this.db
+        .from("subscriptions")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "canceled"),
+    ]);
+    if (activeSubs.error) throw new Error(`growth subs: ${activeSubs.error.message}`);
+
+    // Günlük kayıt kovaları — emptyBuckets sıralı gün anahtarlarını verir.
+    const dayCounts = new Map<string, number>([...emptyBuckets(days).keys()].map((k) => [k, 0]));
+    let newInRange = 0;
+    for (const u of users) {
+      if (u.createdAt < since) continue;
+      newInRange += 1;
+      const k = dayKey(u.createdAt);
+      if (dayCounts.has(k)) dayCounts.set(k, (dayCounts.get(k) ?? 0) + 1);
+    }
+    const signups = [...dayCounts.entries()].map(([date, count]) => ({ date, count }));
+
+    const pro = proIds.size;
+    const total = users.length;
+    // Yıllık abonelik aylığa normalize (/12) — home/analytics MRR'ı ile birebir tutarlı.
+    const mrrCents = (activeSubs.data ?? []).reduce(
+      (a, s) =>
+        a +
+        (s.billing_interval === "year"
+          ? Math.round((s.amount_cents ?? 0) / 12)
+          : (s.amount_cents ?? 0)),
+      0,
+    );
+    return {
+      days,
+      signups,
+      totalUsers: total,
+      newUsersInRange: newInRange,
+      funnel: {
+        free: Math.max(0, total - pro),
+        pro,
+        conversionRate: total > 0 ? Math.round((pro / total) * 100) : 0,
+      },
+      churn: { canceled: canceledSubs.count ?? 0 },
+      mrrCents,
     };
   }
 
