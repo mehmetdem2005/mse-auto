@@ -6,7 +6,7 @@ import { useReduceMotion } from "@/lib/reduce-motion";
 import { useTheme } from "@/theme";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Dimensions, Modal, Pressable, ScrollView, View } from "react-native";
+import { Dimensions, Modal, Platform, Pressable, ScrollView, View } from "react-native";
 import Animated, { SlideInDown, SlideOutDown } from "react-native-reanimated";
 
 export function BottomSheet({
@@ -39,8 +39,13 @@ export function BottomSheet({
         ]}
       >
         <Animated.View
-          entering={reduce ? undefined : SlideInDown.springify().damping(20).stiffness(220)}
-          exiting={reduce ? undefined : SlideOutDown.duration(180)}
+          // Reanimated layout animasyonları web'de GPU yırtılması üretir → native'e kıstır.
+          entering={
+            reduce || Platform.OS === "web"
+              ? undefined
+              : SlideInDown.springify().damping(20).stiffness(220)
+          }
+          exiting={reduce || Platform.OS === "web" ? undefined : SlideOutDown.duration(180)}
         >
           {/* İç basışlar kapanmayı tetiklemesin */}
           <Pressable onPress={(e) => e.stopPropagation()}>

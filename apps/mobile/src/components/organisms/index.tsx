@@ -42,7 +42,9 @@ export function GradientHero({
         paddingHorizontal: 20,
       }}
     >
-      <Animated.View entering={reduce ? undefined : FadeIn.duration(400)}>
+      {/* Reanimated layout `entering` web'de GPU yırtılması üretir (motion.tsx notu) →
+          native'e kıstırılır; web'de düz render. */}
+      <Animated.View entering={reduce || Platform.OS === "web" ? undefined : FadeIn.duration(400)}>
         <View className="flex-row items-center">
           {back ? (
             <Pressable
