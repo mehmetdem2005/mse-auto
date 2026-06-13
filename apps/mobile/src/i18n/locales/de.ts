@@ -317,6 +317,12 @@ export const de: Catalog = {
     incA11y: "{{label}}-Stunde erhöhen",
   },
 
+  announcements: {
+    title: "Ankündigungen",
+    empty: "Noch keine Ankündigungen",
+    emptyHint: "Neue Funktionen und News erscheinen hier.",
+    pinned: "Angeheftet",
+  },
   settings: {
     account: "Dein Whenly-Konto",
     language: "Sprache",
@@ -340,6 +346,8 @@ export const de: Catalog = {
     privacySub: "Deine GDPR-Rechte · wie deine Daten geschützt werden",
     websiteTitle: "Website",
     websiteSub: "Produktseite · Anwendungsfälle und Vergleiche",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Admin-Konsole · nur du",
     privacyA11y: "Datenschutzrechte — Support-Seite",
     danger: "Gefahrenzone",
     dangerHint:

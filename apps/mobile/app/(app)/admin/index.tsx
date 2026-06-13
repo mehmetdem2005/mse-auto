@@ -13,6 +13,7 @@ import {
   Gauge,
   LifeBuoy,
   type LucideIcon,
+  Megaphone,
   Server,
   TrendingUp,
   Users,
@@ -26,6 +27,7 @@ const SECTIONS: {
     | "/admin/analytics"
     | "/admin/traffic"
     | "/admin/stats"
+    | "/admin/announcements"
     | "/admin/model"
     | "/admin/providers"
     | "/admin/users"
@@ -40,6 +42,12 @@ const SECTIONS: {
   { href: "/admin/analytics", Icon: TrendingUp, title: "Analitik", desc: "Kullanıcı · MRR · plan" },
   { href: "/admin/traffic", Icon: Gauge, title: "Trafik", desc: "Site + uygulama edinimi" },
   { href: "/admin/stats", Icon: BarChart3, title: "İstatistik", desc: "Kontrol · tespit · teslim" },
+  {
+    href: "/admin/announcements",
+    Icon: Megaphone,
+    title: "Duyurular",
+    desc: "Görselli duyuru oluştur",
+  },
   { href: "/admin/model", Icon: Cpu, title: "Model", desc: "Global LLM seçimi" },
   { href: "/admin/providers", Icon: Server, title: "Kaynaklar", desc: "API kullanım & kota" },
   { href: "/admin/users", Icon: Users, title: "Kullanıcılar", desc: "Hesap & yetki yönetimi" },

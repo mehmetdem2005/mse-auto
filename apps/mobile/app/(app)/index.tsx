@@ -25,7 +25,6 @@ import {
   Pause,
   Play,
   Search,
-  Terminal,
   Trash2,
 } from "lucide-react-native";
 import { useState } from "react";
@@ -51,7 +50,6 @@ export default function Watchers() {
     queryKey: qk.watchers,
     queryFn: api.watchers,
   });
-  const me = useQuery({ queryKey: qk.me, queryFn: api.me }); // layout cache'inden gelir
   const feed = useQuery({ queryKey: qk.feed, queryFn: api.feed });
   const unreadWatchIds = new Set((feed.data ?? []).filter((f) => !f.readAt).map((f) => f.watchId));
 
@@ -161,26 +159,7 @@ export default function Watchers() {
           />
         )}
       </HeroOverlap>
-      {/* Whenly Console girişi (ADR-095) — yalnız admin görür; FAB'ın üstünde, sağ altta
-          gizli/ikincil kapı ("yeni site"ye geçiş). Etiket tabs.admin'den (11 dil hazır). */}
-      {me.data?.isAdmin ? (
-        <Pressable
-          onPress={() => router.push("/admin")}
-          accessibilityRole="button"
-          accessibilityLabel={t("tabs.admin")}
-          className="absolute right-5 w-11 h-11 rounded-2xl bg-panel border border-line items-center justify-center active:bg-panel2"
-          style={{
-            bottom: 88,
-            shadowColor: "#0F172A",
-            shadowOpacity: 0.12,
-            shadowRadius: 10,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 4,
-          }}
-        >
-          <Terminal size={17} color={screenTheme.colors.muted} />
-        </Pressable>
-      ) : null}
+      {/* Whenly Console girişi Ayarlar'a taşındı (ADR-100) — ana ekran sadeleşti. */}
       <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
     </View>
   );

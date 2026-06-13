@@ -11,3 +11,4 @@ export * from "./feed";
 export * from "./assist";
 export * from "./support";
 export * from "./telemetry";
+export * from "./announcement";

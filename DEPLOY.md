@@ -89,3 +89,6 @@ sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart
 - `RENDER_API_KEY` — dashboard.render.com → Account Settings → API Keys (servis durumu + bant genişliği)
 - `VERCEL_TOKEN` (+ `VERCEL_TEAM_ID`) — vercel.com/account/tokens (dönem maliyeti / proje sayısı)
 - DeepSeek bakiyesi mevcut `DEEPSEEK_API_KEY` ile gelir; Groq kullanım API'si sunmuyor (konsol bağlantısı verilir).
+
+## 10. Duyurular + Console konumu (ADR-100)
+**Duyuru sistemi** canlı: admin Konsol → **Duyurular**'dan görselli/CTA'lı duyuru oluşturur; kullanıcı üstteki **zile** basınca görür (zil artık Duyurular'a gider, Destek yalnız Ayarlar'da). Migration `0015_announcements.sql` **canlıya uygulandı (2026-06-13, kullanıcı izniyle)**. **Whenly Console** artık **Ayarlar** içinde (admin-only satır); ana ekrandaki gizli düğme kaldırıldı. Erişim: backend `adminMiddleware` + `admins` tablosu (tek admin = sahip) → fiilen yalnız sahip erişir.

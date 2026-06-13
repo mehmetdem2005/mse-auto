@@ -309,6 +309,12 @@ export const ru: Catalog = {
     incA11y: "Увеличить час: {{label}}",
   },
 
+  announcements: {
+    title: "Объявления",
+    empty: "Объявлений пока нет",
+    emptyHint: "Новые функции и новости появятся здесь.",
+    pinned: "Закреплено",
+  },
   settings: {
     account: "Ваша учетная запись Whenly",
     language: "Язык",
@@ -331,6 +337,8 @@ export const ru: Catalog = {
     privacySub: "Ваши права GDPR · как защищены ваши данные",
     websiteTitle: "Веб-сайт",
     websiteSub: "Сайт продукта · сценарии и сравнения",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Админ-консоль · только вы",
     privacyA11y: "Права на данные и конфиденциальность — страница поддержки",
     danger: "зона опасности",
     dangerHint: "Удалить навсегда вашу учетную запись и все данные (GDPR). Cannot быть отменено.",

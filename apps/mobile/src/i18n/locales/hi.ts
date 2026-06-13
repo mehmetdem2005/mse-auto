@@ -282,6 +282,12 @@ export const hi: Catalog = {
     incA11y: "{{label}} घंटा बढ़ाएँ",
   },
 
+  announcements: {
+    title: "घोषणाएँ",
+    empty: "अभी कोई घोषणा नहीं",
+    emptyHint: "नई सुविधाएँ और समाचार यहाँ दिखेंगे।",
+    pinned: "पिन किया",
+  },
   settings: {
     account: "आपका Whenly खाता",
     language: "भाषा",
@@ -304,6 +310,8 @@ export const hi: Catalog = {
     privacySub: "आपके GDPR अधिकार · आपके डेटा की सुरक्षा कैसे की जाती है",
     websiteTitle: "वेबसाइट",
     websiteSub: "प्रोडक्ट साइट · उपयोग परिदृश्य और तुलनाएँ",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "एडमिन कंसोल · केवल आप",
     privacyA11y: "डेटा और गोपनीयता अधिकार — समर्थन पृष्ठ",
     danger: "आत्महत्या का क्षेत्र",
     dangerHint: "आपका खाता और सभी डेटा को स्थायी रूप से हटा दें (GDPR)। यह पूरी तरह से अनुसूचित नहीं है।",

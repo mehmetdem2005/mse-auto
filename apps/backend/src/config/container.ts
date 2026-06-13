@@ -1,5 +1,6 @@
 import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
+import type { AnnouncementRepository } from "../domain/announcement";
 import type { AuthVerifier } from "../domain/auth";
 import type { AuthorityResolver } from "../domain/authority";
 import type {
@@ -38,6 +39,7 @@ import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gate
 import { InMemoryAdminConsoleRepository } from "../infrastructure/in-memory/admin-console.repo";
 import { InMemoryAdminRepository } from "../infrastructure/in-memory/admin.repo";
 import { InMemoryAnalyticsRepository } from "../infrastructure/in-memory/analytics.repo";
+import { InMemoryAnnouncementRepository } from "../infrastructure/in-memory/announcement.repo";
 import { InMemoryDeviceRepository } from "../infrastructure/in-memory/device.repo";
 import { InMemoryMonitoringRepository } from "../infrastructure/in-memory/monitoring.repo";
 import { InMemoryPaymentGateway } from "../infrastructure/in-memory/payment.gateway";
@@ -76,6 +78,7 @@ import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gatew
 import { SupabaseAdminConsoleRepository } from "../infrastructure/supabase/admin-console.repo";
 import { SupabaseAdminRepository } from "../infrastructure/supabase/admin.repo";
 import { SupabaseAnalyticsRepository } from "../infrastructure/supabase/analytics.repo";
+import { SupabaseAnnouncementRepository } from "../infrastructure/supabase/announcement.repo";
 import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
 import { SupabaseDeviceRepository } from "../infrastructure/supabase/device.repo";
 import { SupabaseMonitoringRepository } from "../infrastructure/supabase/monitoring.repo";
@@ -101,6 +104,8 @@ export interface Container {
   adminConsole: AdminConsoleRepository;
   analytics: AnalyticsRepository;
   support: SupportRepository;
+  /** Duyurular (ADR-100) — admin oluşturur, kullanıcı zil ekranında görür. */
+  announcements: AnnouncementRepository;
   userChannels: UserChannelRepository;
   channels: ChannelSender[];
   /** Kimliksiz trafik telemetrisi (ADR-091). */
@@ -295,6 +300,7 @@ export function createContainer(env: Env): Container {
       adminConsole: new SupabaseAdminConsoleRepository(db),
       analytics: new SupabaseAnalyticsRepository(db),
       support: new SupabaseSupportRepository(db),
+      announcements: new SupabaseAnnouncementRepository(db),
       traffic: new SupabaseTrafficRepository(db),
       checker,
       verifier,
@@ -329,6 +335,7 @@ export function createContainer(env: Env): Container {
     adminConsole: new InMemoryAdminConsoleRepository(),
     analytics: new InMemoryAnalyticsRepository(store),
     support: new InMemorySupportRepository(store),
+    announcements: new InMemoryAnnouncementRepository(),
     traffic: new InMemoryTrafficRepository(),
     checker,
     verifier,

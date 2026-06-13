@@ -275,6 +275,12 @@ export const ja: Catalog = {
     incA11y: "{{label}}の時刻を増やす",
   },
 
+  announcements: {
+    title: "お知らせ",
+    empty: "お知らせはまだありません",
+    emptyHint: "新機能やニュースがここに表示されます。",
+    pinned: "固定",
+  },
   settings: {
     account: "あなたのWhenlyアカウント",
     language: "言語",
@@ -297,6 +303,8 @@ export const ja: Catalog = {
     privacySub: "あなたのGDPRの権利 · あなたのデータが保護されている方法",
     websiteTitle: "ウェブサイト",
     websiteSub: "製品サイト · ユースケースと比較",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "管理コンソール · あなただけ",
     privacyA11y: "データとプライバシー権 — サポートページ",
     danger: "危険区域",
     dangerHint: "あなたのアカウントとすべてのデータを永久に削除し (GDPR)。取り消しできません。",

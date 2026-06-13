@@ -6,9 +6,11 @@ import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type LangCode, SUPPORTED_LANGS, setLanguage } from "@/i18n";
 import { api } from "@/lib/api";
 import { siteUrlFor } from "@/lib/links";
+import { qk } from "@/lib/query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import { useTheme, useThemeStore } from "@/theme";
+import { useQuery } from "@tanstack/react-query";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
@@ -25,6 +27,7 @@ import {
   ScrollText,
   ShieldCheck,
   Sun,
+  Terminal,
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,6 +42,10 @@ export default function Settings() {
   const router = useRouter();
   const session = useAuth((s) => s.session);
   const setSession = useAuth((s) => s.setSession);
+  // Whenly Console satırı yalnız admine görünür (ADR-100). /me layout cache'inden gelir;
+  // asıl yetki backend'de (adminMiddleware) — bu yalnız UI kapısı.
+  const me = useQuery({ queryKey: qk.me, queryFn: api.me });
+  const isAdmin = me.data?.isAdmin ?? false;
   const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -288,6 +295,29 @@ export default function Settings() {
 
           {/* Sessiz saatler (ADR-085) — pencere içinde bildirimler sessiz */}
           <QuietHoursCard />
+
+          {/* Whenly Console (ADR-100) — yalnız admine görünür; konsol ayarların içinde. */}
+          {isAdmin ? (
+            <Pressable
+              onPress={() => router.push("/admin")}
+              accessibilityRole="button"
+              accessibilityLabel={t("settings.adminConsole")}
+              className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                  <Terminal size={18} color={theme.colors.accent} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-text text-sm font-semibold">
+                    {t("settings.adminConsole")}
+                  </Text>
+                  <Text className="text-muted text-xs mt-0.5">{t("settings.adminConsoleSub")}</Text>
+                </View>
+                <ChevronRight size={16} color={theme.colors.mutedIcon} />
+              </View>
+            </Pressable>
+          ) : null}
 
           {/* Ek bildirim kanalları (ADR-084): Telegram / E-posta / WhatsApp */}
           <Pressable

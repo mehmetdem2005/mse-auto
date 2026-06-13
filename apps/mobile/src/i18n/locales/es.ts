@@ -307,6 +307,12 @@ export const es: Catalog = {
     incA11y: "Aumentar la hora de {{label}}",
   },
 
+  announcements: {
+    title: "Anuncios",
+    empty: "Aún no hay anuncios",
+    emptyHint: "Las novedades y noticias aparecerán aquí.",
+    pinned: "Fijado",
+  },
   settings: {
     account: "Tu cuenta Whenly",
     language: "Idioma",
@@ -329,6 +335,8 @@ export const es: Catalog = {
     privacySub: "Tus derechos GDPR · cómo se protegen tus datos",
     websiteTitle: "Sitio web",
     websiteSub: "Sitio del producto · casos de uso y comparativas",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Consola de administración · solo tú",
     privacyA11y: "Derechos de datos y privacidad — página de soporte",
     danger: "zona de peligro",
     dangerHint: "Elimina tu cuenta y todos tus datos permanentemente (GDPR). Irreversible.",

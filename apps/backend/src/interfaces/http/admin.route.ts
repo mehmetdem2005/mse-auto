@@ -11,6 +11,10 @@ import {
   adminTrafficSchema,
   adminUserListSchema,
   adminWatchListSchema,
+  announcementIdParamSchema,
+  announcementListSchema,
+  announcementSchema,
+  createAnnouncementInputSchema,
   errorSchema,
   giftProInputSchema,
   llmConfigSchema,
@@ -21,6 +25,7 @@ import {
   setWatchStatusInputSchema,
   supportMessageSchema,
   supportReplyInputSchema,
+  updateAnnouncementInputSchema,
   watchTimelineSchema,
 } from "@watcher/contracts";
 import { getAdminStats } from "../../application/admin-stats";
@@ -139,6 +144,84 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
         if (e instanceof LlmModelError) return c.json({ error: e.message }, 400);
         throw e;
       }
+    },
+  );
+
+  // ADR-100 — Duyurular: admin oluşturur/yönetir; kullanıcı zil ekranında görür.
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/announcements",
+      tags: ["admin"],
+      summary: "Tüm duyurular (taslaklar dahil)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: announcementListSchema } },
+          description: "Duyurular",
+        },
+      },
+    }),
+    async (c) => c.json(await container.announcements.listAll(), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/announcements",
+      tags: ["admin"],
+      summary: "Duyuru oluştur",
+      request: {
+        body: { content: { "application/json": { schema: createAnnouncementInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: announcementSchema } },
+          description: "Oluşturuldu",
+        },
+      },
+    }),
+    async (c) => c.json(await container.announcements.create(c.req.valid("json")), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "patch",
+      path: "/announcements/{id}",
+      tags: ["admin"],
+      summary: "Duyuru düzenle / yayın-sabit toggle",
+      request: {
+        params: announcementIdParamSchema,
+        body: { content: { "application/json": { schema: updateAnnouncementInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: announcementSchema } },
+          description: "Güncellendi",
+        },
+        404: { content: { "application/json": { schema: errorSchema } }, description: "Yok" },
+      },
+    }),
+    async (c) => {
+      const updated = await container.announcements.update(
+        c.req.valid("param").id,
+        c.req.valid("json"),
+      );
+      return updated ? c.json(updated, 200) : c.json({ error: "duyuru bulunamadı" }, 404);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "delete",
+      path: "/announcements/{id}",
+      tags: ["admin"],
+      summary: "Duyuru sil",
+      request: { params: announcementIdParamSchema },
+      responses: { 200: jsonOk },
+    }),
+    async (c) => {
+      await container.announcements.remove(c.req.valid("param").id);
+      return c.json({ ok: true }, 200);
     },
   );
 
