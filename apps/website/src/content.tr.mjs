@@ -57,6 +57,7 @@ export const tr = {
     heroCta: "Ücretsiz izlemeye başla",
     heroCtaNote: "Kredi kartı gerekmez · Web'de ve telefonda çalışır",
     heroSecondary: "Nasıl çalışır?",
+    trust: ["Web + Android", "11 arayüz dili", "Ücretsiz plan — kart yok", "Yalnız açık web"],
     phone: {
       watcherLabel: "İZLENİYOR",
       watcherText: "Beklediğim ürün resmî satıcıda 5.000 TL altına stoğa girince haber ver",
@@ -128,6 +129,7 @@ export const tr = {
       ],
       freeCta: "Ücretsiz başla",
       proName: "Pro",
+      proBadge: "En çok tercih edilen",
       proBullets: [
         "100 aktif izleme",
         "Daha sık kontrol",

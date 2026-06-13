@@ -295,6 +295,8 @@ export const ja: Catalog = {
     notifsDenied: "通知の許可が拒否されました。",
     privacy: "データ & プライバシー",
     privacySub: "あなたのGDPRの権利 · あなたのデータが保護されている方法",
+    websiteTitle: "ウェブサイト",
+    websiteSub: "製品サイト · ユースケースと比較",
     privacyA11y: "データとプライバシー権 — サポートページ",
     danger: "危険区域",
     dangerHint: "あなたのアカウントとすべてのデータを永久に削除し (GDPR)。取り消しできません。",

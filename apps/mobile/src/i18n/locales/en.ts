@@ -326,6 +326,8 @@ export const en: Catalog = {
     notifsDenied: "Notification permission denied.",
     privacy: "Data & privacy",
     privacySub: "Your GDPR rights · how your data is protected",
+    websiteTitle: "Website",
+    websiteSub: "Product site · use cases and comparisons",
     privacyA11y: "Data and privacy rights — support page",
     danger: "danger zone",
     dangerHint: "Permanently delete your account and all data (GDPR). Cannot be undone.",

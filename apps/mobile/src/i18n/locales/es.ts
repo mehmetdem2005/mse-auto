@@ -327,6 +327,8 @@ export const es: Catalog = {
     notifsDenied: "Permiso de notificaciones denegado.",
     privacy: "Datos y privacidad",
     privacySub: "Tus derechos GDPR · cómo se protegen tus datos",
+    websiteTitle: "Sitio web",
+    websiteSub: "Sitio del producto · casos de uso y comparativas",
     privacyA11y: "Derechos de datos y privacidad — página de soporte",
     danger: "zona de peligro",
     dangerHint: "Elimina tu cuenta y todos tus datos permanentemente (GDPR). Irreversible.",

@@ -48,6 +48,7 @@ export const en = {
     heroCta: "Start watching free",
     heroCtaNote: "No credit card · Works on web and phone",
     heroSecondary: "How does it work?",
+    trust: ["Web + Android", "11 interface languages", "Free plan — no card", "Public web only"],
     phone: {
       watcherLabel: "WATCHING",
       watcherText:
@@ -120,6 +121,7 @@ export const en = {
       ],
       freeCta: "Start free",
       proName: "Pro",
+      proBadge: "Most popular",
       proBullets: [
         "100 active watches",
         "More frequent checks",

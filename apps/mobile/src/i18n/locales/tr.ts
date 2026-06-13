@@ -323,6 +323,8 @@ export const tr = {
     notifsDenied: "Bildirim izni verilmedi.",
     privacy: "Veri ve gizlilik",
     privacySub: "KVKK/GDPR hakların · verilerin nasıl korunur",
+    websiteTitle: "Web sitesi",
+    websiteSub: "Tanıtım sitesi · kullanım senaryoları ve karşılaştırmalar",
     privacyA11y: "Veri ve gizlilik hakların — destek sayfası",
     danger: "tehlikeli bölge",
     dangerHint: "Hesabını ve tüm verini kalıcı olarak sil (KVKK/GDPR). Geri alınamaz.",

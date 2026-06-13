@@ -338,6 +338,8 @@ export const de: Catalog = {
     notifsDenied: "Benachrichtigungsberechtigung verweigert.",
     privacy: "Daten & Datenschutz",
     privacySub: "Deine GDPR-Rechte · wie deine Daten geschützt werden",
+    websiteTitle: "Website",
+    websiteSub: "Produktseite · Anwendungsfälle und Vergleiche",
     privacyA11y: "Datenschutzrechte — Support-Seite",
     danger: "Gefahrenzone",
     dangerHint:
