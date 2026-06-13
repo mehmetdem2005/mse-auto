@@ -62,6 +62,31 @@ export const adminSubscriptionSchema = z.object({
 export type AdminSubscription = z.infer<typeof adminSubscriptionSchema>;
 export const adminSubscriptionListSchema = z.array(adminSubscriptionSchema);
 
+/** Kullanıcı 360° detayı (ADR-101). */
+export const adminUserDetailSchema = adminUserSchema.extend({
+  subscription: adminSubscriptionSchema.nullable(),
+  watches: z.array(
+    z.object({
+      id: z.string(),
+      rawIntent: z.string(),
+      status: z.enum(["active", "paused"]),
+      frequencyMinutes: z.number().int(),
+      createdAt: z.string(),
+    }),
+  ),
+  channels: z
+    .object({
+      telegram: z.boolean(),
+      email: z.boolean(),
+      whatsapp: z.boolean(),
+      enabled: z.array(z.string()),
+    })
+    .nullable(),
+  devices: z.array(z.object({ id: z.string(), platform: z.string(), createdAt: z.string() })),
+  support: z.object({ open: z.number().int(), total: z.number().int() }),
+});
+export type AdminUserDetail = z.infer<typeof adminUserDetailSchema>;
+
 export const adminSystemSchema = z.object({
   now: z.string(),
   backend: z.string(),

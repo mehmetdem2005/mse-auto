@@ -1,94 +1,83 @@
-import { ActBtn, ConsoleShell, ErrText, Loading, day } from "@/features/admin/ui";
-import { type BillingInterval, api } from "@/lib/api";
+import { ConsoleShell, ErrText, Loading, day } from "@/features/admin/ui";
+import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { ReactNode } from "react";
-import { Alert, FlatList, Text, View } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { ChevronRight, Search } from "lucide-react-native";
+import { type ReactNode, useMemo, useState } from "react";
+import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 
+// ADR-101: arama + tek-dokunuş drill-down. Aksiyonlar kullanıcı DETAY ekranında.
 export default function UsersScreen(): ReactNode {
-  const qc = useQueryClient();
-  const q = useQuery({ queryKey: qk.adminUsers, queryFn: api.adminUsers });
-  const done = (): void => {
-    void qc.invalidateQueries({ queryKey: qk.adminUsers });
-  };
-  const setAdmin = useMutation({
-    mutationFn: (v: { id: string; on: boolean }) => api.setUserAdmin(v.id, v.on),
-    onSuccess: done,
-  });
-  const gift = useMutation({
-    mutationFn: (v: { id: string; i: BillingInterval }) => api.giftPro(v.id, v.i),
-    onSuccess: done,
-  });
-  const cancelSub = useMutation({
-    mutationFn: (id: string) => api.cancelUserSub(id),
-    onSuccess: done,
-  });
-  const del = useMutation({ mutationFn: (id: string) => api.deleteUser(id), onSuccess: done });
-  const busy = setAdmin.isPending || gift.isPending || cancelSub.isPending || del.isPending;
+  const router = useRouter();
+  const [q, setQ] = useState("");
+  const list = useQuery({ queryKey: qk.adminUsers, queryFn: api.adminUsers });
+
+  const filtered = useMemo(() => {
+    const rows = list.data ?? [];
+    const needle = q.trim().toLowerCase();
+    if (!needle) return rows;
+    return rows.filter(
+      (u) => (u.email ?? "").toLowerCase().includes(needle) || u.id.includes(needle),
+    );
+  }, [list.data, q]);
 
   return (
-    <ConsoleShell title="Kullanıcılar" sub="hesap & yetki">
-      {q.isLoading ? <Loading /> : null}
-      {q.error ? <ErrText e={q.error} /> : null}
-      {q.data ? (
+    <ConsoleShell title="Kullanıcılar" sub={list.data ? `${list.data.length} kayıt` : undefined}>
+      {list.isLoading ? <Loading /> : null}
+      {list.error ? <ErrText e={list.error} /> : null}
+      {list.data ? (
         <FlatList
-          data={q.data}
+          data={filtered}
           keyExtractor={(u) => u.id}
-          contentContainerClassName="px-5 pt-4 pb-8"
-          onRefresh={() => void q.refetch()}
-          refreshing={q.isRefetching}
-          ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={<Text className="text-muted mt-6">kullanıcı yok.</Text>}
+          contentContainerClassName="px-5 pt-3 pb-8"
+          keyboardShouldPersistTaps="handled"
+          onRefresh={() => void list.refetch()}
+          refreshing={list.isRefetching}
+          ItemSeparatorComponent={() => <View className="h-2.5" />}
+          ListHeaderComponent={
+            <View className="flex-row items-center gap-2 bg-panel border border-line rounded-xl px-3 mb-3">
+              <Search size={16} color="#94A3B8" />
+              <TextInput
+                value={q}
+                onChangeText={setQ}
+                placeholder="E-posta ara…"
+                placeholderTextColor="#94A3B8"
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Kullanıcı ara"
+                className="flex-1 py-3 text-text text-sm"
+              />
+            </View>
+          }
+          ListEmptyComponent={
+            <Text className="text-muted mt-6">{q ? "eşleşme yok." : "kullanıcı yok."}</Text>
+          }
           renderItem={({ item: u }) => (
-            <View className="bg-panel border border-line rounded-xl p-4">
+            <Pressable
+              onPress={() => router.push(`/admin/user/${u.id}`)}
+              accessibilityRole="button"
+              accessibilityLabel={`${u.email ?? u.id} detayı`}
+              className="bg-panel border border-line rounded-xl p-4 active:bg-panel2"
+            >
               <View className="flex-row items-center gap-3">
                 <View className="w-9 h-9 rounded-full bg-accent/10 items-center justify-center">
                   <Text className="text-accent text-sm font-bold">
                     {(u.email ?? "?").charAt(0).toUpperCase()}
                   </Text>
                 </View>
-                <Text className="text-text text-sm flex-1" numberOfLines={1}>
-                  {u.email ?? "(e-posta yok)"}
-                </Text>
+                <View className="flex-1 min-w-0">
+                  <Text className="text-text text-sm" numberOfLines={1}>
+                    {u.email ?? "(e-posta yok)"}
+                  </Text>
+                  <Text className="text-muted text-xs mt-0.5">
+                    {u.plan.toUpperCase()} · {u.watchCount} watcher · {day(u.createdAt)}
+                    {u.isAdmin ? " · ADMIN" : ""}
+                  </Text>
+                </View>
+                <ChevronRight size={16} color="#94A3B8" />
               </View>
-              <Text className="text-muted text-xs mt-1">
-                {u.plan.toUpperCase()} · {u.watchCount} watcher · {day(u.createdAt)}
-                {u.isAdmin ? " · ADMIN" : ""}
-              </Text>
-              <View className="flex-row flex-wrap gap-2 mt-3">
-                <ActBtn
-                  label={u.isAdmin ? "admin'i al" : "admin yap"}
-                  disabled={busy}
-                  onPress={() => setAdmin.mutate({ id: u.id, on: !u.isAdmin })}
-                />
-                <ActBtn
-                  label="pro (ay)"
-                  disabled={busy}
-                  onPress={() => gift.mutate({ id: u.id, i: "month" })}
-                />
-                <ActBtn
-                  label="pro (yıl)"
-                  disabled={busy}
-                  onPress={() => gift.mutate({ id: u.id, i: "year" })}
-                />
-                <ActBtn
-                  label="abone iptal"
-                  disabled={busy}
-                  onPress={() => cancelSub.mutate(u.id)}
-                />
-                <ActBtn
-                  label="sil"
-                  tone="danger"
-                  disabled={busy}
-                  onPress={() =>
-                    Alert.alert("Hesabı sil", `${u.email ?? u.id} kalıcı silinsin mi?`, [
-                      { text: "Vazgeç", style: "cancel" },
-                      { text: "Sil", style: "destructive", onPress: () => del.mutate(u.id) },
-                    ])
-                  }
-                />
-              </View>
-            </View>
+            </Pressable>
           )}
         />
       ) : null}

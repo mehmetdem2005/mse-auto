@@ -159,9 +159,27 @@ export interface AdminTimeseriesData {
   totals: { checkRuns: number; detections: number; deliveries: number };
 }
 
+/** Kullanıcı 360° detayı (ADR-101) — tek kullanıcının tüm ilişkili verisi (PII zonu). */
+export interface AdminUserDetail extends AdminUserRow {
+  subscription: AdminSubscriptionRow | null;
+  watches: {
+    id: string;
+    rawIntent: string;
+    status: "active" | "paused";
+    frequencyMinutes: number;
+    createdAt: string;
+  }[];
+  /** Ek bildirim kanalları (ADR-084) durumu; hiç ayarlanmadıysa null. */
+  channels: { telegram: boolean; email: boolean; whatsapp: boolean; enabled: string[] } | null;
+  devices: { id: string; platform: string; createdAt: string }[];
+  support: { open: number; total: number };
+}
+
 /** Admin paneli için yönetim işlemleri (yalnız admin middleware arkasında). */
 export interface AdminConsoleRepository {
   listUsers(): Promise<AdminUserRow[]>;
+  /** Tek kullanıcının 360° detayı; yoksa null. */
+  getUserDetail(userId: string): Promise<AdminUserDetail | null>;
   setAdmin(userId: string, makeAdmin: boolean): Promise<void>;
   deleteUser(userId: string): Promise<void>;
   listWatches(): Promise<AdminWatchRow[]>;

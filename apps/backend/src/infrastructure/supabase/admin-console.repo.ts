@@ -4,6 +4,7 @@ import type {
   AdminSubscriptionRow,
   AdminSystemInfo,
   AdminTimeseriesData,
+  AdminUserDetail,
   AdminUserRow,
   AdminWatchRow,
   BillingInterval,
@@ -79,6 +80,81 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         plan: proIds.has(u.id) ? "pro" : "free",
         watchCount: watchCounts.get(u.id) ?? 0,
       }));
+  }
+
+  async getUserDetail(userId: string): Promise<AdminUserDetail | null> {
+    const { data: authData, error: authErr } = await this.db.auth.admin.getUserById(userId);
+    if (authErr || !authData?.user) return null;
+    const u = authData.user;
+    const nowIso = new Date().toISOString();
+    const [adminRes, subRes, watchRes, chanRes, devRes, ticketRes] = await Promise.all([
+      this.db.from("admins").select("user_id").eq("user_id", userId).maybeSingle(),
+      this.db.from("subscriptions").select("*").eq("user_id", userId).maybeSingle(),
+      this.db
+        .from("watches")
+        .select("id, raw_intent, status, frequency_minutes, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false }),
+      this.db.from("user_channels").select("*").eq("user_id", userId).maybeSingle(),
+      this.db
+        .from("device_tokens")
+        .select("id, platform, created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false }),
+      this.db.from("support_tickets").select("status").eq("user_id", userId),
+    ]);
+
+    const sub = subRes.data;
+    const isActivePro = !!sub && sub.status === "active" && (sub.current_period_end ?? "") > nowIso;
+    const ch = chanRes.data;
+    const tickets = ticketRes.data ?? [];
+    const watches = watchRes.data ?? [];
+
+    return {
+      id: u.id,
+      email: u.email ?? null,
+      createdAt: u.created_at ?? nowIso,
+      isAdmin: !!adminRes.data,
+      plan: isActivePro ? "pro" : "free",
+      watchCount: watches.length,
+      subscription: sub
+        ? {
+            userId,
+            userEmail: u.email ?? null,
+            plan: sub.plan,
+            interval: sub.billing_interval,
+            amountCents: sub.amount_cents,
+            currency: sub.currency,
+            status: sub.status,
+            currentPeriodEnd: sub.current_period_end,
+            cancelAtPeriodEnd: sub.cancel_at_period_end,
+          }
+        : null,
+      watches: watches.map((w) => ({
+        id: w.id,
+        rawIntent: w.raw_intent,
+        status: w.status,
+        frequencyMinutes: w.frequency_minutes,
+        createdAt: w.created_at,
+      })),
+      channels: ch
+        ? {
+            telegram: (ch.enabled ?? []).includes("telegram"),
+            email: (ch.enabled ?? []).includes("email"),
+            whatsapp: (ch.enabled ?? []).includes("whatsapp"),
+            enabled: ch.enabled ?? [],
+          }
+        : null,
+      devices: (devRes.data ?? []).map((d) => ({
+        id: d.id,
+        platform: d.platform,
+        createdAt: d.created_at,
+      })),
+      support: {
+        open: tickets.filter((t) => t.status === "open").length,
+        total: tickets.length,
+      },
+    };
   }
 
   async setAdmin(userId: string, makeAdmin: boolean): Promise<void> {

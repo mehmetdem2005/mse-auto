@@ -103,6 +103,20 @@ export interface AdminWatch {
   status: "active" | "paused";
   createdAt: string;
 }
+/** Kullanıcı 360° detayı (ADR-101). */
+export interface AdminUserDetail extends AdminUser {
+  subscription: AdminSubscription | null;
+  watches: {
+    id: string;
+    rawIntent: string;
+    status: "active" | "paused";
+    frequencyMinutes: number;
+    createdAt: string;
+  }[];
+  channels: { telegram: boolean; email: boolean; whatsapp: boolean; enabled: string[] } | null;
+  devices: { id: string; platform: string; createdAt: string }[];
+  support: { open: number; total: number };
+}
 export interface AdminSubscription {
   userId: string;
   userEmail: string | null;
@@ -366,6 +380,7 @@ export const api = {
 
   // ---- Admin konsolu ----
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),
+  adminUserDetail: (id: string) => req<AdminUserDetail>(`/v1/admin/users/${id}`),
   setUserAdmin: (id: string, makeAdmin: boolean) =>
     req<{ ok: boolean }>(`/v1/admin/users/${id}/admin`, {
       method: "POST",
