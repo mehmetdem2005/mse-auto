@@ -38,15 +38,7 @@ export function BottomSheet({
           theme.cssVars,
         ]}
       >
-        <Animated.View
-          // Reanimated layout animasyonları web'de GPU yırtılması üretir → native'e kıstır.
-          entering={
-            reduce || Platform.OS === "web"
-              ? undefined
-              : SlideInDown.springify().damping(20).stiffness(220)
-          }
-          exiting={reduce || Platform.OS === "web" ? undefined : SlideOutDown.duration(180)}
-        >
+        <SheetSurface reduce={reduce}>
           {/* İç basışlar kapanmayı tetiklemesin */}
           <Pressable onPress={(e) => e.stopPropagation()}>
             <View
@@ -77,8 +69,25 @@ export function BottomSheet({
               <ScrollView bounces={false}>{children}</ScrollView>
             </View>
           </Pressable>
-        </Animated.View>
+        </SheetSurface>
       </Pressable>
     </Modal>
+  );
+}
+
+/**
+ * Panel sarmalayıcı: native'de alttan kayan reanimated yüzey; web'de DÜZ View
+ * (reanimated layout animasyonu mobil Chrome'da GPU tile cızırtısı üretiyor —
+ * ADR-099). Modal'ın animationType="fade"'i web'de yine de yumuşak giriş verir.
+ */
+function SheetSurface({ reduce, children }: { reduce: boolean; children: ReactNode }): ReactNode {
+  if (Platform.OS === "web") return <View>{children}</View>;
+  return (
+    <Animated.View
+      entering={reduce ? undefined : SlideInDown.springify().damping(20).stiffness(220)}
+      exiting={reduce ? undefined : SlideOutDown.duration(180)}
+    >
+      {children}
+    </Animated.View>
   );
 }

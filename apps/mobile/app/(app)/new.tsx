@@ -32,6 +32,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   ScrollView,
   Switch,
@@ -255,13 +256,19 @@ export default function NewWatcher() {
       {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
       <View
         className="mx-5 -mt-10 bg-panel border border-line rounded-2xl px-4 py-3"
-        style={{
-          shadowColor: "#0F172A",
-          shadowOpacity: 0.06,
-          shadowRadius: 12,
-          shadowOffset: { width: 0, height: 4 },
-          elevation: 2,
-        }}
+        // Gölge YALNIZ native'de: web'de (mobil Chrome) gradyan+kaydırma sınırına
+        // binen kartın box-shadow katmanı kompozit yırtılması (cızırtı bandı)
+        // üretiyordu (ADR-099). Kenarlık kartı web'de zaten tanımlar.
+        style={Platform.select({
+          native: {
+            shadowColor: "#0F172A",
+            shadowOpacity: 0.06,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 4 },
+            elevation: 2,
+          },
+          default: {},
+        })}
         accessibilityRole="progressbar"
         accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
         accessibilityLabel={`${step + 1} / ${STEPS.length}: ${t(current.titleK)}`}

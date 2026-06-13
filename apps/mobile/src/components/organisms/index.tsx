@@ -29,6 +29,52 @@ export function GradientHero({
   const { t } = useTranslation();
   const reduce = useReduceMotion();
   const router = useRouter();
+  const inner = (
+    <>
+      <View className="flex-row items-center">
+        {back ? (
+          <Pressable
+            onPress={() => router.back()}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.back")}
+            className="w-12 h-12 -ml-2 mr-1 rounded-full items-center justify-center active:bg-white/15"
+          >
+            <ArrowLeft size={22} color={ON_GRADIENT} />
+          </Pressable>
+        ) : null}
+        <View
+          className="w-9 h-9 rounded-xl bg-white/20 items-center justify-center"
+          style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}
+        >
+          <Text className="text-white text-base font-extrabold">W</Text>
+        </View>
+        <Text className="text-white/90 text-body font-bold ml-2.5 tracking-tight">Whenly</Text>
+        <View className="ml-auto">
+          {right ?? (
+            <Pressable
+              onPress={() => router.push("/support")}
+              accessibilityRole="button"
+              accessibilityLabel={t("settings.supportTitle")}
+              className="w-12 h-12 rounded-full bg-white/15 items-center justify-center active:bg-white/25"
+            >
+              <Bell size={19} color={ON_GRADIENT} />
+            </Pressable>
+          )}
+        </View>
+      </View>
+      <Text
+        className="text-white text-headline font-extrabold tracking-tight mt-3"
+        numberOfLines={1}
+      >
+        {title}
+      </Text>
+      {subtitle ? (
+        <Text className="text-white/80 text-body-sm mt-0.5" numberOfLines={1}>
+          {subtitle}
+        </Text>
+      ) : null}
+    </>
+  );
   return (
     <LinearGradient
       colors={GRADIENT.hero}
@@ -42,52 +88,14 @@ export function GradientHero({
         paddingHorizontal: 20,
       }}
     >
-      {/* Reanimated layout `entering` web'de GPU yırtılması üretir (motion.tsx notu) →
-          native'e kıstırılır; web'de düz render. */}
-      <Animated.View entering={reduce || Platform.OS === "web" ? undefined : FadeIn.duration(400)}>
-        <View className="flex-row items-center">
-          {back ? (
-            <Pressable
-              onPress={() => router.back()}
-              accessibilityRole="button"
-              accessibilityLabel={t("common.back")}
-              className="w-12 h-12 -ml-2 mr-1 rounded-full items-center justify-center active:bg-white/15"
-            >
-              <ArrowLeft size={22} color={ON_GRADIENT} />
-            </Pressable>
-          ) : null}
-          <View
-            className="w-9 h-9 rounded-xl bg-white/20 items-center justify-center"
-            style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.3)" }}
-          >
-            <Text className="text-white text-base font-extrabold">W</Text>
-          </View>
-          <Text className="text-white/90 text-body font-bold ml-2.5 tracking-tight">Whenly</Text>
-          <View className="ml-auto">
-            {right ?? (
-              <Pressable
-                onPress={() => router.push("/support")}
-                accessibilityRole="button"
-                accessibilityLabel={t("settings.supportTitle")}
-                className="w-12 h-12 rounded-full bg-white/15 items-center justify-center active:bg-white/25"
-              >
-                <Bell size={19} color={ON_GRADIENT} />
-              </Pressable>
-            )}
-          </View>
-        </View>
-        <Text
-          className="text-white text-headline font-extrabold tracking-tight mt-3"
-          numberOfLines={1}
-        >
-          {title}
-        </Text>
-        {subtitle ? (
-          <Text className="text-white/80 text-body-sm mt-0.5" numberOfLines={1}>
-            {subtitle}
-          </Text>
-        ) : null}
-      </Animated.View>
+      {/* Web'de reanimated katmanı KURMADAN düz View — Animated.View animasyonsuz da
+          olsa web'de GPU tile rasterizasyonunu bozup cızırtı üretiyordu (ADR-099).
+          Native'de imza FadeIn korunur. */}
+      {Platform.OS === "web" ? (
+        <View>{inner}</View>
+      ) : (
+        <Animated.View entering={reduce ? undefined : FadeIn.duration(400)}>{inner}</Animated.View>
+      )}
     </LinearGradient>
   );
 }
