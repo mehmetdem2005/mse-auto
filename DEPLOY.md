@@ -70,3 +70,21 @@ Kod hazır (ADR-093); eksik olan tek şey Google OAuth istemcisi:
 4. Bitti — uygulamadaki "Google ile devam et" butonu çalışır (web yönlendirme + Android sistem tarayıcısı). Buton, sağlayıcı kapalıyken dürüst bir "henüz etkin değil" mesajı gösterir.
 
 Not: `site_url` ve yönlendirme allow-list'i canlıda düzeltildi (2026-06-12 — magic link artık localhost'a değil uygulamaya döner). Ek bildirim kanalları (Telegram/Resend/WhatsApp) için ilgili token'lar Render `watcher-secrets` grubuna girilene dek kanallar pasiftir.
+
+## 9. Global LLM modeli + Kaynaklar panosu (ADR-095)
+**Model seçimi:** Admin konsolu → **Model**. Seçilen model (Groq Llama 3.3 70B ·
+DeepSeek V4 Flash · V4 Pro · Reasoner) TÜM kullanıcıların muhakeme + doğrulama +
+asistan çağrılarını sürer; yeniden başlatma gerekmez.
+1. `DEEPSEEK_API_KEY`'i Render → Environment → **watcher-secrets** grubuna ekle
+   (anahtar repoya ASLA yazılmaz). Groq zaten tanımlıysa ikisi de seçilebilir olur.
+2. Seçimin deploy'lar arasında KALICI olması için migration `supabase/migrations/0014_app_settings.sql`
+   canlıya uygulanmalı (SQL Editor — yalnız açık izinle). Uygulanana dek konsol
+   "seçim bellekte" uyarısı gösterir ve yeniden başlatmada varsayılana döner.
+
+**Kaynaklar panosu (gerçek kullanım verisi):** Admin → **Kaynaklar**. Her kart
+sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart dürüstçe
+"token yok" der. İsteğe bağlı token'lar (hepsi watcher-secrets grubuna):
+- `SUPABASE_ACCESS_TOKEN` — supabase.com/dashboard/account/tokens (proje durumu + DB boyutu)
+- `RENDER_API_KEY` — dashboard.render.com → Account Settings → API Keys (servis durumu + bant genişliği)
+- `VERCEL_TOKEN` (+ `VERCEL_TEAM_ID`) — vercel.com/account/tokens (dönem maliyeti / proje sayısı)
+- DeepSeek bakiyesi mevcut `DEEPSEEK_API_KEY` ile gelir; Groq kullanım API'si sunmuyor (konsol bağlantısı verilir).

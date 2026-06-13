@@ -11,10 +11,12 @@
  *   metaDescription: string, h1: string, answer: string, context: string[],
  *   examples: string[], faq: Faq[], related: string[] }} UseCase */
 
+// Global-first (ADR-096): kök dil EN'dir; TR /tr altında tam eşlenik yaşar
+// (eski kök TR yolları vercel.json 301'leriyle /tr'ye taşınır — bağlantı kırılmaz).
 export const tr = {
   lang: "tr",
-  prefix: "",
-  useCaseBase: "/cozumler",
+  prefix: "/tr",
+  useCaseBase: "/tr/cozumler",
   langName: "Türkçe",
   otherLangLabel: "English",
 
@@ -48,9 +50,10 @@ export const tr = {
       '"Şu olunca haber ver" de: Whenly açık web kaynaklarını belirli aralıklarla tarar ve gelişme göründüğünde bildirim — istersen alarm — gönderir. Ücretsiz başla.',
     heroOverline: "İzleme ve bildirim uygulaması",
     heroTitle: "Şu olunca <em>haber ver.</em>",
+    // Çözümü sat (copywriting skill): ürün özelliği değil, kurtulduğun iş — "yenilemeyi bırak".
     heroSub:
-      "İzlemek istediğin şeyi kendi cümlenle anlat. Whenly açık web kaynaklarını senin yerine belirli aralıklarla kontrol eder ve aradığın gelişme göründüğünde telefonuna bildirim — istersen alarm — gönderir.",
-    heroCta: "Ücretsiz başla",
+      "Sayfayı yenileyip durma. Beklediğin anı — fiyat düşüşü, stok, ilan, duyuru — tek bir cümleyle Whenly'ye anlat. Açık web kaynaklarını belirli aralıklarla senin yerine kontrol eder; o an geldiğinde telefonunu çaldırır.",
+    heroCta: "Ücretsiz izlemeye başla",
     heroCtaNote: "Kredi kartı gerekmez · Web'de ve telefonda çalışır",
     heroSecondary: "Nasıl çalışır?",
     phone: {
@@ -79,37 +82,38 @@ export const tr = {
         d: "Aradığın gelişme göründüğünde telefonuna bildirim gelir; kritik konularda alarm moduyla telefon çalar.",
       },
     ],
-    featuresHeading: "Öne çıkanlar",
+    // Fayda-önce (copywriting skill: benefits over features) — her madde "sana ne kazandırır".
+    featuresHeading: "Sana ne kazandırır",
     features: [
       {
         icon: "zap",
-        t: "Doğal dille kurulum",
-        d: '"Stokta VE belirlediğim fiyatın altında" gibi birleşik koşulları doğal cümleden anlar; kural motoru öğrenmen gerekmez.',
+        t: "Tek cümle, kurulumun tamamı",
+        d: '"Stokta VE belirlediğim fiyatın altında" gibi birleşik kuralları doğal cümleden anlar. Kural motoru öğrenmek, filtre kurmak yok.',
       },
       {
         icon: "languages",
-        t: "Kendi dilinde",
-        d: "Türkçe dahil 11 arayüz dili. İzleme cümleni kendi dilinde yazarsın.",
+        t: "Kendi dilinde çalışır",
+        d: "Türkçe dahil 11 arayüz dili. İzlemeyi, yüksek sesle söyler gibi yazarsın.",
       },
       {
         icon: "bellRing",
-        t: "Alarm modu",
-        d: "Kritik izlemelerde bildirim sessizce düşmek yerine telefonu gerçekten çaldırır.",
+        t: "Kritik anlar için alarm modu",
+        d: "Bazı anlar sessiz bildirim tepsisinde bekleyemez: Pro'da uyarı telefonu gerçekten çaldırır.",
       },
       {
         icon: "clock",
-        t: "Sessiz saatler",
-        d: "Gece bildirimleri sessize iner; sabah kaldığın yerden devam edersin.",
+        t: "Sessiz saatler, senin şartınla",
+        d: "Gece uyarıları sabaha bekler — uykudan feragat etmeden takipte kalırsın.",
       },
       {
         icon: "smartphone",
-        t: "Web ve telefon",
-        d: "Tarayıcıda hemen çalışır; Android uygulaması da var. Bildirimler telefona gelir.",
+        t: "Web'de ve telefonda",
+        d: "Herhangi bir tarayıcıda bir dakikada başlarsın; Android uygulaması da var. Uyarılar telefona düşer.",
       },
       {
         icon: "shieldCheck",
-        t: "Gizlilik önce",
-        d: "Verini satmayız, reklam için kullanmayız. İstediğin an tüm verini indirir veya kalıcı silersin.",
+        t: "Varsayılan olarak gizli",
+        d: "Reklam yok, veri satışı yok. İstediğin an her şeyi indirir ya da kalıcı silersin.",
       },
     ],
     pricingHeading: "Fiyatlandırma basit",
@@ -133,7 +137,8 @@ export const tr = {
       note: "Ücretsiz plan süresiz ve kart bilgisi istemez. Pro'ya uygulama içinden geçer, istediğin an iptal edersin.",
     },
     useCasesHeading: "Ne için kullanılıyor?",
-    useCasesSub: "Aşağıdakilerin hepsi açık web kaynaklarında takip edilebilen gerçek ihtiyaçlar.",
+    useCasesSub:
+      "Whenly'nin açık web'de yaptığı dokuz gerçek iş — her biri eskiden kaçırılan bir an.",
     useCasesAll: "Tüm çözümleri gör",
     faqHeading: "Sık sorulan sorular",
     faq: [
@@ -162,8 +167,8 @@ export const tr = {
         a: "İkisinde de. Web uygulaması her tarayıcıda çalışır; Android uygulaması da vardır. Bildirimler telefona gelir; Pro'da kritik izlemeler için alarm modu vardır.",
       },
     ],
-    ctaHeading: "Takibi Whenly devralsın",
-    ctaText: "Bir cümle yaz, gerisini bırak. Gelişme olduğunda ilk öğrenen sen ol.",
+    ctaHeading: "Yenile tuşunu bırak",
+    ctaText: "Bir cümle yaz, nöbeti devret. Bir dahaki sefere ilk öğrenen sen ol.",
   },
 
   useCasesIndex: {

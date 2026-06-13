@@ -36,7 +36,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="canonical" href="${canonical}">
 <link rel="alternate" hreflang="tr" href="${trUrl}">
 <link rel="alternate" hreflang="en" href="${enUrl}">
-<link rel="alternate" hreflang="x-default" href="${trUrl}">
+<link rel="alternate" hreflang="x-default" href="${enUrl}">
 <meta name="theme-color" content="${BRAND.ink}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${BRAND.name}">

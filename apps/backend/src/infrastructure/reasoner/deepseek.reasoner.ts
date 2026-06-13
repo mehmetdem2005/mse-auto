@@ -1,5 +1,7 @@
 import { z } from "zod";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
+import { extractJson, openaiJsonChat } from "../llm/openai-json";
+import { buildReasonPrompt } from "../llm/prompts";
 
 const ReasonSchema = z.object({
   detected: z.boolean(),
@@ -8,11 +10,11 @@ const ReasonSchema = z.object({
   confidence: z.number().min(0).max(1),
 });
 
-interface DeepSeekResponse {
-  choices?: Array<{ message?: { content?: string } }>;
-}
-
-/** DeepSeek (deepseek-v4-flash) — OpenAI-uyumlu, JSON modu. PII'siz girdi. */
+/**
+ * DeepSeek olay muhakemesi — OpenAI-uyumlu. PII'siz girdi.
+ * Varsayılan deepseek-v4-flash (JSON modu + düşünme kapalı: hız/maliyet);
+ * "deepseek-reasoner" alias'ında JSON kipi kapatılır, tolerant ayrıştırılır.
+ */
 export class DeepSeekEventReasoner implements EventReasoner {
   constructor(
     private readonly apiKey: string,
@@ -21,44 +23,23 @@ export class DeepSeekEventReasoner implements EventReasoner {
   ) {}
 
   async reason(input: ReasonInput): Promise<ReasonResult> {
-    const system = [
-      "Bir olay-tespit asistanısın. Kullanıcının izlediği konuyla ilgili web arama sonuçları verilir.",
-      "Olayın GERÇEKLEŞİP gerçekleşmediğine yalnızca sonuçlara dayanarak karar ver; tahmin yürütme.",
-      'Çıktıyı şu JSON şemasıyla ver: {"detected": boolean, "description": string|null, "reasoning": string, "confidence": number 0..1}.',
-      "detected=true ise description olayın kısa, PII'siz açıklamasıdır; aksi halde null.",
-      "ÖNEMLİ: 'Daha önce bildirilen olay' verilirse, yalnızca ondan FARKLI/YENİ bir gelişme tespittir; aynı olayın tekrarı/teyidi için detected=false ver ve reasoning'de 'daha önce bildirildi' de.",
-      "KAYNAK GÜVENİLİRLİĞİ: '[CANLI]' etiketli içerik kurumun sitesinden TARAMA ANINDA alınmıştır — en güncel ve en güçlü kanıttır. '[RESMÎ]' etiketli sonuçlar kurumun sitesinden indekslenmiştir — ikinci en güçlü. Haber siteleriyle çelişirse canlı/resmî esastır; hiçbiri yoksa en YENİ tarihli habere ağırlık ver.",
-      "TARİH: Sana bugünün tarihi verilir. Sonuçların tarihlerini bugünle kıyasla — bugüne yakın tarihli kanıt olmadan detected=true verme; eski tarihli (geçen yıl/aylar önce) haber güncel olayın kanıtı DEĞİLDİR.",
-    ].join(" ");
-    const user = [
-      `Bugünün tarihi: ${new Date().toISOString().slice(0, 10)}`,
-      `İzlenen konu: ${input.canonicalQuery}`,
-      ...(input.lastEventDescription
-        ? [`Daha önce bildirilen olay: ${input.lastEventDescription}`]
-        : []),
-      "Arama sonuçları:",
-      ...input.hits.map((h, i) => `${i + 1}. ${h.title} — ${h.snippet} (${h.date ?? "tarih yok"})`),
-    ].join("\n");
-
-    const res = await this.fetchImpl("https://api.deepseek.com/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${this.apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        response_format: { type: "json_object" },
-        thinking: { type: "disabled" },
-        temperature: 0,
-        max_tokens: 1024,
-      }),
+    const { system, user } = buildReasonPrompt(input);
+    const reasoning = this.model === "deepseek-reasoner";
+    const { content, tokensUsed } = await openaiJsonChat({
+      baseUrl: "https://api.deepseek.com",
+      apiKey: this.apiKey,
+      model: this.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      jsonMode: !reasoning,
+      ...(reasoning ? {} : { deepseekThinking: "disabled" as const }),
+      temperature: 0,
+      // Düşünme modunda akıl-yürütme token'ları da bütçeden düşer → geniş pay.
+      maxTokens: reasoning ? 4096 : 1024,
+      fetchImpl: this.fetchImpl,
     });
-    if (!res.ok) throw new Error(`deepseek ${res.status}`);
-    const data = (await res.json()) as DeepSeekResponse;
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) throw new Error("deepseek boş içerik");
-    return ReasonSchema.parse(JSON.parse(content));
+    return { ...ReasonSchema.parse(extractJson(content)), tokensUsed };
   }
 }

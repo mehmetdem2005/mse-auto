@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
   adminIdParamSchema,
+  adminProvidersSchema,
   adminStatsSchema,
   adminSubscriptionListSchema,
   adminSupportTicketSchema,
@@ -12,8 +13,10 @@ import {
   adminWatchListSchema,
   errorSchema,
   giftProInputSchema,
+  llmConfigSchema,
   plansSchema,
   setAdminInputSchema,
+  setLlmModelInputSchema,
   setPriceInputSchema,
   setWatchStatusInputSchema,
   supportMessageSchema,
@@ -22,6 +25,8 @@ import {
 } from "@watcher/contracts";
 import { getAdminStats } from "../../application/admin-stats";
 import { getPlans } from "../../application/get-plans";
+import { LlmModelError } from "../../application/llm-config";
+import { getProviderUsage } from "../../application/provider-usage";
 import { setPlanPrice } from "../../application/set-price";
 import type { Container } from "../../config/container";
 import { summarizeTraffic, windowStart } from "../../domain/traffic";
@@ -89,6 +94,69 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const events = await container.traffic.listSince(windowStart(days)).catch(() => []);
       return c.json(summarizeTraffic(events, days), 200);
     },
+  );
+
+  // ADR-095 — global LLM modeli: admin seçer, TÜM kullanıcılar seçili modelle çalışır.
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/model",
+      tags: ["admin"],
+      summary: "Aktif LLM modeli + katalog (anahtar mevcudiyetiyle)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: llmConfigSchema } },
+          description: "Model yapılandırması",
+        },
+      },
+    }),
+    async (c) => c.json(await container.llmRouter.getConfig(), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/model",
+      tags: ["admin"],
+      summary: "Global LLM modelini değiştir",
+      request: { body: { content: { "application/json": { schema: setLlmModelInputSchema } } } },
+      responses: {
+        200: {
+          content: { "application/json": { schema: llmConfigSchema } },
+          description: "Güncel yapılandırma",
+        },
+        400: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Bilinmeyen model veya anahtar tanımsız",
+        },
+      },
+    }),
+    async (c) => {
+      const { model } = c.req.valid("json");
+      try {
+        return c.json(await container.llmRouter.setActive(model), 200);
+      } catch (e) {
+        if (e instanceof LlmModelError) return c.json({ error: e.message }, 400);
+        throw e;
+      }
+    },
+  );
+
+  // ADR-095 — sağlayıcı kullanım panosu: gerçek API verisi (token yoksa dürüst durum).
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/providers",
+      tags: ["admin"],
+      summary: "Sağlayıcı kullanım/kota kartları (Supabase/Render/Vercel/DeepSeek/Groq)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminProvidersSchema } },
+          description: "Kullanım kartları",
+        },
+      },
+    }),
+    async (c) => c.json(await getProviderUsage(container), 200),
   );
 
   app.openapi(

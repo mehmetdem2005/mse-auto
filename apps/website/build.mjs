@@ -256,12 +256,13 @@ function sitemapXml(pages, siteUrl) {
     .map((p) => {
       const trPath = p.L.lang === "tr" ? p.path : p.altPath;
       const enPath = p.L.lang === "en" ? p.path : p.altPath;
+      // x-default → EN (ADR-096 global-first): dil eşleşmeyen ziyaretçi EN görür.
       return `  <url>
     <loc>${siteUrl}${p.path}</loc>
     <lastmod>${today}</lastmod>
     <xhtml:link rel="alternate" hreflang="tr" href="${siteUrl}${trPath}"/>
     <xhtml:link rel="alternate" hreflang="en" href="${siteUrl}${enPath}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${trPath}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${enPath}"/>
   </url>`;
     })
     .join("\n");
@@ -343,6 +344,18 @@ function llmsFullTxt(pages, siteUrl) {
 
 const VERCEL_CONFIG = {
   trailingSlash: true,
+  // ADR-096 global-first taşınması: eski kök-TR ve /en yolları 301 ile yeni
+  // adreslerine gider — indekslenmiş bağlantı kırılmaz, SEO değeri devrolur.
+  redirects: [
+    { source: "/en", destination: "/", permanent: true },
+    { source: "/en/:path*", destination: "/:path*", permanent: true },
+    { source: "/cozumler", destination: "/tr/cozumler", permanent: true },
+    { source: "/cozumler/:path*", destination: "/tr/cozumler/:path*", permanent: true },
+    { source: "/karsilastirma", destination: "/tr/karsilastirma", permanent: true },
+    { source: "/hakkinda", destination: "/tr/hakkinda", permanent: true },
+    { source: "/gizlilik", destination: "/tr/gizlilik", permanent: true },
+    { source: "/kullanim-kosullari", destination: "/tr/kullanim-kosullari", permanent: true },
+  ],
   headers: [
     {
       source: "/(.*)",
@@ -392,17 +405,17 @@ export function buildSite(opts = {}) {
     writeFileSync(file, html);
   }
 
-  // 404 (Vercel statikte 404.html'i otomatik kullanır)
+  // 404 (Vercel statikte 404.html'i otomatik kullanır) — kök dil EN (ADR-096).
   writeFileSync(
     path.join(outDir, "404.html"),
     layout({
-      L: tr,
+      L: en,
       path: "/404.html",
-      altPath: "/en/",
-      title: tr.notFound.metaTitle,
-      desc: tr.notFound.text,
+      altPath: "/tr/",
+      title: en.notFound.metaTitle,
+      desc: en.notFound.text,
       siteUrl,
-      body: notFoundBody(tr),
+      body: notFoundBody(en),
       noindex: true,
     }),
   );

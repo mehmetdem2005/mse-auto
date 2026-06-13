@@ -3,10 +3,12 @@
 // on the site. Only genuinely reachable scenarios (nothing behind login/captcha).
 // Universal examples (not locked to one country). Answer-first, question H2s, short pages.
 
+// Global-first (ADR-096): EN kök dildir (/) — site "yalnız bir ülkeye özel" görünmez;
+// TR /tr altında tam eşlenik yaşar. x-default → EN.
 export const en = {
   lang: "en",
-  prefix: "/en",
-  useCaseBase: "/en/use-cases",
+  prefix: "",
+  useCaseBase: "/use-cases",
   langName: "English",
   otherLangLabel: "Türkçe",
 
@@ -39,9 +41,10 @@ export const en = {
       'Say "tell me when this happens": Whenly checks public web sources at intervals and alerts you — with a real alarm if you want — when it appears. Free to start.',
     heroOverline: "Monitoring & alerts app",
     heroTitle: "Tell me <em>when.</em>",
+    // Çözümü sat (copywriting skill): ürün özelliği değil, kurtulduğun iş — "yenilemeyi bırak".
     heroSub:
-      "Describe what you want to watch in your own words. Whenly checks public web sources for you at regular intervals and sends a notification — or rings a real alarm — when what you are waiting for appears.",
-    heroCta: "Start free",
+      "Stop refreshing the page. Tell Whenly the moment you are waiting for — the price drop, the restock, the listing, the announcement — in one plain sentence. It checks public web sources at regular intervals and rings your phone when that moment arrives.",
+    heroCta: "Start watching free",
     heroCtaNote: "No credit card · Works on web and phone",
     heroSecondary: "How does it work?",
     phone: {
@@ -71,37 +74,38 @@ export const en = {
         d: "When what you are waiting for appears, you get a notification; for critical topics, alarm mode rings your phone.",
       },
     ],
-    featuresHeading: "What stands out",
+    // Fayda-önce (copywriting skill: benefits over features) — her madde "sana ne kazandırır".
+    featuresHeading: "What you get",
     features: [
       {
         icon: "zap",
-        t: "Plain-language setup",
-        d: 'Understands compound rules from a sentence — "in stock AND under $500" — with no rule engine to learn.',
+        t: "One sentence is the whole setup",
+        d: 'Compound rules straight from plain words — "in stock AND under $500". No rule engine to learn, no filters to build.',
       },
       {
         icon: "languages",
-        t: "In your language",
-        d: "Eleven interface languages including English and Turkish. Write your watch in your own words.",
+        t: "Works in your language",
+        d: "Eleven interface languages. Describe the watch the way you would say it out loud.",
       },
       {
         icon: "bellRing",
-        t: "Alarm mode",
-        d: "For critical watches, the alert rings your phone instead of arriving as a silent banner.",
+        t: "Alarm mode for the critical ones",
+        d: "Some moments can't wait in a silent tray: with Pro, the alert makes your phone actually ring.",
       },
       {
         icon: "clock",
-        t: "Quiet hours",
-        d: "Night-time alerts go silent; you catch up in the morning, on your terms.",
+        t: "Quiet hours, your terms",
+        d: "Night alerts hold until morning — you keep the coverage without trading away your sleep.",
       },
       {
         icon: "smartphone",
-        t: "Web and phone",
-        d: "Runs in any browser right away; there is an Android app too. Alerts arrive on your phone.",
+        t: "On web and phone",
+        d: "Start in any browser in a minute; there is an Android app too. Alerts land on your phone.",
       },
       {
         icon: "shieldCheck",
-        t: "Privacy first",
-        d: "We do not sell your data or use it for ads. Download all of it or delete it permanently anytime.",
+        t: "Private by default",
+        d: "No ads, no selling your data. Export everything or delete it permanently, anytime.",
       },
     ],
     pricingHeading: "Pricing is simple",
@@ -125,7 +129,8 @@ export const en = {
       note: "The free plan has no time limit and asks for no card. Upgrade to Pro inside the app; cancel anytime.",
     },
     useCasesHeading: "What people use it for",
-    useCasesSub: "Each scenario below is a real need you can track on public web sources.",
+    useCasesSub:
+      "Nine real jobs Whenly does on the public web — each one a moment people used to miss.",
     useCasesAll: "See all use cases",
     faqHeading: "Frequently asked questions",
     faq: [
@@ -154,8 +159,8 @@ export const en = {
         a: "Both. The web app runs in any browser; there is an Android app too. Alerts arrive on your phone, and Pro adds alarm mode for critical watches.",
       },
     ],
-    ctaHeading: "Let Whenly keep watch",
-    ctaText: "Write one sentence and let go. Be the first to know when it happens.",
+    ctaHeading: "Let go of the refresh button",
+    ctaText: "Write one sentence and hand the watch over. Next time it happens, you know first.",
   },
 
   useCasesIndex: {

@@ -4,7 +4,7 @@ import { qk } from "@/lib/query";
 import { useTheme } from "@/theme";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
-import { Bell, type LucideIcon, Settings, Shield, Sparkles, Star } from "lucide-react-native";
+import { Bell, type LucideIcon, Settings, Sparkles, Star } from "lucide-react-native";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
@@ -34,10 +34,8 @@ export default function AppLayout() {
     configureNotificationHandler();
     return registerForegroundListener();
   }, []);
-  // /me yüklenene dek Tabs'ı render etme: expo-router sekme görünürlüğünü ilk
-  // render'da belirler; href'i sonradan null→görünür çevirmek sekmeyi geri
-  // getirmez. Bu yüzden isAdmin'i ilk render'dan ÖNCE biliyoruz.
-  const { data: me, isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
+  // /me erken yüklenir (ana ekrandaki konsol girişi + admin guard'ı bu cache'i kullanır).
+  const { isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.ink, justifyContent: "center" }}>
@@ -45,7 +43,6 @@ export default function AppLayout() {
       </View>
     );
   }
-  const isAdmin = me?.isAdmin ?? false;
   return (
     <Tabs
       // Native header tüm sekmelerde kapalı — GradientHero kabuk görevini üstlenir (ADR-054/058).
@@ -109,15 +106,10 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        // Whenly Console (ADR-095): admin sekmelerden çıktı — kendi Stack'inde "ayrı
+        // site"; girişi ana ekranın sağ altındaki konsol düğmesi. Sekme her zaman gizli.
         name="admin"
-        options={{
-          headerShown: false,
-          title: t("tabs.admin"),
-          href: isAdmin ? undefined : null,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon Icon={Shield} color={color} focused={focused} />
-          ),
-        }}
+        options={{ href: null, headerShown: false }}
       />
     </Tabs>
   );
