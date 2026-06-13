@@ -206,6 +206,23 @@ export interface AdminProviders {
   providers: ProviderUsage[];
 }
 
+// ---- Operasyon & sağlık (ADR-102) ----
+export interface AdminOps {
+  days: number;
+  checks: {
+    total: number;
+    detections: number;
+    detectionRate: number;
+    avgConfidence: number | null;
+    tokensUsed: number;
+  };
+  deliveries: {
+    total: number;
+    byStatus: { key: string; count: number }[];
+    byChannel: { key: string; count: number }[];
+  };
+}
+
 // ---- Duyurular (ADR-100) ----
 export type AnnouncementKind = "info" | "update" | "promo" | "warning";
 export interface Announcement {
@@ -381,6 +398,7 @@ export const api = {
   // ---- Admin konsolu ----
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),
   adminUserDetail: (id: string) => req<AdminUserDetail>(`/v1/admin/users/${id}`),
+  adminOps: (days = 7) => req<AdminOps>(`/v1/admin/ops?days=${days}`),
   setUserAdmin: (id: string, makeAdmin: boolean) =>
     req<{ ok: boolean }>(`/v1/admin/users/${id}/admin`, {
       method: "POST",

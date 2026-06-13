@@ -175,9 +175,28 @@ export interface AdminUserDetail extends AdminUserRow {
   support: { open: number; total: number };
 }
 
+/** Operasyon & sağlık anlık görüntüsü (ADR-102) — son `days` günlük işleyiş özeti. */
+export interface AdminOps {
+  days: number;
+  checks: {
+    total: number;
+    detections: number;
+    detectionRate: number; // 0..100
+    avgConfidence: number | null; // 0..1
+    tokensUsed: number;
+  };
+  deliveries: {
+    total: number;
+    byStatus: { key: string; count: number }[];
+    byChannel: { key: string; count: number }[];
+  };
+}
+
 /** Admin paneli için yönetim işlemleri (yalnız admin middleware arkasında). */
 export interface AdminConsoleRepository {
   listUsers(): Promise<AdminUserRow[]>;
+  /** Operasyon & sağlık özeti (son `days` gün). */
+  getOps(days: number): Promise<AdminOps>;
   /** Tek kullanıcının 360° detayı; yoksa null. */
   getUserDetail(userId: string): Promise<AdminUserDetail | null>;
   setAdmin(userId: string, makeAdmin: boolean): Promise<void>;
