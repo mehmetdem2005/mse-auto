@@ -37,7 +37,8 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="alternate" hreflang="tr" href="${trUrl}">
 <link rel="alternate" hreflang="en" href="${enUrl}">
 <link rel="alternate" hreflang="x-default" href="${enUrl}">
-<meta name="theme-color" content="${BRAND.ink}">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F7FB">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="${BRAND.ink}">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${BRAND.name}">
 <meta property="og:title" content="${esc(title)}">
@@ -225,6 +226,11 @@ export function homeBody(L) {
         <a class="btn btn-ghost" href="#how">${esc(H.heroSecondary)}</a>
       </div>
       <p class="cta-note rv">${esc(H.heroCtaNote)}</p>
+      <ul class="trust rv" aria-label="${esc(H.heroOverline)}">
+        ${H.trust
+          .map((/** @type {string} */ c) => `<li>${icon("check", 14)}<span>${esc(c)}</span></li>`)
+          .join("\n        ")}
+      </ul>
     </div>
     ${phoneMock(L)}
   </div>
@@ -289,6 +295,7 @@ export function homeBody(L) {
         ${btn(APP_URL, H.pricing.freeCta, "ghost")}
       </div>
       <div class="card price price-pro rv" style="--d:90ms">
+        <span class="price-badge">${esc(H.pricing.proBadge)}</span>
         <h3>${esc(H.pricing.proName)}</h3>
         <ul>${H.pricing.proBullets.map((/** @type {string} */ b) => `<li>${icon("check", 18)} ${esc(b)}</li>`).join("")}</ul>
         ${btn(APP_URL, H.pricing.proCta, "primary")}

@@ -5,6 +5,7 @@ import { Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type LangCode, SUPPORTED_LANGS, setLanguage } from "@/i18n";
 import { api } from "@/lib/api";
+import { siteUrlFor } from "@/lib/links";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
 import { useTheme, useThemeStore } from "@/theme";
@@ -14,6 +15,7 @@ import { useRouter } from "expo-router";
 import {
   Check,
   ChevronRight,
+  Compass,
   FileDown,
   Globe2,
   LifeBuoy,
@@ -26,7 +28,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Platform, Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Alert, Linking, Platform, Pressable, ScrollView, Share, Text, View } from "react-native";
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -301,6 +303,27 @@ export default function Settings() {
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("channels.title")}</Text>
                 <Text className="text-muted text-xs mt-0.5">{t("channels.sub")}</Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
+
+          {/* Tanıtım sitesi (ADR-098): uygulama ↔ site çift yönlü bağlandı */}
+          <Pressable
+            onPress={() => void Linking.openURL(siteUrlFor(i18n.language))}
+            accessibilityRole="link"
+            accessibilityLabel={t("settings.websiteTitle")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <Compass size={18} color={theme.colors.accent} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">
+                  {t("settings.websiteTitle")}
+                </Text>
+                <Text className="text-muted text-xs mt-0.5">{t("settings.websiteSub")}</Text>
               </View>
               <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>

@@ -332,6 +332,8 @@ export const fr: Catalog = {
     notifsDenied: "La permission de notification a été refusée.",
     privacy: "Données & confidentialité",
     privacySub: "vos droits GDPR · comment vos données sont protégées",
+    websiteTitle: "Site web",
+    websiteSub: "Site du produit · cas d'''usage et comparatifs",
     privacyA11y: "Droits et confidentialité des données — page de support",
     danger: "zone de danger",
     dangerHint:

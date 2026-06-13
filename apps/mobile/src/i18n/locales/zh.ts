@@ -278,6 +278,8 @@ export const zh: Catalog = {
     notifsDenied: "通知权限被拒绝。",
     privacy: "数据与隐私",
     privacySub: "你的GDPR权利 · 你的数据如何被保护",
+    websiteTitle: "网站",
+    websiteSub: "产品网站 · 使用场景与对比",
     privacyA11y: "数据与隐私权 — 支持页面",
     danger: "危险区",
     dangerHint: "永久删除你的账户和所有数据（GDPR）。不可逆转。",
