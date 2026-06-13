@@ -61,8 +61,10 @@ pnpm 9 · Node 22. Hesaplar: Supabase, Render, Vercel, Google Cloud, Expo, DeepS
 - **KVKK/GDPR**: gizlilik politikası, onam, hesap silme akışı + Play "data safety" formu.
 - Ses önizleme (`expo-audio`), gerçek Supabase/E2E entegrasyon testleri.
 
-## 8. Google ile giriş (tek seferlik, ~5 dk — yalnız hesap sahibi yapabilir)
-Kod hazır (ADR-093); eksik olan tek şey Google OAuth istemcisi:
+## 8. Google ile giriş — ✓ TAMAMLANDI (2026-06-13)
+OAuth istemcisi (Web application) oluşturuldu; Supabase'de sağlayıcı Management API ile
+etkinleştirildi ve `/authorize?provider=google` ucunun accounts.google.com'a doğru
+client_id ile yönlendirdiği canlıda doğrulandı. Adımlar tarihçe/yeniden-kurulum içindir:
 1. console.cloud.google.com → proje seç/oluştur → **APIs & Services → Credentials → Create OAuth client ID** (tip: Web application).
 2. **Authorized redirect URI**: `https://kozckegiwuaywqkkkntp.supabase.co/auth/v1/callback`
 3. Çıkan **Client ID + Secret**'ı Supabase Dashboard → Authentication → Providers → **Google**'a yapıştır ve etkinleştir.
@@ -78,8 +80,7 @@ asistan çağrılarını sürer; yeniden başlatma gerekmez.
 1. `DEEPSEEK_API_KEY`'i Render → Environment → **watcher-secrets** grubuna ekle
    (anahtar repoya ASLA yazılmaz). Groq zaten tanımlıysa ikisi de seçilebilir olur.
 2. Seçimin deploy'lar arasında KALICI olması için migration `supabase/migrations/0014_app_settings.sql`
-   canlıya uygulanmalı (SQL Editor — yalnız açık izinle). Uygulanana dek konsol
-   "seçim bellekte" uyarısı gösterir ve yeniden başlatmada varsayılana döner.
+   gerekir — **✓ UYGULANDI (2026-06-13, kullanıcı izniyle; `app_settings` + RLS canlıda doğrulandı).**
 
 **Kaynaklar panosu (gerçek kullanım verisi):** Admin → **Kaynaklar**. Her kart
 sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart dürüstçe
