@@ -192,6 +192,32 @@ export interface AdminProviders {
   providers: ProviderUsage[];
 }
 
+// ---- Duyurular (ADR-100) ----
+export type AnnouncementKind = "info" | "update" | "promo" | "warning";
+export interface Announcement {
+  id: string;
+  title: string;
+  body: string;
+  kind: AnnouncementKind;
+  imageUrl: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  pinned: boolean;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export interface AnnouncementInput {
+  title: string;
+  body: string;
+  kind: AnnouncementKind;
+  imageUrl: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  pinned: boolean;
+  published: boolean;
+}
+
 // ---- Watcher "araştırma" geçmişi ----
 export interface SearchHitView {
   title: string;
@@ -370,6 +396,21 @@ export const api = {
   setAdminModel: (model: string) =>
     req<LlmConfig>("/v1/admin/model", { method: "PUT", body: JSON.stringify({ model }) }),
   adminProviders: () => req<AdminProviders>("/v1/admin/providers"),
+  // ---- Duyurular (ADR-100) ----
+  announcements: () => req<Announcement[]>("/v1/announcements"),
+  adminAnnouncements: () => req<Announcement[]>("/v1/admin/announcements"),
+  createAnnouncement: (input: AnnouncementInput) =>
+    req<Announcement>("/v1/admin/announcements", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  updateAnnouncement: (id: string, patch: Partial<AnnouncementInput>) =>
+    req<Announcement>(`/v1/admin/announcements/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(patch),
+    }),
+  deleteAnnouncement: (id: string) =>
+    req<{ ok: boolean }>(`/v1/admin/announcements/${id}`, { method: "DELETE" }),
   adminPrices: () => req<Plans>("/v1/admin/prices"),
   setPrice: (interval: BillingInterval, amountCents: number, currency: string) =>
     req<Plans>("/v1/admin/prices", {

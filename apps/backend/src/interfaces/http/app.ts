@@ -5,6 +5,7 @@ import { timeout } from "hono/timeout";
 import type { Container } from "../../config/container";
 import { adminMiddleware } from "./admin.middleware";
 import { adminRoutes } from "./admin.route";
+import { announcementsRoutes } from "./announcements.route";
 import type { AuthVariables } from "./auth.middleware";
 import { authMiddleware } from "./auth.middleware";
 import { billingRoutes } from "./billing.route";
@@ -101,6 +102,7 @@ export function createApp(
   app.route("/v1/plans", plansRoutes(container));
   app.route("/v1/watchers", watchersRoutes(container));
   app.route("/v1/feed", feedRoutes(container));
+  app.route("/v1/announcements", announcementsRoutes(container));
   app.route("/v1/support", supportRoutes(container));
   app.route("/v1/events", eventsRoutes(container));
   app.route("/v1/devices", devicesRoutes(container));

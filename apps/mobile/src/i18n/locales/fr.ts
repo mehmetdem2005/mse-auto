@@ -312,6 +312,12 @@ export const fr: Catalog = {
     incA11y: "Augmenter l'heure de {{label}}",
   },
 
+  announcements: {
+    title: "Annonces",
+    empty: "Aucune annonce pour l'instant",
+    emptyHint: "Les nouveautés et actualités apparaîtront ici.",
+    pinned: "Épinglé",
+  },
   settings: {
     account: "Votre compte Whenly",
     language: "Langue",
@@ -334,6 +340,8 @@ export const fr: Catalog = {
     privacySub: "vos droits GDPR · comment vos données sont protégées",
     websiteTitle: "Site web",
     websiteSub: "Site du produit · cas d'''usage et comparatifs",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Console d'administration · vous seul",
     privacyA11y: "Droits et confidentialité des données — page de support",
     danger: "zone de danger",
     dangerHint:

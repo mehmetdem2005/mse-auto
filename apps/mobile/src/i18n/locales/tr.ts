@@ -303,6 +303,12 @@ export const tr = {
     incA11y: "{{label}} saatini artır",
   },
 
+  announcements: {
+    title: "Duyurular",
+    empty: "Henüz duyuru yok",
+    emptyHint: "Yeni özellikler ve haberler burada görünecek.",
+    pinned: "Sabit",
+  },
   settings: {
     account: "Whenly hesabın",
     language: "Dil",
@@ -325,6 +331,8 @@ export const tr = {
     privacySub: "KVKK/GDPR hakların · verilerin nasıl korunur",
     websiteTitle: "Web sitesi",
     websiteSub: "Tanıtım sitesi · kullanım senaryoları ve karşılaştırmalar",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Yönetim paneli · yalnız sen",
     privacyA11y: "Veri ve gizlilik hakların — destek sayfası",
     danger: "tehlikeli bölge",
     dangerHint: "Hesabını ve tüm verini kalıcı olarak sil (KVKK/GDPR). Geri alınamaz.",

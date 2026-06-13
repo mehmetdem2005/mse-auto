@@ -1,4 +1,5 @@
 // Organisms — ekran-düzeyi imza parçalar (AAA görsel dil, ADR-054).
+import { useUnreadAnnouncements } from "@/lib/announcements";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { GRADIENT, ON_GRADIENT } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
@@ -49,18 +50,7 @@ export function GradientHero({
           <Text className="text-white text-base font-extrabold">W</Text>
         </View>
         <Text className="text-white/90 text-body font-bold ml-2.5 tracking-tight">Whenly</Text>
-        <View className="ml-auto">
-          {right ?? (
-            <Pressable
-              onPress={() => router.push("/support")}
-              accessibilityRole="button"
-              accessibilityLabel={t("settings.supportTitle")}
-              className="w-12 h-12 rounded-full bg-white/15 items-center justify-center active:bg-white/25"
-            >
-              <Bell size={19} color={ON_GRADIENT} />
-            </Pressable>
-          )}
-        </View>
+        <View className="ml-auto">{right ?? <NotificationBell />}</View>
       </View>
       <Text
         className="text-white text-headline font-extrabold tracking-tight mt-3"
@@ -97,6 +87,41 @@ export function GradientHero({
         <Animated.View entering={reduce ? undefined : FadeIn.duration(400)}>{inner}</Animated.View>
       )}
     </LinearGradient>
+  );
+}
+
+/**
+ * Bildirim zili (ADR-100) — Duyurular ekranına gider; okunmamış varsa kırmızı nokta.
+ * GradientHero'nun varsayılan sağ aksiyonu; istenirse `right` ile ezilir.
+ */
+function NotificationBell(): ReactNode {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const unread = useUnreadAnnouncements();
+  return (
+    <Pressable
+      onPress={() => router.push("/announcements")}
+      accessibilityRole="button"
+      accessibilityLabel={
+        unread > 0 ? `${t("announcements.title")} (${unread})` : t("announcements.title")
+      }
+      className="w-12 h-12 rounded-full bg-white/15 items-center justify-center active:bg-white/25"
+    >
+      <Bell size={19} color={ON_GRADIENT} />
+      {unread > 0 ? (
+        <View
+          className="absolute rounded-full bg-neg"
+          style={{
+            top: 9,
+            right: 9,
+            width: 10,
+            height: 10,
+            borderWidth: 1.5,
+            borderColor: "#FFFFFF",
+          }}
+        />
+      ) : null}
+    </Pressable>
   );
 }
 

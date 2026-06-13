@@ -306,6 +306,12 @@ export const en: Catalog = {
     incA11y: "Increase {{label}} hour",
   },
 
+  announcements: {
+    title: "Announcements",
+    empty: "No announcements yet",
+    emptyHint: "New features and news will appear here.",
+    pinned: "Pinned",
+  },
   settings: {
     account: "Your Whenly account",
     language: "Language",
@@ -328,6 +334,8 @@ export const en: Catalog = {
     privacySub: "Your GDPR rights · how your data is protected",
     websiteTitle: "Website",
     websiteSub: "Product site · use cases and comparisons",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "Admin console · you only",
     privacyA11y: "Data and privacy rights — support page",
     danger: "danger zone",
     dangerHint: "Permanently delete your account and all data (GDPR). Cannot be undone.",

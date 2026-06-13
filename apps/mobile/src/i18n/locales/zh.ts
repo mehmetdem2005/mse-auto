@@ -258,6 +258,12 @@ export const zh: Catalog = {
     incA11y: "增加{{label}}小时",
   },
 
+  announcements: {
+    title: "公告",
+    empty: "暂无公告",
+    emptyHint: "新功能和消息将显示在此处。",
+    pinned: "已置顶",
+  },
   settings: {
     account: "你的Whenly账户",
     language: "语言",
@@ -280,6 +286,8 @@ export const zh: Catalog = {
     privacySub: "你的GDPR权利 · 你的数据如何被保护",
     websiteTitle: "网站",
     websiteSub: "产品网站 · 使用场景与对比",
+    adminConsole: "Whenly Console",
+    adminConsoleSub: "管理控制台 · 仅限你",
     privacyA11y: "数据与隐私权 — 支持页面",
     danger: "危险区",
     dangerHint: "永久删除你的账户和所有数据（GDPR）。不可逆转。",

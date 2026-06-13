@@ -382,6 +382,46 @@ export interface Database {
         Update: { value?: Json; updated_at?: string };
         Relationships: [];
       };
+      announcements: {
+        Row: {
+          id: string;
+          title: string;
+          body: string;
+          kind: string;
+          image_url: string | null;
+          cta_label: string | null;
+          cta_url: string | null;
+          pinned: boolean;
+          published: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          title: string;
+          body: string;
+          kind?: string;
+          image_url?: string | null;
+          cta_label?: string | null;
+          cta_url?: string | null;
+          pinned?: boolean;
+          published?: boolean;
+          id?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          body?: string;
+          kind?: string;
+          image_url?: string | null;
+          cta_label?: string | null;
+          cta_url?: string | null;
+          pinned?: boolean;
+          published?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

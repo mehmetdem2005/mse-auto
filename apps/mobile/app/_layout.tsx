@@ -71,6 +71,10 @@ export default function RootLayout() {
                 name="channels"
                 options={{ animation: reduce ? "none" : "slide_from_right" }}
               />
+              <Stack.Screen
+                name="announcements"
+                options={{ animation: reduce ? "none" : "slide_from_right" }}
+              />
             </Stack.Protected>
             <Stack.Protected guard={!isSignedIn}>
               <Stack.Screen name="(auth)" />
