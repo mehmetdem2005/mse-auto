@@ -5,6 +5,7 @@ import { useTheme } from "@/theme";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
+  Activity,
   BarChart3,
   Bell,
   ChevronRight,
@@ -27,6 +28,7 @@ const SECTIONS: {
     | "/admin/analytics"
     | "/admin/traffic"
     | "/admin/stats"
+    | "/admin/ops"
     | "/admin/announcements"
     | "/admin/model"
     | "/admin/providers"
@@ -42,6 +44,7 @@ const SECTIONS: {
   { href: "/admin/analytics", Icon: TrendingUp, title: "Analitik", desc: "Kullanıcı · MRR · plan" },
   { href: "/admin/traffic", Icon: Gauge, title: "Trafik", desc: "Site + uygulama edinimi" },
   { href: "/admin/stats", Icon: BarChart3, title: "İstatistik", desc: "Kontrol · tespit · teslim" },
+  { href: "/admin/ops", Icon: Activity, title: "Operasyon", desc: "Sağlık · teslimat · token" },
   {
     href: "/admin/announcements",
     Icon: Megaphone,

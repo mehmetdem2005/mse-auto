@@ -87,6 +87,24 @@ export const adminUserDetailSchema = adminUserSchema.extend({
 });
 export type AdminUserDetail = z.infer<typeof adminUserDetailSchema>;
 
+/** Operasyon & sağlık (ADR-102). */
+export const adminOpsSchema = z.object({
+  days: z.number().int(),
+  checks: z.object({
+    total: z.number().int(),
+    detections: z.number().int(),
+    detectionRate: z.number(),
+    avgConfidence: z.number().nullable(),
+    tokensUsed: z.number().int(),
+  }),
+  deliveries: z.object({
+    total: z.number().int(),
+    byStatus: z.array(z.object({ key: z.string(), count: z.number().int() })),
+    byChannel: z.array(z.object({ key: z.string(), count: z.number().int() })),
+  }),
+});
+export type AdminOps = z.infer<typeof adminOpsSchema>;
+
 export const adminSystemSchema = z.object({
   now: z.string(),
   backend: z.string(),

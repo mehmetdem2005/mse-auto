@@ -1,5 +1,6 @@
 import type {
   AdminConsoleRepository,
+  AdminOps,
   AdminSubscriptionRow,
   AdminSystemInfo,
   AdminTimeseriesData,
@@ -20,6 +21,13 @@ export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
   }
   async getUserDetail(): Promise<AdminUserDetail | null> {
     return null;
+  }
+  async getOps(days: number): Promise<AdminOps> {
+    return {
+      days,
+      checks: { total: 0, detections: 0, detectionRate: 0, avgConfidence: null, tokensUsed: 0 },
+      deliveries: { total: 0, byStatus: [], byChannel: [] },
+    };
   }
   async setAdmin(): Promise<void> {}
   async deleteUser(): Promise<void> {}

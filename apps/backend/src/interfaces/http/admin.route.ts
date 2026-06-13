@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
   adminIdParamSchema,
+  adminOpsSchema,
   adminProvidersSchema,
   adminStatsSchema,
   adminSubscriptionListSchema,
@@ -314,6 +315,21 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const detail = await container.adminConsole.getUserDetail(c.req.valid("param").id);
       return detail ? c.json(detail, 200) : c.json({ error: "kullanıcı bulunamadı" }, 404);
     },
+  );
+
+  // ADR-102 — operasyon & sağlık özeti.
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/ops",
+      tags: ["admin"],
+      summary: "Operasyon & sağlık (kontrol/tespit/token + teslimat başarı/hata)",
+      request: { query: adminTimeseriesQuerySchema },
+      responses: {
+        200: { content: { "application/json": { schema: adminOpsSchema } }, description: "Ops" },
+      },
+    }),
+    async (c) => c.json(await container.adminConsole.getOps(c.req.valid("query").days), 200),
   );
 
   app.openapi(

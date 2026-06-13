@@ -978,3 +978,11 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **DÜRÜST SINIR:** sunucu-tarafı cursor sayfalama yapılmadı — mevcut kullanıcı ölçeğinde (tek operatör) istemci filtre yeterli; kullanıcı sayısı büyürse sonraki artırım. Lastı-aktivite (son check/teslimat) detaya eklenmedi (ağır sorgu; Faz B ops kapsamında gelecek).
 - **Doğrulama:** typecheck 4/4 · biome temiz · backend 137 test (2 yeni) yeşil.
 - **ISO/TOGAF:** 25010 İşlevsel Uygunluk + Kullanılabilirlik (drill-down + arama) · 27002 (adminMiddleware; PII service-role) · 25012 (kaynak doğruluk: auth.users) · 9241 (öz-betimleyici detay) · 29148 · TOGAF Phase C(App+Data) sınıf **Artımlı**.
+
+## ADR-102 — Admin Faz B: Operasyon & sağlık panosu (ops)
+- **Durum:** Kabul · planlı admin geliştirme Faz B.
+- **Backend:** `AdminConsoleRepository.getOps(days)` portu + Supabase/in-memory. Supabase impl mevcut `sinceIso` ile son N gün `check_runs` (decision/confidence/tokens_used) + `deliveries` (status/channel) çeker, JS'te toplar: kontrol/tespit/oran, ortalama güven, **token toplamı** (LLM maliyet izi), teslimat **durum + kanal kırılımı**. Uç `GET /v1/admin/ops?days`. contracts `adminOpsSchema`.
+- **Mobil:** Yeni `admin/ops.tsx` — aralık seçici (1/7/30g) + Stat kartları (kontrol/tespit/güven/token, teslimat başarı/başarısız) + başarısız teslimat uyarı şeridi + durum/kanal `TopList` kırılımları (mevcut bileşen). Konsola "Operasyon" bölümü (Activity ikon).
+- **DÜRÜST SINIR / bilinçli erteleme:** Plan'daki ops kapsamının İKİNCİ yarısı bu artırımda YAPILMADI — (a) global **check-run logu** ekranı (`/admin/check-runs` gerekçe/sorgu/kaynak), (b) **worker heartbeat** (`monitoring-worker.ts` → app_settings son-tik) + kuyruk derinliği. Bunlar ayrı, daha riskli (worker yazımı) parçalar; sağlık panosu önce teslim edildi. Faz B.2 olarak gelecekler. "Yapıldı" diye yazılmadı.
+- **Doğrulama:** typecheck 4/4 · biome temiz · backend testleri yeşil. Migration gerekmedi (mevcut tablolar).
+- **ISO/TOGAF:** 25010 Güvenilirlik gözlemlenebilirliği + İşlevsel Uygunluk · 25012 (gerçek check_runs/deliveries verisi) · 9241 (tek bakışta sağlık) · 29148 · TOGAF Phase C(App) sınıf **Artımlı**.

@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   AdminConsoleRepository,
+  AdminOps,
   AdminSubscriptionRow,
   AdminSystemInfo,
   AdminTimeseriesData,
@@ -153,6 +154,51 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       support: {
         open: tickets.filter((t) => t.status === "open").length,
         total: tickets.length,
+      },
+    };
+  }
+
+  async getOps(days: number): Promise<AdminOps> {
+    const since = sinceIso(days);
+    const [runsRes, delsRes] = await Promise.all([
+      this.db.from("check_runs").select("decision, confidence, tokens_used").gte("ran_at", since),
+      this.db.from("deliveries").select("status, channel").gte("sent_at", since),
+    ]);
+    if (runsRes.error) throw new Error(`ops check_runs: ${runsRes.error.message}`);
+    if (delsRes.error) throw new Error(`ops deliveries: ${delsRes.error.message}`);
+    const runs = runsRes.data ?? [];
+    const dels = delsRes.data ?? [];
+
+    const detections = runs.filter((r) => r.decision).length;
+    const confidences = runs.map((r) => r.confidence).filter((c): c is number => c !== null);
+    const avgConfidence =
+      confidences.length > 0 ? confidences.reduce((a, c) => a + c, 0) / confidences.length : null;
+    const tokensUsed = runs.reduce((a, r) => a + (r.tokens_used ?? 0), 0);
+
+    const tally = (rows: { key: string | null }[]): { key: string; count: number }[] => {
+      const m = new Map<string, number>();
+      for (const r of rows) {
+        const k = r.key ?? "—";
+        m.set(k, (m.get(k) ?? 0) + 1);
+      }
+      return [...m.entries()]
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.count - a.count);
+    };
+
+    return {
+      days,
+      checks: {
+        total: runs.length,
+        detections,
+        detectionRate: runs.length > 0 ? Math.round((detections / runs.length) * 100) : 0,
+        avgConfidence,
+        tokensUsed,
+      },
+      deliveries: {
+        total: dels.length,
+        byStatus: tally(dels.map((d) => ({ key: d.status }))),
+        byChannel: tally(dels.map((d) => ({ key: d.channel }))),
       },
     };
   }
