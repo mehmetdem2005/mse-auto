@@ -9,6 +9,7 @@ import {
   adminTimeseriesQuerySchema,
   adminTimeseriesSchema,
   adminTrafficSchema,
+  adminUserDetailSchema,
   adminUserListSchema,
   adminWatchListSchema,
   announcementIdParamSchema,
@@ -291,6 +292,28 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       },
     }),
     async (c) => c.json(await container.adminConsole.listUsers(), 200),
+  );
+
+  // ADR-101 — kullanıcı 360° detayı (drill-down).
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/users/{id}",
+      tags: ["admin"],
+      summary: "Tek kullanıcı detayı (abonelik, watcher'lar, kanallar, cihazlar, destek)",
+      request: { params: adminIdParamSchema },
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminUserDetailSchema } },
+          description: "Detay",
+        },
+        404: { content: { "application/json": { schema: errorSchema } }, description: "Yok" },
+      },
+    }),
+    async (c) => {
+      const detail = await container.adminConsole.getUserDetail(c.req.valid("param").id);
+      return detail ? c.json(detail, 200) : c.json({ error: "kullanıcı bulunamadı" }, 404);
+    },
   );
 
   app.openapi(

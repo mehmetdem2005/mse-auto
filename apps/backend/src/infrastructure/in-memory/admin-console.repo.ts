@@ -3,6 +3,7 @@ import type {
   AdminSubscriptionRow,
   AdminSystemInfo,
   AdminTimeseriesData,
+  AdminUserDetail,
   AdminUserRow,
   AdminWatchRow,
 } from "../../domain/billing";
@@ -16,6 +17,9 @@ import { emptyTimeseries } from "../shared/timeseries.util";
 export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
   async listUsers(): Promise<AdminUserRow[]> {
     return [];
+  }
+  async getUserDetail(): Promise<AdminUserDetail | null> {
+    return null;
   }
   async setAdmin(): Promise<void> {}
   async deleteUser(): Promise<void> {}
