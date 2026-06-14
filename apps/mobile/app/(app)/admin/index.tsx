@@ -8,6 +8,7 @@ import {
   Activity,
   BarChart3,
   Bell,
+  Boxes,
   ChevronRight,
   Cpu,
   CreditCard,
@@ -39,6 +40,7 @@ const SECTIONS: {
     | "/admin/broadcast"
     | "/admin/audit"
     | "/admin/model"
+    | "/admin/embeddings"
     | "/admin/channels"
     | "/admin/email-prompt"
     | "/admin/providers"
@@ -65,6 +67,12 @@ const SECTIONS: {
   { href: "/admin/broadcast", Icon: Send, title: "Push Yayını", desc: "Segmente bildirim gönder" },
   { href: "/admin/audit", Icon: ScrollText, title: "Denetim", desc: "Admin işlem günlüğü" },
   { href: "/admin/model", Icon: Cpu, title: "Model", desc: "Global LLM seçimi" },
+  {
+    href: "/admin/embeddings",
+    Icon: Boxes,
+    title: "Gömme (RAG)",
+    desc: "Embedding sağlayıcı — Gemini (ücretsiz) / OpenAI",
+  },
   {
     href: "/admin/channels",
     Icon: MessageCircle,

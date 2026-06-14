@@ -293,6 +293,28 @@ export type LlmConfig = z.infer<typeof llmConfigSchema>;
 export const setLlmModelInputSchema = z.object({ model: z.string().min(1) });
 export type SetLlmModelInput = z.infer<typeof setLlmModelInputSchema>;
 
+// ---- Gömme (embedding) sağlayıcı seçimi (ADR-127) — RAG için; LLM modeliyle aynı desen ----
+export const embeddingModelSchema = z.object({
+  id: z.string(),
+  provider: z.enum(["gemini", "openai"]),
+  model: z.string(),
+  label: z.string(),
+  note: z.string(),
+  dimensions: z.number().int().positive(),
+  available: z.boolean(),
+});
+export type EmbeddingModel = z.infer<typeof embeddingModelSchema>;
+
+export const embeddingConfigSchema = z.object({
+  active: z.string().nullable(),
+  persisted: z.boolean(),
+  models: z.array(embeddingModelSchema),
+});
+export type EmbeddingConfig = z.infer<typeof embeddingConfigSchema>;
+
+export const setEmbeddingInputSchema = z.object({ model: z.string().min(1) });
+export type SetEmbeddingInput = z.infer<typeof setEmbeddingInputSchema>;
+
 // ---- Sağlayıcı kullanım panosu (ADR-095) ----
 // GERÇEK çekilen veri: her kart sağlayıcının kendi API'sinden gelir; token yoksa
 // veya uç hata verirse durum DÜRÜSTÇE gösterilir (uydurma metrik yazılmaz).

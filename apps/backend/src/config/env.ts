@@ -26,6 +26,8 @@ const EnvSchema = z.object({
   GROQ_ASSISTANT_MODEL: z.string().min(1).optional(),
   DEEPSEEK_API_KEY: z.string().min(1).optional(),
   OPENAI_API_KEY: z.string().min(1).optional(),
+  // Gömme (embedding) sağlayıcıları (ADR-127): Gemini ÜCRETSİZ kota (varsayılan), OpenAI alternatif.
+  GEMINI_API_KEY: z.string().min(1).optional(),
   // Sağlayıcı kullanım panosu (ADR-095) — admin "Kaynaklar" kartları; hepsi opsiyonel,
   // tanımsız olan kart dürüstçe "token yok" gösterir.
   SUPABASE_ACCESS_TOKEN: z.string().min(1).optional(), // Management API (sbp_…)
