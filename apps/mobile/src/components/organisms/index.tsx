@@ -76,6 +76,9 @@ export function GradientHero({
         paddingTop: Platform.OS === "web" ? 16 : 48,
         paddingBottom: 40,
         paddingHorizontal: 20,
+        // ADR-108: web'de gradyanı kendi kararlı GPU katmanına sahiplendir → bitişik
+        // şeffaf kaydırma katmanına BAYAT doku sızıntısını (cızırtı) keser.
+        ...(Platform.OS === "web" ? { backfaceVisibility: "hidden" as const } : {}),
       }}
     >
       {/* Web'de reanimated katmanı KURMADAN düz View — Animated.View animasyonsuz da
