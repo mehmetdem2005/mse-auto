@@ -135,6 +135,7 @@ export const de: Catalog = {
     readyHint:
       'Vorgeschlagene Häufigkeit: {{freq}} · Tippe auf "Weiter" oder fahre mit der Eingabe fort.',
     planTitle: "Suchplan",
+    collectedTitle: "Erfasste Details",
     feasibility: {
       can: "verfolgbar",
       partial: "teilweise verfolgbar",

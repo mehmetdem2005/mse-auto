@@ -402,6 +402,8 @@ export interface AssistReply {
   feasibilityVerdict?: "can" | "partial" | "cannot" | null;
   plannedSteps?: string[];
   sitePermission?: { allowed: boolean; note: string } | null;
+  /** ADR-132: sohbette toplanan izleme-detayları (slot-filling). */
+  collectedDetails?: { label: string; value: string }[];
 }
 
 interface ReqInit {

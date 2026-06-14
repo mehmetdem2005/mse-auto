@@ -132,6 +132,7 @@ export const pt: Catalog = {
     ready: "pronto para assistir",
     readyHint: 'Frequência sugerida: {{freq}} · toque em "Continuar" ou continue digitando.',
     planTitle: "Plano de busca",
+    collectedTitle: "Detalhes coletados",
     feasibility: {
       can: "rastreável",
       partial: "parcialmente rastreável",

@@ -131,6 +131,7 @@ export const tr = {
     ready: "izlemeye hazır",
     readyHint: 'Önerilen sıklık: {{freq}} · "Devam" ile sürdür ya da yazmaya devam et.',
     planTitle: "Arama planı",
+    collectedTitle: "Topladığım detaylar",
     feasibility: {
       can: "izlenebilir",
       partial: "kısmen izlenebilir",

@@ -132,6 +132,7 @@ export const ar: Catalog = {
     ready: "جاهز للعرض",
     readyHint: 'التكرار الموصى به: {{freq}} · انقر على "استمرار" أو استمر في الكتابة.',
     planTitle: "خطة البحث",
+    collectedTitle: "التفاصيل المجمّعة",
     feasibility: {
       can: "قابل للتتبع",
       partial: "قابل للتتبع جزئيًا",

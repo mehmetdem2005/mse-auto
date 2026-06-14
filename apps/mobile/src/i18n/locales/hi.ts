@@ -132,6 +132,7 @@ export const hi: Catalog = {
     ready: "तैयार हो गया हूँ",
     readyHint: 'सुझावित आवृत्ति: {{freq}} · "अग्रिम" पर टैप करें या टाइपिंग जारी रखें।',
     planTitle: "खोज योजना",
+    collectedTitle: "एकत्रित विवरण",
     feasibility: {
       can: "ट्रैक किया जा सकता है",
       partial: "आंशिक रूप से ट्रैक किया जा सकता है",

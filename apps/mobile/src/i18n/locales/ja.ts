@@ -132,6 +132,7 @@ export const ja: Catalog = {
     ready: "見守り準備完了",
     readyHint: "おすすめの頻度: {{freq}} · 「続行」をタップするか、入力を続けてください。",
     planTitle: "検索プラン",
+    collectedTitle: "収集した詳細",
     feasibility: {
       can: "追跡可能",
       partial: "部分的に追跡可能",
