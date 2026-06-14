@@ -83,8 +83,9 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="new"
-        // "Yeni" birincil eylem → FAB ile (M3). Sekme gizli, rota /new'den erişilir.
-        options={{ href: null, headerShown: false }}
+        // "Yeni" birincil eylem → FAB ile (M3). Sekme gizli; sihirbazda alt tab çubuğu da
+        // gizlenir (odaklı oluşturma akışı → daha çok dikey alan, sohbet+giriş+Devam sığar).
+        options={{ href: null, headerShown: false, tabBarStyle: { display: "none" } }}
       />
       <Tabs.Screen
         name="subscription"
@@ -112,6 +113,11 @@ export default function AppLayout() {
         name="admin"
         options={{ href: null, headerShown: false }}
       />
+      {/* Tab DIŞI detay ekranları (ADR-113/114): tab çubuğunda görünmez + header'sız
+          (kendi GradientHero'ları var). href:null olmadan expo-router bunları kırık-ikonlu
+          stray tab + "ai-profile/appearance" başlıklı varsayılan header olarak gösteriyordu. */}
+      <Tabs.Screen name="ai-profile" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="appearance" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

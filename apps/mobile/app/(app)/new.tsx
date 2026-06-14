@@ -179,6 +179,20 @@ const ALERT_LABEL: Record<AlarmChannel, string> = {
 const chip = (active: boolean): string =>
   `px-3 py-2 rounded-lg border ${active ? "border-accent bg-accent/10" : "border-line"}`;
 
+/**
+ * Asistan metnini sadeleştir (kullanıcı geri bildirimi): bazı modeller madde işareti
+ * "-", "*", "•" üretip RN Text'te ham "-" olarak görünüyordu. Satır başı liste
+ * işaretlerini + fazla boş satırı temizle. Sohbet GEÇMİŞİ değişmez; yalnız gösterim.
+ */
+function cleanAssistant(text: string): string {
+  return text
+    .split("\n")
+    .map((line) => line.replace(/^\s*[-*•]\s+/, "").trimEnd())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export default function NewWatcher() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -242,6 +256,13 @@ export default function NewWatcher() {
   }, [step]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: yalnız unmount temizliği
   useEffect(() => () => preview.stop(), []);
+  // Yeni mesaj gelince sona kaydır (web'de onContentSizeChange tek başına güvenilmez;
+  // küçük gecikme → son balon giriş kutusunun ARKASINDA kalmaz — kullanıcı geri bildirimi).
+  useEffect(() => {
+    if (step !== 0 || messages.length <= 1) return;
+    const id = setTimeout(() => chatScroll.current?.scrollToEnd({ animated: !reduce }), 80);
+    return () => clearTimeout(id);
+  }, [messages.length, step, reduce]);
 
   const minFreq = sub?.limits.minFrequencyMinutes ?? 60;
   const assist = useMutation({
@@ -417,26 +438,30 @@ export default function NewWatcher() {
         {/* 1) Niyet — AI sohbeti (Gemini tarzı): muğlaksa asistan soruyla netleştirir */}
         {current.key === "intent" ? (
           <View accessibilityLabel={t("wizard.chatA11y")}>
-            {messages.map((m, i) => (
-              <EnterItem
-                // Sohbet geçmişi yalnız sona eklenir → indeks anahtarı kararlı.
-                key={`${i}-${m.role}`}
-                index={0}
-                className={`max-w-[85%] rounded-2xl px-4 py-3 mb-2.5 ${
-                  m.role === "user"
-                    ? "self-end bg-accent rounded-br-md"
-                    : "self-start bg-panel border border-line rounded-bl-md"
-                }`}
-              >
-                <Text
-                  accessibilityRole="text"
-                  accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${m.content}`}
-                  className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}
+            {messages.map((m, i) => {
+              // Asistan balonunda ham madde-işaretlerini ("- ") gösterme (kullanıcı geri bildirimi).
+              const body = m.role === "user" ? m.content : cleanAssistant(m.content);
+              return (
+                <EnterItem
+                  // Sohbet geçmişi yalnız sona eklenir → indeks anahtarı kararlı.
+                  key={`${i}-${m.role}`}
+                  index={0}
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 mb-2.5 ${
+                    m.role === "user"
+                      ? "self-end bg-accent rounded-br-md"
+                      : "self-start bg-panel border border-line rounded-bl-md"
+                  }`}
                 >
-                  {m.content}
-                </Text>
-              </EnterItem>
-            ))}
+                  <Text
+                    accessibilityRole="text"
+                    accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${body}`}
+                    className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}
+                  >
+                    {body}
+                  </Text>
+                </EnterItem>
+              );
+            })}
             {assist.isPending ? (
               <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
                 <ActivityIndicator size="small" color={colors.accent} />

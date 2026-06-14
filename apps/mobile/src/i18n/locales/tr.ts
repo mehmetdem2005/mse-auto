@@ -124,7 +124,7 @@ export const tr = {
       review: "Özet ve onay",
     },
     greeting:
-      "Merhaba! Ne olduğunda sana haber vereyim? Doğal dille anlat — genel kalırsa netleştirmek için soru soracağım.",
+      "Merhaba! Neyi takip etmemi istersin? Örneğin bir ürünün fiyatı düştüğünde ya da yeni bir başvuru/duyuru çıktığında haber verebilirim. Kendi cümlelerinle anlatman yeterli.",
     suggestTitle: "Ya da hazır bir öneriyle başla:",
     suggestPersonal: "Bireysel",
     suggestBusiness: "Kurumsal",
