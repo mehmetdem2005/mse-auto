@@ -1,5 +1,5 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { meSchema } from "@watcher/contracts";
+import { meSchema, userAiProfileSchema } from "@watcher/contracts";
 import { deleteAccount } from "../../application/delete-account";
 import { exportAccount } from "../../application/export-account";
 import { getMe } from "../../application/get-me";
@@ -161,6 +161,43 @@ export function meRoutes(container: Container): OpenAPIHono<{ Variables: AuthVar
       };
       await container.userChannels.set(c.get("userId"), next);
       return c.json(next, 200);
+    },
+  );
+
+  // ADR-113 — AI kişiselleştirme (kendini tanıt + ek dikkat); asistana enjekte edilir.
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/ai-profile",
+      tags: ["me"],
+      summary: "AI kişiselleştirme (kendini tanıt + ek dikkat)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: userAiProfileSchema } },
+          description: "Profil",
+        },
+      },
+    }),
+    async (c) => c.json(await container.aiProfile.get(c.get("userId")), 200),
+  );
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/ai-profile",
+      tags: ["me"],
+      summary: "AI kişiselleştirmeyi güncelle",
+      request: { body: { content: { "application/json": { schema: userAiProfileSchema } } } },
+      responses: {
+        200: {
+          content: { "application/json": { schema: userAiProfileSchema } },
+          description: "Güncellendi",
+        },
+      },
+    }),
+    async (c) => {
+      const b = c.req.valid("json");
+      await container.aiProfile.set(c.get("userId"), b);
+      return c.json(b, 200);
     },
   );
   return app;

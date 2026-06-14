@@ -1070,3 +1070,12 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **DÜRÜST SINIR:** `lib/suggestions.ts` + `suggest.*`/`wizard.suggest*` i18n anahtarları artık kullanılmıyor (ölü ama zararsız; silinmedi — ileride geri istenebilir, bilinçli bırakıldı). Mobil-only; backend/migration yok.
 - **Doğrulama:** typecheck 4/4 (mobil) · biome temiz. Görsel kabul cihazda.
 - **ISO/TOGAF:** 9241 (sade, doğrudan AI etkileşimi) · 25010 Kullanılabilirlik + Bakımkolaylığı (daha az şablon) · TOGAF Phase C(App) **Basitleştirme**.
+
+## ADR-113 — Kullanıcı AI kişiselleştirme (kendini tanıt + ek dikkat → asistana enjekte)
+- **Durum:** Kabul · kullanıcı "ayarlardan LLM'e kendini tanıtıp özelleştirsin + ek dikkat mekanizması" dedi; "Evet kur + migration uygula" seçti. Migration 0017 açık izinle uygulanır.
+- **Migration 0017:** `profiles.ai_about` + `profiles.ai_attention` (text, nullable; PII zonu → profiles RLS sahibi; boş varsayılan geriye dönük güvenli).
+- **Mimari:** domain `AiProfileRepository` (get/set) + `aiProfileContext()` (boşsa null) + Supabase/in-memory adapter; `container.aiProfile`. Uçlar `GET/PUT /v1/me/ai-profile` (auth'lu, kullanıcı KENDİ profilini). **Enjeksiyon:** assist route kullanıcının profilini yükler → `aiProfileContext` → `assistIntent(…, userContext)` → `IntentAssistant.chat(history, lang, userContext)` → `SwitchableIntentAssistant` sistem istemine ekler (yalnız kullanıcının KENDİ çağrısı; PII paylaşılan topic'e gitmez). Heuristik mod userContext'i yok sayar (LLM yok).
+- **Mobil:** Yeni `app/ai-profile.tsx` (kendini tanıt + ek dikkat textarea'ları + kaydet) + Ayarlar'a "AI Kişiselleştirme" satırı (Sparkles). contracts `userAiProfileSchema`. i18n `aiProfile.*` ×11 dil.
+- **DÜRÜST SINIR:** Bağlam yalnız **niyet asistanına (sihirbaz)** enjekte edilir; paylaşılan tespit/reasoner'a DEĞİL (kanonik topic kullanıcılar arası paylaşılır → PII sınırı korunur; "ek dikkat" tespiti kullanıcı-başına değiştirmez — bu bilinçli sınır, asistan watcher'ı şekillendirir). Anahtar yoksa enjeksiyon etkisiz.
+- **Doğrulama:** typecheck 4/4 · biome temiz · backend **159 test** (3 yeni: GET-varsayılan · PUT-persist · aiProfileContext boş/dolu). Migration 0017 canlıya uygulandı (kullanıcı izniyle).
+- **ISO/TOGAF:** 25010 İşlevsel Uygunluk (kişiselleştirme) · 25012 (kullanıcı AI bağlam verisi) · 27002 (profiles RLS; yalnız kendi profili; PII asistana sınırlı) · 9241 (kullanıcı kontrolü) · 29148 · TOGAF Phase C(App+Data) sınıf **Artımlı** (yeni profiles kolonları).

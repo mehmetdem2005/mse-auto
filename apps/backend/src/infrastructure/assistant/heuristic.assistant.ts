@@ -16,7 +16,12 @@ const VAGUE_COMBINED_CHARS = 20;
 const VAGUE_FIRST_MSG_CHARS = 35;
 
 export class HeuristicIntentAssistant implements IntentAssistant {
-  async chat(history: AssistantMessage[], lang?: string): Promise<AssistantReply> {
+  // ADR-113: userContext sezgisel modda kullanılmaz (LLM yok); imza uyumu için kabul edilir.
+  async chat(
+    history: AssistantMessage[],
+    lang?: string,
+    _userContext?: string,
+  ): Promise<AssistantReply> {
     const tr = (lang ?? "tr").startsWith("tr");
     const userMsgs = history.filter((m) => m.role === "user");
     // Selamlama balonu geçmişin başında gelebilir; "soru soruldu mu" kararı

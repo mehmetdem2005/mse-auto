@@ -247,6 +247,15 @@ export const ja: Catalog = {
     },
     expiry: { label: "期限・更新", sentence: "ドメイン・証明書・サブスクの期限切れ前に通知して" },
   },
+  aiProfile: {
+    title: "AIパーソナライズ",
+    intro: "自分のことと、特に注意してほしい点をAIに伝えます。アシスタントが設定時に使います。",
+    about: "あなたについて",
+    aboutHint: "例：私はECの販売者で、テック製品を追っています。",
+    attention: "追加の注意点",
+    attentionHint: "例：価格変動と在庫状況に特に注意してください。",
+    saved: "保存しました",
+  },
   channels: {
     title: "通知チャネル",
     sub: "Telegram · メール · WhatsApp",

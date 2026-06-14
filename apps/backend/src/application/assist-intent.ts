@@ -9,8 +9,9 @@ export interface AssistIntentDeps {
 export async function assistIntent(
   deps: AssistIntentDeps,
   input: AssistChatInput,
+  userContext?: string,
 ): Promise<AssistReply> {
-  const reply = await deps.assistant.chat(input.messages, input.lang);
+  const reply = await deps.assistant.chat(input.messages, input.lang, userContext);
   // ready ise intent boş olamaz; tutarsızlığı normalize et.
   if (reply.ready && (!reply.intent || reply.intent.trim().length < 3)) {
     return { ...reply, ready: false, intent: null };

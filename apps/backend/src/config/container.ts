@@ -1,6 +1,7 @@
 import { getEffectiveEmailPrompt } from "../application/email-prompt";
 import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
+import type { AiProfileRepository } from "../domain/ai-profile";
 import type { AnnouncementRepository } from "../domain/announcement";
 import type { AuthVerifier } from "../domain/auth";
 import type { AuthorityResolver } from "../domain/authority";
@@ -40,6 +41,7 @@ import { StubChecker } from "../infrastructure/checker/stub.checker";
 import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gateway";
 import { InMemoryAdminConsoleRepository } from "../infrastructure/in-memory/admin-console.repo";
 import { InMemoryAdminRepository } from "../infrastructure/in-memory/admin.repo";
+import { InMemoryAiProfileRepository } from "../infrastructure/in-memory/ai-profile.repo";
 import { InMemoryAnalyticsRepository } from "../infrastructure/in-memory/analytics.repo";
 import { InMemoryAnnouncementRepository } from "../infrastructure/in-memory/announcement.repo";
 import { InMemoryDeviceRepository } from "../infrastructure/in-memory/device.repo";
@@ -81,6 +83,7 @@ import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
 import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gateway";
 import { SupabaseAdminConsoleRepository } from "../infrastructure/supabase/admin-console.repo";
 import { SupabaseAdminRepository } from "../infrastructure/supabase/admin.repo";
+import { SupabaseAiProfileRepository } from "../infrastructure/supabase/ai-profile.repo";
 import { SupabaseAnalyticsRepository } from "../infrastructure/supabase/analytics.repo";
 import { SupabaseAnnouncementRepository } from "../infrastructure/supabase/announcement.repo";
 import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
@@ -104,6 +107,8 @@ export interface Container {
   devices: DeviceRepository;
   subscriptions: SubscriptionRepository;
   account: AccountGateway;
+  /** Kullanıcı-başına AI kişiselleştirme (ADR-113) — asistana enjekte. */
+  aiProfile: AiProfileRepository;
   prices: PriceRepository;
   admin: AdminRepository;
   adminConsole: AdminConsoleRepository;
@@ -316,6 +321,7 @@ export function createContainer(env: Env): Container {
       devices: new SupabaseDeviceRepository(db),
       subscriptions: new SupabaseSubscriptionRepository(db),
       account: new SupabaseAccountGateway(db),
+      aiProfile: new SupabaseAiProfileRepository(db),
       userChannels: new SupabaseUserChannelRepository(db),
       channels,
       prices: new SupabasePriceRepository(db),
@@ -354,6 +360,7 @@ export function createContainer(env: Env): Container {
     devices: new InMemoryDeviceRepository(store),
     subscriptions: new InMemorySubscriptionRepository(store),
     account: new InMemoryAccountGateway(store),
+    aiProfile: new InMemoryAiProfileRepository(),
     userChannels: new InMemoryUserChannelRepository(store),
     channels,
     prices: new InMemoryPriceRepository(store),

@@ -287,6 +287,16 @@ export const de: Catalog = {
       sentence: "Benachrichtige mich, bevor Domain, Zertifikat oder Abo abläuft",
     },
   },
+  aiProfile: {
+    title: "KI-Personalisierung",
+    intro:
+      "Stell dich der KI vor und sag, worauf sie besonders achten soll; der Assistent nutzt das beim Einrichten.",
+    about: "Über dich",
+    aboutHint: "z.B. Ich bin Online-Händler und verfolge Tech-Produkte.",
+    attention: "Zusätzlicher Fokus",
+    attentionHint: "z.B. Achte besonders auf Preisänderungen und Verfügbarkeit.",
+    saved: "Gespeichert",
+  },
   channels: {
     title: "Benachrichtigungskanäle",
     sub: "Telegram · E-Mail · WhatsApp",

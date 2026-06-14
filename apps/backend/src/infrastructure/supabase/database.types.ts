@@ -13,6 +13,8 @@ export interface Database {
           locale: string | null;
           created_at: string;
           banned: boolean;
+          ai_about: string | null;
+          ai_attention: string | null;
         };
         Insert: {
           id: string;
@@ -20,6 +22,8 @@ export interface Database {
           locale?: string | null;
           created_at?: string;
           banned?: boolean;
+          ai_about?: string | null;
+          ai_attention?: string | null;
         };
         Update: {
           id?: string;
@@ -27,6 +31,8 @@ export interface Database {
           locale?: string | null;
           created_at?: string;
           banned?: boolean;
+          ai_about?: string | null;
+          ai_attention?: string | null;
         };
         Relationships: [];
       };

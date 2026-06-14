@@ -176,11 +176,19 @@ export class SwitchableIntentAssistant implements IntentAssistant {
     private readonly keys: ProviderKeys,
   ) {}
 
-  async chat(history: AssistantMessage[], lang?: string): Promise<AssistantReply> {
+  async chat(
+    history: AssistantMessage[],
+    lang?: string,
+    userContext?: string,
+  ): Promise<AssistantReply> {
+    // ADR-113: kullanıcı kişiselleştirmesi (kendini tanıt + ek dikkat) sistem istemine eklenir.
+    const ctx = userContext?.trim()
+      ? `\n\nUSER PERSONALIZATION (apply when relevant; never invent beyond it):\n${userContext.trim()}`
+      : "";
     const { content } = await chatWithActive(
       this.source,
       this.keys,
-      [{ role: "system", content: ASSISTANT_SYSTEM + assistantLangRule(lang) }, ...history],
+      [{ role: "system", content: ASSISTANT_SYSTEM + assistantLangRule(lang) + ctx }, ...history],
       // Düşük sıcaklık (ADR-074): kurallara sadık, detay uydurmasını azaltır.
       { temperature: 0.1, maxTokens: 512 },
     );

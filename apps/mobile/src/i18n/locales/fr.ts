@@ -283,6 +283,16 @@ export const fr: Catalog = {
       sentence: "Préviens-moi avant l'expiration de mon domaine, certificat ou abonnement",
     },
   },
+  aiProfile: {
+    title: "Personnalisation IA",
+    intro:
+      "Présente-toi à l'IA et indique ce à quoi prêter une attention particulière ; l'assistant l'utilise.",
+    about: "À propos de toi",
+    aboutHint: "ex. Je suis vendeur e-commerce et suis des produits tech.",
+    attention: "Attention supplémentaire",
+    attentionHint: "ex. Fais surtout attention aux changements de prix et au stock.",
+    saved: "Enregistré",
+  },
   channels: {
     title: "Canaux de notification",
     sub: "Telegram · E-mail · WhatsApp",
