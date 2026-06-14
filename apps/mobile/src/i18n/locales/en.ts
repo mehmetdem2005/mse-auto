@@ -295,6 +295,7 @@ export const en: Catalog = {
     privacy: "This is your personal data, used only to notify you and never shared.",
     saved: "Channels saved.",
     saveFail: "could not save",
+    disabledByAdmin: "This channel is currently unavailable. It will work once re-enabled.",
   },
 
   quiet: {

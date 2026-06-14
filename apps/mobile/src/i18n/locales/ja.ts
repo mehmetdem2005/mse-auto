@@ -264,6 +264,7 @@ export const ja: Catalog = {
     privacy: "これはあなたの個人データで、通知のみに使用され共有されません。",
     saved: "チャネルを保存しました。",
     saveFail: "保存できませんでした",
+    disabledByAdmin: "このチャネルは現在無効です。再度有効化されると利用できます。",
   },
 
   quiet: {

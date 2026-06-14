@@ -54,6 +54,15 @@ export interface UserChannels {
   whatsappTo: string | null;
   enabled: ChannelKind[];
 }
+/** Admin'in açtığı ek kanallar (ADR-107). */
+export interface ChannelAvailability {
+  telegram: boolean;
+  whatsapp: boolean;
+  email: boolean;
+}
+export interface AppConfig {
+  channels: ChannelAvailability;
+}
 export interface SubscriptionDetail {
   interval: BillingInterval;
   amountCents: number;
@@ -435,6 +444,13 @@ export const api = {
   channels: () => req<UserChannels>("/v1/me/channels"),
   setChannels: (c: UserChannels) =>
     req<UserChannels>("/v1/me/channels", { method: "PUT", body: JSON.stringify(c) }),
+  appConfig: () => req<AppConfig>("/v1/config"),
+  adminChannelConfig: () => req<ChannelAvailability>("/v1/admin/channel-config"),
+  setAdminChannelConfig: (cfg: ChannelAvailability) =>
+    req<ChannelAvailability>("/v1/admin/channel-config", {
+      method: "PUT",
+      body: JSON.stringify(cfg),
+    }),
 
   // ---- Admin konsolu ----
   adminUsers: () => req<AdminUser[]>("/v1/admin/users"),

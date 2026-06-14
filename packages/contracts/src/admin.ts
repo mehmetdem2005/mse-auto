@@ -164,6 +164,38 @@ export type AdminAuditRow = z.infer<typeof adminAuditRowSchema>;
 
 export const adminAuditListSchema = z.array(adminAuditRowSchema);
 
+// ---- Kanal kullanılabilirliği + e-posta LLM istemi (ADR-107) ----
+
+/** Admin'in açıp kapattığı ek kanal desteği (FCM push her zaman açık, burada yok). */
+export const channelAvailabilitySchema = z.object({
+  telegram: z.boolean(),
+  whatsapp: z.boolean(),
+  email: z.boolean(),
+});
+export type ChannelAvailability = z.infer<typeof channelAvailabilitySchema>;
+
+/** Kullanıcı uygulamasının okuduğu genel yapılandırma (auth'lu, salt-okunur). */
+export const appConfigSchema = z.object({ channels: channelAvailabilitySchema });
+export type AppConfig = z.infer<typeof appConfigSchema>;
+
+/** Admin e-posta besteci istemi: varsayılan mı kullanılıyor + (özel) istem metni. */
+export const emailPromptConfigSchema = z.object({
+  useDefault: z.boolean(),
+  /** Etkin istem (varsayılan açıksa varsayılan metin; değilse özel metin). */
+  prompt: z.string(),
+  /** Varsayılan istem metni (UI "varsayılan" toggle'ında kutuya yazılır). */
+  defaultPrompt: z.string(),
+  persisted: z.boolean(),
+});
+export type EmailPromptConfig = z.infer<typeof emailPromptConfigSchema>;
+
+/** Admin e-posta istemi güncelleme girişi. */
+export const setEmailPromptInputSchema = z.object({
+  useDefault: z.boolean(),
+  prompt: z.string().max(4000),
+});
+export type SetEmailPromptInput = z.infer<typeof setEmailPromptInputSchema>;
+
 export const adminSystemSchema = z.object({
   now: z.string(),
   backend: z.string(),

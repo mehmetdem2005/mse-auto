@@ -296,6 +296,8 @@ export const es: Catalog = {
     privacy: "Estos son tus datos personales, usados solo para avisarte y nunca compartidos.",
     saved: "Canales guardados.",
     saveFail: "no se pudo guardar",
+    disabledByAdmin:
+      "Este canal está desactivado por ahora. Funcionará cuando se vuelva a activar.",
   },
 
   quiet: {
