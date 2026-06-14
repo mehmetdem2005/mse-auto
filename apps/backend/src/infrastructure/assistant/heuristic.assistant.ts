@@ -29,6 +29,21 @@ function looksUnmonitorable(text: string): boolean {
   return !words.some((w) => w.replace(/[^\p{L}\p{N}]/gu, "").length >= 4);
 }
 
+/**
+ * Soru / asistan-hakkında / izleme-isteği-DEĞİL sezgisi (ADR-126). LLM yokken sezgisel mod
+ * "hangi modeldesin", "naber", "kimsin" gibi konuşmaları niyet sanıp watch ÜRETMESİN.
+ */
+function looksLikeQuestion(text: string): boolean {
+  const t = text.toLowerCase();
+  // Asistanın kendisi/teknolojisi hakkında — izleme isteği değil.
+  if (/\b(deepseek|gpt|chatgpt|claude|yapay\s*zek|asistan|model[ıi]nde)\b/.test(t)) return true;
+  // Kısa + soru/selam belirteçli (izlenecek somut bir şey yok).
+  return (
+    t.length < 40 &&
+    (t.includes("?") || /\b(hangi|nas[ıi]l|nedir|kimsin|naber|selam|which|what|how)\b/.test(t))
+  );
+}
+
 export class HeuristicIntentAssistant implements IntentAssistant {
   // ADR-113: userContext sezgisel modda kullanılmaz (LLM yok); imza uyumu için kabul edilir.
   async chat(
@@ -65,9 +80,11 @@ export class HeuristicIntentAssistant implements IntentAssistant {
       };
     }
 
-    const intent = lastUser.length >= combined.length ? lastUser : combined;
-    // ADR-119: saçma/tekrarlı girdiyi onaya çıkarma — gerçek bir istek iste.
-    if (looksUnmonitorable(intent)) {
+    // ADR-126: yalnız SON kullanıcı mesajını niyet adayı al — çok-turlu sohbeti BİRLEŞTİRİP
+    // junk niyet üretme (eskiden `combined` ile tüm sohbet tek niyet sanılıyordu).
+    const intent = lastUser;
+    // ADR-119/126: saçma/tekrarlı, çok kısa VEYA soru/asistan-hakkında girdiyi onaya çıkarma.
+    if (intent.length < 12 || looksUnmonitorable(intent) || looksLikeQuestion(intent)) {
       return {
         ready: false,
         message: tr

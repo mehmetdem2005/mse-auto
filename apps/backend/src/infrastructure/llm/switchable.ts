@@ -106,6 +106,39 @@ async function chatWithActive(
   }
 }
 
+/**
+ * Aktif modele JSON çağrısı + ŞEMA DOĞRULAMASI TEK birim (ADR-126). Hem çağrı HEM parse hatası
+ * Groq çapraz-fallback'ini tetikler. Eskiden parse caller'da olduğu için, v4-pro şemaya uymayan
+ * içerik döndürünce fallback ATLANIYOR ve route dumb sezgisele düşüp junk niyet üretiyordu.
+ */
+async function chatWithActiveJson<T>(
+  source: ActiveModelSource,
+  keys: ProviderKeys,
+  messages: LlmChatMessage[],
+  opts: CallOpts,
+  parse: (content: string) => T,
+): Promise<{ value: T; tokensUsed: number | null }> {
+  const spec = await source.activeSpec();
+  if (!spec) throw new LlmModelError("Aktif LLM modeli yok (anahtar tanımsız).");
+  const attempt = async (s: LlmModelSpec) => {
+    const { content, tokensUsed } = await chatViaSpec(s, keys, messages, opts);
+    return { value: parse(content), tokensUsed };
+  };
+  try {
+    return await attempt(spec);
+  } catch (err) {
+    const groq = findLlmModel("groq/llama-3.3-70b-versatile");
+    if (groq && keys.groq && spec.provider !== "groq") {
+      try {
+        return await attempt(groq);
+      } catch {
+        // groq da başarısızsa aşağıda orijinal hata fırlatılır → route sezgisele düşer.
+      }
+    }
+    throw err;
+  }
+}
+
 /** Tek model spesine ARAÇLI sohbet (ADR-122) — function-calling; sağlayıcı baseUrl/thinking farkı burada. */
 async function chatViaSpecTools(
   spec: LlmModelSpec,
@@ -211,7 +244,7 @@ export class SwitchableEventReasoner implements EventReasoner {
 
   async reason(input: ReasonInput): Promise<ReasonResult> {
     const { system, user } = buildReasonPrompt(input);
-    const { content, tokensUsed } = await chatWithActive(
+    const { value, tokensUsed } = await chatWithActiveJson(
       this.source,
       this.keys,
       [
@@ -219,8 +252,9 @@ export class SwitchableEventReasoner implements EventReasoner {
         { role: "user", content: user },
       ],
       { temperature: 0, maxTokens: 1024 },
+      (content) => ReasonSchema.parse(extractJson(content)),
     );
-    return { ...ReasonSchema.parse(extractJson(content)), tokensUsed };
+    return { ...value, tokensUsed };
   }
 }
 
@@ -237,7 +271,7 @@ export class SwitchableEventVerifier implements EventVerifier {
 
   async verify(input: VerifyInput): Promise<VerifyResult> {
     const { system, user } = buildVerifyPrompt(input);
-    const { content, tokensUsed } = await chatWithActive(
+    const { value, tokensUsed } = await chatWithActiveJson(
       this.source,
       this.keys,
       [
@@ -245,8 +279,9 @@ export class SwitchableEventVerifier implements EventVerifier {
         { role: "user", content: user },
       ],
       { temperature: 0, maxTokens: 512 },
+      (content) => VerifySchema.parse(extractJson(content)),
     );
-    return { ...VerifySchema.parse(extractJson(content)), tokensUsed };
+    return { ...value, tokensUsed };
   }
 }
 
@@ -277,13 +312,14 @@ export class SwitchableIntentAssistant implements IntentAssistant {
     const ctx = userContext?.trim()
       ? `\n\nUSER PERSONALIZATION (apply when relevant; never invent beyond it):\n${userContext.trim()}`
       : "";
-    const { content } = await chatWithActive(
+    const { value } = await chatWithActiveJson(
       this.source,
       this.keys,
       [{ role: "system", content: ASSISTANT_SYSTEM + assistantLangRule(lang) + ctx }, ...history],
       // Düşük sıcaklık (ADR-074): kurallara sadık, detay uydurmasını azaltır.
       { temperature: 0.1, maxTokens: 512 },
+      (content) => ReplySchema.parse(extractJson(content)),
     );
-    return ReplySchema.parse(extractJson(content));
+    return value;
   }
 }

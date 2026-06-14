@@ -203,6 +203,27 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(b.intent).toBeNull();
   });
 
+  it("watcher assist: asistana yöneltilen soru/çok-turlu sohbet watch ÜRETMEZ (ADR-126)", async () => {
+    const res = await makeApp().request(
+      "/v1/watchers/assist",
+      post(
+        {
+          messages: [
+            { role: "user", content: "Merhaba trendyola erişimin varmı" },
+            { role: "assistant", content: "Trendyol gibi siteleri takip edebilirim..." },
+            { role: "user", content: "Şuan hangi deepseek modelindesin" },
+          ],
+        },
+        "u1",
+      ),
+    );
+    expect(res.status).toBe(200);
+    const b = (await res.json()) as { ready: boolean; intent: string | null };
+    // Çok-turlu sohbet BİRLEŞTİRİLİP junk niyet üretilmez; asistana-soru reddedilir.
+    expect(b.ready).toBe(false);
+    expect(b.intent).toBeNull();
+  });
+
   it("watcher oluşturulunca ilk kontrol ANINDA koşar (kuyruk auto-pump)", async () => {
     // Worker kayıtlı tam kurulum: enqueue → in-memory auto-pump → StubChecker koşar.
     const env: Env = {
