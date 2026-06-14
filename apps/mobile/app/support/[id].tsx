@@ -70,12 +70,12 @@ export default function SupportThread() {
           >
             <Text
               accessibilityLabel={`${m.sender === "user" ? t("support.you") : t("support.supportTeam")}: ${m.body}`}
-              className={m.sender === "user" ? "text-white text-sm" : "text-text text-sm"}
+              className={m.sender === "user" ? "text-onAccent text-sm" : "text-text text-sm"}
             >
               {m.body}
             </Text>
             <Text
-              className={`text-[10px] mt-1 ${m.sender === "user" ? "text-white/70" : "text-muted"}`}
+              className={`text-[10px] mt-1 ${m.sender === "user" ? "text-onAccent/70" : "text-muted"}`}
             >
               {when(m.createdAt, i18n.language)}
             </Text>

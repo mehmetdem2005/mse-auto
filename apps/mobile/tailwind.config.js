@@ -13,6 +13,8 @@ module.exports = {
         line: "rgb(var(--line) / <alpha-value>)",
         accent: "rgb(var(--accent) / <alpha-value>)",
         accent2: "rgb(var(--accent2) / <alpha-value>)",
+        // Accent dolgusu üstündeki içerik (ADR-116): açıkta beyaz, koyuda ink — tema-duyarlı.
+        onAccent: "rgb(var(--on-accent) / <alpha-value>)",
         text: "rgb(var(--text) / <alpha-value>)",
         muted: "rgb(var(--muted) / <alpha-value>)",
         muted2: "rgb(var(--muted2) / <alpha-value>)",

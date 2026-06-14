@@ -114,7 +114,7 @@ function Thread({ ticket, onBack }: { ticket: AdminSupportTicket; onBack: () => 
                 : "self-start bg-panel border border-line rounded-bl-md"
             }`}
           >
-            <Text className={m.sender === "admin" ? "text-white text-sm" : "text-text text-sm"}>
+            <Text className={m.sender === "admin" ? "text-onAccent text-sm" : "text-text text-sm"}>
               {m.body}
             </Text>
           </View>

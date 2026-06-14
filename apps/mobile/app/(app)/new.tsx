@@ -9,7 +9,7 @@ import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { persistSound, useSoundPreview } from "@/lib/sound-preview";
-import { ON_ACCENT, useTheme } from "@/theme";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
@@ -390,7 +390,7 @@ export default function NewWatcher() {
               >
                 <Text
                   className="text-[11px] font-bold"
-                  style={{ color: i <= step ? ON_ACCENT : colors.muted2 }}
+                  style={{ color: i <= step ? colors.onAccent : colors.muted2 }}
                 >
                   {i + 1}
                 </Text>
@@ -455,7 +455,7 @@ export default function NewWatcher() {
                   <Text
                     accessibilityRole="text"
                     accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${body}`}
-                    className={m.role === "user" ? "text-white text-sm" : "text-text text-sm"}
+                    className={m.role === "user" ? "text-onAccent text-sm" : "text-text text-sm"}
                   >
                     {body}
                   </Text>
@@ -886,7 +886,7 @@ export default function NewWatcher() {
           >
             <Send
               size={18}
-              color={!draft.trim() || assist.isPending ? colors.mutedIcon : ON_ACCENT}
+              color={!draft.trim() || assist.isPending ? colors.mutedIcon : colors.onAccent}
             />
           </Pressable>
         </View>

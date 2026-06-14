@@ -134,7 +134,7 @@ export default function Settings() {
           <View className="bg-panel border border-line rounded-2xl p-5 mb-4">
             <View className="flex-row items-center gap-3">
               <View className="w-12 h-12 rounded-full bg-accent items-center justify-center">
-                <Text className="text-white text-lg font-bold">
+                <Text className="text-onAccent text-lg font-bold">
                   {(session?.email ?? session?.userId ?? "?").charAt(0).toUpperCase()}
                 </Text>
               </View>
@@ -250,7 +250,7 @@ export default function Settings() {
             </Text>
             <Text className="text-muted text-xs mb-3">{t("settings.notifsHint")}</Text>
             <Btn onPress={enableNotifications} disabled={busy}>
-              <Text className="text-white text-xs font-semibold uppercase tracking-wider">
+              <Text className="text-onAccent text-xs font-semibold uppercase tracking-wider">
                 {t("settings.notifsBtn")}
               </Text>
             </Btn>
@@ -404,7 +404,7 @@ export default function Settings() {
             </Text>
             <Text className="text-muted text-xs mb-3">{t("settings.dangerHint")}</Text>
             <Btn tone="ghost" onPress={deleteAccount} disabled={busy}>
-              <Text className="text-red-400 text-xs uppercase tracking-wider">
+              <Text className="text-neg text-xs uppercase tracking-wider">
                 {t("settings.deleteBtn")}
               </Text>
             </Btn>

@@ -17,10 +17,12 @@ const LIGHT = {
   "--accent2": "139 92 246",
   "--text": "15 23 42",
   "--muted": "71 85 105",
-  "--muted2": "100 116 139",
-  "--pos": "22 163 74",
+  "--muted2": "95 111 134", // #5F6F86 — açık ink üstünde ≥4.5:1 (eski #64748B 4.44 idi)
+  "--pos": "21 128 61", // green-700 #15803D — text-pos açık zeminde 5.0:1 (eski green-600 3.3 idi)
   "--neg": "220 38 38",
   "--warn": "180 83 9", // amber-700 — açık zeminde ≥4.5:1 kontrast
+  // Accent DOLGUSU üstündeki içerik (buton/avatar/adım): açık temada accent KOYU → beyaz okunur.
+  "--on-accent": "255 255 255",
 } as const;
 
 const DARK = {
@@ -36,6 +38,9 @@ const DARK = {
   "--pos": "74 222 128",
   "--neg": "248 113 113",
   "--warn": "251 191 36", // amber-400 — koyu zeminde okunur
+  // Koyu temada accent AÇIK (400-level) → beyaz metin 2.5-3.0 (sub-AA). Bu yüzden accent
+  // dolgusu üstünde KOYU ink metin kullanılır (her accent'te 5.1-7.4:1 — WCAG AA).
+  "--on-accent": "11 18 32",
 } as const;
 
 type Palette = Record<keyof typeof LIGHT, string>;
@@ -62,6 +67,7 @@ function resolveHex(palette: Palette) {
     pos: tripleToHex(palette["--pos"]),
     neg: tripleToHex(palette["--neg"]),
     warn: tripleToHex(palette["--warn"]),
+    onAccent: tripleToHex(palette["--on-accent"]),
   };
 }
 

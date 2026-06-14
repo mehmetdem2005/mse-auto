@@ -99,7 +99,7 @@ export default function AiProfile() {
           </Text>
 
           <Btn onPress={() => save.mutate({ about, attention })} disabled={save.isPending}>
-            <Text className="text-white text-[13px] font-semibold">{t("common.save")}</Text>
+            <Text className="text-onAccent text-[13px] font-semibold">{t("common.save")}</Text>
           </Btn>
         </ScrollView>
       </HeroOverlap>

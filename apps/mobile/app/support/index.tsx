@@ -79,7 +79,7 @@ export default function Support() {
               <Text className="text-muted text-xs flex-1">{t("support.liveHint")}</Text>
             </View>
             <Btn onPress={() => startLive.mutate()} disabled={startLive.isPending}>
-              <Text className="text-white text-[13px] font-semibold">
+              <Text className="text-onAccent text-[13px] font-semibold">
                 {startLive.isPending ? t("support.liveOpening") : t("support.liveStart")}
               </Text>
             </Btn>
@@ -118,7 +118,7 @@ export default function Support() {
                     onPress={() => report.mutate()}
                     disabled={report.isPending || problem.trim().length < 3}
                   >
-                    <Text className="text-white text-[13px] font-semibold">
+                    <Text className="text-onAccent text-[13px] font-semibold">
                       {report.isPending ? t("support.sending") : t("common.send")}
                     </Text>
                   </Btn>
