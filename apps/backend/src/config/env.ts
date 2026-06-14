@@ -41,6 +41,9 @@ const EnvSchema = z.object({
   RESEND_FROM: z.string().min(1).optional(), // "Whenly <bildirim@alanadi.com>"
   WHATSAPP_ACCESS_TOKEN: z.string().min(1).optional(),
   WHATSAPP_PHONE_NUMBER_ID: z.string().min(1).optional(),
+  // Onaylı şablon (ADR-106) — pencere dışı uyarı için zorunlu; yoksa serbest-metin (24s) fallback.
+  WHATSAPP_TEMPLATE_NAME: z.string().min(1).optional(),
+  WHATSAPP_TEMPLATE_LANG: z.string().min(1).optional(), // örn "tr" / "en_US"
   // Dev/in-memory admin kullanıcı id'leri (virgülle). Supabase'de admins tablosu kaynaktır.
   ADMIN_USER_IDS: z.string().optional(),
   // Dashboard CORS — virgülle origin listesi (yoksa tüm origin'lere izin verilir).
