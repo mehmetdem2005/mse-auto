@@ -8,7 +8,6 @@ import {
   ACCENT_SWATCHES,
   type AccentKey,
   type MotionPref,
-  ON_ACCENT,
   type ThemeMode,
   useTheme,
   useThemeStore,
@@ -109,7 +108,7 @@ export default function Appearance() {
             </Text>
             <View className="flex-row items-center gap-3 mb-4">
               <View className="w-11 h-11 rounded-full bg-accent items-center justify-center">
-                <Sparkles size={18} color={ON_ACCENT} />
+                <Sparkles size={18} color={theme.colors.onAccent} />
               </View>
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">Whenly</Text>

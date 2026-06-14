@@ -4,7 +4,7 @@ import { Badge, Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
-import { ON_ACCENT, useTheme } from "@/theme";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BellRing, Crown, FileText, Gauge, Music } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
@@ -91,7 +91,7 @@ export default function SubscriptionScreen() {
                     isPro ? "bg-accent" : "bg-panel2"
                   }`}
                 >
-                  <Crown size={22} color={isPro ? ON_ACCENT : theme.colors.muted2} />
+                  <Crown size={22} color={isPro ? theme.colors.onAccent : theme.colors.muted2} />
                 </View>
               </View>
               <Text
@@ -147,7 +147,7 @@ export default function SubscriptionScreen() {
           {!isPro ? (
             <View className="mt-4">
               <Btn onPress={() => Alert.alert(t("sub.upgrade"), t("sub.upgradeMsg"))}>
-                <Text className="text-white text-[14px] font-semibold">{t("sub.upgrade")}</Text>
+                <Text className="text-onAccent text-[14px] font-semibold">{t("sub.upgrade")}</Text>
               </Btn>
             </View>
           ) : null}

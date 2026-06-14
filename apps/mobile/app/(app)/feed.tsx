@@ -16,7 +16,7 @@ import { categoryOf, severityOf } from "@/lib/category";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
-import { ON_ACCENT, useTheme } from "@/theme";
+import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -270,7 +270,7 @@ export default function Feed() {
                     >
                       <Text
                         className="text-[12px] font-semibold"
-                        style={{ color: on ? ON_ACCENT : theme.colors.muted }}
+                        style={{ color: on ? theme.colors.onAccent : theme.colors.muted }}
                       >
                         {t(FILTER_KEYS[id])}
                       </Text>
@@ -448,7 +448,7 @@ function FeedAvatar({ intent, unread }: { intent: string; unread: boolean }) {
     <View className={`w-10 h-10 rounded-xl ${cat.bg} items-center justify-center`}>
       <cat.Icon size={18} color={cat.tint} />
       {unread ? (
-        <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border border-white" />
+        <View className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-accent border border-panel" />
       ) : null}
     </View>
   );

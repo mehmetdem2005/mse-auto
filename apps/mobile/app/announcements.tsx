@@ -109,7 +109,7 @@ function AnnouncementCard({ a, pinnedLabel }: { a: Announcement; pinnedLabel: st
           accessibilityLabel={a.ctaLabel}
           className="self-start mt-3 rounded-full bg-accent px-4 min-h-[40px] justify-center active:opacity-80"
         >
-          <Text className="text-white text-sm font-semibold">{a.ctaLabel}</Text>
+          <Text className="text-onAccent text-sm font-semibold">{a.ctaLabel}</Text>
         </Pressable>
       ) : null}
     </Card>
