@@ -924,7 +924,8 @@ export default function NewWatcher() {
 
       {/* Sohbet girişi (yalnız 1. adımda, alt navigasyonun üstünde) */}
       {current.key === "intent" ? (
-        <View className="flex-row items-end gap-2 px-5 pt-3 border-t border-line bg-ink">
+        // pb-2: odak (mor) çerçevesi alttaki "Devam" footer'ına değip taşmasın — kutuyu hafif yukarı al.
+        <View className="flex-row items-end gap-2 px-5 pt-3 pb-2 border-t border-line bg-ink">
           <TextInput
             value={draft}
             onChangeText={setDraft}
