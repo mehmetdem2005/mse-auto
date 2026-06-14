@@ -11,6 +11,7 @@ import {
 import { assistIntent } from "../../application/assist-intent";
 import { createWatcher } from "../../application/create-watcher";
 import type { Container } from "../../config/container";
+import { EMPTY_AI_PROFILE, aiProfileContext } from "../../domain/ai-profile";
 import { effectivePlan } from "../../domain/billing";
 import { PlanLimitError } from "../../domain/errors";
 import { limitsFor } from "../../domain/plan";
@@ -42,7 +43,9 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
   app.openapi(assist, async (c) => {
     const input = c.req.valid("json");
     try {
-      const reply = await assistIntent(container, input);
+      // ADR-113: kullanıcı kişiselleştirmesini (kendini tanıt + ek dikkat) asistana enjekte et.
+      const profile = await container.aiProfile.get(c.get("userId")).catch(() => EMPTY_AI_PROFILE);
+      const reply = await assistIntent(container, input, aiProfileContext(profile) ?? undefined);
       return c.json(reply, 200);
     } catch (err) {
       // LLM ağ/parse hataları geçicidir; 500 yerine eyleme dönük 503 dön.

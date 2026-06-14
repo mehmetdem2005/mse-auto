@@ -230,6 +230,15 @@ export const zh: Catalog = {
     brand: { label: "品牌监测", sentence: "当我的品牌在网上被负面提及时通知我" },
     expiry: { label: "到期/续费", sentence: "在我的域名、证书或订阅到期前通知我" },
   },
+  aiProfile: {
+    title: "AI 个性化",
+    intro: "向 AI 介绍你自己以及需要特别关注的内容；助手在设置时会参考。",
+    about: "关于你",
+    aboutHint: "例如：我是电商卖家，关注科技产品。",
+    attention: "额外关注",
+    attentionHint: "例如：特别关注价格变化和库存状态。",
+    saved: "已保存",
+  },
   channels: {
     title: "通知渠道",
     sub: "Telegram · 邮件 · WhatsApp",

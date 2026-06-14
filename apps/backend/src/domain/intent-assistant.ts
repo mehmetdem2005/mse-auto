@@ -26,6 +26,9 @@ export interface AssistantReply {
 }
 
 export interface IntentAssistant {
-  /** @param lang Kullanıcının arayüz dili (ör. "tr", "en") — yanıt bu dilde yazılır. */
-  chat(history: AssistantMessage[], lang?: string): Promise<AssistantReply>;
+  /**
+   * @param lang Kullanıcının arayüz dili (ör. "tr", "en") — yanıt bu dilde yazılır.
+   * @param userContext ADR-113: kullanıcının kendini tanıtması + ek dikkat (varsa) — sistem istemine eklenir.
+   */
+  chat(history: AssistantMessage[], lang?: string, userContext?: string): Promise<AssistantReply>;
 }

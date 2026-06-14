@@ -12,6 +12,7 @@ export const qk = {
   watchers: ["watchers"] as const,
   subscription: ["subscription"] as const,
   channels: ["channels"] as const,
+  aiProfile: ["aiProfile"] as const,
   plans: ["plans"] as const,
   adminUsers: ["admin", "users"] as const,
   adminWatches: ["admin", "watches"] as const,

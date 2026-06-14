@@ -26,6 +26,7 @@ import {
   Radio,
   ScrollText,
   ShieldCheck,
+  Sparkles,
   Sun,
   Terminal,
 } from "lucide-react-native";
@@ -333,6 +334,25 @@ export default function Settings() {
               <View className="flex-1">
                 <Text className="text-text text-sm font-semibold">{t("channels.title")}</Text>
                 <Text className="text-muted text-xs mt-0.5">{t("channels.sub")}</Text>
+              </View>
+              <ChevronRight size={16} color={theme.colors.mutedIcon} />
+            </View>
+          </Pressable>
+
+          {/* AI kişiselleştirme (ADR-113): kendini tanıt + ek dikkat → asistana enjekte */}
+          <Pressable
+            onPress={() => router.push("/ai-profile")}
+            accessibilityRole="button"
+            accessibilityLabel={t("aiProfile.title")}
+            className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
+          >
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-accent/10 items-center justify-center">
+                <Sparkles size={18} color={theme.colors.accent} />
+              </View>
+              <View className="flex-1">
+                <Text className="text-text text-sm font-semibold">{t("aiProfile.title")}</Text>
+                <Text className="text-muted text-xs mt-0.5">{t("aiProfile.about")}</Text>
               </View>
               <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>

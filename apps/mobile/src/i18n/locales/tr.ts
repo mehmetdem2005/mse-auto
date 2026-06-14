@@ -275,6 +275,16 @@ export const tr = {
       sentence: "Alan adımın, sertifikamın veya aboneliğimin süresi dolmadan haber ver",
     },
   },
+  aiProfile: {
+    title: "AI Kişiselleştirme",
+    intro:
+      "Kendini AI'ya tanıt ve ek dikkat etmesini istediğin konuları yaz; asistan watcher kurarken bunları dikkate alır.",
+    about: "Kendini tanıt",
+    aboutHint: "Örn: Bir e-ticaret satıcısıyım; teknoloji ürünleri izliyorum.",
+    attention: "Ek dikkat",
+    attentionHint: "Örn: Fiyat değişimlerine ve stok durumuna özellikle dikkat et.",
+    saved: "Kaydedildi",
+  },
   channels: {
     title: "Bildirim kanalları",
     sub: "Telegram · E-posta · WhatsApp",

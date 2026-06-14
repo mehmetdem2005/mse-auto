@@ -63,6 +63,11 @@ export interface ChannelAvailability {
 export interface AppConfig {
   channels: ChannelAvailability;
 }
+/** Kullanıcı AI kişiselleştirme (ADR-113). */
+export interface UserAiProfile {
+  about: string;
+  attention: string;
+}
 /** Admin e-posta besteci istemi (ADR-109). */
 export interface EmailPromptConfig {
   useDefault: boolean;
@@ -456,6 +461,9 @@ export const api = {
   setChannels: (c: UserChannels) =>
     req<UserChannels>("/v1/me/channels", { method: "PUT", body: JSON.stringify(c) }),
   appConfig: () => req<AppConfig>("/v1/config"),
+  aiProfile: () => req<UserAiProfile>("/v1/me/ai-profile"),
+  setAiProfile: (p: UserAiProfile) =>
+    req<UserAiProfile>("/v1/me/ai-profile", { method: "PUT", body: JSON.stringify(p) }),
   adminChannelConfig: () => req<ChannelAvailability>("/v1/admin/channel-config"),
   setAdminChannelConfig: (cfg: ChannelAvailability) =>
     req<ChannelAvailability>("/v1/admin/channel-config", {

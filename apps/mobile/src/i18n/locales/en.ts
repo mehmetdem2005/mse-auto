@@ -278,6 +278,16 @@ export const en: Catalog = {
       sentence: "Notify me before my domain, certificate or subscription expires",
     },
   },
+  aiProfile: {
+    title: "AI Personalization",
+    intro:
+      "Tell the AI about yourself and what to pay extra attention to; the assistant uses this when setting up watchers.",
+    about: "About you",
+    aboutHint: "e.g. I'm an e-commerce seller tracking tech products.",
+    attention: "Extra attention",
+    attentionHint: "e.g. Pay special attention to price changes and stock status.",
+    saved: "Saved",
+  },
   channels: {
     title: "Notification channels",
     sub: "Telegram · Email · WhatsApp",

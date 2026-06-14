@@ -279,6 +279,16 @@ export const es: Catalog = {
       sentence: "Avísame antes de que caduque mi dominio, certificado o suscripción",
     },
   },
+  aiProfile: {
+    title: "Personalización de IA",
+    intro:
+      "Preséntate a la IA y di a qué prestar más atención; el asistente lo usa al crear watchers.",
+    about: "Sobre ti",
+    aboutHint: "p. ej. Soy vendedor de e-commerce y sigo productos tecnológicos.",
+    attention: "Atención extra",
+    attentionHint: "p. ej. Presta especial atención a cambios de precio y stock.",
+    saved: "Guardado",
+  },
   channels: {
     title: "Canales de notificación",
     sub: "Telegram · Correo · WhatsApp",

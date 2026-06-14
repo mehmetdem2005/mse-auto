@@ -33,3 +33,10 @@ export const assistReplySchema = z.object({
   feasibility: z.string().nullable().optional(),
 });
 export type AssistReply = z.infer<typeof assistReplySchema>;
+
+/** Kullanıcı AI kişiselleştirme (ADR-113): kendini tanıt + ek dikkat; asistana enjekte. */
+export const userAiProfileSchema = z.object({
+  about: z.string().max(2000),
+  attention: z.string().max(2000),
+});
+export type UserAiProfile = z.infer<typeof userAiProfileSchema>;
