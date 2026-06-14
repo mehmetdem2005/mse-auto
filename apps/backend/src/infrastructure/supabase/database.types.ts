@@ -7,9 +7,57 @@ export interface Database {
   public: {
     Tables: {
       profiles: {
-        Row: { id: string; email: string | null; locale: string | null; created_at: string };
-        Insert: { id: string; email?: string | null; locale?: string | null; created_at?: string };
-        Update: { id?: string; email?: string | null; locale?: string | null; created_at?: string };
+        Row: {
+          id: string;
+          email: string | null;
+          locale: string | null;
+          created_at: string;
+          banned: boolean;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          locale?: string | null;
+          created_at?: string;
+          banned?: boolean;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          locale?: string | null;
+          created_at?: string;
+          banned?: boolean;
+        };
+        Relationships: [];
+      };
+      admin_audit: {
+        Row: {
+          id: string;
+          actor_id: string;
+          action: string;
+          target_type: string;
+          target_id: string | null;
+          meta: Json | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          actor_id: string;
+          action: string;
+          target_type: string;
+          target_id?: string | null;
+          meta?: Json | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          actor_id?: string;
+          action?: string;
+          target_type?: string;
+          target_id?: string | null;
+          meta?: Json | null;
+          created_at?: string;
+        };
         Relationships: [];
       };
       canonical_topics: {

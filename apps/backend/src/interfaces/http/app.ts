@@ -8,6 +8,7 @@ import { adminRoutes } from "./admin.route";
 import { announcementsRoutes } from "./announcements.route";
 import type { AuthVariables } from "./auth.middleware";
 import { authMiddleware } from "./auth.middleware";
+import { banGuard } from "./ban.middleware";
 import { billingRoutes } from "./billing.route";
 import { devicesRoutes } from "./devices.route";
 import { eventsRoutes } from "./events.route";
@@ -84,6 +85,8 @@ export function createApp(
   // Webhook'lar hariç — yarıda kesilen ödeme işleme yerine sağlayıcının retry'ına güvenilir.
   app.use("/v1/*", timeout(30_000));
   app.use("/v1/*", authMiddleware(container.auth));
+  // Moderasyon (ADR-104): banlı kullanıcı auth'tan sonra, kota harcamadan 403 alır.
+  app.use("/v1/*", banGuard(container.moderation, container.logger));
   app.use("/v1/*", rateLimit(container.rateLimit.global, "global"));
   app.use("/v1/admin/*", adminMiddleware(container.admin));
   app.use(

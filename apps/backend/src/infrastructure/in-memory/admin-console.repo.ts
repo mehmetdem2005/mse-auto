@@ -41,6 +41,9 @@ export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
       mrrCents: 0,
     };
   }
+  async segmentTokens(): Promise<string[]> {
+    return [];
+  }
   async setAdmin(): Promise<void> {}
   async deleteUser(): Promise<void> {}
   async listWatches(): Promise<AdminWatchRow[]> {

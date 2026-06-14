@@ -92,3 +92,8 @@ sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart
 
 ## 10. Duyurular + Console konumu (ADR-100)
 **Duyuru sistemi** canlı: admin Konsol → **Duyurular**'dan görselli/CTA'lı duyuru oluşturur; kullanıcı üstteki **zile** basınca görür (zil artık Duyurular'a gider, Destek yalnız Ayarlar'da). Migration `0015_announcements.sql` **canlıya uygulandı (2026-06-13, kullanıcı izniyle)**. **Whenly Console** artık **Ayarlar** içinde (admin-only satır); ana ekrandaki gizli düğme kaldırıldı. Erişim: backend `adminMiddleware` + `admins` tablosu (tek admin = sahip) → fiilen yalnız sahip erişir.
+
+## 11. Admin Faz D: Moderasyon + Push Yayın + Denetim (ADR-104)
+Konsol → **Push Yayını** (segment all/free/pro), **Denetim** (admin işlem günlüğü), kullanıcı detayında **banla/ban-kaldır**. Ban'lı kullanıcı tüm `/v1`'de 403 (`ban.middleware`, fail-open; admin banlanamaz).
+
+> **MIGRATION 0016 — UYGULANDI (2026-06-14, kullanıcı izniyle).** `supabase/migrations/0016_admin_audit.sql`: `admin_audit` tablosu (immutable, RLS açık/policy yok = service-role) + `profiles.banned` kolonu. Token Render env-grup'undan (`SUPABASE_ACCESS_TOKEN`) alınıp Management API (`/database/query`) ile uygulandı; tablo (7 kolon) + `profiles.banned` (boolean default false) + RLS açık + `admin_audit_created_idx` indeksi doğrulandı. FCM env'i Render'da dolu → push yayını GERÇEKTEN gönderir (inactive değil).

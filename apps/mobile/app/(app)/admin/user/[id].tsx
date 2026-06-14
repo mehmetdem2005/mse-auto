@@ -5,6 +5,7 @@ import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
+  Ban,
   Bell,
   CreditCard,
   LifeBuoy,
@@ -60,7 +61,16 @@ export default function UserDetailScreen(): ReactNode {
       router.back();
     },
   });
-  const busy = setAdmin.isPending || gift.isPending || cancelSub.isPending || del.isPending;
+  const ban = useMutation({
+    mutationFn: (on: boolean) => api.setUserBanned(userId, on),
+    onSuccess: () => {
+      refresh();
+      toast.success("Moderasyon güncellendi");
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "olmadı"),
+  });
+  const busy =
+    setAdmin.isPending || gift.isPending || cancelSub.isPending || del.isPending || ban.isPending;
 
   const u = q.data;
   return (
@@ -86,6 +96,15 @@ export default function UserDetailScreen(): ReactNode {
               </Text>
             </View>
           </View>
+
+          {u.banned ? (
+            <View className="flex-row items-center gap-2 bg-neg/10 border border-neg/30 rounded-xl px-3 py-2 mb-3">
+              <Ban size={14} color="#DC2626" />
+              <Text className="text-neg text-xs font-semibold">
+                Bu hesap banlı — tüm istekleri 403 alır.
+              </Text>
+            </View>
+          ) : null}
 
           <View className="flex-row flex-wrap gap-2.5">
             <Stat n={u.watchCount} l="watcher" tone="accent" />
@@ -182,6 +201,12 @@ export default function UserDetailScreen(): ReactNode {
             <ActBtn label="pro (ay)" disabled={busy} onPress={() => gift.mutate("month")} />
             <ActBtn label="pro (yıl)" disabled={busy} onPress={() => gift.mutate("year")} />
             <ActBtn label="abone iptal" disabled={busy} onPress={() => cancelSub.mutate()} />
+            <ActBtn
+              label={u.banned ? "ban kaldır" : "banla"}
+              tone={u.banned ? "ghost" : "danger"}
+              disabled={busy || (!u.banned && u.isAdmin)}
+              onPress={() => ban.mutate(!u.banned)}
+            />
             <ActBtn
               label="hesabı sil"
               tone="danger"

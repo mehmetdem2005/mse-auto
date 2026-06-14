@@ -1,5 +1,9 @@
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
+  adminAuditListSchema,
+  adminBanInputSchema,
+  adminBroadcastInputSchema,
+  adminBroadcastResultSchema,
   adminGrowthSchema,
   adminIdParamSchema,
   adminOpsSchema,
@@ -45,6 +49,16 @@ const jsonOk = { content: { "application/json": { schema: okSchema } }, descript
 
 export function adminRoutes(container: Container): OpenAPIHono<{ Variables: AuthVariables }> {
   const app = new OpenAPIHono<{ Variables: AuthVariables }>();
+
+  // ADR-104 — denetim günlüğü yardımcısı: sonuç-doğuran admin işlemleri burada izlenir.
+  const audit = (
+    actorId: string,
+    action: string,
+    targetType: string,
+    targetId: string | null = null,
+    meta: Record<string, unknown> | null = null,
+  ): Promise<void> =>
+    container.moderation.writeAudit({ actorId, action, targetType, targetId, meta });
 
   app.openapi(
     createRoute({
@@ -408,6 +422,12 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const { id } = c.req.valid("param");
       const { makeAdmin } = c.req.valid("json");
       await container.adminConsole.setAdmin(id, makeAdmin);
+      await audit(
+        c.get("userId"),
+        makeAdmin ? "user.admin.grant" : "user.admin.revoke",
+        "user",
+        id,
+      );
       return c.json({ ok: true }, 200);
     },
   );
@@ -424,6 +444,7 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
     async (c) => {
       const { id } = c.req.valid("param");
       await container.adminConsole.deleteUser(id);
+      await audit(c.get("userId"), "user.delete", "user", id);
       return c.json({ ok: true }, 200);
     },
   );
@@ -444,6 +465,7 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const { id } = c.req.valid("param");
       const { interval } = c.req.valid("json");
       await container.adminConsole.giftPro(id, interval);
+      await audit(c.get("userId"), "user.gift_pro", "user", id, { interval });
       return c.json({ ok: true }, 200);
     },
   );
@@ -460,8 +482,106 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
     async (c) => {
       const { id } = c.req.valid("param");
       await container.adminConsole.cancelSubscription(id);
+      await audit(c.get("userId"), "user.cancel_sub", "user", id);
       return c.json({ ok: true }, 200);
     },
+  );
+
+  // ---- ADR-104: Etkileşim & moderasyon (ban + push yayın + denetim günlüğü) ----
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/users/{id}/ban",
+      tags: ["admin"],
+      summary: "Kullanıcıyı banla/aktifleştir (banlı → tüm /v1'de 403)",
+      request: {
+        params: adminIdParamSchema,
+        body: { content: { "application/json": { schema: adminBanInputSchema } } },
+      },
+      responses: {
+        200: jsonOk,
+        400: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Admin banlanamaz",
+        },
+      },
+    }),
+    async (c) => {
+      const { id } = c.req.valid("param");
+      const { banned } = c.req.valid("json");
+      // Öz-kilitlenme önlemi: admin banlanamaz (ban.middleware admini banlı sanmamalı).
+      if (banned && (await container.admin.isAdmin(id))) {
+        return c.json({ error: "Admin banlanamaz" }, 400);
+      }
+      await container.moderation.setBanned(id, banned);
+      await audit(c.get("userId"), banned ? "user.ban" : "user.unban", "user", id);
+      return c.json({ ok: true }, 200);
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/broadcast",
+      tags: ["admin"],
+      summary: "Push yayını gönder (segment: all/free/pro)",
+      request: { body: { content: { "application/json": { schema: adminBroadcastInputSchema } } } },
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminBroadcastResultSchema } },
+          description: "Yayın sonucu (FCM yoksa channel=inactive)",
+        },
+      },
+    }),
+    async (c) => {
+      const { title, body, segment } = c.req.valid("json");
+      // DÜRÜST: FCM yapılandırılmamışsa gerçekten gönderilmez → "kanal pasif" döner.
+      if (!container.pushActive) {
+        await audit(c.get("userId"), "broadcast.inactive", "broadcast", null, { segment });
+        return c.json(
+          { channel: "inactive" as const, segment, recipients: 0, sent: 0, failed: 0 },
+          200,
+        );
+      }
+      const tokens = await container.adminConsole.segmentTokens(segment);
+      const results = await Promise.all(
+        tokens.map((token) =>
+          container.notifier.send({ token, title, body, data: { type: "broadcast" } }),
+        ),
+      );
+      const sent = results.filter((r) => r.success).length;
+      await audit(c.get("userId"), "broadcast.send", "broadcast", null, {
+        segment,
+        recipients: tokens.length,
+        sent,
+      });
+      return c.json(
+        {
+          channel: "fcm" as const,
+          segment,
+          recipients: tokens.length,
+          sent,
+          failed: tokens.length - sent,
+        },
+        200,
+      );
+    },
+  );
+
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/audit",
+      tags: ["admin"],
+      summary: "Denetim günlüğü (son 200 admin işlemi, en yeni önce)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminAuditListSchema } },
+          description: "Denetim kayıtları",
+        },
+      },
+    }),
+    async (c) => c.json(await container.moderation.listAudit(200), 200),
   );
 
   // ---- Watcher yönetimi ----

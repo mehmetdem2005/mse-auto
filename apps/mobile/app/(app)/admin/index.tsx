@@ -16,6 +16,8 @@ import {
   LineChart,
   type LucideIcon,
   Megaphone,
+  ScrollText,
+  Send,
   Server,
   TrendingUp,
   Users,
@@ -32,6 +34,8 @@ const SECTIONS: {
     | "/admin/stats"
     | "/admin/ops"
     | "/admin/announcements"
+    | "/admin/broadcast"
+    | "/admin/audit"
     | "/admin/model"
     | "/admin/providers"
     | "/admin/users"
@@ -54,6 +58,8 @@ const SECTIONS: {
     title: "Duyurular",
     desc: "Görselli duyuru oluştur",
   },
+  { href: "/admin/broadcast", Icon: Send, title: "Push Yayını", desc: "Segmente bildirim gönder" },
+  { href: "/admin/audit", Icon: ScrollText, title: "Denetim", desc: "Admin işlem günlüğü" },
   { href: "/admin/model", Icon: Cpu, title: "Model", desc: "Global LLM seçimi" },
   { href: "/admin/providers", Icon: Server, title: "Kaynaklar", desc: "API kullanım & kota" },
   { href: "/admin/users", Icon: Users, title: "Kullanıcılar", desc: "Hesap & yetki yönetimi" },

@@ -116,6 +116,7 @@ export interface AdminUserDetail extends AdminUser {
   channels: { telegram: boolean; email: boolean; whatsapp: boolean; enabled: string[] } | null;
   devices: { id: string; platform: string; createdAt: string }[];
   support: { open: number; total: number };
+  banned: boolean;
 }
 export interface AdminSubscription {
   userId: string;
@@ -232,6 +233,25 @@ export interface AdminOps {
     byStatus: { key: string; count: number }[];
     byChannel: { key: string; count: number }[];
   };
+}
+
+// ---- Etkileşim & moderasyon (ADR-104) ----
+export type BroadcastSegment = "all" | "free" | "pro";
+export interface AdminBroadcastResult {
+  channel: "fcm" | "inactive";
+  segment: BroadcastSegment;
+  recipients: number;
+  sent: number;
+  failed: number;
+}
+export interface AdminAuditRow {
+  id: string;
+  actorId: string;
+  action: string;
+  targetType: string;
+  targetId: string | null;
+  meta: Record<string, unknown> | null;
+  createdAt: string;
 }
 
 // ---- Duyurular (ADR-100) ----
@@ -436,6 +456,17 @@ export const api = {
     }),
   cancelUserSub: (id: string) =>
     req<{ ok: boolean }>(`/v1/admin/users/${id}/cancel-subscription`, { method: "POST" }),
+  setUserBanned: (id: string, banned: boolean) =>
+    req<{ ok: boolean }>(`/v1/admin/users/${id}/ban`, {
+      method: "POST",
+      body: JSON.stringify({ banned }),
+    }),
+  adminBroadcast: (input: { title: string; body: string; segment: BroadcastSegment }) =>
+    req<AdminBroadcastResult>("/v1/admin/broadcast", {
+      method: "POST",
+      body: JSON.stringify(input),
+    }),
+  adminAudit: () => req<AdminAuditRow[]>("/v1/admin/audit"),
   adminWatches: () => req<AdminWatch[]>("/v1/admin/watches"),
   setWatchStatus: (id: string, status: "active" | "paused") =>
     req<{ ok: boolean }>(`/v1/admin/watches/${id}/status`, {
