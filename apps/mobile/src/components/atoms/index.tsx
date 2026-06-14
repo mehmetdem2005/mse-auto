@@ -2,7 +2,7 @@
 import { PressScale } from "@/components/motion";
 import { haptic } from "@/lib/haptics";
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { GRADIENT, ON_GRADIENT } from "@/theme";
+import { ON_GRADIENT, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { ArrowRight, Plus } from "lucide-react-native";
 import { type ReactElement, type ReactNode, cloneElement, isValidElement } from "react";
@@ -82,6 +82,7 @@ export function Fab({
   accessibilityLabel: string;
 }) {
   const reduce = useReduceMotion();
+  const { gradient } = useTheme();
   const onPress = () => {
     haptic.medium();
     onPressProp();
@@ -104,7 +105,7 @@ export function Fab({
       })}
     >
       <LinearGradient
-        colors={GRADIENT.brand}
+        colors={gradient.brand}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={{
@@ -155,6 +156,7 @@ export function PrimaryButton({
   onPress: () => void;
   icon?: boolean;
 }) {
+  const { gradient } = useTheme();
   return (
     <PressScale
       onPress={() => {
@@ -168,7 +170,7 @@ export function PrimaryButton({
       className={`mt-2 rounded-xl overflow-hidden ${disabled ? "opacity-50" : ""}`}
     >
       <LinearGradient
-        colors={GRADIENT.brand}
+        colors={gradient.brand}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
         style={{

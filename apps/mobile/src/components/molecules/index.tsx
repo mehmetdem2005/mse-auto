@@ -3,7 +3,7 @@ import { type EventFacts, parseEventFacts } from "@/domain/personal";
 import { haptic } from "@/lib/haptics";
 // Molecules — atom + primitive bileşimleri (Atomic Design).
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { GRADIENT, SHADOW, SHADOW_LG, useTheme } from "@/theme";
+import { SHADOW, SHADOW_LG, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { type LucideIcon, MapPin, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react-native";
 import { type ReactNode, useEffect } from "react";
@@ -65,13 +65,13 @@ export function EmptyState({
   hint,
   Icon = Sparkles,
 }: { title: string; hint?: string; Icon?: LucideIcon }) {
-  const { colors } = useTheme();
+  const { colors, gradient } = useTheme();
   return (
     <View className="items-center py-16 px-6">
       {/* İllüstratif madalyon — gradyan halka + yumuşak iç daire (AAA görsel). */}
       <View className="mb-5 items-center justify-center">
         <LinearGradient
-          colors={GRADIENT.brand}
+          colors={gradient.brand}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{
