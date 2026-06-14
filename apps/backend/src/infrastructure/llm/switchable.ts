@@ -5,6 +5,7 @@
  */
 import { z } from "zod";
 import { LlmModelError } from "../../application/llm-config";
+import type { ToolCall, ToolChat, ToolChatMessage, ToolDef } from "../../domain/agent";
 import type {
   AssistantMessage,
   AssistantReply,
@@ -13,7 +14,7 @@ import type {
 import { type LlmModelSpec, findLlmModel } from "../../domain/llm";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
 import type { EventVerifier, VerifyInput, VerifyResult } from "../../domain/verifier";
-import { type LlmChatMessage, extractJson, openaiJsonChat } from "./openai-json";
+import { type LlmChatMessage, extractJson, openaiJsonChat, openaiToolChat } from "./openai-json";
 import {
   ASSISTANT_SYSTEM,
   assistantLangRule,
@@ -102,6 +103,62 @@ async function chatWithActive(
       return chatViaSpec(groq, keys, messages, opts);
     }
     throw err;
+  }
+}
+
+/** Tek model spesine ARAÇLI sohbet (ADR-122) — function-calling; sağlayıcı baseUrl/thinking farkı burada. */
+async function chatViaSpecTools(
+  spec: LlmModelSpec,
+  keys: ProviderKeys,
+  messages: ToolChatMessage[],
+  tools: ToolDef[],
+  opts: CallOpts,
+): Promise<{ content: string | null; toolCalls: ToolCall[] }> {
+  const apiKey = keys[spec.provider];
+  if (!apiKey) throw new LlmModelError(`${spec.provider} anahtarı tanımsız.`);
+  const baseUrl =
+    spec.provider === "groq" ? "https://api.groq.com/openai/v1" : "https://api.deepseek.com";
+  const { content, toolCalls } = await openaiToolChat({
+    baseUrl,
+    apiKey,
+    model: spec.model,
+    messages,
+    tools,
+    temperature: opts.temperature,
+    maxTokens: opts.maxTokens,
+    ...(spec.provider === "deepseek" && spec.reasoning !== true
+      ? { deepseekThinking: "disabled" as const }
+      : {}),
+  });
+  return { content, toolCalls };
+}
+
+/**
+ * Araçlarla sohbet eden ToolChat (ADR-122) — aktif modeli (asistan için FixedModelSource = v4-pro)
+ * kullanır; geçici hatada Groq'a düşer (ADR-119). Ajan döngüsü (application/agent/run-agent) bunu sürer.
+ */
+export class SwitchableAgentChat implements ToolChat {
+  constructor(
+    private readonly source: ActiveModelSource,
+    private readonly keys: ProviderKeys,
+  ) {}
+
+  async chat(
+    messages: ToolChatMessage[],
+    tools: ToolDef[],
+  ): Promise<{ content: string | null; toolCalls: ToolCall[] }> {
+    const spec = await this.source.activeSpec();
+    if (!spec) throw new LlmModelError("Aktif LLM modeli yok (anahtar tanımsız).");
+    const opts: CallOpts = { temperature: 0.1, maxTokens: 1024 };
+    try {
+      return await chatViaSpecTools(spec, this.keys, messages, tools, opts);
+    } catch (err) {
+      const groq = findLlmModel("groq/llama-3.3-70b-versatile");
+      if (groq && this.keys.groq && spec.provider !== "groq") {
+        return chatViaSpecTools(groq, this.keys, messages, tools, opts);
+      }
+      throw err;
+    }
   }
 }
 
