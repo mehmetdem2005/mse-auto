@@ -84,7 +84,13 @@ export function createApp(
 
   // Asılı istek bırakma: /v1/* 30 sn'de 504 (timeout HTTPException → errorHandler zarflar).
   // Webhook'lar hariç — yarıda kesilen ödeme işleme yerine sağlayıcının retry'ına güvenilir.
-  app.use("/v1/*", timeout(30_000));
+  // ADR-129: niyet asistanı ÇOK-TURLU fizibilite ajanı çalıştırır (web_search→resolve_authority→
+  // check_site_policy, ardışık LLM turları) → 30s tail'de yetmez; araştırma 504'e düşerdi (üstelik
+  // timeout, route try/catch'inin ÜSTÜNDE olduğu için sezgisel fallback'e bile inemez). Yalnız
+  // assist'e geniş bütçe (60s); diğer tüm /v1 uçları 30s'te kalır.
+  app.use("/v1/*", (c, next) =>
+    timeout(c.req.path === "/v1/watchers/assist" ? 60_000 : 30_000)(c, next),
+  );
   app.use("/v1/*", authMiddleware(container.auth));
   // Moderasyon (ADR-104): banlı kullanıcı auth'tan sonra, kota harcamadan 403 alır.
   app.use("/v1/*", banGuard(container.moderation, container.logger));
