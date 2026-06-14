@@ -1,3 +1,4 @@
+import { getEffectiveEmailPrompt } from "../application/email-prompt";
 import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
 import type { AnnouncementRepository } from "../domain/announcement";
@@ -9,7 +10,7 @@ import type {
   AnalyticsRepository,
   PriceRepository,
 } from "../domain/billing";
-import type { ChannelSender, UserChannelRepository } from "../domain/channels";
+import type { ChannelSender, EmailComposer, UserChannelRepository } from "../domain/channels";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
 import type { IntentAssistant } from "../domain/intent-assistant";
@@ -56,6 +57,7 @@ import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import {
   type ProviderKeys,
+  SwitchableEmailComposer,
   SwitchableEventReasoner,
   SwitchableEventVerifier,
   SwitchableIntentAssistant,
@@ -117,6 +119,8 @@ export interface Container {
   verifier: EventVerifier | undefined;
   checkTimeoutMs: number | undefined;
   assistant: IntentAssistant;
+  /** E-posta LLM besteci (ADR-109) — admin-ayarlı istem; LLM yoksa undefined (ham metin). */
+  emailComposer: EmailComposer | undefined;
   /** Uygulama-geneli ayarlar (ADR-095) — ilk kullanım: seçili LLM modeli. */
   settings: SettingsRepository;
   /** Admin'in seçtiği global LLM modeli; reasoner/verifier/asistanı sürer (ADR-095). */
@@ -271,6 +275,10 @@ export function createContainer(env: Env): Container {
   const assistant: IntentAssistant = anyLlm
     ? new SwitchableIntentAssistant(llmRouter, llmKeys)
     : new HeuristicIntentAssistant();
+  // E-posta besteci (ADR-109): LLM varsa admin-ayarlı istemle profesyonel e-posta yazar.
+  const emailComposer: EmailComposer | undefined = anyLlm
+    ? new SwitchableEmailComposer(llmRouter, llmKeys, () => getEffectiveEmailPrompt(settings))
+    : undefined;
   const providerUsage = new HttpProviderUsageService({
     deepseekKey: env.DEEPSEEK_API_KEY,
     groqKey: env.GROQ_API_KEY,
@@ -323,6 +331,7 @@ export function createContainer(env: Env): Container {
       verifier,
       checkTimeoutMs,
       assistant,
+      emailComposer,
       settings,
       llmRouter,
       providerUsage,
@@ -360,6 +369,7 @@ export function createContainer(env: Env): Container {
     verifier,
     checkTimeoutMs,
     assistant,
+    emailComposer,
     settings,
     llmRouter,
     providerUsage,

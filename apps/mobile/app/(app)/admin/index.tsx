@@ -15,6 +15,7 @@ import {
   LifeBuoy,
   LineChart,
   type LucideIcon,
+  Mail,
   Megaphone,
   MessageCircle,
   ScrollText,
@@ -39,6 +40,7 @@ const SECTIONS: {
     | "/admin/audit"
     | "/admin/model"
     | "/admin/channels"
+    | "/admin/email-prompt"
     | "/admin/providers"
     | "/admin/users"
     | "/admin/watches"
@@ -68,6 +70,12 @@ const SECTIONS: {
     Icon: MessageCircle,
     title: "Kanal Ayarları",
     desc: "Telegram · WhatsApp · e-posta aç/kapat",
+  },
+  {
+    href: "/admin/email-prompt",
+    Icon: Mail,
+    title: "E-posta Metni",
+    desc: "LLM besteci istemi + varsayılan",
   },
   { href: "/admin/providers", Icon: Server, title: "Kaynaklar", desc: "API kullanım & kota" },
   { href: "/admin/users", Icon: Users, title: "Kullanıcılar", desc: "Hesap & yetki yönetimi" },

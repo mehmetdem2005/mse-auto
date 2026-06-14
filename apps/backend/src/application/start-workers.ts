@@ -38,6 +38,9 @@ export async function startWorkers(
     channels: container.channels,
     userChannels: container.userChannels,
     enabledChannels: async () => enabledKinds(await getChannelAvailability(container.settings)),
+    composeEmail: container.emailComposer
+      ? (m) => container.emailComposer?.compose(m) ?? Promise.resolve(m)
+      : undefined,
   });
 
   const tick = async (): Promise<void> => {

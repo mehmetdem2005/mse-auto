@@ -1,4 +1,9 @@
-import type { ChannelKind, ChannelSender, UserChannelRepository } from "../domain/channels";
+import type {
+  ChannelKind,
+  ChannelMessage,
+  ChannelSender,
+  UserChannelRepository,
+} from "../domain/channels";
 import { resolveTargets } from "../domain/channels";
 import type { DeviceRepository } from "../domain/device";
 import type { MonitoringRepository } from "../domain/monitoring";
@@ -24,6 +29,8 @@ export interface DeliveryDeps {
   userChannels?: UserChannelRepository | undefined;
   /** Admin'in açık bıraktığı kanallar (ADR-107) — yoksa hepsi açık sayılır. */
   enabledChannels?: (() => Promise<Set<ChannelKind>>) | undefined;
+  /** E-posta LLM besteci (ADR-109) — yalnız e-posta kanalına uygulanır; yoksa ham metin. */
+  composeEmail?: ((msg: ChannelMessage) => Promise<ChannelMessage>) | undefined;
 }
 
 /** Bir olayın bekleyen teslimlerini gönderir: token bul → push → işaretle. */
@@ -74,8 +81,13 @@ export async function dispatchEventDeliveries(
         if (allowed && !allowed.has(kind)) continue;
         const sender = deps.channels.find((c) => c.kind === kind);
         if (!sender) continue;
+        // E-posta için LLM besteci (ADR-109) — başarısızlıkta ham metne düşer (dayanıklı).
+        let msg: ChannelMessage = { title: job.title, body: job.body };
+        if (kind === "email" && deps.composeEmail) {
+          msg = await deps.composeEmail(msg).catch(() => msg);
+        }
         try {
-          const r = await sender.send(target, { title: job.title, body: job.body });
+          const r = await sender.send(target, msg);
           if (r.success) anySuccess = true;
         } catch {
           // Bir kanalın fırlatması diğer kanalları/teslimleri etkilemesin.

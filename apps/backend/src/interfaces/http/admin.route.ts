@@ -23,11 +23,13 @@ import {
   announcementSchema,
   channelAvailabilitySchema,
   createAnnouncementInputSchema,
+  emailPromptConfigSchema,
   errorSchema,
   giftProInputSchema,
   llmConfigSchema,
   plansSchema,
   setAdminInputSchema,
+  setEmailPromptInputSchema,
   setLlmModelInputSchema,
   setPriceInputSchema,
   setWatchStatusInputSchema,
@@ -38,6 +40,7 @@ import {
 } from "@watcher/contracts";
 import { getAdminStats } from "../../application/admin-stats";
 import { getChannelAvailability, setChannelAvailability } from "../../application/channel-config";
+import { getEmailPromptConfig, setEmailPromptConfig } from "../../application/email-prompt";
 import { getPlans } from "../../application/get-plans";
 import { LlmModelError } from "../../application/llm-config";
 import { getProviderUsage } from "../../application/provider-usage";
@@ -624,6 +627,47 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       await setChannelAvailability(container.settings, v);
       await audit(c.get("userId"), "channels.config", "settings", null, v);
       return c.json(v, 200);
+    },
+  );
+
+  // ---- ADR-109: E-posta LLM besteci istemi (varsayılan + özel) ----
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/email-prompt",
+      tags: ["admin"],
+      summary: "E-posta besteci istemi (varsayılan + özel)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: emailPromptConfigSchema } },
+          description: "İstem yapılandırması",
+        },
+      },
+    }),
+    async (c) => c.json(await getEmailPromptConfig(container.settings), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/email-prompt",
+      tags: ["admin"],
+      summary: "E-posta besteci istemini ayarla (varsayılan toggle + özel metin)",
+      request: {
+        body: { content: { "application/json": { schema: setEmailPromptInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: emailPromptConfigSchema } },
+          description: "Güncel yapılandırma",
+        },
+      },
+    }),
+    async (c) => {
+      const v = c.req.valid("json");
+      const cfg = await setEmailPromptConfig(container.settings, v);
+      await audit(c.get("userId"), "email.prompt", "settings", null, { useDefault: v.useDefault });
+      return c.json(cfg, 200);
     },
   );
 
