@@ -1,4 +1,5 @@
 import { getEffectiveEmailPrompt } from "../application/email-prompt";
+import { EmbeddingRouter } from "../application/embeddings-config";
 import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
 import type { AiProfileRepository } from "../domain/ai-profile";
@@ -14,6 +15,7 @@ import type {
 import type { ChannelSender, EmailComposer, UserChannelRepository } from "../domain/channels";
 import type { Checker } from "../domain/checker";
 import type { DeviceRepository } from "../domain/device";
+import type { EmbeddingProvider, EmbeddingProviderId } from "../domain/embeddings";
 import type { IntentAssistant } from "../domain/intent-assistant";
 import type { Logger } from "../domain/logger";
 import type { ModerationRepository } from "../domain/moderation";
@@ -38,6 +40,9 @@ import { TelegramSender } from "../infrastructure/channels/telegram.sender";
 import { WhatsAppSender } from "../infrastructure/channels/whatsapp.sender";
 import { LiveChecker } from "../infrastructure/checker/live.checker";
 import { StubChecker } from "../infrastructure/checker/stub.checker";
+import { GeminiEmbeddings } from "../infrastructure/embeddings/gemini.embeddings";
+import { OpenAiEmbeddings } from "../infrastructure/embeddings/openai.embeddings";
+import { SwitchableEmbedder } from "../infrastructure/embeddings/switchable.embedder";
 import { InMemoryAccountGateway } from "../infrastructure/in-memory/account.gateway";
 import { InMemoryAdminConsoleRepository } from "../infrastructure/in-memory/admin-console.repo";
 import { InMemoryAdminRepository } from "../infrastructure/in-memory/admin.repo";
@@ -134,6 +139,9 @@ export interface Container {
   settings: SettingsRepository;
   /** Admin'in seçtiği global LLM modeli; reasoner/verifier/asistanı sürer (ADR-095). */
   llmRouter: LlmModelRouter;
+  /** Gömme (embedding) yönlendiricisi + aktif embedder (ADR-127) — RAG için, admin-seçilebilir. */
+  embeddingRouter: EmbeddingRouter;
+  embedder: EmbeddingProvider;
   /** Sağlayıcı kullanım panosu (ADR-095) — gerçek API verisi. */
   providerUsage: ProviderUsagePort;
   authority: AuthorityResolver;
@@ -275,6 +283,16 @@ export function createContainer(env: Env): Container {
     deepseek: !!env.DEEPSEEK_API_KEY,
   });
   const anyLlm = !!(env.GROQ_API_KEY || env.DEEPSEEK_API_KEY);
+  // Gömme (embedding) sağlayıcıları (ADR-127) — RAG için; admin-seçilebilir. Anahtar yoksa
+  // sağlayıcı kurulmaz (dormant). Gemini ÜCRETSİZ varsayılan; OpenAI alternatif.
+  const embedProviders: Partial<Record<EmbeddingProviderId, EmbeddingProvider>> = {};
+  if (env.GEMINI_API_KEY) embedProviders.gemini = new GeminiEmbeddings(env.GEMINI_API_KEY);
+  if (env.OPENAI_API_KEY) embedProviders.openai = new OpenAiEmbeddings(env.OPENAI_API_KEY);
+  const embeddingRouter = new EmbeddingRouter(settings, {
+    gemini: !!env.GEMINI_API_KEY,
+    openai: !!env.OPENAI_API_KEY,
+  });
+  const embedder = new SwitchableEmbedder(embeddingRouter, embedProviders);
   const reasoner = anyLlm ? new SwitchableEventReasoner(llmRouter, llmKeys) : null;
   const checker = buildChecker(env, reasoner);
   // Doğrulayıcı (ADR-060 A1): LLM anahtarı varsa kur; yoksa undefined → doğrulama atlanır.
@@ -334,6 +352,8 @@ export function createContainer(env: Env): Container {
       subscriptions: new SupabaseSubscriptionRepository(db),
       account: new SupabaseAccountGateway(db),
       aiProfile: new SupabaseAiProfileRepository(db),
+      embeddingRouter,
+      embedder,
       userChannels: new SupabaseUserChannelRepository(db),
       channels,
       prices: new SupabasePriceRepository(db),
@@ -374,6 +394,8 @@ export function createContainer(env: Env): Container {
     subscriptions: new InMemorySubscriptionRepository(store),
     account: new InMemoryAccountGateway(store),
     aiProfile: new InMemoryAiProfileRepository(),
+    embeddingRouter,
+    embedder,
     userChannels: new InMemoryUserChannelRepository(store),
     channels,
     prices: new InMemoryPriceRepository(store),

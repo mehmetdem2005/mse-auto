@@ -209,6 +209,21 @@ export interface LlmConfig {
   persisted: boolean;
   models: LlmModel[];
 }
+// ---- Gömme (embedding) sağlayıcı seçimi (ADR-127) — RAG için ----
+export interface EmbeddingModel {
+  id: string;
+  provider: "gemini" | "openai";
+  model: string;
+  label: string;
+  note: string;
+  dimensions: number;
+  available: boolean;
+}
+export interface EmbeddingConfig {
+  active: string | null;
+  persisted: boolean;
+  models: EmbeddingModel[];
+}
 export interface ProviderMetric {
   label: string;
   value: string;
@@ -524,6 +539,12 @@ export const api = {
   adminModel: () => req<LlmConfig>("/v1/admin/model"),
   setAdminModel: (model: string) =>
     req<LlmConfig>("/v1/admin/model", { method: "PUT", body: JSON.stringify({ model }) }),
+  adminEmbeddings: () => req<EmbeddingConfig>("/v1/admin/embeddings"),
+  setAdminEmbeddings: (model: string) =>
+    req<EmbeddingConfig>("/v1/admin/embeddings", {
+      method: "PUT",
+      body: JSON.stringify({ model }),
+    }),
   adminProviders: () => req<AdminProviders>("/v1/admin/providers"),
   // ---- Duyurular (ADR-100) ----
   announcements: () => req<Announcement[]>("/v1/announcements"),

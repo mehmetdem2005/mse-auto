@@ -24,12 +24,14 @@ import {
   channelAvailabilitySchema,
   createAnnouncementInputSchema,
   emailPromptConfigSchema,
+  embeddingConfigSchema,
   errorSchema,
   giftProInputSchema,
   llmConfigSchema,
   plansSchema,
   setAdminInputSchema,
   setEmailPromptInputSchema,
+  setEmbeddingInputSchema,
   setLlmModelInputSchema,
   setPriceInputSchema,
   setWatchStatusInputSchema,
@@ -41,6 +43,7 @@ import {
 import { getAdminStats } from "../../application/admin-stats";
 import { getChannelAvailability, setChannelAvailability } from "../../application/channel-config";
 import { getEmailPromptConfig, setEmailPromptConfig } from "../../application/email-prompt";
+import { EmbeddingConfigError } from "../../application/embeddings-config";
 import { getPlans } from "../../application/get-plans";
 import { LlmModelError } from "../../application/llm-config";
 import { getProviderUsage } from "../../application/provider-usage";
@@ -164,6 +167,54 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
         return c.json(await container.llmRouter.setActive(model), 200);
       } catch (e) {
         if (e instanceof LlmModelError) return c.json({ error: e.message }, 400);
+        throw e;
+      }
+    },
+  );
+
+  // ADR-127 — global gömme (embedding) sağlayıcısı: RAG için; admin seçer (Gemini ücretsiz / OpenAI).
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/embeddings",
+      tags: ["admin"],
+      summary: "Aktif gömme modeli + katalog (anahtar mevcudiyetiyle)",
+      responses: {
+        200: {
+          content: { "application/json": { schema: embeddingConfigSchema } },
+          description: "Gömme yapılandırması",
+        },
+      },
+    }),
+    async (c) => c.json(await container.embeddingRouter.getConfig(), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/embeddings",
+      tags: ["admin"],
+      summary: "Global gömme modelini değiştir",
+      request: {
+        body: { content: { "application/json": { schema: setEmbeddingInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: embeddingConfigSchema } },
+          description: "Güncel yapılandırma",
+        },
+        400: {
+          content: { "application/json": { schema: errorSchema } },
+          description: "Bilinmeyen model veya anahtar tanımsız",
+        },
+      },
+    }),
+    async (c) => {
+      const { model } = c.req.valid("json");
+      try {
+        return c.json(await container.embeddingRouter.setActive(model), 200);
+      } catch (e) {
+        if (e instanceof EmbeddingConfigError) return c.json({ error: e.message }, 400);
         throw e;
       }
     },
