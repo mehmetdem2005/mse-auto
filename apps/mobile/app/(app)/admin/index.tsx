@@ -16,6 +16,7 @@ import {
   LineChart,
   type LucideIcon,
   Megaphone,
+  MessageCircle,
   ScrollText,
   Send,
   Server,
@@ -37,6 +38,7 @@ const SECTIONS: {
     | "/admin/broadcast"
     | "/admin/audit"
     | "/admin/model"
+    | "/admin/channels"
     | "/admin/providers"
     | "/admin/users"
     | "/admin/watches"
@@ -61,6 +63,12 @@ const SECTIONS: {
   { href: "/admin/broadcast", Icon: Send, title: "Push Yayını", desc: "Segmente bildirim gönder" },
   { href: "/admin/audit", Icon: ScrollText, title: "Denetim", desc: "Admin işlem günlüğü" },
   { href: "/admin/model", Icon: Cpu, title: "Model", desc: "Global LLM seçimi" },
+  {
+    href: "/admin/channels",
+    Icon: MessageCircle,
+    title: "Kanal Ayarları",
+    desc: "Telegram · WhatsApp · e-posta aç/kapat",
+  },
   { href: "/admin/providers", Icon: Server, title: "Kaynaklar", desc: "API kullanım & kota" },
   { href: "/admin/users", Icon: Users, title: "Kullanıcılar", desc: "Hesap & yetki yönetimi" },
   { href: "/admin/watches", Icon: Bell, title: "Watcher'lar", desc: "Tüm izlemeler" },

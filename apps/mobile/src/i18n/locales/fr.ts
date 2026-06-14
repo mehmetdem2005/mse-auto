@@ -301,6 +301,7 @@ export const fr: Catalog = {
       "Ce sont tes données personnelles, utilisées uniquement pour te notifier et jamais partagées.",
     saved: "Canaux enregistrés.",
     saveFail: "échec de l'enregistrement",
+    disabledByAdmin: "Ce canal est actuellement désactivé. Il fonctionnera une fois réactivé.",
   },
 
   quiet: {

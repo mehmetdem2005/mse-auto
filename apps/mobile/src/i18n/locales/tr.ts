@@ -292,6 +292,7 @@ export const tr = {
     privacy: "Bu bilgiler kişisel verindir, yalnız sana bildirim için kullanılır ve paylaşılmaz.",
     saved: "Kanallar kaydedildi.",
     saveFail: "kaydedilemedi",
+    disabledByAdmin: "Bu kanal şu anda kapalı. Yeniden açıldığında çalışır.",
   },
 
   quiet: {

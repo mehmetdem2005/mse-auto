@@ -10,6 +10,7 @@ import type { AuthVariables } from "./auth.middleware";
 import { authMiddleware } from "./auth.middleware";
 import { banGuard } from "./ban.middleware";
 import { billingRoutes } from "./billing.route";
+import { configRoutes } from "./config.route";
 import { devicesRoutes } from "./devices.route";
 import { eventsRoutes } from "./events.route";
 import { feedRoutes } from "./feed.route";
@@ -101,6 +102,7 @@ export function createApp(
   // Destek talebi açma da spam'e açık → aynı sıkı kovayla sınırlı (ayrı bucket).
   app.use("/v1/support", onlyMethod("POST", rateLimit(container.rateLimit.assist, "support")));
 
+  app.route("/v1/config", configRoutes(container));
   app.route("/v1/me", meRoutes(container));
   app.route("/v1/plans", plansRoutes(container));
   app.route("/v1/watchers", watchersRoutes(container));

@@ -1,4 +1,4 @@
-import type { ChannelSender, UserChannelRepository } from "../domain/channels";
+import type { ChannelKind, ChannelSender, UserChannelRepository } from "../domain/channels";
 import { resolveTargets } from "../domain/channels";
 import type { DeviceRepository } from "../domain/device";
 import type { MonitoringRepository } from "../domain/monitoring";
@@ -22,6 +22,8 @@ export interface DeliveryDeps {
   /** Ek kanallar (ADR-084) — opsiyonel: yoksa yalnız push. */
   channels?: ChannelSender[] | undefined;
   userChannels?: UserChannelRepository | undefined;
+  /** Admin'in açık bıraktığı kanallar (ADR-107) — yoksa hepsi açık sayılır. */
+  enabledChannels?: (() => Promise<Set<ChannelKind>>) | undefined;
 }
 
 /** Bir olayın bekleyen teslimlerini gönderir: token bul → push → işaretle. */
@@ -66,7 +68,10 @@ export async function dispatchEventDeliveries(
     // bastıracağı bir uyarıyı sızdırırdı. Bu yüzden personal'da ek kanal ATLANIR.
     if (delivery.archetype !== "personal" && deps.channels && deps.userChannels) {
       const prefs = await deps.userChannels.get(delivery.userId);
+      // Admin kanal kapatabilir (ADR-107): kapalı kanal hiç gönderilmez (destek kapanır).
+      const allowed = deps.enabledChannels ? await deps.enabledChannels() : null;
       for (const { kind, target } of resolveTargets(prefs)) {
+        if (allowed && !allowed.has(kind)) continue;
         const sender = deps.channels.find((c) => c.kind === kind);
         if (!sender) continue;
         try {

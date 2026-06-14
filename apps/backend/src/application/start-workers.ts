@@ -1,4 +1,5 @@
 import type { Container } from "../config/container";
+import { enabledKinds, getChannelAvailability } from "./channel-config";
 import { registerDeliveryWorker } from "./delivery";
 import { registerMonitoringWorker } from "./monitoring-worker";
 import { runSchedulerTick } from "./scheduler";
@@ -36,6 +37,7 @@ export async function startWorkers(
     notifier: container.notifier,
     channels: container.channels,
     userChannels: container.userChannels,
+    enabledChannels: async () => enabledKinds(await getChannelAvailability(container.settings)),
   });
 
   const tick = async (): Promise<void> => {

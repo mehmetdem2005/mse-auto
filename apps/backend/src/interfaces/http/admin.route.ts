@@ -21,6 +21,7 @@ import {
   announcementIdParamSchema,
   announcementListSchema,
   announcementSchema,
+  channelAvailabilitySchema,
   createAnnouncementInputSchema,
   errorSchema,
   giftProInputSchema,
@@ -36,6 +37,7 @@ import {
   watchTimelineSchema,
 } from "@watcher/contracts";
 import { getAdminStats } from "../../application/admin-stats";
+import { getChannelAvailability, setChannelAvailability } from "../../application/channel-config";
 import { getPlans } from "../../application/get-plans";
 import { LlmModelError } from "../../application/llm-config";
 import { getProviderUsage } from "../../application/provider-usage";
@@ -582,6 +584,47 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       },
     }),
     async (c) => c.json(await container.moderation.listAudit(200), 200),
+  );
+
+  // ---- ADR-107: Kanal kullanılabilirliği (telegram/whatsapp/email aç-kapa) ----
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/channel-config",
+      tags: ["admin"],
+      summary: "Ek kanal desteği aç/kapa durumu",
+      responses: {
+        200: {
+          content: { "application/json": { schema: channelAvailabilitySchema } },
+          description: "Kanal durumu",
+        },
+      },
+    }),
+    async (c) => c.json(await getChannelAvailability(container.settings), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/channel-config",
+      tags: ["admin"],
+      summary: "Ek kanal desteğini aç/kapat (kapalı kanal hiç teslim edilmez)",
+      request: {
+        body: { content: { "application/json": { schema: channelAvailabilitySchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: channelAvailabilitySchema } },
+          description: "Güncel durum",
+        },
+      },
+    }),
+    async (c) => {
+      const v = c.req.valid("json");
+      await setChannelAvailability(container.settings, v);
+      await audit(c.get("userId"), "channels.config", "settings", null, v);
+      return c.json(v, 200);
+    },
   );
 
   // ---- Watcher yönetimi ----

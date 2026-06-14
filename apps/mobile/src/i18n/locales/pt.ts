@@ -298,6 +298,8 @@ export const pt: Catalog = {
       "Estes são seus dados pessoais, usados apenas para notificá-lo e nunca compartilhados.",
     saved: "Canais salvos.",
     saveFail: "não foi possível salvar",
+    disabledByAdmin:
+      "Este canal está desativado no momento. Voltará a funcionar quando for reativado.",
   },
 
   quiet: {

@@ -306,6 +306,8 @@ export const de: Catalog = {
       "Dies sind deine persönlichen Daten, nur zur Benachrichtigung verwendet und nie geteilt.",
     saved: "Kanäle gespeichert.",
     saveFail: "konnte nicht gespeichert werden",
+    disabledByAdmin:
+      "Dieser Kanal ist derzeit deaktiviert. Er funktioniert, sobald er wieder aktiviert wird.",
   },
 
   quiet: {

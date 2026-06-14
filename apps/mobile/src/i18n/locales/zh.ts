@@ -247,6 +247,7 @@ export const zh: Catalog = {
     privacy: "这是你的个人数据，仅用于通知你，绝不共享。",
     saved: "渠道已保存。",
     saveFail: "保存失败",
+    disabledByAdmin: "此渠道当前已关闭，重新启用后即可使用。",
   },
 
   quiet: {

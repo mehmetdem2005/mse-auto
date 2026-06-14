@@ -7,7 +7,7 @@ import { type ChannelKind, type UserChannels, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { BRAND, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mail, MessageCircle, Phone } from "lucide-react-native";
+import { Lock, Mail, MessageCircle, Phone } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Switch, Text, TextInput, View } from "react-native";
@@ -17,6 +17,9 @@ export default function Channels() {
   const theme = useTheme();
   const qc = useQueryClient();
   const q = useQuery({ queryKey: qk.channels, queryFn: api.channels });
+  // Admin'in açtığı kanallar (ADR-107) — kapalıysa kart kilitlenir + uyarı gösterilir.
+  const cfg = useQuery({ queryKey: ["appConfig"], queryFn: api.appConfig });
+  const avail = cfg.data?.channels;
 
   const [tg, setTg] = useState("");
   const [email, setEmail] = useState("");
@@ -89,6 +92,8 @@ export default function Channels() {
             onChange={setTg}
             placeholder={t("channels.telegramPlaceholder")}
             keyboardType="default"
+            available={avail ? avail.telegram : true}
+            disabledText={t("channels.disabledByAdmin")}
           />
           <ChannelCard
             Icon={Mail}
@@ -101,6 +106,8 @@ export default function Channels() {
             onChange={setEmail}
             placeholder={t("channels.emailPlaceholder")}
             keyboardType="email-address"
+            available={avail ? avail.email : true}
+            disabledText={t("channels.disabledByAdmin")}
           />
           <ChannelCard
             Icon={Phone}
@@ -113,6 +120,8 @@ export default function Channels() {
             onChange={setWa}
             placeholder={t("channels.whatsappPlaceholder")}
             keyboardType="phone-pad"
+            available={avail ? avail.whatsapp : true}
+            disabledText={t("channels.disabledByAdmin")}
           />
 
           <Text className="text-muted text-[11px] leading-4 mt-1 mb-4">
@@ -139,6 +148,8 @@ function ChannelCard({
   onChange,
   placeholder,
   keyboardType,
+  available = true,
+  disabledText,
 }: {
   Icon: typeof Mail;
   tint: string;
@@ -150,10 +161,15 @@ function ChannelCard({
   onChange: (s: string) => void;
   placeholder: string;
   keyboardType: "default" | "email-address" | "phone-pad";
+  /** Admin bu kanalı açtı mı (ADR-107) — false ise kart kilitli + uyarı. */
+  available?: boolean;
+  disabledText?: string;
 }) {
   const theme = useTheme();
   return (
-    <View className="bg-panel border border-line rounded-2xl p-4 mb-3">
+    <View
+      className={`bg-panel border border-line rounded-2xl p-4 mb-3 ${available ? "" : "opacity-90"}`}
+    >
       <View className="flex-row items-center gap-3">
         <View
           className="w-10 h-10 rounded-full items-center justify-center"
@@ -163,14 +179,20 @@ function ChannelCard({
         </View>
         <Text className="text-text text-sm font-semibold flex-1">{title}</Text>
         <Switch
-          value={on}
+          value={available && on}
           onValueChange={onToggle}
+          disabled={!available}
           trackColor={{ false: theme.colors.line, true: theme.colors.accent }}
           thumbColor="#FFFFFF"
           accessibilityLabel={title}
         />
       </View>
-      {on ? (
+      {!available ? (
+        <View className="flex-row items-center gap-2 bg-warn/10 border border-warn/30 rounded-xl px-3 py-2.5 mt-3">
+          <Lock size={13} color="#B45309" />
+          <Text className="text-warn text-[11px] flex-1 leading-4">{disabledText}</Text>
+        </View>
+      ) : on ? (
         <TextInput
           value={value}
           onChangeText={onChange}
