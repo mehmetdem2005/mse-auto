@@ -6,6 +6,7 @@ import { type UserAiProfile, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Sparkles } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, Text, TextInput, View } from "react-native";
@@ -36,21 +37,37 @@ export default function AiProfile() {
     return (
       <View className="flex-1 bg-ink">
         <GradientHero title={t("aiProfile.title")} back />
-        <View className="px-5 pt-5">
-          <SkeletonCard />
-        </View>
+        <HeroOverlap>
+          <View className="px-5 pt-5">
+            <SkeletonCard />
+          </View>
+        </HeroOverlap>
       </View>
     );
   }
+
+  const inputClass =
+    "bg-panel border border-line rounded-2xl px-4 py-3.5 text-text text-sm leading-5 min-h-[112px] mt-1";
 
   return (
     <View className="flex-1 bg-ink">
       <GradientHero title={t("aiProfile.title")} back />
       <HeroOverlap>
-        <ScrollView className="flex-1 px-5" contentContainerClassName="pt-5 pb-12">
-          <Text className="text-muted text-[13px] leading-5 mb-4">{t("aiProfile.intro")}</Text>
+        <ScrollView
+          className="flex-1 px-5"
+          contentContainerClassName="pt-5 pb-12"
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Amaç bandı — vurgu renkli, ikonlu (ne işe yaradığı tek bakışta belli) */}
+          <View className="flex-row gap-3 bg-accent/10 border border-accent/25 rounded-2xl p-4 mb-6">
+            <View className="w-9 h-9 rounded-xl bg-accent/15 items-center justify-center shrink-0">
+              <Sparkles size={18} color={theme.colors.accent} />
+            </View>
+            <Text className="text-text text-[13px] leading-5 flex-1">{t("aiProfile.intro")}</Text>
+          </View>
 
-          <Text className="text-muted text-xs mb-1.5">{t("aiProfile.about")}</Text>
+          {/* Kendini tanıt */}
+          <Text className="text-text text-sm font-semibold">{t("aiProfile.about")}</Text>
           <TextInput
             value={about}
             onChangeText={setAbout}
@@ -59,11 +76,13 @@ export default function AiProfile() {
             placeholder={t("aiProfile.aboutHint")}
             placeholderTextColor={theme.colors.placeholder}
             accessibilityLabel={t("aiProfile.about")}
-            className="bg-panel border border-line rounded-xl px-3 py-3 text-text text-[14px] leading-5 min-h-[120px] mb-4"
+            className={inputClass}
             style={{ textAlignVertical: "top" }}
           />
+          <Text className="text-muted2 text-[10px] text-right mt-1 mb-5">{about.length}/2000</Text>
 
-          <Text className="text-muted text-xs mb-1.5">{t("aiProfile.attention")}</Text>
+          {/* Ek dikkat */}
+          <Text className="text-text text-sm font-semibold">{t("aiProfile.attention")}</Text>
           <TextInput
             value={attention}
             onChangeText={setAttention}
@@ -72,9 +91,12 @@ export default function AiProfile() {
             placeholder={t("aiProfile.attentionHint")}
             placeholderTextColor={theme.colors.placeholder}
             accessibilityLabel={t("aiProfile.attention")}
-            className="bg-panel border border-line rounded-xl px-3 py-3 text-text text-[14px] leading-5 min-h-[100px] mb-4"
+            className={inputClass}
             style={{ textAlignVertical: "top" }}
           />
+          <Text className="text-muted2 text-[10px] text-right mt-1 mb-6">
+            {attention.length}/2000
+          </Text>
 
           <Btn onPress={() => save.mutate({ about, attention })} disabled={save.isPending}>
             <Text className="text-white text-[13px] font-semibold">{t("common.save")}</Text>
