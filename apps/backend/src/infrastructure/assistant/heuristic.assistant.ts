@@ -44,6 +44,34 @@ function looksLikeQuestion(text: string): boolean {
   );
 }
 
+/**
+ * "Ne yapabilirsin / örnek ver / neleri izleyebilirsin / N madde" gibi KAPASİTE-örnek isteği (ADR-130).
+ * LLM yokken bu girdi ya "muğlak" clarify'ına ya da (uzunsa) ready=true junk niyete düşüyordu;
+ * bunun yerine yardımcı bir örnek-listesiyle yanıtla → asistan soruyu GERÇEKTEN cevaplar, junk üretmez.
+ */
+function looksLikeCapabilityRequest(text: string): boolean {
+  const t = text.toLowerCase();
+  // TR: yetenek/örnek/liste isteği (ekler nedeniyle gevşek kök eşleşmesi).
+  if (
+    /(ne(ler)? yapab|i[şs]e yarar|kullanab[iı]lece|[öo]rnek|neleri (izle|takip)|ne t[üu]r [şs]ey|kapasite|yetene[ğg])/.test(
+      t,
+    )
+  ) {
+    return true;
+  }
+  // EN
+  return /(what can you do|what do you do|use (you )?for|use ?cases?|examples?|capabilit|give me .*(list|example))/.test(
+    t,
+  );
+}
+
+/** Kapasite isteğine yardımcı, çeşitli örnekli yanıt (numaralı liste — kullanıcı "liste/madde" istedi). */
+function capabilityAnswer(tr: boolean): string {
+  return tr
+    ? "Şunlar gibi pek çok şeyi takip edebilirim:\n1. Bir ürünün fiyatı belirlediğin eşiğin altına inince\n2. Bir sınav sonucu ya da giriş belgesi açıklanınca\n3. Bir randevu/başvuru sistemi açılınca (kamusal duyuru üzerinden)\n4. Bir etkinliğe biletler satışa çıkınca\n5. Tükenen bir ürün yeniden stoğa girince\n6. Yeni bir iş ya da burs ilanı yayınlanınca\n7. Resmî bir kurum yeni bir duyuru veya karar yayınlayınca\n8. Döviz ya da bir hisse belirli bir seviyeyi geçince\nHangisi sana uygun? İstersen kendi cümlenle de anlatabilirsin."
+    : "I can watch things like:\n1. A product's price dropping below a threshold you set\n2. An exam result or entry document being announced\n3. An appointment or application system opening (via the public announcement)\n4. Tickets for an event going on sale\n5. A sold-out product coming back in stock\n6. A new job or scholarship posting\n7. An official body publishing a new announcement or decision\n8. A currency or stock crossing a level\nWhich one fits you? You can also describe your own in a sentence.";
+}
+
 export class HeuristicIntentAssistant implements IntentAssistant {
   // ADR-113: userContext sezgisel modda kullanılmaz (LLM yok); imza uyumu için kabul edilir.
   async chat(
@@ -63,6 +91,18 @@ export class HeuristicIntentAssistant implements IntentAssistant {
       .map((m) => m.content.trim())
       .join(" ")
       .trim();
+
+    // ADR-130: "ne yapabilirsin / örnek ver / N madde" → yardımcı örnek-listesiyle yanıtla
+    // (muğlak clarify ya da ready=true junk niyetten ÖNCE). LLM düşse de soru gerçekten cevaplanır.
+    if (looksLikeCapabilityRequest(lastUser)) {
+      return {
+        ready: false,
+        message: capabilityAnswer(tr),
+        intent: null,
+        frequencyMinutes: null,
+        confidence: 0.3,
+      };
+    }
 
     const vague =
       combined.length < VAGUE_COMBINED_CHARS ||
