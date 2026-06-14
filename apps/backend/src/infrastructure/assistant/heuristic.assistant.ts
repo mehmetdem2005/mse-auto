@@ -15,6 +15,20 @@ const VAGUE_COMBINED_CHARS = 20;
 /** Tek mesajlık sohbette ilk mesaj bundan kısaysa muğlak sayılır. */
 const VAGUE_FIRST_MSG_CHARS = 35;
 
+/**
+ * "İzlenebilir gerçek istek değil" sezgisi (LLM yokken SON savunma — ADR-119).
+ * Aşırı tekrarlı ("ne ne ne adın ne") ya da hiç içerik-kelimesi olmayan metni REDDEDER →
+ * sezgisel mod saçma girdiden junk watch ÜRETMEZ.
+ */
+function looksUnmonitorable(text: string): boolean {
+  const words = text.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+  // Aşırı tekrar: benzersiz kelime oranı çok düşük.
+  if (words.length >= 3 && new Set(words).size / words.length < 0.5) return true;
+  // Hiç anlamlı içerik kelimesi (≥4 harf) yoksa muhtemelen istek değildir.
+  return !words.some((w) => w.replace(/[^\p{L}\p{N}]/gu, "").length >= 4);
+}
+
 export class HeuristicIntentAssistant implements IntentAssistant {
   // ADR-113: userContext sezgisel modda kullanılmaz (LLM yok); imza uyumu için kabul edilir.
   async chat(
@@ -52,6 +66,18 @@ export class HeuristicIntentAssistant implements IntentAssistant {
     }
 
     const intent = lastUser.length >= combined.length ? lastUser : combined;
+    // ADR-119: saçma/tekrarlı girdiyi onaya çıkarma — gerçek bir istek iste.
+    if (looksUnmonitorable(intent)) {
+      return {
+        ready: false,
+        message: tr
+          ? "Bunu tam anlayamadım. Neyi, hangi koşulda takip etmemi istediğini gerçek bir cümleyle anlatır mısın? Örneğin: bir ürünün fiyatı belirli bir eşiğin altına inince haber ver."
+          : "I couldn't quite make sense of that. Could you describe, in a real sentence, what to watch and under what condition? For example: notify me when a product's price drops below a threshold.",
+        intent: null,
+        frequencyMinutes: null,
+        confidence: 0.2,
+      };
+    }
     return {
       ready: true,
       message: tr

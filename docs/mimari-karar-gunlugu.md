@@ -1130,3 +1130,14 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Doğrulama:** typecheck 4/4 · biome temiz · backend **160 test** (yeni: LLM-fırlatır → fallback → 200, 503 değil). Canlı backend assist 200 doğrulandı (gerçek oturumla, 3s).
 - **DÜRÜST SINIR:** Backend tamamen restart olursa (deploy ortası) istek hiç ulaşmaz (502/ağ) — bu fallback yalnız backend AYAKTA ama LLM hata verince devreye girer (kullanıcının gördüğü senaryo buydu). Tam-restart penceresi kaçınılmaz; tek-faz deploy + sağlık-bekleme ayrı iş.
 - **ISO/TOGAF:** 25010 **Güvenilirlik** (hata töleransı / kurtarılabilirlik) + Kullanılabilirlik · 9241 (kullanıcı tıkanmaz) · 27002 (gizlilik değişmedi) · TOGAF Phase C(App) sınıf **Düzeltici** · P8 (ölçülebilir dayanıklılık: 503→200 fallback testle).
+
+## ADR-119 — Asistan zekâsı: Groq çapraz-sağlayıcı fallback + saçma/istek-değil reddi
+- **Durum:** Kabul · kullanıcı "saçma sapan yazınca bile görev-oluşturma onayı çıkıyor, daha akıllı yap" dedi (ekran: "Ne Ne Ne… Görevin ne" → onay). Sınıf: **Düzeltici** (backend; migration YOK).
+- **Teşhis:** Onay metni dumb **sezgisel fallback**'tendi (6h, "Şunu izleyeyim") → demek ki **LLM tekrar tekrar hata veriyordu** (deepseek'in Render'dan aralıklı hatası) VE sezgisel her şeyi kabul ediyordu.
+- **Üç katmanlı düzeltme:**
+  1. **Groq çapraz-sağlayıcı fallback (asıl çözüm):** `chatWithActive` aktif modeli (deepseek) dener; GEÇİCİ hatada (ve aktif Groq değilse) **gerçek ikinci LLM'e** (Groq Llama 3.3 70B) düşer — dumb sezgiselden ÖNCE. Tüm LLM tüketicileri (asistan + reasoner + verifier + e-posta) bundan yararlanır → bir sağlayıcı tökezlese de sistem gerçek LLM ile çalışır.
+  2. **LLM saçma/istek-değil reddi (RULE #2):** `ASSISTANT_SYSTEM`'e: saçma/tekrarlı/"kim/görevin ne" gibi GERÇEK izlenebilir istek OLMAYAN girdide `ready=false, intent=null` döndür; ne yaptığını anlat + örnek iste. **Junk watch = kritik hata.**
+  3. **Sezgisel son-savunma:** `looksUnmonitorable()` — aşırı tekrarlı (benzersiz oran <0.5) ya da içerik-kelimesi olmayan metni REDDEDER → sezgisel mod bile saçmadan onay üretmez.
+- **CANLI LLM doğrulaması (deploy ÖNCESİ):** Güncel istem hem Groq hem DeepSeek'te test edildi → "Görevin ne" ve "ne ne ne adın ne görevin ne" = **ready=false**; "iPhone 15 fiyatı 50000 altına düşünce" = **ready=true** (gerçek istek over-reddedilmiyor). ✓
+- **Doğrulama:** typecheck 4/4 · biome temiz · backend **161 test** (yeni: saçma → ready=false). DÜRÜST: Groq-fallback yolu birim-testle değil, canlı LLM çağrısıyla doğrulandı (basit try/catch).
+- **ISO/TOGAF:** 25010 **Güvenilirlik** (çapraz-sağlayıcı hata töleransı) + **İşlevsel Doğruluk** (saçma girdiyi reddet) · 9241 · TOGAF Phase C(App) **Düzeltici** · P8 (canlı + birim doğrulama).
