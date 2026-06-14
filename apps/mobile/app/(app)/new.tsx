@@ -18,12 +18,16 @@ import {
   FileMusic,
   Globe,
   Landmark,
+  ListChecks,
   Newspaper,
   Pause,
   Play,
   Radar,
   Search,
   Send,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldX,
   ShoppingBag,
   Sparkles,
   Users2,
@@ -182,6 +186,75 @@ function cleanAssistant(text: string): string {
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+// ADR-129: karar → i18n anahtarı (tip-güvenli; dinamik şablon anahtarı yerine sabit eşleme).
+const FEAS_LABEL_KEY = {
+  can: "wizard.feasibility.can",
+  partial: "wizard.feasibility.partial",
+  cannot: "wizard.feasibility.cannot",
+} as const;
+const FEAS_HINT_KEY = {
+  can: "wizard.feasibilityHint.can",
+  partial: "wizard.feasibilityHint.partial",
+  cannot: "wizard.feasibilityHint.cannot",
+} as const;
+
+/**
+ * ADR-129: olay-bazlı YAPISAL fizibilite kartı — ajan araçlarla (web_search → resolve_authority →
+ * check_site_policy) araştırdıktan sonra "yapabilirim / kısmen / yapamam" kararını, izleme planını
+ * ve site-iznini gösterir. Rozet rengi karara göre (can=pos · partial=warn · cannot=neg).
+ * design-standards (lucide ikon, emoji yok) + ui-ux (progressive disclosure) + motion (EnterItem).
+ */
+function FeasibilityCard({ plan }: { plan: AssistReply }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const verdict = plan.feasibilityVerdict;
+  if (!verdict) return null;
+  const VIcon = verdict === "can" ? ShieldCheck : verdict === "partial" ? ShieldAlert : ShieldX;
+  const vColor = verdict === "can" ? colors.pos : verdict === "partial" ? colors.warn : colors.neg;
+  const steps = plan.plannedSteps ?? [];
+  const perm = plan.sitePermission ?? null;
+  return (
+    <EnterItem index={0} className="bg-panel border border-line rounded-2xl px-4 py-3 mt-2">
+      <View className="flex-row items-center gap-2 mb-1.5">
+        <VIcon size={16} color={vColor} />
+        <Text
+          className="text-[11px] font-semibold uppercase tracking-wider"
+          style={{ color: vColor }}
+        >
+          {t(FEAS_LABEL_KEY[verdict])}
+        </Text>
+      </View>
+      <Text className="text-muted text-[11px] leading-4">{t(FEAS_HINT_KEY[verdict])}</Text>
+      {steps.length > 0 ? (
+        <View className="mt-3">
+          <View className="flex-row items-center gap-2 mb-1.5">
+            <ListChecks size={13} color={colors.mutedIcon} />
+            <Text className="text-muted text-[10px] uppercase tracking-widest">
+              {t("wizard.feasibilityPlan")}
+            </Text>
+          </View>
+          {steps.map((step, idx) => (
+            <View key={step} className="flex-row gap-2 mb-1">
+              <Text className="text-accent text-xs font-semibold w-4">{`${idx + 1}.`}</Text>
+              <Text className="text-text text-[13px] flex-1 leading-5">{step}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+      {perm ? (
+        <View className="flex-row items-start gap-2 mt-3 pt-3 border-t border-line">
+          {perm.allowed ? (
+            <ShieldCheck size={13} color={colors.pos} />
+          ) : (
+            <ShieldX size={13} color={colors.neg} />
+          )}
+          <Text className="text-muted text-[11px] leading-4 flex-1">{perm.note}</Text>
+        </View>
+      ) : null}
+    </EnterItem>
+  );
 }
 
 export default function NewWatcher() {
@@ -506,6 +579,8 @@ export default function NewWatcher() {
                 ) : null}
               </View>
             ) : null}
+            {/* ADR-129: olay-bazlı yapısal fizibilite kararı (ajan araçlarla araştırdıktan sonra). */}
+            {plan?.ready && plan.feasibilityVerdict ? <FeasibilityCard plan={plan} /> : null}
           </View>
         ) : null}
 

@@ -398,6 +398,10 @@ export interface AssistReply {
   searchQuery?: string | null;
   searchMethods?: string[];
   feasibility?: string | null;
+  /** ADR-129: olaya özel YAPISAL fizibilite (ajan araştırması sonrası). */
+  feasibilityVerdict?: "can" | "partial" | "cannot" | null;
+  plannedSteps?: string[];
+  sitePermission?: { allowed: boolean; note: string } | null;
 }
 
 interface ReqInit {

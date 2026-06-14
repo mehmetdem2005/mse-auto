@@ -23,6 +23,10 @@ export interface AssistantReply {
   searchQuery?: string | null | undefined;
   searchMethods?: string[] | undefined;
   feasibility?: string | null | undefined;
+  /** ADR-129: olaya özel yapısal fizibilite (ajan araştırması sonrası). */
+  feasibilityVerdict?: "can" | "partial" | "cannot" | null | undefined;
+  plannedSteps?: string[] | undefined;
+  sitePermission?: { allowed: boolean; note: string } | null | undefined;
 }
 
 export interface IntentAssistant {

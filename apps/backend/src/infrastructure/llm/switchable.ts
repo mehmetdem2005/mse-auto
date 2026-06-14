@@ -285,7 +285,8 @@ export class SwitchableEventVerifier implements EventVerifier {
   }
 }
 
-const ReplySchema = z.object({
+// ADR-129: ajan/fizibilite asistanı (agentic-assistant.ts) da bu şemayı kullanır → tek kaynak.
+export const ReplySchema = z.object({
   ready: z.boolean(),
   message: z.string().min(1),
   intent: z.string().nullable(),
@@ -295,6 +296,10 @@ const ReplySchema = z.object({
   searchQuery: z.string().nullable().optional(),
   searchMethods: z.array(z.string()).optional(),
   feasibility: z.string().nullable().optional(),
+  // ADR-129: olaya özel YAPISAL fizibilite (ajan araçlarla araştırdıktan sonra; opsiyonel).
+  feasibilityVerdict: z.enum(["can", "partial", "cannot"]).nullable().optional(),
+  plannedSteps: z.array(z.string()).optional(),
+  sitePermission: z.object({ allowed: z.boolean(), note: z.string() }).nullable().optional(),
 });
 
 export class SwitchableIntentAssistant implements IntentAssistant {

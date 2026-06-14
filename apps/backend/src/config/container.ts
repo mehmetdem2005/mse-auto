@@ -1,7 +1,13 @@
+import {
+  checkSitePolicyTool,
+  resolveAuthorityTool,
+  webSearchTool,
+} from "../application/agent/tools";
 import { getEffectiveEmailPrompt } from "../application/email-prompt";
 import { EmbeddingRouter } from "../application/embeddings-config";
 import { LlmModelRouter } from "../application/llm-config";
 import type { AccountGateway } from "../domain/account";
+import type { AgentTool } from "../domain/agent";
 import type { AiProfileRepository } from "../domain/ai-profile";
 import type { AnnouncementRepository } from "../domain/announcement";
 import type { AuthVerifier } from "../domain/auth";
@@ -63,10 +69,12 @@ import { InMemoryCanonicalTopicRepository } from "../infrastructure/in-memory/to
 import { InMemoryTrafficRepository } from "../infrastructure/in-memory/traffic.repo";
 import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
+import { AgenticIntentAssistant } from "../infrastructure/llm/agentic-assistant";
 import {
   type ActiveModelSource,
   FixedModelSource,
   type ProviderKeys,
+  SwitchableAgentChat,
   SwitchableEmailComposer,
   SwitchableEventReasoner,
   SwitchableEventVerifier,
@@ -184,15 +192,27 @@ function buildServiceHealth(env: Env): { name: string; ok: boolean }[] {
   ];
 }
 
-function buildChecker(env: Env, reasoner: SwitchableEventReasoner | null): Checker {
-  // Arama = Serper/Tavily. Karar (reasoner): admin'in seçtiği global model
-  // (ADR-095 — Groq/DeepSeek, çağrı anında yönlendirilir). Gemini bilinçli devre dışı.
+/**
+ * Arama sağlayıcısı (Serper/Tavily) — checker HEM fizibilite ajanı (ADR-129) onu PAYLAŞIR.
+ * İkisi de aynı public-web aramasını kullanır; sağlayıcı yoksa null (graceful).
+ */
+function buildSearchProvider(env: Env): SearchProvider | null {
   const providers: SearchProvider[] = [];
   if (env.SERPER_API_KEY) providers.push(new SerperSearchProvider(env.SERPER_API_KEY));
   if (env.TAVILY_API_KEY) providers.push(new TavilySearchProvider(env.TAVILY_API_KEY));
-  if (providers.length > 0 && reasoner) {
+  return providers.length > 0 ? new FallbackSearchProvider(providers) : null;
+}
+
+function buildChecker(
+  search: SearchProvider | null,
+  env: Env,
+  reasoner: SwitchableEventReasoner | null,
+): Checker {
+  // Arama = Serper/Tavily. Karar (reasoner): admin'in seçtiği global model
+  // (ADR-095 — Groq/DeepSeek, çağrı anında yönlendirilir). Gemini bilinçli devre dışı.
+  if (search && reasoner) {
     return new LiveChecker(
-      new FallbackSearchProvider(providers),
+      search,
       reasoner,
       env.RENDER_FETCH_TEMPLATE ?? null,
       env.CHECK_TOKEN_BUDGET ?? null,
@@ -297,13 +317,17 @@ export function createContainer(env: Env): Container {
     openai: !!env.OPENAI_API_KEY,
   });
   const embedder = new SwitchableEmbedder(embeddingRouter, embedProviders);
-  // Site-izni çözücü (ADR-128): robots.txt tabanlı; Faz 4 ajanı `check_site_policy` ile kullanır.
+  // Site-izni çözücü (ADR-128): robots.txt tabanlı; fizibilite ajanı `check_site_policy` ile kullanır.
   const sitePolicy = new RobotsSitePolicyResolver(env.RENDER_FETCH_TEMPLATE ?? null);
+  // Arama sağlayıcısını checker'dan AYRI kur — hem watcher checker'ı hem fizibilite ajanı (ADR-129) paylaşır.
+  const searchProvider = buildSearchProvider(env);
   const reasoner = anyLlm ? new SwitchableEventReasoner(llmRouter, llmKeys) : null;
-  const checker = buildChecker(env, reasoner);
+  const checker = buildChecker(searchProvider, env, reasoner);
   // Doğrulayıcı (ADR-060 A1): LLM anahtarı varsa kur; yoksa undefined → doğrulama atlanır.
   const verifier = anyLlm ? new SwitchableEventVerifier(llmRouter, llmKeys) : undefined;
   const checkTimeoutMs = env.CHECK_TIMEOUT_MS;
+  // Resmî kaynak çözücü (ADR-046) — fizibilite ajanı `resolve_authority` aracında da kullanır.
+  const authority = buildAuthority(env);
   // Niyet asistanı: LLM anahtarı varsa seçili model; yoksa sezgisel fallback (anahtarsız dev).
   // Dayanıklılık fallback (ADR-118): LLM geçici hatasında (timeout/rate-limit/deploy
   // penceresi) niyet asistanı 503 yerine sezgisel asistanla çalışan bir yanıt döndürür.
@@ -313,8 +337,36 @@ export function createContainer(env: Env): Container {
   const assistantSource: ActiveModelSource = env.DEEPSEEK_API_KEY
     ? new FixedModelSource("deepseek/deepseek-v4-pro")
     : llmRouter;
+  // Tek-atış asistanı (ADR-126) — ajan başarısız/parse-fail olursa fallback olarak kullanılır.
+  const singleShotAssistant = new SwitchableIntentAssistant(assistantSource, llmKeys);
+  // ADR-129: olay-bazlı FİZİBİLİTE ajanı — araçlarla (web_search → resolve_authority →
+  // check_site_policy) GERÇEKTEN araştırır, yapısal can/partial/cannot kararı verir. Arama
+  // sağlayıcısı yoksa web_search boş döner (graceful); ajan hata/parse-fail'de tek-atışa düşer.
+  const agentTools: AgentTool[] = [
+    webSearchTool((q) =>
+      searchProvider
+        ? searchProvider
+            .search(q)
+            // SearchHit.date: string|null → SearchResultLite.date opsiyonel (yoksa anahtarı atla).
+            .then((hits) =>
+              hits.map((h) => ({
+                title: h.title,
+                snippet: h.snippet,
+                url: h.url,
+                ...(h.date ? { date: h.date } : {}),
+              })),
+            )
+        : Promise.resolve([]),
+    ),
+    resolveAuthorityTool((t) => authority.resolve(t).then((a) => a.domain)),
+    checkSitePolicyTool(sitePolicy),
+  ];
   const assistant: IntentAssistant = anyLlm
-    ? new SwitchableIntentAssistant(assistantSource, llmKeys)
+    ? new AgenticIntentAssistant(
+        new SwitchableAgentChat(assistantSource, llmKeys),
+        agentTools,
+        singleShotAssistant,
+      )
     : heuristicAssistant;
   // E-posta besteci (ADR-109): LLM varsa admin-ayarlı istemle profesyonel e-posta yazar.
   const emailComposer: EmailComposer | undefined = anyLlm
@@ -329,7 +381,6 @@ export function createContainer(env: Env): Container {
     vercelToken: env.VERCEL_TOKEN,
     vercelTeamId: env.VERCEL_TEAM_ID,
   });
-  const authority = buildAuthority(env);
   const notifier = buildNotifier(env);
   const pushActive = !!(env.FCM_PROJECT_ID && env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const channels = buildChannels(env);

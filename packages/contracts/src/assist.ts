@@ -31,6 +31,13 @@ export const assistReplySchema = z.object({
   searchMethods: z.array(z.string()).optional(),
   /** İstenen şey izlenebilir mi — asistan-tarzı dürüst değerlendirme. */
   feasibility: z.string().nullable().optional(),
+  // ADR-129: olaya özel YAPISAL fizibilite kararı (ajan araçlarla araştırdıktan sonra).
+  /** Karar: can = izlenebilir · partial = yalnız kamusal duyuruyla/kısıtlı · cannot = login/portal. */
+  feasibilityVerdict: z.enum(["can", "partial", "cannot"]).nullable().optional(),
+  /** Nasıl izleneceğinin sıralı adımları (kullanıcı dili). */
+  plannedSteps: z.array(z.string()).optional(),
+  /** Hedef sitenin otomatik izleme izni (robots.txt — advisory). */
+  sitePermission: z.object({ allowed: z.boolean(), note: z.string() }).nullable().optional(),
 });
 export type AssistReply = z.infer<typeof assistReplySchema>;
 

@@ -135,6 +135,19 @@ export const de: Catalog = {
     readyHint:
       'Vorgeschlagene Häufigkeit: {{freq}} · Tippe auf "Weiter" oder fahre mit der Eingabe fort.',
     planTitle: "Suchplan",
+    feasibility: {
+      can: "verfolgbar",
+      partial: "teilweise verfolgbar",
+      cannot: "nicht direkt verfolgbar",
+    },
+    feasibilityHint: {
+      can: "Das ist im öffentlichen Web klar verfolgbar; ich beobachte die offizielle Quelle und Nachrichten und melde mich bei Änderungen.",
+      partial:
+        "Nur ein indirektes öffentliches Signal ist verfolgbar (z. B. ein Login-/Buchungsportal) — ich beobachte die zugehörige öffentliche Ankündigung, nicht das Portal selbst.",
+      cannot:
+        "Dafür gibt es kein direkt verfolgbares öffentliches Web-Signal (es liegt vollständig hinter Login/Mitgliedschaft); falls jedoch eine zugehörige öffentliche Ankündigung erscheint, kann ich diese beobachten.",
+    },
+    feasibilityPlan: "So überwache ich",
     chatPlaceholder: "Nachricht eingeben…",
     chatA11y: "Mit dem Assistenten chatten",
     sendA11y: "Senden",

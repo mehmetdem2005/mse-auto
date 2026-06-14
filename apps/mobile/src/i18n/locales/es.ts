@@ -132,6 +132,19 @@ export const es: Catalog = {
     ready: "listo para vigilar",
     readyHint: 'Frecuencia sugerida: {{freq}} · pulsa "Continuar" o sigue escribiendo.',
     planTitle: "Plan de búsqueda",
+    feasibility: {
+      can: "rastreable",
+      partial: "parcialmente rastreable",
+      cannot: "no rastreable directamente",
+    },
+    feasibilityHint: {
+      can: "Esto es claramente rastreable en la web pública; seguiré la fuente oficial y las noticias y te avisaré cuando cambie.",
+      partial:
+        "Solo se puede rastrear una señal pública indirecta (p. ej., un portal de acceso/reservas): vigilo el anuncio público relacionado, no el portal en sí.",
+      cannot:
+        "No hay una señal de la web pública rastreable directamente para esto (está totalmente tras inicio de sesión/membresía); aun así, si aparece un anuncio público relacionado, puedo vigilarlo.",
+    },
+    feasibilityPlan: "Cómo lo vigilaré",
     chatPlaceholder: "Escribe un mensaje…",
     chatA11y: "Mensaje al asistente",
     sendA11y: "Enviar",
