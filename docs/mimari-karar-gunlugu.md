@@ -1063,3 +1063,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Çözüm:** Yalnız **gerçek sohbet başlayınca** (`messages.length > 1`) sona kaydır; ilk karşılama + öneriler üstte tam görünür kalır (ekran-2'deki temiz hâl).
 - **DÜRÜST:** Görsel kabul cihazda sende. **Doğrulama (canlı):** LLM çalışıyor — `app_settings['llm.active']=deepseek/deepseek-v4-flash`; DeepSeek `/models` bu modeli listeliyor + canlı sohbet 200 döndü (yani sihirbaz LLM'lidir; "Merhaba" yalnız açılış). Admin: kullanıcı `admins` tablosunda → Whenly Console Ayarlar'da görünür (stale `/me` cache'inde sert-yenile).
 - **ISO/TOGAF:** 9241 (içerik kırpılmadan görünür) · 25010 Kullanılabilirlik · TOGAF Phase C(App) **Artımlı** (düzeltme).
+
+## ADR-112 — Sihirbaz "saf LLM" sohbeti (hazır çipler kaldırıldı)
+- **Durum:** Kabul · kullanıcı "saf LLM yap / hazır çipleri kaldır, saf sohbet" dedi (LLM'in çalıştığı doğrulandı; sorun his/tasarımdı). Sınıf: **Basitleştirme**.
+- **Değişiklik:** `new.tsx` intent adımından **hazır öneri çipleri** (Bireysel/Kurumsal sekmesi + `suggest.*` çip ızgarası) kaldırıldı → kullanıcı doğrudan AI ile yazışır (saf sohbet). Açılış mesajı ("Doğal dille anlat…") + mesaj kutusu kaldı. Kaldırılan: suggestions JSX bloğu + `SUGGESTION_ICONS/KEYS/SuggestionScope` import + `suggScope` state. `haptic` korundu (başka yerde kullanılıyor).
+- **DÜRÜST SINIR:** `lib/suggestions.ts` + `suggest.*`/`wizard.suggest*` i18n anahtarları artık kullanılmıyor (ölü ama zararsız; silinmedi — ileride geri istenebilir, bilinçli bırakıldı). Mobil-only; backend/migration yok.
+- **Doğrulama:** typecheck 4/4 (mobil) · biome temiz. Görsel kabul cihazda.
+- **ISO/TOGAF:** 9241 (sade, doğrudan AI etkileşimi) · 25010 Kullanılabilirlik + Bakımkolaylığı (daha az şablon) · TOGAF Phase C(App) **Basitleştirme**.

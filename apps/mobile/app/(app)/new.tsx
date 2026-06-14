@@ -9,7 +9,6 @@ import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { persistSound, useSoundPreview } from "@/lib/sound-preview";
-import { SUGGESTION_ICONS, SUGGESTION_KEYS, type SuggestionScope } from "@/lib/suggestions";
 import { ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
@@ -201,7 +200,6 @@ export default function NewWatcher() {
     { role: "assistant", content: t("wizard.greeting") },
   ]);
   const [draft, setDraft] = useState("");
-  const [suggScope, setSuggScope] = useState<SuggestionScope>("personal");
   const [readyIntent, setReadyIntent] = useState<string | null>(null);
   const [plan, setPlan] = useState<AssistReply | null>(null);
   const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
@@ -439,65 +437,6 @@ export default function NewWatcher() {
                 </Text>
               </EnterItem>
             ))}
-            {messages.length === 1 && !assist.isPending ? (
-              <View className="mb-2.5">
-                <Text className="text-muted text-[11px] mb-2">{t("wizard.suggestTitle")}</Text>
-                {/* Bireysel / Kurumsal sekmesi */}
-                <View className="flex-row gap-2 mb-2.5">
-                  {(["personal", "business"] as const).map((sc) => {
-                    const on = suggScope === sc;
-                    return (
-                      <Pressable
-                        key={sc}
-                        onPress={() => setSuggScope(sc)}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected: on }}
-                        className={`rounded-full px-3.5 py-2 min-h-11 justify-center ${
-                          on ? "bg-accent" : "bg-panel border border-line"
-                        }`}
-                      >
-                        <Text
-                          className="text-[12px] font-semibold"
-                          style={{ color: on ? ON_ACCENT : colors.mutedIcon }}
-                        >
-                          {t(
-                            sc === "personal" ? "wizard.suggestPersonal" : "wizard.suggestBusiness",
-                          )}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-                <View className="flex-row flex-wrap gap-2">
-                  {SUGGESTION_KEYS[suggScope].map((key) => {
-                    const sentence = t(`suggest.${key}.sentence`);
-                    return (
-                      <Pressable
-                        key={key}
-                        onPress={() => {
-                          haptic.light();
-                          const next: AssistMessage[] = [
-                            ...messages,
-                            { role: "user", content: sentence },
-                          ];
-                          setMessages(next);
-                          assist.mutate(next);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel={sentence}
-                        className="flex-row items-center gap-1.5 border border-accent/40 bg-accent/5 rounded-full px-3.5 py-2.5 min-h-11 active:bg-accent/15"
-                      >
-                        {(() => {
-                          const Icon = SUGGESTION_ICONS[key];
-                          return Icon ? <Icon size={13} color={colors.accent} /> : null;
-                        })()}
-                        <Text className="text-accent text-xs">{t(`suggest.${key}.label`)}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-            ) : null}
             {assist.isPending ? (
               <View className="self-start bg-panel border border-line rounded-2xl rounded-bl-md px-4 py-3 mb-2.5">
                 <ActivityIndicator size="small" color={colors.accent} />
