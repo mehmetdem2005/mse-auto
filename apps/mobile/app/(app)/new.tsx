@@ -407,7 +407,11 @@ export default function NewWatcher() {
         style={Platform.OS === "web" ? { backfaceVisibility: "hidden" } : undefined}
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => {
-          if (step === 0) chatScroll.current?.scrollToEnd({ animated: !reduce });
+          // İlk karşılama + öneriler ÜSTTE tam görünsün: yalnız gerçek sohbet başlayınca
+          // (1'den fazla mesaj) sona kaydır — aksi halde ilk mesaj yukarı kayıp kırpılıyordu.
+          if (step === 0 && messages.length > 1) {
+            chatScroll.current?.scrollToEnd({ animated: !reduce });
+          }
         }}
       >
         {err ? <Text className="text-neg text-xs mb-3">{err}</Text> : null}

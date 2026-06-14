@@ -1056,3 +1056,10 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **DÜRÜST SINIR:** Arama planı alanları LLM üretimidir → anahtar yoksa heuristik fallback bunları vermez (panel görünmez, sorun değil); `searchQuery` asistanın önerisidir, backend kanonik sorgusuyla %100 birebir olmayabilir (kullanıcıya onay/şeffaflık amaçlı). FreqSlider sürekli değer üretir ama `niceMinutes` ile okunur değerlere oturur. Migration yok.
 - **Doğrulama:** typecheck 4/4 · biome temiz · backend **156 test** (E opsiyonel alanlar mevcut assist testlerini bozmadı; alanlar `.optional()`). Görsel kabul (slider sürükleme + plan paneli) cihazda kullanıcıda.
 - **ISO/TOGAF:** 9241 (etkileşim: doğrudan-manipülasyon slider + şeffaf arama planı) · 25010 İşlevsel Uygunluk + Kullanılabilirlik · 25012 (asistan çıktısı) · 29148 (2 istek izlenebilir) · TOGAF Phase C(App) sınıf **Artımlı**.
+
+## ADR-111 — Sihirbaz ilk-mesaj kırpılması düzeltmesi
+- **Durum:** Kabul · kullanıcı "kesik/kırpılmış gibi" bildirdi (sihirbaz görseliyle). Cızırtı (ADR-108) GİTTİ; kalan görsel sorun sohbet kırpılmasıydı.
+- **Kök neden:** `new.tsx` sohbet ScrollView `onContentSizeChange` → `scrollToEnd` İLK karşılama mesajında da çalışıyordu → tek mesaj + öneriler viewport'tan uzunsa mesaj yukarı kayıp ÜSTTEN kırpılıyor, öneri çipleri alta itilip kesiliyordu.
+- **Çözüm:** Yalnız **gerçek sohbet başlayınca** (`messages.length > 1`) sona kaydır; ilk karşılama + öneriler üstte tam görünür kalır (ekran-2'deki temiz hâl).
+- **DÜRÜST:** Görsel kabul cihazda sende. **Doğrulama (canlı):** LLM çalışıyor — `app_settings['llm.active']=deepseek/deepseek-v4-flash`; DeepSeek `/models` bu modeli listeliyor + canlı sohbet 200 döndü (yani sihirbaz LLM'lidir; "Merhaba" yalnız açılış). Admin: kullanıcı `admins` tablosunda → Whenly Console Ayarlar'da görünür (stale `/me` cache'inde sert-yenile).
+- **ISO/TOGAF:** 9241 (içerik kırpılmadan görünür) · 25010 Kullanılabilirlik · TOGAF Phase C(App) **Artımlı** (düzeltme).
