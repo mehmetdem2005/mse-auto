@@ -59,8 +59,10 @@ jobs:
           EXPO_PUBLIC_SUPABASE_ANON_KEY: ${{ env.SUPABASE_ANON }}
         run: npx --yes expo export --platform web
 
-      # SEO/a11y + TİPOGRAFİ (ADR-052): tek-sayfa export'ta +html.tsx onurlanmaz;
-      # index.html'e meta + lang + GERÇEK font (Inter) + tipografik cila enjekte edilir.
+      # SEO/a11y + TİPOGRAFİ + VIEWPORT (ADR-052/131): tek-sayfa export'ta +html.tsx onurlanmaz;
+      # index.html'e meta + GERÇEK font (Inter) + tipografi + klavye-dostu viewport
+      # (interactive-widget=resizes-content) enjekte edilir — aksi halde mobil-web'de klavye
+      # açılınca alt giriş/footer taşıyor, üstte boşluk kalıyordu.
       - name: SEO + tipografi enjekte (dist/index.html)
         working-directory: apps/mobile
         run: |
@@ -76,8 +78,9 @@ jobs:
             const style='<style>:root{--whenly-font:\"Inter\",-apple-system,BlinkMacSystemFont,\"Segoe UI\",Roboto,sans-serif}html,body,#root,*{font-family:var(--whenly-font)!important}body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}</style>';
             h=h.replace('</head>',font+style+'</head>');
           }
+          if(!/interactive-widget/.test(h)){h=h.replace(/<meta name=.viewport[^>]*>/,'<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content\">');}
           fs.writeFileSync(p,h);
-          console.log('SEO + Inter font + tipografi cilası enjekte edildi');
+          console.log('SEO + Inter font + viewport(klavye) + tipografi enjekte edildi');
           "
 
       - name: Deploy mobil web → Vercel
