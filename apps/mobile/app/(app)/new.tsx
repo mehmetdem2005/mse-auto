@@ -309,7 +309,14 @@ export default function NewWatcher() {
 
       <ScrollView
         ref={chatScroll}
-        className="flex-1 px-5 pt-5"
+        // ADR-108 (cızırtı kök-neden): bu ScrollView ŞEFFAF ayrı bir kompozit katman;
+        // hemen üstündeki GradientHero (LinearGradient) GPU katmanının BAYAT dokusu
+        // Android Chrome'da şeffaf piksellerden sızıyordu (mor yırtık bantlar). Çözüm:
+        // (1) OPAK zemin (bg-ink) → derleyici katmanı düz boyar, sızıntı kalmaz;
+        // (2) web'de backfaceVisibility:hidden → katmanı kendi kararlı GPU dokusuna sahiplendirir
+        // (translateZ(0) muadili; RN-Web'de geçerli stil). Chromium #727182 sınıfı kompozit hatası.
+        className="flex-1 px-5 pt-5 bg-ink"
+        style={Platform.OS === "web" ? { backfaceVisibility: "hidden" } : undefined}
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => {
           if (step === 0) chatScroll.current?.scrollToEnd({ animated: !reduce });
