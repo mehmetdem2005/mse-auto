@@ -28,6 +28,7 @@ import type { JobQueue } from "../domain/queue";
 import type { RateLimiter } from "../domain/rate-limit";
 import type { SearchProvider } from "../domain/search";
 import type { SettingsRepository } from "../domain/settings";
+import type { SitePolicyResolver } from "../domain/site-policy";
 import type { SubscriptionRepository } from "../domain/subscription";
 import type { SupportRepository } from "../domain/support";
 import type { TrafficRepository } from "../domain/traffic";
@@ -86,6 +87,7 @@ import {
   NullAuthorityResolver,
 } from "../infrastructure/search/groq.authority";
 import { SerperSearchProvider } from "../infrastructure/search/serper.search";
+import { RobotsSitePolicyResolver } from "../infrastructure/search/site-policy";
 import { TavilySearchProvider } from "../infrastructure/search/tavily.search";
 import { SupabaseAccountGateway } from "../infrastructure/supabase/account.gateway";
 import { SupabaseAdminConsoleRepository } from "../infrastructure/supabase/admin-console.repo";
@@ -142,6 +144,8 @@ export interface Container {
   /** Gömme (embedding) yönlendiricisi + aktif embedder (ADR-127) — RAG için, admin-seçilebilir. */
   embeddingRouter: EmbeddingRouter;
   embedder: EmbeddingProvider;
+  /** Site izleme politikası çözücü (ADR-128) — robots.txt; ajan `check_site_policy` aracı + fizibilite. */
+  sitePolicy: SitePolicyResolver;
   /** Sağlayıcı kullanım panosu (ADR-095) — gerçek API verisi. */
   providerUsage: ProviderUsagePort;
   authority: AuthorityResolver;
@@ -293,6 +297,8 @@ export function createContainer(env: Env): Container {
     openai: !!env.OPENAI_API_KEY,
   });
   const embedder = new SwitchableEmbedder(embeddingRouter, embedProviders);
+  // Site-izni çözücü (ADR-128): robots.txt tabanlı; Faz 4 ajanı `check_site_policy` ile kullanır.
+  const sitePolicy = new RobotsSitePolicyResolver(env.RENDER_FETCH_TEMPLATE ?? null);
   const reasoner = anyLlm ? new SwitchableEventReasoner(llmRouter, llmKeys) : null;
   const checker = buildChecker(env, reasoner);
   // Doğrulayıcı (ADR-060 A1): LLM anahtarı varsa kur; yoksa undefined → doğrulama atlanır.
@@ -354,6 +360,7 @@ export function createContainer(env: Env): Container {
       aiProfile: new SupabaseAiProfileRepository(db),
       embeddingRouter,
       embedder,
+      sitePolicy,
       userChannels: new SupabaseUserChannelRepository(db),
       channels,
       prices: new SupabasePriceRepository(db),
@@ -396,6 +403,7 @@ export function createContainer(env: Env): Container {
     aiProfile: new InMemoryAiProfileRepository(),
     embeddingRouter,
     embedder,
+    sitePolicy,
     userChannels: new InMemoryUserChannelRepository(store),
     channels,
     prices: new InMemoryPriceRepository(store),

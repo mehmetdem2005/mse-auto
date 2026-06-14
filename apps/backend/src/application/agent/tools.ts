@@ -4,6 +4,7 @@
  * Faz 3/5'e dek yer-tutucudur (dürüstçe "henüz aktif değil" döner).
  */
 import type { AgentTool } from "../../domain/agent";
+import type { SitePolicyResolver } from "../../domain/site-policy";
 
 export interface SearchResultLite {
   title: string;
@@ -57,18 +58,26 @@ export function resolveAuthorityTool(
   };
 }
 
-/** Faz 3'e dek yer-tutucu — site izni (robots/ToS) denetimi henüz yok. */
-export function checkSitePolicyStubTool(): AgentTool {
+/** Bir alan adının otomatik izlemeye izin verip vermediğini robots.txt'ten kontrol et (ADR-128). */
+export function checkSitePolicyTool(resolver: SitePolicyResolver): AgentTool {
   return {
     name: "check_site_policy",
     description:
-      "Bir sitenin otomatik izlemeye izin verip vermediğini (robots.txt/ToS) kontrol et.",
+      "Bir alan adının (domain) otomatik izlemeye izin verip vermediğini robots.txt'ten kontrol et. Önce resolve_authority ile resmî domaini bul, sonra burada doğrula.",
     parameters: {
       type: "object",
-      properties: { domain: { type: "string" } },
+      properties: { domain: { type: "string", description: "ör. osym.gov.tr" } },
       required: ["domain"],
     },
-    run: async () => "Site-izni denetimi henüz aktif değil (Faz 3'te gelecek).",
+    run: async (args) => {
+      const domain = String(args.domain ?? "")
+        .trim()
+        .replace(/^https?:\/\//, "")
+        .replace(/\/.*$/, "");
+      if (!domain) return "Domain belirtilmedi.";
+      const v = await resolver.check(domain);
+      return `${domain}: ${v.allowed ? "izleme serbest görünüyor" : "otomatik izleme KISITLI"} — ${v.reason} (kaynak: ${v.source}; robots advisory, hukuki garanti değil).`;
+    },
   };
 }
 
