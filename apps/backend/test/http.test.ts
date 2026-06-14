@@ -182,6 +182,27 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(b.message.length).toBeGreaterThan(0);
   });
 
+  it("watcher assist: saçma/tekrarlı girdi onaya ÇIKMAZ (ADR-119, heuristic)", async () => {
+    const res = await makeApp().request(
+      "/v1/watchers/assist",
+      post(
+        {
+          messages: [
+            { role: "user", content: "ne" },
+            { role: "assistant", content: "biraz daha spesifik olalım?" },
+            { role: "user", content: "ne ne ne adın ne görevin ne" },
+          ],
+        },
+        "u1",
+      ),
+    );
+    expect(res.status).toBe(200);
+    const b = (await res.json()) as { ready: boolean; intent: string | null };
+    // Saçma girdiden watch oluşturma onayı ÜRETİLMEZ → netleştirme istenir.
+    expect(b.ready).toBe(false);
+    expect(b.intent).toBeNull();
+  });
+
   it("watcher oluşturulunca ilk kontrol ANINDA koşar (kuyruk auto-pump)", async () => {
     // Worker kayıtlı tam kurulum: enqueue → in-memory auto-pump → StubChecker koşar.
     const env: Env = {

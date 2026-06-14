@@ -10,7 +10,7 @@ import type {
   AssistantReply,
   IntentAssistant,
 } from "../../domain/intent-assistant";
-import type { LlmModelSpec } from "../../domain/llm";
+import { type LlmModelSpec, findLlmModel } from "../../domain/llm";
 import type { EventReasoner, ReasonInput, ReasonResult } from "../../domain/reasoner";
 import type { EventVerifier, VerifyInput, VerifyResult } from "../../domain/verifier";
 import { type LlmChatMessage, extractJson, openaiJsonChat } from "./openai-json";
@@ -36,15 +36,13 @@ interface CallOpts {
   maxTokens: number;
 }
 
-/** Aktif modele göre tek sohbet çağrısı — sağlayıcı farkları burada kapanır. */
-async function chatWithActive(
-  source: ActiveModelSource,
+/** Tek bir model spesine sohbet çağrısı — sağlayıcı (groq/deepseek) farkları burada kapanır. */
+async function chatViaSpec(
+  spec: LlmModelSpec,
   keys: ProviderKeys,
   messages: LlmChatMessage[],
   opts: CallOpts,
 ): Promise<{ content: string; tokensUsed: number | null }> {
-  const spec = await source.activeSpec();
-  if (!spec) throw new LlmModelError("Aktif LLM modeli yok (anahtar tanımsız).");
   const apiKey = keys[spec.provider];
   if (!apiKey) throw new LlmModelError(`${spec.provider} anahtarı tanımsız.`);
   if (spec.provider === "groq") {
@@ -68,6 +66,31 @@ async function chatWithActive(
     // Düşünme modunda akıl-yürütme token'ları da bütçeden düşer → geniş pay.
     maxTokens: reasoning ? Math.max(opts.maxTokens * 4, 4096) : opts.maxTokens,
   });
+}
+
+/**
+ * Aktif modele tek sohbet çağrısı. GEÇİCİ hatada (timeout/rate-limit/5xx/parse) ve aktif
+ * sağlayıcı Groq DEĞİLse, gerçek bir İKİNCİ LLM'e (Groq Llama 3.3 70B) düşer (ADR-119) —
+ * dumb sezgisel fallback'ten ÖNCE. Böylece bir sağlayıcı tökezlese de kullanıcı GERÇEK
+ * LLM yanıtı alır (deepseek'in Render'dan aralıklı hatası bunu tetikliyordu).
+ */
+async function chatWithActive(
+  source: ActiveModelSource,
+  keys: ProviderKeys,
+  messages: LlmChatMessage[],
+  opts: CallOpts,
+): Promise<{ content: string; tokensUsed: number | null }> {
+  const spec = await source.activeSpec();
+  if (!spec) throw new LlmModelError("Aktif LLM modeli yok (anahtar tanımsız).");
+  try {
+    return await chatViaSpec(spec, keys, messages, opts);
+  } catch (err) {
+    const groq = findLlmModel("groq/llama-3.3-70b-versatile");
+    if (groq && keys.groq && spec.provider !== "groq") {
+      return chatViaSpec(groq, keys, messages, opts);
+    }
+    throw err;
+  }
 }
 
 const ReasonSchema = z.object({
