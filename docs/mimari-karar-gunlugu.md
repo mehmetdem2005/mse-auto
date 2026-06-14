@@ -1141,3 +1141,18 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **CANLI LLM doğrulaması (deploy ÖNCESİ):** Güncel istem hem Groq hem DeepSeek'te test edildi → "Görevin ne" ve "ne ne ne adın ne görevin ne" = **ready=false**; "iPhone 15 fiyatı 50000 altına düşünce" = **ready=true** (gerçek istek over-reddedilmiyor). ✓
 - **Doğrulama:** typecheck 4/4 · biome temiz · backend **161 test** (yeni: saçma → ready=false). DÜRÜST: Groq-fallback yolu birim-testle değil, canlı LLM çağrısıyla doğrulandı (basit try/catch).
 - **ISO/TOGAF:** 25010 **Güvenilirlik** (çapraz-sağlayıcı hata töleransı) + **İşlevsel Doğruluk** (saçma girdiyi reddet) · 9241 · TOGAF Phase C(App) **Düzeltici** · P8 (canlı + birim doğrulama).
+
+## ADR-120 — Ajan geliştirme skill'i ("kendine kur"): whenly-brain + referans repolar
+- **Durum:** Kabul · kullanıcı obsidian-mind/skills/second-brain repolarını "kendi ortamıma kur" dedi. Sınıf: **Artımlı** (geliştirme-tooling; uygulama kodu DEĞİŞMEZ; deploy etkisi yok).
+- **Yapılan:** Üç repo container'a klonlandı (`~/agent-refs/`, repo DIŞI → mse-auto'yu kirletmez) → SKILL.md/README formatları okundu. Yöntem `.claude/skills/whenly-brain/SKILL.md`'ye uyarlandı: (a) **second brain** = ADR/EA/CLAUDE.md kalıcı hafıza + self-rewriting disiplin (supersedes ile uzlaşma), (b) **ajan playbook** = olay-bazlı araştırma-planlama + site-izni + can/partial/cannot kararı + function-calling araçları.
+- **DÜRÜST SINIR:** Klonlanan repolar Obsidian-CLI/kasalarına özgü → Whenly (RN/Hono) içinde ÇALIŞMAZ; yalnız yöntem referansı. Literal "aktif skill" değiller. Asıl değer adapte edilmiş repo-yerel `whenly-brain` skill'i (gelecek oturumlarda yüklenir, design-standards/motion-design gibi).
+- **Doğrulama:** skill markdown (kod/gate etkisi yok). Klonlar repo dışında (commit edilmez).
+- **ISO/TOGAF:** 25010 Bakımkolaylığı (ajan ramp-up + kalıcı kurum hafızası) · 42010 (mimari bilgi view'i) · TOGAF Phase C **Artımlı**. ABARTMA YOK: Obsidian repoları literal kurulmadı, yöntemi uyarlandı.
+
+## ADR-121 — Model-routing ayrımı: asistan/ajan sabit deepseek-v4-pro; watcher admin modelinde
+- **Durum:** Kabul · kullanıcı "asistan/ajan/RAG v4-pro; watcher'ların çalışması (reasoner/verifier) admin panelden seçtiğim modelle" dedi. Sınıf: **Artımlı** (backend; migration YOK). Faz 1.
+- **Önce:** Tek global `LlmModelRouter` asistan + reasoner + verifier + e-postanın HEPSİNİ besliyordu (admin modeli her şeyi sürüyordu).
+- **Yapılan:** `FixedModelSource implements ActiveModelSource` (her zaman `findLlmModel("deepseek/deepseek-v4-pro")`). `container`: `assistantSource = env.DEEPSEEK_API_KEY ? FixedModelSource(v4-pro) : llmRouter` → `SwitchableIntentAssistant(assistantSource, …)`. **Reasoner/Verifier/E-posta `llmRouter`'da KALDI** (admin-seçili model). Groq çapraz-fallback (ADR-119) + asistan sezgisel fallback (ADR-118) korunur.
+- **DÜRÜST SINIR:** deepseek anahtarı yoksa asistan da admin router'a düşer (graceful). v4-pro daha yavaş/pahalı ama asistan tek-atış; watcher (sık koşan) admin modelinde kaldığı için arka plan maliyeti değişmedi.
+- **Doğrulama:** typecheck 4/4 · biome temiz · backend **163 test** (+2: FixedModelSource v4-pro döner / bilinmeyen id null).
+- **ISO/TOGAF:** 25010 İşlevsel Uygunluk (rol-bazlı model) + Performans Verimliliği (maliyet ayrımı) · 42010 (model-routing view) · TOGAF Phase C(App) **Artımlı** · ADR-095 genişler.

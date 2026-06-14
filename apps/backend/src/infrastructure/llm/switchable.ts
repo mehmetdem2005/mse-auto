@@ -31,6 +31,18 @@ export interface ActiveModelSource {
   activeSpec(): Promise<LlmModelSpec | null>;
 }
 
+/**
+ * Sabit model kaynağı (ADR-121): niyet asistanı/ajan HER ZAMAN belirli bir modeli (deepseek-v4-pro)
+ * kullanır — admin'in watcher reasoner/verifier için seçtiği modelden BAĞIMSIZ. Model katalogda
+ * yoksa null döner; sağlayıcı anahtarı yoksa `chatWithActive` Groq çapraz-fallback'ine (ADR-119) düşer.
+ */
+export class FixedModelSource implements ActiveModelSource {
+  constructor(private readonly id: string) {}
+  async activeSpec(): Promise<LlmModelSpec | null> {
+    return findLlmModel(this.id) ?? null;
+  }
+}
+
 interface CallOpts {
   temperature: number;
   maxTokens: number;

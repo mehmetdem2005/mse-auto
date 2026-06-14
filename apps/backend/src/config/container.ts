@@ -58,6 +58,8 @@ import { InMemoryTrafficRepository } from "../infrastructure/in-memory/traffic.r
 import { InMemoryUserChannelRepository } from "../infrastructure/in-memory/user-channels.repo";
 import { InMemoryWatchRepository } from "../infrastructure/in-memory/watch.repo";
 import {
+  type ActiveModelSource,
+  FixedModelSource,
   type ProviderKeys,
   SwitchableEmailComposer,
   SwitchableEventReasoner,
@@ -282,8 +284,13 @@ export function createContainer(env: Env): Container {
   // Dayanıklılık fallback (ADR-118): LLM geçici hatasında (timeout/rate-limit/deploy
   // penceresi) niyet asistanı 503 yerine sezgisel asistanla çalışan bir yanıt döndürür.
   const heuristicAssistant = new HeuristicIntentAssistant();
+  // ADR-121: niyet asistanı/ajan SABİT deepseek-v4-pro kullanır (admin modelinden BAĞIMSIZ);
+  // deepseek anahtarı yoksa admin router'a düşer (graceful). Reasoner/verifier/e-posta admin'de KALIR.
+  const assistantSource: ActiveModelSource = env.DEEPSEEK_API_KEY
+    ? new FixedModelSource("deepseek/deepseek-v4-pro")
+    : llmRouter;
   const assistant: IntentAssistant = anyLlm
-    ? new SwitchableIntentAssistant(llmRouter, llmKeys)
+    ? new SwitchableIntentAssistant(assistantSource, llmKeys)
     : heuristicAssistant;
   // E-posta besteci (ADR-109): LLM varsa admin-ayarlı istemle profesyonel e-posta yazar.
   const emailComposer: EmailComposer | undefined = anyLlm
