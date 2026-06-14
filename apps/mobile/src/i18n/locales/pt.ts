@@ -136,6 +136,11 @@ export const pt: Catalog = {
     chatA11y: "Mensagem assistente",
     sendA11y: "Enviar",
     chatError: "Algo deu errado — tente novamente?",
+    you: "Você",
+    assistantRole: "Assistente",
+    useMyText: "usar o que escrevi como intenção",
+    assistError: "Não foi possível contatar o assistente — tente novamente ou use o que escreveu.",
+    intentAccepted: 'Entendido, vou monitorar: "{{intent}}". Continue com "Avançar".',
     needIntent: "Clique para esclarecer o tópico com o assistente primeiro.",
     sourceHint:
       "Qual fonte o motor deve priorizar? Auto: página oficial ao vivo → busca oficial → últimas 24h de notícias.",

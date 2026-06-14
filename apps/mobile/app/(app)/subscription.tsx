@@ -183,7 +183,7 @@ export default function SubscriptionScreen() {
                   <View className="mt-4">
                     <Btn tone="danger" onPress={() => cancel.mutate()} disabled={cancel.isPending}>
                       <Text className="text-neg text-[13px] font-semibold">
-                        Dönem sonunda iptal et
+                        {t("sub.cancelBtn")}
                       </Text>
                     </Btn>
                   </View>
@@ -204,7 +204,7 @@ export default function SubscriptionScreen() {
                   >
                     <View>
                       <Text className="text-accent text-sm font-semibold uppercase">
-                        {p.plan} · {p.interval === "month" ? "Aylık" : "Yıllık"}
+                        {p.plan} · {p.interval === "month" ? t("sub.monthly") : t("sub.yearly")}
                       </Text>
                       <Text className="text-muted text-xs mt-0.5">
                         {money(p.amountCents, p.currency)} /{" "}
@@ -222,7 +222,7 @@ export default function SubscriptionScreen() {
             <View className="bg-panel border border-line rounded-2xl p-5">
               <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-muted text-[10px] tracking-widest uppercase">
-                  fatura geçmişi
+                  {t("sub.invoices")}
                 </Text>
               </View>
               <View className="items-center py-6">

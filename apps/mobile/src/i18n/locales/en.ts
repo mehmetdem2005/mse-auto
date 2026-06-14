@@ -136,6 +136,11 @@ export const en: Catalog = {
     chatA11y: "Message the assistant",
     sendA11y: "Send",
     chatError: "Something went wrong — try again?",
+    you: "You",
+    assistantRole: "Assistant",
+    useMyText: "use what I wrote as the intent",
+    assistError: "Couldn't reach the assistant — try again or use what you wrote directly.",
+    intentAccepted: 'Got it, I\'ll watch: "{{intent}}". Continue with "Next".',
     needIntent: "Clarify the topic with the assistant first.",
     sourceHint:
       "Which source should the engine prioritize? Auto: live official page → official search → last 24h news.",

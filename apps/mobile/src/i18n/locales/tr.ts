@@ -135,6 +135,11 @@ export const tr = {
     chatA11y: "Asistana mesaj yaz",
     sendA11y: "Gönder",
     chatError: "Bir sorun oluştu — tekrar dener misin?",
+    you: "Sen",
+    assistantRole: "Asistan",
+    useMyText: "yazdığımı niyet olarak kullan",
+    assistError: "Asistana ulaşılamadı — tekrar dene ya da yazdığını doğrudan kullan.",
+    intentAccepted: 'Tamam, şunu izleyeceğim: "{{intent}}". "Devam" ile sürdür.',
     needIntent: "Önce asistanla niyeti netleştir.",
     sourceHint:
       "Motor hangi kaynağa öncelik versin? Otomatik: canlı resmî sayfa → resmî arama → son 24 saat haber.",
