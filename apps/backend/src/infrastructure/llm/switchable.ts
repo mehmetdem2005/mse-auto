@@ -164,6 +164,10 @@ const ReplySchema = z.object({
   intent: z.string().nullable(),
   frequencyMinutes: z.number().int().positive().nullable(),
   confidence: z.number().min(0).max(1),
+  // ADR-110: arama planı (model üretmezse opsiyonel — eski davranış bozulmaz).
+  searchQuery: z.string().nullable().optional(),
+  searchMethods: z.array(z.string()).optional(),
+  feasibility: z.string().nullable().optional(),
 });
 
 export class SwitchableIntentAssistant implements IntentAssistant {

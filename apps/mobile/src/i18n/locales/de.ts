@@ -134,6 +134,7 @@ export const de: Catalog = {
     ready: "Bereit zum Beobachten",
     readyHint:
       'Vorgeschlagene Häufigkeit: {{freq}} · Tippe auf "Weiter" oder fahre mit der Eingabe fort.',
+    planTitle: "Suchplan",
     chatPlaceholder: "Nachricht eingeben…",
     chatA11y: "Mit dem Assistenten chatten",
     sendA11y: "Senden",

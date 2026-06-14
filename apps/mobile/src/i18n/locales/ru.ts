@@ -132,6 +132,7 @@ export const ru: Catalog = {
     suggestBusiness: "Бизнес",
     ready: "готов к отслеживанию",
     readyHint: 'Предлагаемая частота: {{freq}} · нажмите "Продолжить" или продолжайте вводить.',
+    planTitle: "План поиска",
     chatPlaceholder: "Введите сообщение…",
     chatA11y: "Сообщение помощнику",
     sendA11y: "Отправить",

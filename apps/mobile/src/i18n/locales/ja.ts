@@ -131,6 +131,7 @@ export const ja: Catalog = {
     suggestBusiness: "ビジネス",
     ready: "見守り準備完了",
     readyHint: "おすすめの頻度: {{freq}} · 「続行」をタップするか、入力を続けてください。",
+    planTitle: "検索プラン",
     chatPlaceholder: "メッセージを入力…",
     chatA11y: "アシスタントにメッセージ",
     sendA11y: "送信",

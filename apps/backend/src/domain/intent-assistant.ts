@@ -19,6 +19,10 @@ export interface AssistantReply {
   /** Önerilen kontrol sıklığı (dakika); aciliyetine göre. */
   frequencyMinutes: number | null;
   confidence: number; // 0..1
+  /** ADR-110: arama planı — hangi sorgu, hangi yöntemler, fizibilite (ready ise). */
+  searchQuery?: string | null | undefined;
+  searchMethods?: string[] | undefined;
+  feasibility?: string | null | undefined;
 }
 
 export interface IntentAssistant {

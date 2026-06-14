@@ -131,6 +131,7 @@ export const ar: Catalog = {
     suggestBusiness: "أعمال",
     ready: "جاهز للعرض",
     readyHint: 'التكرار الموصى به: {{freq}} · انقر على "استمرار" أو استمر في الكتابة.',
+    planTitle: "خطة البحث",
     chatPlaceholder: "اكتب رسالة…",
     chatA11y: "رسالة المساعد",
     sendA11y: "إرسال",

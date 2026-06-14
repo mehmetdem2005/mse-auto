@@ -3,7 +3,7 @@ import { Btn, Card } from "@/components/ui";
 import { GradientHero, PrimaryButton } from "@/components/ui";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
-import { type AssistMessage, api } from "@/lib/api";
+import { type AssistMessage, type AssistReply, api } from "@/lib/api";
 import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
@@ -23,6 +23,7 @@ import {
   Pause,
   Play,
   Radar,
+  Search,
   Send,
   ShoppingBag,
   Sparkles,
@@ -86,6 +87,90 @@ function labelFreq(m: number): string {
   return `${m}m`;
 }
 
+/** Sürüklenen dakikayı büyüklüğüne göre "düzgün" değere yuvarlar (plan min'i altına inmez). */
+function niceMinutes(m: number, min: number): number {
+  let v: number;
+  if (m < 60) v = Math.round(m / 5) * 5;
+  else if (m < 360) v = Math.round(m / 15) * 15;
+  else if (m < 720) v = Math.round(m / 30) * 30;
+  else v = Math.round(m / 60) * 60;
+  return Math.min(1440, Math.max(min, v || min));
+}
+
+/**
+ * ADR-110: kontrol sıklığı için kaydırma çubuğu (PanResponder yerine RN responder olayları
+ * → web + native aynı). LOG ölçek: düşük (sık) uçta ince, yüksek uçta kaba çözünürlük.
+ * Plan min'i (free 60dk) altına inmez. a11y: adjustable + artır/azalt aksiyonları.
+ */
+function FreqSlider({
+  value,
+  min,
+  onChange,
+  color,
+  trackColor,
+}: {
+  value: number;
+  min: number;
+  onChange: (m: number) => void;
+  color: string;
+  trackColor: string;
+}) {
+  const [w, setW] = useState(0);
+  const max = 1440;
+  const ratio = Math.log(max / min) || 1;
+  const toMinutes = (p: number): number =>
+    niceMinutes(min * Math.exp(ratio * Math.min(1, Math.max(0, p))), min);
+  const pos = Math.log(Math.max(value, min) / min) / ratio; // 0..1
+  const handle = (x: number): void => {
+    if (w > 0) onChange(toMinutes(x / w));
+  };
+  const step = (dir: 1 | -1): void => onChange(toMinutes(pos + dir * 0.06));
+  return (
+    <View className="mb-4">
+      <View className="flex-row items-end justify-between mb-2">
+        <Text className="text-accent text-2xl font-extrabold">{labelFreq(value)}</Text>
+        <Text className="text-muted text-[11px]">her {value} dk</Text>
+      </View>
+      <View
+        accessibilityRole="adjustable"
+        accessibilityLabel="Kontrol sıklığı"
+        accessibilityValue={{ min, max, now: value }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={(e) => step(e.nativeEvent.actionName === "increment" ? 1 : -1)}
+        onLayout={(e) => setW(e.nativeEvent.layout.width)}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={(e) => handle(e.nativeEvent.locationX)}
+        onResponderMove={(e) => handle(e.nativeEvent.locationX)}
+        className="h-11 justify-center"
+      >
+        <View className="h-1.5 rounded-full" style={{ backgroundColor: trackColor }}>
+          <View
+            className="h-1.5 rounded-full"
+            style={{ width: `${Math.round(pos * 100)}%`, backgroundColor: color }}
+          />
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            left: w > 0 ? Math.max(0, Math.min(w - 22, pos * w - 11)) : 0,
+            width: 22,
+            height: 22,
+            borderRadius: 11,
+            backgroundColor: "#FFFFFF",
+            borderWidth: 2,
+            borderColor: color,
+          }}
+        />
+      </View>
+      <View className="flex-row justify-between mt-1">
+        <Text className="text-muted2 text-[10px]">{labelFreq(min)}</Text>
+        <Text className="text-muted2 text-[10px]">24h</Text>
+      </View>
+    </View>
+  );
+}
+
 const ALERT_LABEL: Record<AlarmChannel, string> = {
   silent: "wizard.alertSilent",
   notify: "wizard.alertNotify",
@@ -118,6 +203,7 @@ export default function NewWatcher() {
   const [draft, setDraft] = useState("");
   const [suggScope, setSuggScope] = useState<SuggestionScope>("personal");
   const [readyIntent, setReadyIntent] = useState<string | null>(null);
+  const [plan, setPlan] = useState<AssistReply | null>(null);
   const [assistDown, setAssistDown] = useState(false); // asistan hatasında elle-devam yolu açılır
   const chatScroll = useRef<ScrollView>(null);
 
@@ -169,9 +255,11 @@ export default function NewWatcher() {
       if (r.ready && r.intent) {
         setReadyIntent(r.intent);
         setRawIntent(r.intent);
+        setPlan(r); // ADR-110: arama planını sakla (sorgu/yöntem/fizibilite)
         if (r.frequencyMinutes) setFreq(snapFreq(r.frequencyMinutes, minFreq));
       } else {
         setReadyIntent(null);
+        setPlan(null);
       }
     },
     onError: (e) => {
@@ -434,6 +522,35 @@ export default function NewWatcher() {
                 </Text>
               </View>
             ) : null}
+            {/* ADR-110: asistanın arama planı — sorgu / yöntemler / fizibilite ("böyle iyi mi?") */}
+            {plan?.ready &&
+            (plan.searchQuery || plan.feasibility || (plan.searchMethods?.length ?? 0) > 0) ? (
+              <View className="bg-panel border border-line rounded-2xl px-4 py-3 mt-2">
+                <View className="flex-row items-center gap-2 mb-2">
+                  <Search size={14} color={colors.accent} />
+                  <Text className="text-muted text-[10px] uppercase tracking-widest">
+                    {t("wizard.planTitle")}
+                  </Text>
+                </View>
+                {plan.searchQuery ? (
+                  <Text className="text-text text-sm font-medium" numberOfLines={3}>
+                    “{plan.searchQuery}”
+                  </Text>
+                ) : null}
+                {(plan.searchMethods?.length ?? 0) > 0 ? (
+                  <View className="flex-row flex-wrap gap-1.5 mt-2">
+                    {plan.searchMethods?.map((m) => (
+                      <View key={m} className="bg-ink border border-line rounded-full px-2.5 py-1">
+                        <Text className="text-muted text-[11px]">{m}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+                {plan.feasibility ? (
+                  <Text className="text-muted text-[11px] leading-4 mt-2">{plan.feasibility}</Text>
+                ) : null}
+              </View>
+            ) : null}
           </View>
         ) : null}
 
@@ -538,6 +655,15 @@ export default function NewWatcher() {
                 accessibilityLabel={t("wizard.stopAfterHit")}
               />
             </View>
+            {/* ADR-110: kaydırarak istediğin sıklığı ayarla (plan min'i altına inmez) */}
+            <FreqSlider
+              value={freq}
+              min={minFreq}
+              onChange={setFreq}
+              color={colors.accent}
+              trackColor={colors.line}
+            />
+            <Text className="text-muted2 text-[11px] mb-2">veya hazır bir aralık seç:</Text>
             <View className="flex-row flex-wrap gap-2">
               {FREQ.map((f) => {
                 const meta = FREQ_KEYS[f];
