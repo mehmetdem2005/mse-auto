@@ -484,6 +484,12 @@ export default function NewWatcher() {
         // (translateZ(0) muadili; RN-Web'de geçerli stil). Chromium #727182 sınıfı kompozit hatası.
         className="flex-1 px-5 pt-5 bg-ink"
         style={Platform.OS === "web" ? { backfaceVisibility: "hidden" } : undefined}
+        // Sohbet adımında içerik ALTA yaslanır: tek karşılama mesajı tepede asılı kalıp altında
+        // kocaman boşluk bırakmasın; mesajlar girişin hemen üstünde dursun (klavye açıkken düzenli).
+        // flexGrow:1 + justify-end → içerik kısa olunca alta yaslar, uzun olunca normal kaydırır (üst kırpılmaz).
+        contentContainerStyle={
+          current.key === "intent" ? { flexGrow: 1, justifyContent: "flex-end" } : undefined
+        }
         keyboardShouldPersistTaps="handled"
         onContentSizeChange={() => {
           // İlk karşılama + öneriler ÜSTTE tam görünsün: yalnız gerçek sohbet başlayınca
