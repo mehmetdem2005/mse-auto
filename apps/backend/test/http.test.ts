@@ -157,6 +157,31 @@ describe("HTTP API (in-memory + dev auth)", () => {
     expect(sb.frequencyMinutes).toBeGreaterThan(0);
   });
 
+  it("watcher assist: LLM hatası → sezgisel fallback (ADR-118; 503 DEĞİL)", async () => {
+    const env: Env = {
+      NODE_ENV: "development",
+      PORT: 3000,
+      RATE_LIMIT_PER_MINUTE: 1000,
+      WATCH_CREATE_PER_HOUR: 1000,
+      ASSIST_PER_MINUTE: 1000,
+    };
+    const container = createContainer(env);
+    // Geçici LLM hatasını taklit et: aktif asistan her çağrıda fırlatır.
+    container.assistant = {
+      chat: async () => {
+        throw new Error("llm api.deepseek.com 503");
+      },
+    };
+    const res = await createApp(container).request(
+      "/v1/watchers/assist",
+      post({ messages: [{ role: "user", content: "telefon" }] }, "u1"),
+    );
+    // Kullanıcı ölü 503 görmez; sezgisel asistan çalışan bir yanıt döndürür.
+    expect(res.status).toBe(200);
+    const b = (await res.json()) as { message: string };
+    expect(b.message.length).toBeGreaterThan(0);
+  });
+
   it("watcher oluşturulunca ilk kontrol ANINDA koşar (kuyruk auto-pump)", async () => {
     // Worker kayıtlı tam kurulum: enqueue → in-memory auto-pump → StubChecker koşar.
     const env: Env = {

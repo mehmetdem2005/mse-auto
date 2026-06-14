@@ -1120,3 +1120,13 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Düzeltme:** Abonelik → mevcut `sub.monthly/yearly/cancelBtn/invoices` anahtarları kullanıldı. Sihirbaz → 5 yeni anahtar (`wizard.you/assistantRole/useMyText/assistError/intentAccepted`) ×11 dil + bileşen bağlandı. `new.tsx` ölü `FREQ_META` (kullanılmayan, sabit-TR) silindi. (Kalan: `login.tsx` OAuth-kod hata metni — nadir edge, ertelendi.)
 - **Doğrulama:** typecheck 4/4 · biome temiz (92 dosya) · backend 159 test · 24 canlı ekran görüntüsü incelendi.
 - **ISO/TOGAF:** 9241 (etkileşim: tutarlı dil) · 25010 Kullanılabilirlik (i18n bütünlüğü) · 29148 (gereksinim: 11-dil kullanıcı yüzeyi) · **doğrulama yöntemi olarak canlı görsel denetim** (42010 view doğrulaması) · TOGAF Phase C(App) sınıf **Düzeltici** · P9 (login-edge bilinçli ertelendi).
+
+## ADR-118 — Asistan dayanıklılığı: LLM geçici hatasında sezgisel fallback + zaman aşımı
+- **Durum:** Kabul · kullanıcı sihirbazda "Asistan şu an yanıt veremiyor" (503) ekran görüntüsü gönderdi. **Teşhis (canlı):** model (`deepseek-v4-flash`) + anahtar + istem SAĞLAM — doğrudan DeepSeek çağrısı 200 + tam JSON döndü; canlı backend assist ucu da ŞU AN 200 (3.0s). Yani 503 **geçiciydi** (büyük olasılıkla 4 ardışık `main` push'unun Render backend yeniden-deploy penceresi / anlık rate-limit). Sınıf: **Düzeltici** (backend; migration YOK).
+- **Kök sorun:** Geçici LLM hatası kullanıcıya **ölü 503** veriyordu (`assist` route catch → 503). Sihirbaz tıkanıyordu. Dayanıklılık eksikti.
+- **Düzeltme:**
+  - `container.heuristicAssistant` (her zaman kurulu) eklendi. `assist` route: LLM çağrısı fırlatırsa → **sezgisel asistanla** yeniden dener → **200** (netleştirme sorusu ya da niyet kabulü). Yalnız sezgisel de fırlatırsa 503 (pratikte olmaz). LLM en-iyi-çaba, sezgisel güvenlik ağı.
+  - `openaiJsonChat`'e **25s zaman aşımı** (AbortController) — sağlayıcı asılı kalırsa istek sonsuza dek beklemez, hızlı fallback'e düşer.
+- **Doğrulama:** typecheck 4/4 · biome temiz · backend **160 test** (yeni: LLM-fırlatır → fallback → 200, 503 değil). Canlı backend assist 200 doğrulandı (gerçek oturumla, 3s).
+- **DÜRÜST SINIR:** Backend tamamen restart olursa (deploy ortası) istek hiç ulaşmaz (502/ağ) — bu fallback yalnız backend AYAKTA ama LLM hata verince devreye girer (kullanıcının gördüğü senaryo buydu). Tam-restart penceresi kaçınılmaz; tek-faz deploy + sağlık-bekleme ayrı iş.
+- **ISO/TOGAF:** 25010 **Güvenilirlik** (hata töleransı / kurtarılabilirlik) + Kullanılabilirlik · 9241 (kullanıcı tıkanmaz) · 27002 (gizlilik değişmedi) · TOGAF Phase C(App) sınıf **Düzeltici** · P8 (ölçülebilir dayanıklılık: 503→200 fallback testle).
