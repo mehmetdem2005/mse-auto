@@ -38,6 +38,9 @@ export const assistReplySchema = z.object({
   plannedSteps: z.array(z.string()).optional(),
   /** Hedef sitenin otomatik izleme izni (robots.txt — advisory). */
   sitePermission: z.object({ allowed: z.boolean(), note: z.string() }).nullable().optional(),
+  // ADR-132: sohbette TOPLANAN, izlemeye ilişkin yapısal detaylar (slot-filling) — UI ilerlemeyi gösterir.
+  /** Asistanın şimdiye dek topladığı izleme-detayları (etiket+değer; kullanıcı dili). */
+  collectedDetails: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
 });
 export type AssistReply = z.infer<typeof assistReplySchema>;
 

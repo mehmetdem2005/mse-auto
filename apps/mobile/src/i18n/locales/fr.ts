@@ -132,6 +132,7 @@ export const fr: Catalog = {
     ready: "prêt à regarder",
     readyHint: 'Fréquence suggérée : {{freq}} · appuyez sur "Continuer" ou continuez à taper.',
     planTitle: "Plan de recherche",
+    collectedTitle: "Détails recueillis",
     feasibility: {
       can: "suivable",
       partial: "partiellement suivable",

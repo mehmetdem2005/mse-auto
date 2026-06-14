@@ -131,6 +131,7 @@ export const zh: Catalog = {
     ready: "准备好监控",
     readyHint: '建议频率： {{freq}} · 点击 "继续" 或继续输入。',
     planTitle: "搜索方案",
+    collectedTitle: "已收集的细节",
     feasibility: {
       can: "可追踪",
       partial: "部分可追踪",

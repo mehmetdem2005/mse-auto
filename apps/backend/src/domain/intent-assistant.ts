@@ -27,6 +27,8 @@ export interface AssistantReply {
   feasibilityVerdict?: "can" | "partial" | "cannot" | null | undefined;
   plannedSteps?: string[] | undefined;
   sitePermission?: { allowed: boolean; note: string } | null | undefined;
+  /** ADR-132: sohbette toplanan izleme-detayları (slot-filling) — UI ilerlemeyi gösterir. */
+  collectedDetails?: { label: string; value: string }[] | undefined;
 }
 
 export interface IntentAssistant {

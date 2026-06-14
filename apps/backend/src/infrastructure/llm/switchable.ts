@@ -300,6 +300,8 @@ export const ReplySchema = z.object({
   feasibilityVerdict: z.enum(["can", "partial", "cannot"]).nullable().optional(),
   plannedSteps: z.array(z.string()).optional(),
   sitePermission: z.object({ allowed: z.boolean(), note: z.string() }).nullable().optional(),
+  // ADR-132: sohbette toplanan izleme-detayları (slot-filling; opsiyonel/geri-uyumlu).
+  collectedDetails: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
 });
 
 export class SwitchableIntentAssistant implements IntentAssistant {

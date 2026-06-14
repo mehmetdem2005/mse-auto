@@ -132,6 +132,7 @@ export const en: Catalog = {
     ready: "ready to watch",
     readyHint: 'Suggested frequency: {{freq}} · tap "Continue" or keep typing.',
     planTitle: "Search plan",
+    collectedTitle: "Details I've gathered",
     feasibility: {
       can: "trackable",
       partial: "partially trackable",

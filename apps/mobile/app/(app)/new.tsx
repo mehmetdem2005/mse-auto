@@ -15,6 +15,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
   CheckCircle2,
+  ClipboardList,
   FileMusic,
   Globe,
   Landmark,
@@ -257,6 +258,37 @@ function FeasibilityCard({ plan }: { plan: AssistReply }) {
   );
 }
 
+/**
+ * ADR-132: sohbette TOPLANAN izleme-detayları kartı (slot-filling) — asistan gereksinimleri
+ * topladıkça (ready olmadan da) etiket+değer olarak gösterir; kullanıcı neyin netleştiğini görür.
+ * design-standards (token, lucide ikon, emoji yok) + ui-ux (progressive disclosure) + motion (EnterItem).
+ */
+function DetailsCard({ details }: { details: { label: string; value: string }[] }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  if (details.length === 0) return null;
+  return (
+    <EnterItem index={0} className="bg-panel border border-line rounded-2xl px-4 py-3 mt-2">
+      <View className="flex-row items-center gap-2 mb-2">
+        <ClipboardList size={14} color={colors.accent} />
+        <Text className="text-muted text-[10px] uppercase tracking-widest">
+          {t("wizard.collectedTitle")}
+        </Text>
+      </View>
+      <View className="gap-1.5">
+        {details.map((d) => (
+          <View key={`${d.label}:${d.value}`} className="flex-row items-start gap-2">
+            <Text className="text-muted text-[11px] w-24" numberOfLines={2}>
+              {d.label}
+            </Text>
+            <Text className="text-text text-[13px] flex-1 font-medium">{d.value}</Text>
+          </View>
+        ))}
+      </View>
+    </EnterItem>
+  );
+}
+
 export default function NewWatcher() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -335,14 +367,15 @@ export default function NewWatcher() {
     onSuccess: (r) => {
       setAssistDown(false);
       setMessages((m) => [...m, { role: "assistant", content: r.message }]);
+      // ADR-110/132: planı HER turda sakla (toplanan detaylar ready olmadan da görünsün);
+      // ready-koşullu kartlar zaten `plan.ready`'ye bakar.
+      setPlan(r);
       if (r.ready && r.intent) {
         setReadyIntent(r.intent);
         setRawIntent(r.intent);
-        setPlan(r); // ADR-110: arama planını sakla (sorgu/yöntem/fizibilite)
         if (r.frequencyMinutes) setFreq(snapFreq(r.frequencyMinutes, minFreq));
       } else {
         setReadyIntent(null);
-        setPlan(null);
       }
     },
     onError: () => {
@@ -544,6 +577,10 @@ export default function NewWatcher() {
                   {t("wizard.useMyText")}
                 </Text>
               </Pressable>
+            ) : null}
+            {/* ADR-132: sohbette toplanan izleme-detayları (ready olmadan da görünür). */}
+            {plan?.collectedDetails && plan.collectedDetails.length > 0 ? (
+              <DetailsCard details={plan.collectedDetails} />
             ) : null}
             {readyIntent ? (
               <View className="bg-accent/10 border border-accent rounded-2xl px-4 py-3 mt-1">

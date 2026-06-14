@@ -58,6 +58,7 @@ describe("AgenticIntentAssistant (ADR-129 fizibilite ajanı)", () => {
           feasibilityVerdict: "can",
           plannedSteps: ["resmî siteyi izle", "duyuru çıkınca haber ver"],
           sitePermission: { allowed: true, note: "robots tam engellemiyor (advisory)." },
+          collectedDetails: [{ label: "Konu", value: "sınav giriş belgesi" }],
         };
         return { content: JSON.stringify(verdict), toolCalls: [] };
       },
@@ -73,6 +74,7 @@ describe("AgenticIntentAssistant (ADR-129 fizibilite ajanı)", () => {
       allowed: true,
       note: "robots tam engellemiyor (advisory).",
     });
+    expect(reply.collectedDetails).toEqual([{ label: "Konu", value: "sınav giriş belgesi" }]);
     expect(fallback.called).toBe(false);
     expect(round).toBe(2); // araç turu + final tur
     expect(seenToolResult).toEqual(["sonuç(sınav)"]); // gerçek araç sonucu modele beslendi
@@ -174,5 +176,21 @@ describe("assistReplySchema — fizibilite alanları geri-uyumlu (ADR-129)", () 
         feasibilityVerdict: "maybe",
       }),
     ).toThrow();
+  });
+
+  it("ADR-132: collectedDetails (slot-filling) kabul edilir; ready olmadan da taşınır", () => {
+    const parsed = assistReplySchema.parse({
+      ready: false,
+      message: "Hedef fiyat nedir?",
+      intent: null,
+      frequencyMinutes: null,
+      confidence: 0.4,
+      collectedDetails: [
+        { label: "Ürün", value: "iPhone 15 Pro 256GB" },
+        { label: "Satıcı", value: "farketmez" },
+      ],
+    });
+    expect(parsed.collectedDetails).toHaveLength(2);
+    expect(parsed.collectedDetails?.[0]).toEqual({ label: "Ürün", value: "iPhone 15 Pro 256GB" });
   });
 });

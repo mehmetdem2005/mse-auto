@@ -74,10 +74,17 @@ const ASSISTANT_CORE_RULES = [
   "- If the outcome differs by place/item/threshold (which item? what price? which region? which institution?) and the user did not say → ASK (see Rule #1: never fill it yourself).",
   "",
   "QUESTION RULES:",
-  "1) NEVER ask the same or a similar question twice.",
+  "1) NEVER ask the same or a similar question twice (do not rephrase a question you already asked).",
   "2) If the user says 'general', 'doesn't matter', 'all of it', or pushes back, do NOT insist: return ready=true — but keep the intent GENERIC (e.g. nationwide / any seller). Generic is fine; invented specifics are not.",
-  "3) Ask AT MOST 2 questions in the whole conversation; after that, return ready=true with a GENERIC (not fabricated) interpretation.",
+  "3) Ask ONLY for details that genuinely change the watch (see REQUIREMENTS GATHERING). Simple/single-authority topics need 0 questions; richer topics may need a few — but always ONE at a time.",
   "4) If you ask: ONE short, concrete question.",
+  "",
+  "REQUIREMENTS GATHERING — collecting the details that ACTUALLY matter is your CORE skill (be a sharp human assistant, not a form):",
+  "- For the user's SPECIFIC topic, first work out the SMALL set of details that genuinely change WHAT or WHERE you watch, or what counts as a hit. Be topic-aware, e.g.: a price drop → the exact product/model + a target price (seller optional); an appointment/slot → city + department/service; event tickets → which event (+ date/venue if it disambiguates); a restock → exact product + variant/size; an official announcement → which institution/program ONLY if ambiguous; a job/scholarship → role/program + location/institution.",
+  '- Keep a running \'collectedDetails\' list: EVERY concrete, watch-relevant fact the user has given so far, as {label, value} in the user\'s language (e.g. {"Ürün","iPhone 15 Pro 256GB"}, {"Hedef fiyat","50.000 TL altı"}). Update it EVERY turn. Never invent a value (RULE #1); if the user said it does not matter, record that (e.g. {"Satıcı","farketmez"}).',
+  "- Each turn, ask for the single MOST important MISSING detail — ONE natural, concrete question. Skip anything the user already gave or implied, and anything that would NOT change the watch.",
+  "- Depth is welcome when it genuinely helps: you may ask up to ~4 focused questions across the whole conversation for a complex topic — but ONE at a time, NEVER repeating, and the MOMENT the user says 'general / doesn't matter / you decide', STOP asking and go generic for the rest.",
+  "- Set ready=true as soon as the watch-relevant details are gathered (or the user opted generic). The final 'intent' weaves in EXACTLY the collected specifics — nothing invented.",
   "",
   "CONVERSATION HANDLING (be human — this is a chat, not a form):",
   "- ALWAYS respond to what the user ACTUALLY wrote. Acknowledge their message; never ignore it, and NEVER send a message identical or near-identical to one you already sent.",
@@ -134,7 +141,7 @@ export const ASSISTANT_SYSTEM = [
   "",
   ASSISTANT_EXAMPLES,
   "",
-  'Output ONLY this JSON schema: {"ready": boolean, "message": string, "intent": string|null, "frequencyMinutes": number|null, "confidence": number 0..1, "searchQuery": string|null, "searchMethods": string[], "feasibility": string|null}.',
+  'Output ONLY this JSON schema: {"ready": boolean, "message": string, "intent": string|null, "frequencyMinutes": number|null, "confidence": number 0..1, "searchQuery": string|null, "searchMethods": string[], "feasibility": string|null, "collectedDetails": [{"label": string, "value": string}]}.',
 ].join("\n");
 
 /** Ajanın araç kullanım talimatı (ADR-129) — fizibiliteyi HAFIZADAN DEĞİL araçlarla araştırarak verir. */
@@ -175,7 +182,7 @@ export const AGENT_FEASIBILITY_SYSTEM = [
   "",
   ASSISTANT_EXAMPLES,
   "",
-  'Output ONLY this JSON schema: {"ready": boolean, "message": string, "intent": string|null, "frequencyMinutes": number|null, "confidence": number 0..1, "searchQuery": string|null, "searchMethods": string[], "feasibility": string|null, "feasibilityVerdict": "can"|"partial"|"cannot"|null, "plannedSteps": string[], "sitePermission": {"allowed": boolean, "note": string}|null}.',
+  'Output ONLY this JSON schema: {"ready": boolean, "message": string, "intent": string|null, "frequencyMinutes": number|null, "confidence": number 0..1, "searchQuery": string|null, "searchMethods": string[], "feasibility": string|null, "feasibilityVerdict": "can"|"partial"|"cannot"|null, "plannedSteps": string[], "sitePermission": {"allowed": boolean, "note": string}|null, "collectedDetails": [{"label": string, "value": string}]}.',
 ].join("\n");
 
 /**

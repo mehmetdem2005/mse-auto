@@ -132,6 +132,7 @@ export const es: Catalog = {
     ready: "listo para vigilar",
     readyHint: 'Frecuencia sugerida: {{freq}} · pulsa "Continuar" o sigue escribiendo.',
     planTitle: "Plan de búsqueda",
+    collectedTitle: "Detalles recopilados",
     feasibility: {
       can: "rastreable",
       partial: "parcialmente rastreable",
