@@ -97,3 +97,22 @@ sağlayıcının kendi API'sinden canlı çekilir; token tanımlı değilse kart
 Konsol → **Push Yayını** (segment all/free/pro), **Denetim** (admin işlem günlüğü), kullanıcı detayında **banla/ban-kaldır**. Ban'lı kullanıcı tüm `/v1`'de 403 (`ban.middleware`, fail-open; admin banlanamaz).
 
 > **MIGRATION 0016 — UYGULANDI (2026-06-14, kullanıcı izniyle).** `supabase/migrations/0016_admin_audit.sql`: `admin_audit` tablosu (immutable, RLS açık/policy yok = service-role) + `profiles.banned` kolonu. Token Render env-grup'undan (`SUPABASE_ACCESS_TOKEN`) alınıp Management API (`/database/query`) ile uygulandı; tablo (7 kolon) + `profiles.banned` (boolean default false) + RLS açık + `admin_audit_created_idx` indeksi doğrulandı. FCM env'i Render'da dolu → push yayını GERÇEKTEN gönderir (inactive değil).
+
+## 12. Telegram + WhatsApp kanal bağlama (ADR-106)
+Kanal kodu + `user_channels` tablosu hazır; "bağlamak" = Render env'e kimlik bilgisi girmek (+ WhatsApp için Meta onayı). Kullanıcı ek kanalını uygulamada **Ayarlar → Kanallar** ekranından açar (chat_id / telefon girer). Yalnız **paylaşılan (shared)** watcher uyarıları ek kanala gider (kişiselde gizlilik gereği yalnız cihaz-push).
+
+### 12.1 Telegram (hızlı — yalnız config)
+1. Telegram'da **@BotFather** → `/newbot` → bot adı + username ver → **bot token**'ı al.
+2. Token'ı Render'a gir: backend servisinin env'ine `TELEGRAM_BOT_TOKEN=<token>` (env-grup veya servis env). Backend redeploy olunca Telegram kanalı kurulur.
+3. **Kullanıcı bağlama:** botu aç (`t.me/<username>`) → **Başlat**'a bas (bot mesaj atabilsin diye şart) → chat_id'sini öğren (en kolayı: **@userinfobot**'a yaz, "Id" değerini al) → uygulamada Kanallar → Telegram'ı aç, chat_id'yi yapıştır, kaydet.
+> DÜRÜST NOT: Bot şu an `/start`'a OTOMATİK cevap vermez (webhook yok) → chat_id'yi kullanıcı dışarıdan bulur. Sorunsuz "Telegram'a bağlan" deep-link akışı (oto chat_id) ayrı bir iş olarak ileride.
+
+### 12.2 WhatsApp (Meta onayı gerekir — günler sürebilir)
+WhatsApp Cloud API, proaktif uyarıyı (24s "müşteri penceresi" dışı) yalnız **önceden ONAYLI şablonla** iletir. Kod (`WhatsAppSender`) şablon modunu destekler (`type:"template"`, gövde 2 değişken). Adımlar:
+1. **Meta Business** hesabı + [developers.facebook.com](https://developers.facebook.com) → **WhatsApp** ürünlü app.
+2. Bir **telefon numarası** ekle + doğrula.
+3. **Kalıcı erişim token'ı** (Business Settings → System Users → token; geçici 24s token DEĞİL) ve **phone_number_id**.
+4. **Mesaj şablonu** oluştur → kategori **UTILITY**, dil seç (örn. `tr`), gövde **iki değişkenli** (örn. `{{1}}` ardından yeni satır `{{2}}`). Onay bekle.
+5. Render env'e gir: `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_TEMPLATE_NAME` (onaylı şablon adı), `WHATSAPP_TEMPLATE_LANG` (örn. `tr`). Redeploy → WhatsApp aktif.
+6. **Kullanıcı bağlama:** uygulamada Kanallar → WhatsApp'ı aç, numarasını uluslararası formatta (`+90…`) gir, kaydet.
+> DÜRÜST NOT: Şablon (`WHATSAPP_TEMPLATE_NAME`) girilmezse kod serbest-metin gönderir; bu yalnız 24s penceresinde çalışır, dışında Meta reddeder. Üretim için şablon ZORUNLU. Env'ler boşken kanal hiç kurulmaz (pasif).

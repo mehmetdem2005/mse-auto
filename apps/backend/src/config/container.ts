@@ -201,7 +201,14 @@ function buildChannels(env: Env): ChannelSender[] {
     channels.push(new ResendEmailSender(env.RESEND_API_KEY, env.RESEND_FROM));
   }
   if (env.WHATSAPP_ACCESS_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID) {
-    channels.push(new WhatsAppSender(env.WHATSAPP_ACCESS_TOKEN, env.WHATSAPP_PHONE_NUMBER_ID));
+    // Onaylı şablon varsa pencere-dışı uyarı için template modu; yoksa serbest-metin (ADR-106).
+    const template =
+      env.WHATSAPP_TEMPLATE_NAME && env.WHATSAPP_TEMPLATE_LANG
+        ? { name: env.WHATSAPP_TEMPLATE_NAME, lang: env.WHATSAPP_TEMPLATE_LANG }
+        : null;
+    channels.push(
+      new WhatsAppSender(env.WHATSAPP_ACCESS_TOKEN, env.WHATSAPP_PHONE_NUMBER_ID, template),
+    );
   }
   return channels;
 }
