@@ -130,6 +130,7 @@ export const zh: Catalog = {
     suggestBusiness: "企业",
     ready: "准备好监控",
     readyHint: '建议频率： {{freq}} · 点击 "继续" 或继续输入。',
+    planTitle: "搜索方案",
     chatPlaceholder: "输入消息…",
     chatA11y: "与助手聊天",
     sendA11y: "发送",

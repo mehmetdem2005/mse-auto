@@ -131,6 +131,7 @@ export const es: Catalog = {
     suggestBusiness: "Empresa",
     ready: "listo para vigilar",
     readyHint: 'Frecuencia sugerida: {{freq}} · pulsa "Continuar" o sigue escribiendo.',
+    planTitle: "Plan de búsqueda",
     chatPlaceholder: "Escribe un mensaje…",
     chatA11y: "Mensaje al asistente",
     sendA11y: "Enviar",

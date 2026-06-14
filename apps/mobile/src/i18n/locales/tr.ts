@@ -130,6 +130,7 @@ export const tr = {
     suggestBusiness: "Kurumsal",
     ready: "izlemeye hazır",
     readyHint: 'Önerilen sıklık: {{freq}} · "Devam" ile sürdür ya da yazmaya devam et.',
+    planTitle: "Arama planı",
     chatPlaceholder: "Mesaj yaz…",
     chatA11y: "Asistana mesaj yaz",
     sendA11y: "Gönder",

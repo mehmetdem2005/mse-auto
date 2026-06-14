@@ -131,6 +131,7 @@ export const hi: Catalog = {
     suggestBusiness: "व्यवसाय",
     ready: "तैयार हो गया हूँ",
     readyHint: 'सुझावित आवृत्ति: {{freq}} · "अग्रिम" पर टैप करें या टाइपिंग जारी रखें।',
+    planTitle: "खोज योजना",
     chatPlaceholder: "एक संदेश लिखें…",
     chatA11y: "असिस्टेंट से संदेश करें",
     sendA11y: "भेजें",

@@ -374,6 +374,10 @@ export interface AssistReply {
   intent: string | null;
   frequencyMinutes: number | null;
   confidence: number;
+  /** ADR-110: arama planı — sorgu / yöntemler / fizibilite (ready ise). */
+  searchQuery?: string | null;
+  searchMethods?: string[];
+  feasibility?: string | null;
 }
 
 interface ReqInit {

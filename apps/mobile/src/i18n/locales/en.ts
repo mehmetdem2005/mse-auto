@@ -131,6 +131,7 @@ export const en: Catalog = {
     suggestBusiness: "Business",
     ready: "ready to watch",
     readyHint: 'Suggested frequency: {{freq}} · tap "Continue" or keep typing.',
+    planTitle: "Search plan",
     chatPlaceholder: "Type a message…",
     chatA11y: "Message the assistant",
     sendA11y: "Send",

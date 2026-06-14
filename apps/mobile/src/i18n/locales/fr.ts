@@ -131,6 +131,7 @@ export const fr: Catalog = {
     suggestBusiness: "Entreprise",
     ready: "prêt à regarder",
     readyHint: 'Fréquence suggérée : {{freq}} · appuyez sur "Continuer" ou continuez à taper.',
+    planTitle: "Plan de recherche",
     chatPlaceholder: "Typez un message…",
     chatA11y: "Envoyez un message à l'assistant",
     sendA11y: "Envoyer",
