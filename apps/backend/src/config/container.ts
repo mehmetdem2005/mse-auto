@@ -124,6 +124,8 @@ export interface Container {
   verifier: EventVerifier | undefined;
   checkTimeoutMs: number | undefined;
   assistant: IntentAssistant;
+  /** Sezgisel asistan — LLM geçici hatasında dayanıklılık fallback'i (ADR-118). */
+  heuristicAssistant: IntentAssistant;
   /** E-posta LLM besteci (ADR-109) — admin-ayarlı istem; LLM yoksa undefined (ham metin). */
   emailComposer: EmailComposer | undefined;
   /** Uygulama-geneli ayarlar (ADR-095) — ilk kullanım: seçili LLM modeli. */
@@ -277,9 +279,12 @@ export function createContainer(env: Env): Container {
   const verifier = anyLlm ? new SwitchableEventVerifier(llmRouter, llmKeys) : undefined;
   const checkTimeoutMs = env.CHECK_TIMEOUT_MS;
   // Niyet asistanı: LLM anahtarı varsa seçili model; yoksa sezgisel fallback (anahtarsız dev).
+  // Dayanıklılık fallback (ADR-118): LLM geçici hatasında (timeout/rate-limit/deploy
+  // penceresi) niyet asistanı 503 yerine sezgisel asistanla çalışan bir yanıt döndürür.
+  const heuristicAssistant = new HeuristicIntentAssistant();
   const assistant: IntentAssistant = anyLlm
     ? new SwitchableIntentAssistant(llmRouter, llmKeys)
-    : new HeuristicIntentAssistant();
+    : heuristicAssistant;
   // E-posta besteci (ADR-109): LLM varsa admin-ayarlı istemle profesyonel e-posta yazar.
   const emailComposer: EmailComposer | undefined = anyLlm
     ? new SwitchableEmailComposer(llmRouter, llmKeys, () => getEffectiveEmailPrompt(settings))
@@ -337,6 +342,7 @@ export function createContainer(env: Env): Container {
       verifier,
       checkTimeoutMs,
       assistant,
+      heuristicAssistant,
       emailComposer,
       settings,
       llmRouter,
@@ -376,6 +382,7 @@ export function createContainer(env: Env): Container {
     verifier,
     checkTimeoutMs,
     assistant,
+    heuristicAssistant,
     emailComposer,
     settings,
     llmRouter,

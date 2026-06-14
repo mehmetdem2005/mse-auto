@@ -42,17 +42,32 @@ export function watchersRoutes(container: Container): OpenAPIHono<{ Variables: A
 
   app.openapi(assist, async (c) => {
     const input = c.req.valid("json");
+    // ADR-113: kullanıcı kişiselleştirmesini (kendini tanıt + ek dikkat) asistana enjekte et.
+    const profile = await container.aiProfile.get(c.get("userId")).catch(() => EMPTY_AI_PROFILE);
+    const userContext = aiProfileContext(profile) ?? undefined;
     try {
-      // ADR-113: kullanıcı kişiselleştirmesini (kendini tanıt + ek dikkat) asistana enjekte et.
-      const profile = await container.aiProfile.get(c.get("userId")).catch(() => EMPTY_AI_PROFILE);
-      const reply = await assistIntent(container, input, aiProfileContext(profile) ?? undefined);
+      const reply = await assistIntent(container, input, userContext);
       return c.json(reply, 200);
     } catch (err) {
-      // LLM ağ/parse hataları geçicidir; 500 yerine eyleme dönük 503 dön.
-      container.logger.warn("assist failed", {
+      // Dayanıklılık (ADR-118): LLM ağ/parse/timeout hataları GEÇİCİdir (deploy penceresi,
+      // rate-limit). Kullanıcıya ölü 503 yerine SEZGİSEL asistanla çalışan bir yanıt dön
+      // (netleştirme sorusu ya da niyet kabulü) — sihirbaz hiç tıkanmaz.
+      container.logger.warn("assist llm failed → heuristic fallback", {
         err: err instanceof Error ? err.message : String(err),
       });
-      return c.json({ error: "Asistan şu an yanıt veremiyor; az sonra tekrar dene." }, 503);
+      try {
+        const reply = await assistIntent(
+          { assistant: container.heuristicAssistant },
+          input,
+          userContext,
+        );
+        return c.json(reply, 200);
+      } catch (err2) {
+        container.logger.error("assist heuristic fallback failed", {
+          err: err2 instanceof Error ? err2.message : String(err2),
+        });
+        return c.json({ error: "Asistan şu an yanıt veremiyor; az sonra tekrar dene." }, 503);
+      }
     }
   });
 

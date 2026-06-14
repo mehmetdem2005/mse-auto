@@ -28,27 +28,38 @@ export interface OpenAiJsonChatOpts {
   fetchImpl?: typeof fetch;
 }
 
+/** LLM çağrısı üst sınırı — asılı kalan istek bunu aşınca iptal edilir → çağıran fallback'e düşer. */
+const LLM_TIMEOUT_MS = 25_000;
+
 export async function openaiJsonChat(
   opts: OpenAiJsonChatOpts,
 ): Promise<{ content: string; tokensUsed: number | null }> {
   const fetchImpl = opts.fetchImpl ?? fetch;
-  const res = await fetchImpl(`${opts.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${opts.apiKey}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: opts.model,
-      messages: opts.messages,
-      ...(opts.jsonMode !== false ? { response_format: { type: "json_object" } } : {}),
-      ...(opts.deepseekThinking ? { thinking: { type: opts.deepseekThinking } } : {}),
-      temperature: opts.temperature,
-      max_tokens: opts.maxTokens,
-    }),
-  });
-  if (!res.ok) throw new Error(`llm ${new URL(opts.baseUrl).hostname} ${res.status}`);
-  const data = (await res.json()) as ChatResponse;
-  const content = data.choices?.[0]?.message?.content;
-  if (!content) throw new Error("llm boş içerik");
-  return { content, tokensUsed: data.usage?.total_tokens ?? null };
+  // Zaman aşımı (ADR-118): sağlayıcı asılı kalırsa istek sonsuza dek beklemesin → iptal et.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), LLM_TIMEOUT_MS);
+  try {
+    const res = await fetchImpl(`${opts.baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${opts.apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: opts.model,
+        messages: opts.messages,
+        ...(opts.jsonMode !== false ? { response_format: { type: "json_object" } } : {}),
+        ...(opts.deepseekThinking ? { thinking: { type: opts.deepseekThinking } } : {}),
+        temperature: opts.temperature,
+        max_tokens: opts.maxTokens,
+      }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`llm ${new URL(opts.baseUrl).hostname} ${res.status}`);
+    const data = (await res.json()) as ChatResponse;
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("llm boş içerik");
+    return { content, tokensUsed: data.usage?.total_tokens ?? null };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /**
