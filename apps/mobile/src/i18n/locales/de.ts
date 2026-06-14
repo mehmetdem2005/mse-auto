@@ -139,6 +139,12 @@ export const de: Catalog = {
     chatA11y: "Mit dem Assistenten chatten",
     sendA11y: "Senden",
     chatError: "Etwas ist schiefgelaufen — versuche es erneut?",
+    you: "Du",
+    assistantRole: "Assistent",
+    useMyText: "meinen Text als Absicht verwenden",
+    assistError:
+      "Assistent nicht erreichbar — versuche es erneut oder verwende deinen Text direkt.",
+    intentAccepted: 'Verstanden, ich beobachte: "{{intent}}". Mit "Weiter" fortfahren.',
     needIntent: "Klär das Thema mit dem Assistenten zuerst.",
     sourceHint:
       "Welche Quelle soll der Motor priorisieren? Auto: Live-Offizielle Seite → Offizielle Suche → Letzte 24h Nachrichten.",

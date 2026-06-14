@@ -136,6 +136,12 @@ export const fr: Catalog = {
     chatA11y: "Envoyez un message à l'assistant",
     sendA11y: "Envoyer",
     chatError: "Quelque chose s'est mal passé — essayez à nouveau ?",
+    you: "Vous",
+    assistantRole: "Assistant",
+    useMyText: "utiliser ce que j'ai écrit comme intention",
+    assistError:
+      "Impossible de joindre l'assistant — réessayez ou utilisez directement votre texte.",
+    intentAccepted: 'Compris, je surveille : "{{intent}}". Continuez avec "Suivant".',
     needIntent: "Clarifiez le sujet avec l'assistant en premier.",
     sourceHint:
       "Quelle source devrait l'engin prioriser ? Auto : page officielle en direct → recherche officielle → dernières 24h de nouvelles.",

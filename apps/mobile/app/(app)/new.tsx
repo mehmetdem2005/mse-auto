@@ -42,15 +42,6 @@ import {
 } from "react-native";
 
 const FREQ = [1, 15, 60, 360, 720, 1440];
-/** Sıklık kartı metası: ad + açıklama (maket dili). */
-const FREQ_META: Record<number, { name: string; desc: string }> = {
-  1: { name: "1 dk", desc: "Anında" },
-  15: { name: "15 dk", desc: "Çok hızlı" },
-  60: { name: "1 saat", desc: "Dengeli" },
-  360: { name: "6 saat", desc: "Düşük" },
-  720: { name: "12 saat", desc: "Çok düşük" },
-  1440: { name: "Günlük", desc: "En düşük" },
-};
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 // (ADR-094: cihaz-içi "kişisel filtre" adımı kaldırıldı — amacı belirsiz/karmaşıktı.)
@@ -281,13 +272,9 @@ export default function NewWatcher() {
         setPlan(null);
       }
     },
-    onError: (e) => {
+    onError: () => {
       setAssistDown(true);
-      const msg = e instanceof Error && e.message ? e.message : "Bir sorun oluştu";
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", content: `${msg} — tekrar dene ya da yazdığını doğrudan kullan.` },
-      ]);
+      setMessages((m) => [...m, { role: "assistant", content: t("wizard.assistError") }]);
     },
   });
 
@@ -304,7 +291,7 @@ export default function NewWatcher() {
     setAssistDown(false);
     setMessages((m) => [
       ...m,
-      { role: "assistant", content: `Tamam, şunu izleyeceğim: “${last}”. “Devam” ile sürdür.` },
+      { role: "assistant", content: t("wizard.intentAccepted", { intent: last }) },
     ]);
   }
 
@@ -454,7 +441,7 @@ export default function NewWatcher() {
                 >
                   <Text
                     accessibilityRole="text"
-                    accessibilityLabel={`${m.role === "user" ? "Sen" : "Asistan"}: ${body}`}
+                    accessibilityLabel={`${m.role === "user" ? t("wizard.you") : t("wizard.assistantRole")}: ${body}`}
                     className={m.role === "user" ? "text-onAccent text-sm" : "text-text text-sm"}
                   >
                     {body}
@@ -471,11 +458,11 @@ export default function NewWatcher() {
               <Pressable
                 onPress={useDraftAsIntent}
                 accessibilityRole="button"
-                accessibilityLabel="Yazdığımı niyet olarak kullan"
+                accessibilityLabel={t("wizard.useMyText")}
                 className="self-start border border-accent rounded-full px-4 py-3 mb-2.5 min-h-[44px] justify-center"
               >
                 <Text className="text-accent text-xs font-semibold uppercase tracking-wider">
-                  yazdığımı niyet olarak kullan
+                  {t("wizard.useMyText")}
                 </Text>
               </Pressable>
             ) : null}

@@ -136,6 +136,12 @@ export const ja: Catalog = {
     chatA11y: "アシスタントにメッセージ",
     sendA11y: "送信",
     chatError: "エラーが発生しました — 再試行してください。",
+    you: "あなた",
+    assistantRole: "アシスタント",
+    useMyText: "入力した内容を目的として使う",
+    assistError:
+      "アシスタントに接続できませんでした。もう一度試すか、入力した内容をそのまま使ってください。",
+    intentAccepted: "了解しました。「{{intent}}」を監視します。「次へ」で続けてください。",
     needIntent: "トピックをアシスタントと共有してください。",
     sourceHint:
       "エンジンが優先する{{mail}}のソースは何ですか? Auto: ライブオフィシャルページ → オフィシャル検索 → 最新24時間ニュース。",
