@@ -132,6 +132,19 @@ export const pt: Catalog = {
     ready: "pronto para assistir",
     readyHint: 'Frequência sugerida: {{freq}} · toque em "Continuar" ou continue digitando.',
     planTitle: "Plano de busca",
+    feasibility: {
+      can: "rastreável",
+      partial: "parcialmente rastreável",
+      cannot: "não rastreável diretamente",
+    },
+    feasibilityHint: {
+      can: "Isto é claramente rastreável na web pública; vou acompanhar a fonte oficial e as notícias e avisar quando mudar.",
+      partial:
+        "Apenas um sinal público indireto é rastreável (ex.: um portal de login/reservas) — acompanho o anúncio público relacionado, não o portal em si.",
+      cannot:
+        "Não há um sinal da web pública diretamente rastreável para isto (está totalmente atrás de login/assinatura); ainda assim, se surgir um anúncio público relacionado, posso acompanhá-lo.",
+    },
+    feasibilityPlan: "Como vou monitorar",
     chatPlaceholder: "Digite uma mensagem…",
     chatA11y: "Mensagem assistente",
     sendA11y: "Enviar",

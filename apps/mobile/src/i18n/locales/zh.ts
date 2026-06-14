@@ -131,6 +131,19 @@ export const zh: Catalog = {
     ready: "准备好监控",
     readyHint: '建议频率： {{freq}} · 点击 "继续" 或继续输入。',
     planTitle: "搜索方案",
+    feasibility: {
+      can: "可追踪",
+      partial: "部分可追踪",
+      cannot: "无法直接追踪",
+    },
+    feasibilityHint: {
+      can: "这在公开网络上可以清楚地追踪；我会关注官方来源和新闻，并在发生变化时通知你。",
+      partial:
+        "只能追踪间接的公开信号（例如登录/预约门户）——我监控相关的公开公告，而不是门户本身。",
+      cannot:
+        "对此没有可直接追踪的公开网络信号（完全在登录/会员之后）；不过，如果出现相关的公开公告，我可以监控它。",
+    },
+    feasibilityPlan: "我将如何监控",
     chatPlaceholder: "输入消息…",
     chatA11y: "与助手聊天",
     sendA11y: "发送",

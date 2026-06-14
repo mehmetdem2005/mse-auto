@@ -131,6 +131,19 @@ export const tr = {
     ready: "izlemeye hazır",
     readyHint: 'Önerilen sıklık: {{freq}} · "Devam" ile sürdür ya da yazmaya devam et.',
     planTitle: "Arama planı",
+    feasibility: {
+      can: "izlenebilir",
+      partial: "kısmen izlenebilir",
+      cannot: "doğrudan izlenemez",
+    },
+    feasibilityHint: {
+      can: "Bu olay kamusal web'de açıkça izlenebilir; resmî kaynağı ve haberleri takip edip değişince haber veririm.",
+      partial:
+        "Yalnızca dolaylı kamusal sinyal izlenebilir (ör. giriş/randevu portalı kapalı) — portalın kendisini değil, ilgili kamusal duyuruyu izlerim.",
+      cannot:
+        "Bunun kamusal web'de doğrudan izlenebilir bir sinyali yok (tümüyle giriş/üyelik arkasında); yine de ilgili bir kamusal duyuru çıkarsa onu izleyebilirim.",
+    },
+    feasibilityPlan: "Nasıl izleyeceğim",
     chatPlaceholder: "Mesaj yaz…",
     chatA11y: "Asistana mesaj yaz",
     sendA11y: "Gönder",

@@ -132,6 +132,19 @@ export const en: Catalog = {
     ready: "ready to watch",
     readyHint: 'Suggested frequency: {{freq}} · tap "Continue" or keep typing.',
     planTitle: "Search plan",
+    feasibility: {
+      can: "trackable",
+      partial: "partially trackable",
+      cannot: "not directly trackable",
+    },
+    feasibilityHint: {
+      can: "This is clearly trackable on the public web; I'll follow the official source and news and alert you when it changes.",
+      partial:
+        "Only an indirect public signal is trackable (e.g. a login/booking portal) — I watch the related public announcement, not the portal itself.",
+      cannot:
+        "There's no directly trackable public-web signal for this (it's fully behind login/membership); still, if a related public announcement appears I can watch that.",
+    },
+    feasibilityPlan: "How I'll watch",
     chatPlaceholder: "Type a message…",
     chatA11y: "Message the assistant",
     sendA11y: "Send",

@@ -132,6 +132,19 @@ export const fr: Catalog = {
     ready: "prêt à regarder",
     readyHint: 'Fréquence suggérée : {{freq}} · appuyez sur "Continuer" ou continuez à taper.',
     planTitle: "Plan de recherche",
+    feasibility: {
+      can: "suivable",
+      partial: "partiellement suivable",
+      cannot: "non suivable directement",
+    },
+    feasibilityHint: {
+      can: "C'est clairement suivable sur le web public ; je surveille la source officielle et les actualités et je vous alerte en cas de changement.",
+      partial:
+        "Seul un signal public indirect est suivable (p. ex. un portail de connexion/réservation) — je surveille l'annonce publique associée, pas le portail lui-même.",
+      cannot:
+        "Il n'y a pas de signal web public directement suivable pour cela (entièrement derrière une connexion/adhésion) ; néanmoins, si une annonce publique associée paraît, je peux la surveiller.",
+    },
+    feasibilityPlan: "Comment je vais surveiller",
     chatPlaceholder: "Typez un message…",
     chatA11y: "Envoyez un message à l'assistant",
     sendA11y: "Envoyer",
