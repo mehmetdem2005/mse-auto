@@ -919,7 +919,7 @@ export default function NewWatcher() {
           </Card>
         ) : null}
 
-        <View className="h-24" />
+        <View className="h-3" />
       </ScrollView>
 
       {/* Sohbet girişi (yalnız 1. adımda, alt navigasyonun üstünde) */}
@@ -929,13 +929,16 @@ export default function NewWatcher() {
             value={draft}
             onChangeText={setDraft}
             multiline
+            // Tek satır yüksekliğinde dur (web'de rows=1) — boş kutu kocaman görünüp taşmasın;
+            // uzun metin kutu içinde kayar. min-h ≥44pt dokunma hedefi, max-h-24 güvenlik tavanı.
+            numberOfLines={1}
             placeholder={t("wizard.chatPlaceholder")}
             placeholderTextColor={colors.placeholder}
             accessibilityLabel={t("wizard.chatA11y")}
             onSubmitEditing={sendChat}
             blurOnSubmit
-            className="flex-1 bg-panel border border-line rounded-2xl px-4 py-3 text-text text-sm max-h-28"
-            style={{ textAlignVertical: "top" }}
+            className="flex-1 bg-panel border border-line rounded-2xl px-4 py-2.5 text-text text-sm min-h-[44px] max-h-24"
+            style={{ textAlignVertical: "center" }}
             maxLength={2000}
           />
           {draft.length > 0 ? (
