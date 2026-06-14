@@ -63,6 +63,13 @@ export interface ChannelAvailability {
 export interface AppConfig {
   channels: ChannelAvailability;
 }
+/** Admin e-posta besteci istemi (ADR-109). */
+export interface EmailPromptConfig {
+  useDefault: boolean;
+  prompt: string;
+  defaultPrompt: string;
+  persisted: boolean;
+}
 export interface SubscriptionDetail {
   interval: BillingInterval;
   amountCents: number;
@@ -450,6 +457,12 @@ export const api = {
     req<ChannelAvailability>("/v1/admin/channel-config", {
       method: "PUT",
       body: JSON.stringify(cfg),
+    }),
+  adminEmailPrompt: () => req<EmailPromptConfig>("/v1/admin/email-prompt"),
+  setAdminEmailPrompt: (input: { useDefault: boolean; prompt: string }) =>
+    req<EmailPromptConfig>("/v1/admin/email-prompt", {
+      method: "PUT",
+      body: JSON.stringify(input),
     }),
 
   // ---- Admin konsolu ----

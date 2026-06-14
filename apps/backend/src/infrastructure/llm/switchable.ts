@@ -77,6 +77,40 @@ const ReasonSchema = z.object({
   confidence: z.number().min(0).max(1),
 });
 
+const EmailComposeSchema = z.object({ subject: z.string().min(1), body: z.string().min(1) });
+
+/**
+ * E-posta besteci (ADR-109) — aktif modelle ham uyarıyı profesyonel e-postaya çevirir.
+ * Sistem istemi admin-ayarlı (varsayılan veya özel). LLM/parse hatasında HAM metne düşer
+ * (dayanıklılık: e-posta teslimi LLM yüzünden hiç düşmez).
+ */
+export class SwitchableEmailComposer {
+  constructor(
+    private readonly source: ActiveModelSource,
+    private readonly keys: ProviderKeys,
+    private readonly getPrompt: () => Promise<string>,
+  ) {}
+
+  async compose(input: { title: string; body: string }): Promise<{ title: string; body: string }> {
+    try {
+      const system = await this.getPrompt();
+      const { content } = await chatWithActive(
+        this.source,
+        this.keys,
+        [
+          { role: "system", content: system },
+          { role: "user", content: `Başlık: ${input.title}\nMetin: ${input.body}` },
+        ],
+        { temperature: 0.3, maxTokens: 512 },
+      );
+      const parsed = EmailComposeSchema.parse(extractJson(content));
+      return { title: parsed.subject, body: parsed.body };
+    } catch {
+      return input; // LLM yok/hata/parse → ham metin
+    }
+  }
+}
+
 export class SwitchableEventReasoner implements EventReasoner {
   constructor(
     private readonly source: ActiveModelSource,

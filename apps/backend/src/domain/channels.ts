@@ -10,6 +10,11 @@ export interface ChannelMessage {
   body: string;
 }
 
+/** E-posta besteci portu (ADR-109): ham uyarıyı profesyonel e-postaya çevirir (LLM). */
+export interface EmailComposer {
+  compose(input: ChannelMessage): Promise<ChannelMessage>;
+}
+
 /**
  * Tek bir ek kanalın gönderici port'u. `target` kanala göre değişir:
  * telegram→chat_id, email→adres, whatsapp→E.164 numara.
