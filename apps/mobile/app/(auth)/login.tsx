@@ -2,7 +2,7 @@ import { Field, PrimaryButton } from "@/components/ui";
 import { useReduceMotion } from "@/lib/reduce-motion";
 import { supabase, supabaseConfigured } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
-import { GRADIENT, useTheme } from "@/theme";
+import { useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
@@ -104,7 +104,7 @@ export default function Login() {
       >
         {/* Üst marka bloğu — derinlikli gradyan (premium ilk izlenim) */}
         <LinearGradient
-          colors={GRADIENT.hero}
+          colors={theme.gradient.hero}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ paddingTop: 64, paddingBottom: 80, paddingHorizontal: 24 }}

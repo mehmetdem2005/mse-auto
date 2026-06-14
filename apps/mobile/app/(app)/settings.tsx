@@ -9,7 +9,7 @@ import { siteUrlFor } from "@/lib/links";
 import { qk } from "@/lib/query";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/stores/auth";
-import { useTheme, useThemeStore } from "@/theme";
+import { useTheme } from "@/theme";
 import { useQuery } from "@tanstack/react-query";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
@@ -21,7 +21,6 @@ import {
   FileDown,
   Globe2,
   LifeBuoy,
-  MonitorSmartphone,
   Moon,
   Radio,
   ScrollText,
@@ -37,9 +36,7 @@ import { Alert, Linking, Platform, Pressable, ScrollView, Share, Text, View } fr
 export default function Settings() {
   const { t, i18n } = useTranslation();
   const [langOpen, setLangOpen] = useState(false);
-  const [themeOpen, setThemeOpen] = useState(false);
   const theme = useTheme();
-  const setMode = useThemeStore((st) => st.setMode);
   const router = useRouter();
   const session = useAuth((s) => s.session);
   const setSession = useAuth((s) => s.setSession);
@@ -196,9 +193,9 @@ export default function Settings() {
             </View>
           </BottomSheet>
 
-          {/* Görünüm seçici (ADR-063) — Sistem/Açık/Koyu, kalıcı */}
+          {/* Görünüm (ADR-114) — tema + vurgu rengi + hareket ayrı ekranda; canlı önizleme */}
           <Pressable
-            onPress={() => setThemeOpen(true)}
+            onPress={() => router.push("/appearance")}
             accessibilityRole="button"
             accessibilityLabel={t("settings.appearanceA11y")}
             className="bg-panel border border-line rounded-xl p-5 mb-4 active:bg-panel2"
@@ -226,40 +223,6 @@ export default function Settings() {
               <ChevronRight size={16} color={theme.colors.mutedIcon} />
             </View>
           </Pressable>
-          <BottomSheet visible={themeOpen} onClose={() => setThemeOpen(false)}>
-            <View>
-              {(
-                [
-                  ["system", "settings.themeSystem", MonitorSmartphone],
-                  ["light", "settings.themeLight", Sun],
-                  ["dark", "settings.themeDark", Moon],
-                ] as const
-              ).map(([m, key, Icon]) => {
-                const sel = theme.mode === m;
-                return (
-                  <Pressable
-                    key={m}
-                    onPress={() => {
-                      setMode(m);
-                      setThemeOpen(false);
-                    }}
-                    accessibilityRole="menuitem"
-                    accessibilityState={{ selected: sel }}
-                    accessibilityLabel={t(key)}
-                    className="flex-row items-center gap-3 px-5 min-h-[52px] border-b border-line active:bg-panel2"
-                  >
-                    <Icon size={18} color={sel ? theme.colors.accent : theme.colors.mutedIcon} />
-                    <Text
-                      className={`text-[15px] flex-1 ${sel ? "text-accent font-bold" : "text-text"}`}
-                    >
-                      {t(key)}
-                    </Text>
-                    {sel ? <Check size={17} color={theme.colors.accent} /> : null}
-                  </Pressable>
-                );
-              })}
-            </View>
-          </BottomSheet>
 
           <Pressable
             onPress={() => router.push("/support")}

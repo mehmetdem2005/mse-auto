@@ -13,13 +13,14 @@ import { ActivityIndicator, View } from "react-native";
 function TabIcon({ Icon, color, focused }: { Icon: LucideIcon; color: string; focused: boolean }) {
   return (
     <View
+      // Aktif öğe pill'i seçilen vurgu rengini izler (ADR-114) — bg-accent/15 CSS değişkeninden.
+      className={focused ? "bg-accent/15" : ""}
       style={{
         width: 56,
         height: 30,
         borderRadius: 15,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: focused ? "rgba(99,102,241,0.16)" : "transparent",
       }}
     >
       <Icon size={19} color={color} strokeWidth={focused ? 2.4 : 2} />

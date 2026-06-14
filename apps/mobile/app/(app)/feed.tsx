@@ -16,7 +16,7 @@ import { categoryOf, severityOf } from "@/lib/category";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
-import { GRADIENT, ON_ACCENT, useTheme } from "@/theme";
+import { ON_ACCENT, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
@@ -191,7 +191,7 @@ export default function Feed() {
               refreshing={isRefetching}
               onRefresh={() => void refetch()}
               tintColor={theme.colors.accent}
-              colors={[...GRADIENT.brand]}
+              colors={[...theme.gradient.brand]}
             />
           }
           ItemSeparatorComponent={() => <View className="h-3" />}

@@ -1,7 +1,7 @@
 // Organisms — ekran-düzeyi imza parçalar (AAA görsel dil, ADR-054).
 import { useUnreadAnnouncements } from "@/lib/announcements";
 import { useReduceMotion } from "@/lib/reduce-motion";
-import { GRADIENT, ON_GRADIENT } from "@/theme";
+import { ON_GRADIENT, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { ArrowLeft, Bell } from "lucide-react-native";
@@ -30,6 +30,7 @@ export function GradientHero({
   const { t } = useTranslation();
   const reduce = useReduceMotion();
   const router = useRouter();
+  const { gradient } = useTheme();
   const inner = (
     <>
       <View className="flex-row items-center">
@@ -67,7 +68,7 @@ export function GradientHero({
   );
   return (
     <LinearGradient
-      colors={GRADIENT.hero}
+      colors={gradient.hero}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{
