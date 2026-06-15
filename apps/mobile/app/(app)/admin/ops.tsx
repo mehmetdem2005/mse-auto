@@ -127,11 +127,46 @@ export default function OpsScreen(): ReactNode {
               items={o.deliveries.byStatus}
               total={o.deliveries.total}
             />
-            <TopList
-              title="kanal kırılımı"
-              items={o.deliveries.byChannel}
-              total={o.deliveries.total}
-            />
+
+            {/* ADR-146: kanal-bazlı sağlık — hangi kanal bozuk (push/telegram/whatsapp/email ayrı). */}
+            {o.deliveries.channelHealth.length > 0 ? (
+              <View className="mt-4">
+                <Text className="text-muted text-[10px] uppercase tracking-widest mb-2">
+                  kanal sağlığı
+                </Text>
+                <View className="bg-panel border border-line rounded-2xl overflow-hidden">
+                  {o.deliveries.channelHealth.map((ch, i) => {
+                    const r = ch.successRate;
+                    const tone =
+                      r === null
+                        ? "text-muted"
+                        : r >= 95
+                          ? "text-pos"
+                          : r >= 80
+                            ? "text-warn"
+                            : "text-neg";
+                    return (
+                      <View
+                        key={ch.channel}
+                        className={`flex-row items-center justify-between px-4 py-3 ${i > 0 ? "border-t border-line" : ""}`}
+                      >
+                        <View className="flex-1 min-w-0">
+                          <Text className="text-text text-sm font-medium capitalize">
+                            {ch.channel}
+                          </Text>
+                          <Text className="text-muted text-[11px] mt-0.5">
+                            {ch.total} teslimat · {ch.failed} başarısız
+                          </Text>
+                        </View>
+                        <Text className={`text-base font-bold ${tone}`}>
+                          {r !== null ? `%${r}` : "—"}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
 
             {o.checks.total === 0 ? (
               <Text className="text-muted text-[11px] mt-4">

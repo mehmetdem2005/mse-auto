@@ -66,7 +66,7 @@
 - **FAZ 7.2 — Tekilleştirme & gürültü azaltma:** aynı olayın tekrar bildirimini engelle (semantik dedup + RAG).
 - **FAZ 7.3 — Şüpheci verifier v2:** çok-turlu doğrulama + tarih/kaynak çapraz-kontrol metrikleri.
 - **FAZ 7.4 — Scheduler dayanıklılık:** geri-basınç, yeniden-deneme, ölü-mektup; çoklu-süreç hazırlığı (pg-boss `[G]`).
-- **FAZ 7.5 — Teslimat güvenilirliği:** kanal başarısızlık yeniden-deneme + kullanıcıya kanal-sağlık görünürlüğü.
+- 🟡 **FAZ 7.5 — Teslimat güvenilirliği:** kanal-bazlı sağlık görünürlüğü (`channelHealth` + ops "kanal sağlığı" bölümü, ADR-146). **KISMEN** — otomatik yeniden-deneme (deneme-sayacı migration + dedup) ayrı tur.
 
 ## M8 — Mobil UX & Erişilebilirlik
 *Amaç: AAA his + WCAG 2.2 AA tam uyum.*

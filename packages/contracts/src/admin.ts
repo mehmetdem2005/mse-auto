@@ -106,6 +106,15 @@ export const adminOpsSchema = z.object({
     failed: z.number().int(),
     byStatus: z.array(z.object({ key: z.string(), count: z.number().int() })),
     byChannel: z.array(z.object({ key: z.string(), count: z.number().int() })),
+    /** Kanal-bazlı sağlık (ADR-146) — "hangi kanal bozuk" görünürlüğü; total'e göre azalan. */
+    channelHealth: z.array(
+      z.object({
+        channel: z.string(),
+        total: z.number().int(),
+        failed: z.number().int(),
+        successRate: z.number().nullable(),
+      }),
+    ),
   }),
 });
 export type AdminOps = z.infer<typeof adminOpsSchema>;

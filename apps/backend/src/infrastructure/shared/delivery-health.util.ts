@@ -19,3 +19,29 @@ export function deliveryHealth(statuses: readonly string[]): {
     failed,
   };
 }
+
+export interface ChannelHealth {
+  channel: string;
+  total: number;
+  failed: number;
+  successRate: number | null;
+}
+
+/**
+ * Kanal-bazlı teslimat sağlığı (ADR-146 / M7.5) — "hangi kanal bozuk" görünürlüğü (push/telegram/
+ * whatsapp/email ayrı). Her kanal için `deliveryHealth`; total'e göre azalan sıralı (en yoğun önce).
+ */
+export function channelHealth(rows: { status: string; channel: string }[]): ChannelHealth[] {
+  const byChannel = new Map<string, string[]>();
+  for (const r of rows) {
+    const arr = byChannel.get(r.channel);
+    if (arr) arr.push(r.status);
+    else byChannel.set(r.channel, [r.status]);
+  }
+  return [...byChannel.entries()]
+    .map(([channel, statuses]) => {
+      const h = deliveryHealth(statuses);
+      return { channel, total: statuses.length, failed: h.failed, successRate: h.successRate };
+    })
+    .sort((a, b) => b.total - a.total);
+}

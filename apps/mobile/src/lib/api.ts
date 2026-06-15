@@ -277,6 +277,8 @@ export interface AdminOps {
     failed: number;
     byStatus: { key: string; count: number }[];
     byChannel: { key: string; count: number }[];
+    // ADR-146: kanal-bazlı sağlık ("hangi kanal bozuk").
+    channelHealth: { channel: string; total: number; failed: number; successRate: number | null }[];
   };
 }
 
