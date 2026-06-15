@@ -23,11 +23,3 @@ export class GoogleAuthTokenProvider implements AccessTokenProvider {
     return token;
   }
 }
-
-/** Test/sabit token. */
-export class StaticAccessTokenProvider implements AccessTokenProvider {
-  constructor(private readonly token: string) {}
-  async getToken(): Promise<string> {
-    return this.token;
-  }
-}
