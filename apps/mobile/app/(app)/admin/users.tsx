@@ -1,9 +1,9 @@
-import { ConsoleShell, ErrText, Loading, day } from "@/features/admin/ui";
+import { ConsoleShell, Empty, ErrText, Loading, day } from "@/features/admin/ui";
 import { api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { ChevronRight, Search } from "lucide-react-native";
+import { ChevronRight, Search, SearchX, Users } from "lucide-react-native";
 import { type ReactNode, useMemo, useState } from "react";
 import { FlatList, Pressable, Text, TextInput, View } from "react-native";
 
@@ -51,7 +51,15 @@ export default function UsersScreen(): ReactNode {
             </View>
           }
           ListEmptyComponent={
-            <Text className="text-muted mt-6">{q ? "eşleşme yok." : "kullanıcı yok."}</Text>
+            q ? (
+              <Empty
+                Icon={SearchX}
+                title="Eşleşme yok"
+                hint={`"${q}" için kullanıcı bulunamadı.`}
+              />
+            ) : (
+              <Empty Icon={Users} title="Kullanıcı yok" />
+            )
           }
           renderItem={({ item: u }) => (
             <Pressable

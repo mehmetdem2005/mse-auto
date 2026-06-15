@@ -55,7 +55,7 @@
 
 ## M6 — Admin Konsol Olgunlaşma
 *Amaç: her admin ekranını tutarlı, güçlü, RBAC'li yap.*
-- **FAZ 6.1 — Ekran-bazlı tutarlılık geçişi:** her admin ekranı aynı atomic bileşenler/boşluk/durumlar (4-durum kuralı).
+- 🟡 **FAZ 6.1 — Ekran-bazlı tutarlılık geçişi:** paylaşılan `Empty` atomic bileşeni + 6 liste ekranı boş-durum birleşimi (subs/watches/users/support/audit/announcements); 4-durum "boş" ayağı tek-tip. **KISMEN (ADR-140)** — pano grafik-içi + destek dizgesi boş hâli ileride.
 - **FAZ 6.2 — Rol tabanlı erişim (RBAC):** admin/süper-admin/destek rolleri; route+UI yetki kapıları; audit zenginleştirme.
 - **FAZ 6.3 — Global arama & hızlı eylemler:** kullanıcı/watcher/abonelik hızlı arama; klavye kısayolları (web).
 - **FAZ 6.4 — Admin onboarding & yardım:** ilk-kullanım turu + her bölümde kısa açıklama.

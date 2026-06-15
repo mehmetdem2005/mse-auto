@@ -1,8 +1,9 @@
-import { ActBtn, ConsoleShell, ErrText, Loading } from "@/features/admin/ui";
+import { ActBtn, ConsoleShell, Empty, ErrText, Loading } from "@/features/admin/ui";
 import { type AdminWatch, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { BellOff } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Alert, FlatList, Text, View } from "react-native";
 
@@ -32,7 +33,13 @@ export default function WatchesScreen(): ReactNode {
           onRefresh={() => void q.refetch()}
           refreshing={q.isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={<Text className="text-muted mt-6">watcher yok.</Text>}
+          ListEmptyComponent={
+            <Empty
+              Icon={BellOff}
+              title="Watcher yok"
+              hint="Kullanıcılar izleme oluşturdukça burada görünür."
+            />
+          }
           renderItem={({ item: w }: { item: AdminWatch }) => (
             <View className="bg-panel border border-line rounded-xl p-4">
               <Text className="text-text text-sm" numberOfLines={2}>

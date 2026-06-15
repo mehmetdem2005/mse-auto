@@ -1,7 +1,8 @@
-import { ConsoleShell, ErrText, Loading, day, money } from "@/features/admin/ui";
+import { ConsoleShell, Empty, ErrText, Loading, day, money } from "@/features/admin/ui";
 import { type AdminSubscription, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useQuery } from "@tanstack/react-query";
+import { CreditCard } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { FlatList, Text, View } from "react-native";
 
@@ -19,7 +20,13 @@ export default function SubsScreen(): ReactNode {
           onRefresh={() => void q.refetch()}
           refreshing={q.isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={<Text className="text-muted mt-6">abonelik yok.</Text>}
+          ListEmptyComponent={
+            <Empty
+              Icon={CreditCard}
+              title="Abonelik yok"
+              hint="Pro'ya geçen kullanıcılar burada listelenir."
+            />
+          }
           renderItem={({ item: s }: { item: AdminSubscription }) => (
             <View className="bg-panel border border-line rounded-xl p-4">
               <View className="flex-row justify-between">

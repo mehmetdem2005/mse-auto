@@ -1,8 +1,8 @@
 import { toast } from "@/components/feedback";
-import { ActBtn, ConsoleShell, ErrText, Loading, day } from "@/features/admin/ui";
+import { ActBtn, ConsoleShell, Empty, ErrText, Loading, day } from "@/features/admin/ui";
 import { type Announcement, type AnnouncementInput, type AnnouncementKind, api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff, Image as ImageIcon, Pin, Trash2 } from "lucide-react-native";
+import { Eye, EyeOff, Image as ImageIcon, Megaphone, Pin, Trash2 } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { Image, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
@@ -285,7 +285,7 @@ export default function AdminAnnouncementsScreen(): ReactNode {
         {q.isLoading ? <Loading /> : null}
         {q.error ? <ErrText e={q.error} /> : null}
         {q.data?.length === 0 ? (
-          <Text className="text-muted text-sm">Henüz duyuru yok.</Text>
+          <Empty Icon={Megaphone} title="Duyuru yok" hint="Yukarıdan ilk duyurunu oluştur." />
         ) : null}
         {q.data?.map((a) => {
           const meta = KINDS.find((k) => k.id === a.kind);
