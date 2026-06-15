@@ -12,8 +12,20 @@ export default function OpsScreen(): ReactNode {
   const [days, setDays] = useState(7);
   const q = useQuery({ queryKey: ["adminOps", days], queryFn: () => api.adminOps(days) });
   const o = q.data;
-  const delivered = o?.deliveries.byStatus.find((s) => s.key === "sent")?.count ?? 0;
-  const failed = o?.deliveries.byStatus.find((s) => s.key === "failed")?.count ?? 0;
+  // ADR-142: API doğrudan successRate (0-100, terminal yoksa null) + failed verir.
+  const byStatus = (k: string): number =>
+    o?.deliveries.byStatus.find((s) => s.key === k)?.count ?? 0;
+  const succeeded = byStatus("sent") + byStatus("delivered");
+  const failed = o?.deliveries.failed ?? 0;
+  const rate = o?.deliveries.successRate ?? null;
+  const rateTone =
+    rate === null
+      ? { text: "text-muted", bg: "bg-line" }
+      : rate >= 95
+        ? { text: "text-pos", bg: "bg-pos" }
+        : rate >= 80
+          ? { text: "text-warn", bg: "bg-warn" }
+          : { text: "text-neg", bg: "bg-neg" };
 
   return (
     <ConsoleShell title="Operasyon" sub={`son ${days} gün`}>
@@ -70,9 +82,36 @@ export default function OpsScreen(): ReactNode {
             <Text className="text-muted text-[10px] uppercase tracking-widest mt-6 mb-2">
               teslimat sağlığı
             </Text>
+            {/* ADR-142: başarı oranı baş gösterge (terminal teslimatlar; pending hariç). */}
+            <View className="bg-panel border border-line rounded-2xl p-4 mb-2.5">
+              <View className="flex-row items-baseline justify-between mb-2">
+                <Text className="text-muted text-[11px] uppercase tracking-widest">
+                  başarı oranı
+                </Text>
+                <Text className={`text-2xl font-extrabold ${rateTone.text}`}>
+                  {rate !== null ? `%${rate}` : "—"}
+                </Text>
+              </View>
+              <View
+                className="h-2 bg-line rounded-full overflow-hidden"
+                accessibilityRole="progressbar"
+                accessibilityLabel="Teslimat başarı oranı"
+                accessibilityValue={{ min: 0, max: 100, now: rate ?? 0 }}
+              >
+                <View
+                  className={`h-full rounded-full ${rateTone.bg}`}
+                  style={{ width: `${rate ?? 0}%` }}
+                />
+              </View>
+              <Text className="text-muted text-[11px] mt-2">
+                {rate !== null
+                  ? `${succeeded} başarılı · ${failed} başarısız (tamamlanan teslimatlar)`
+                  : "Henüz tamamlanmış teslimat yok."}
+              </Text>
+            </View>
             <View className="flex-row flex-wrap gap-2.5">
               <Stat n={o.deliveries.total} l="teslimat" />
-              <Stat n={delivered} l="başarılı" tone="pos" />
+              <Stat n={succeeded} l="başarılı" tone="pos" />
               <Stat n={failed} l="başarısız" />
             </View>
             {failed > 0 ? (

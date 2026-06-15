@@ -100,6 +100,10 @@ export const adminOpsSchema = z.object({
   }),
   deliveries: z.object({
     total: z.number().int(),
+    /** Başarı oranı (0-100) = (sent+delivered) / terminal (pending hariç); terminal yoksa null. ADR-142. */
+    successRate: z.number().nullable(),
+    /** Başarısız teslimat sayısı (status="failed") — eyleme dönük sağlık sinyali. ADR-142. */
+    failed: z.number().int(),
     byStatus: z.array(z.object({ key: z.string(), count: z.number().int() })),
     byChannel: z.array(z.object({ key: z.string(), count: z.number().int() })),
   }),

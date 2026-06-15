@@ -272,6 +272,9 @@ export interface AdminOps {
   };
   deliveries: {
     total: number;
+    // ADR-142: teslimat sağlığı — successRate 0-100 (terminal yoksa null), failed sayısı.
+    successRate: number | null;
+    failed: number;
     byStatus: { key: string; count: number }[];
     byChannel: { key: string; count: number }[];
   };

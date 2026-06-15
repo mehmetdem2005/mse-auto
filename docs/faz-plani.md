@@ -78,7 +78,7 @@
 ## M9 — Gözlemlenebilirlik & Ops
 *Amaç: "neyin bozulduğunu" anında gör.*
 - ✅ **FAZ 9.1 — Yapısal log + korelasyon:** request-id uçtan uca + yapısal JSON + seviyeler ZATEN vardı; bu turda **PII redaksiyon kapısı** eklendi (`redactPii` — anahtar + string-desen; yakalanmayan-hata `stack`/`message` riskini kapatır). **YAPILDI (ADR-141).**
-- **FAZ 9.2 — Metrikler & sağlık:** check/detection/delivery oranları, LLM hata oranı, kuyruk derinliği → admin "Operasyon" zenginleştirme.
+- 🟡 **FAZ 9.2 — Metrikler & sağlık:** teslimat **başarı oranı** göstergesi (dayanıklı DB; `deliveryHealth` util + ops baş göstergesi, ADR-142). **KISMEN** — LLM hata oranı (pencereli sayaç) + kuyruk derinliği (pg-boss v12 API belirsiz) ayrı turda.
 - **FAZ 9.3 — Hata izleme `[G]`:** Sentry vb. entegrasyon (backend + mobil); sürüm etiketleme.
 - **FAZ 9.4 — Uyarılar:** eşik-aşımı (hata oranı, kuyruk, ödeme webhook fail) → admin'e/Telegram'a alarm.
 

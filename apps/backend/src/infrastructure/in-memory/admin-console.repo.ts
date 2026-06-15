@@ -27,7 +27,7 @@ export class InMemoryAdminConsoleRepository implements AdminConsoleRepository {
     return {
       days,
       checks: { total: 0, detections: 0, detectionRate: 0, avgConfidence: null, tokensUsed: 0 },
-      deliveries: { total: 0, byStatus: [], byChannel: [] },
+      deliveries: { total: 0, successRate: null, failed: 0, byStatus: [], byChannel: [] },
     };
   }
   async getGrowth(days: number): Promise<AdminGrowth> {

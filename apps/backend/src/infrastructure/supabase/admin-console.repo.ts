@@ -12,6 +12,7 @@ import type {
   BillingInterval,
 } from "../../domain/billing";
 import { addInterval } from "../../domain/billing";
+import { deliveryHealth } from "../shared/delivery-health.util";
 import { dayKey, emptyBuckets, finalizeTimeseries, sinceIso } from "../shared/timeseries.util";
 import type { Database } from "./database.types";
 
@@ -178,6 +179,9 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       confidences.length > 0 ? confidences.reduce((a, c) => a + c, 0) / confidences.length : null;
     const tokensUsed = runs.reduce((a, r) => a + (r.tokens_used ?? 0), 0);
 
+    // ADR-142: teslimat sağlığı (saf hesap → test edilebilir util).
+    const { successRate, failed } = deliveryHealth(dels.map((d) => d.status));
+
     const tally = (rows: { key: string | null }[]): { key: string; count: number }[] => {
       const m = new Map<string, number>();
       for (const r of rows) {
@@ -200,6 +204,8 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
       },
       deliveries: {
         total: dels.length,
+        successRate,
+        failed,
         byStatus: tally(dels.map((d) => ({ key: d.status }))),
         byChannel: tally(dels.map((d) => ({ key: d.channel }))),
       },
