@@ -290,6 +290,10 @@ export const de: Catalog = {
       title: "Dein Pro-Abo ist da",
       body: "Dir wurde ein Jahr Pro kostenlos geschenkt. Alle Pro-Funktionen sind jetzt frei — viel Spaß.",
     },
+    watchLimit: {
+      title: "Du hast dein Überwachungslimit erreicht",
+      body: "Der kostenlose Plan erlaubt 3 aktive Überwachungen. Wechsle zu Pro für bis zu 100 und häufigere Prüfungen.",
+    },
   },
   suggest: {
     appointment: {

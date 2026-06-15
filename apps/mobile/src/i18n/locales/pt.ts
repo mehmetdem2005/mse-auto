@@ -286,6 +286,10 @@ export const pt: Catalog = {
       title: "Sua assinatura Pro está pronta",
       body: "Você ganhou um ano de Pro grátis. Todos os recursos Pro estão liberados — aproveite.",
     },
+    watchLimit: {
+      title: "Você atingiu o limite de monitoramentos",
+      body: "O plano grátis permite 3 monitoramentos ativos. Assine o Pro para ter até 100 e verificações mais frequentes.",
+    },
   },
   suggest: {
     appointment: {

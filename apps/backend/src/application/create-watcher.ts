@@ -1,4 +1,5 @@
 import type { CreateWatchInput, Watch as WatchDto } from "@watcher/contracts";
+import type { AnnouncementRepository } from "../domain/announcement";
 import { effectivePlan } from "../domain/billing";
 import { canonicalize } from "../domain/canonicalize";
 import { PlanLimitError } from "../domain/errors";
@@ -13,6 +14,30 @@ export interface CreateWatcherDeps {
   topics: CanonicalTopicRepository;
   subscriptions: SubscriptionRepository;
   queue: JobQueue;
+  /** ADR-148: limite takılan free kullanıcıya tek-seferlik "Pro'ya yüksel" sistem bildirimi (opsiyonel). */
+  announcements?: AnnouncementRepository | undefined;
+}
+
+/** ADR-148: free kullanıcı watcher limitine takılınca bir kez (dedup'lı) yükselt-bildirimi (best-effort). */
+const LIMIT_TEMPLATE = "watchLimit";
+async function nudgeWatchLimit(
+  announcements: AnnouncementRepository,
+  userId: string,
+  maxActive: number,
+): Promise<void> {
+  if (await announcements.existsForRecipient(userId, LIMIT_TEMPLATE)) return; // dedup: ömürde bir kez
+  await announcements.create({
+    templateKey: LIMIT_TEMPLATE, // istemci kullanıcı dilinde yerelleştirir (notif.watchLimit)
+    title: "Watcher limitine ulaştın",
+    body: `Ücretsiz planda ${maxActive} aktif watcher hakkın var. Pro'ya geçerek 100'e çıkar ve daha sık kontrol et.`,
+    kind: "promo",
+    imageUrl: null,
+    ctaLabel: null,
+    ctaUrl: null,
+    pinned: false,
+    published: true,
+    recipientUserId: userId,
+  });
 }
 
 /** Plan limiti uygula → kanonikleştir → dedup → watch → DTO. */
@@ -33,6 +58,15 @@ export async function createWatcher(
   }
   const active = (await deps.watches.listByUser(userId)).filter((w) => w.status === "active");
   if (active.length >= limits.maxActiveWatches) {
+    // ADR-148: yalnız free kullanıcıya (pro'nun yükselteceği yer yok) tek-seferlik yükselt-bildirimi.
+    // Best-effort: bildirim hatası limiti UYGULAMAYI etkilemez (403 yine döner).
+    if (plan === "free" && deps.announcements) {
+      try {
+        await nudgeWatchLimit(deps.announcements, userId, limits.maxActiveWatches);
+      } catch {
+        // sessiz: sistem-bildirimi başarısızlığı kullanıcı akışını bozmasın
+      }
+    }
     throw new PlanLimitError(
       "watch_limit",
       `Bu planda (${plan}) en fazla ${limits.maxActiveWatches} aktif watcher olabilir.`,

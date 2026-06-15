@@ -82,6 +82,8 @@ function localizedAnnouncement(
       return { title: t("notif.giftProMonth.title"), body: t("notif.giftProMonth.body") };
     case "giftProYear":
       return { title: t("notif.giftProYear.title"), body: t("notif.giftProYear.body") };
+    case "watchLimit":
+      return { title: t("notif.watchLimit.title"), body: t("notif.watchLimit.body") };
     default:
       return { title: a.title, body: a.body };
   }

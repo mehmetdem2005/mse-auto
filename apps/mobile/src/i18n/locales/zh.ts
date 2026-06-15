@@ -275,6 +275,10 @@ export const zh: Catalog = {
       title: "你的 Pro 订阅已就绪",
       body: "你获赠了一年的免费 Pro。所有 Pro 功能现已解锁——尽情使用。",
     },
+    watchLimit: {
+      title: "你已达到监控数量上限",
+      body: "免费套餐可有 3 个活跃监控。升级到 Pro 最多 100 个，检查更频繁。",
+    },
   },
   suggest: {
     appointment: { label: "预约", sentence: "当我需要的官方预约（签证、领事馆等）开放时通知我" },

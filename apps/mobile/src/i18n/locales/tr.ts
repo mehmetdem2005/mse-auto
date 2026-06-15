@@ -282,6 +282,10 @@ export const tr = {
       title: "Pro aboneliğin hazır",
       body: "Sana bir yıllık ücretsiz Pro aboneliği hediye edildi. Tüm Pro özellikleri artık açık — keyfini çıkar.",
     },
+    watchLimit: {
+      title: "Watcher limitine ulaştın",
+      body: "Ücretsiz planda 3 aktif watcher hakkın var. Pro'ya geçerek 100'e çıkar ve daha sık kontrol et.",
+    },
   },
   suggest: {
     appointment: {

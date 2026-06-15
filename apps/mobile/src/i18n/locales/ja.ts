@@ -281,6 +281,10 @@ export const ja: Catalog = {
       title: "Proサブスクリプションが有効になりました",
       body: "1年分の無料Proが贈られました。すべてのPro機能が利用可能です。お楽しみください。",
     },
+    watchLimit: {
+      title: "監視の上限に達しました",
+      body: "無料プランはアクティブな監視 3 件まで。Pro なら最大 100 件、より頻繁にチェックできます。",
+    },
   },
   suggest: {
     appointment: {

@@ -105,4 +105,16 @@ export class SupabaseAnnouncementRepository implements AnnouncementRepository {
     const { error } = await this.db.from("announcements").delete().eq("id", id);
     if (error) throw new Error(`announcement delete: ${error.message}`);
   }
+
+  // ADR-148: sistem-bildirimi dedup — bu kullanıcıya bu şablonla zaten duyuru var mı.
+  async existsForRecipient(userId: string, templateKey: string): Promise<boolean> {
+    const { data, error } = await this.db
+      .from("announcements")
+      .select("id")
+      .eq("recipient_user_id", userId)
+      .eq("template_key", templateKey)
+      .limit(1);
+    if (error) throw new Error(`announcement exists: ${error.message}`);
+    return (data ?? []).length > 0;
+  }
 }
