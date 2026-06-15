@@ -390,6 +390,7 @@ export const tr = {
     saved: "Kanallar kaydedildi.",
     saveFail: "kaydedilemedi",
     disabledByAdmin: "Bu kanal şu anda kapalı. Yeniden açıldığında çalışır.",
+    notReady: "Bu kanal henüz sunucuda kurulmadı. Kurulum tamamlanınca otomatik çalışır.",
   },
 
   quiet: {

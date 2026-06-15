@@ -3,7 +3,7 @@ import { ConsoleShell, ErrText, Loading } from "@/features/admin/ui";
 import { type ChannelAvailability, api } from "@/lib/api";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Mail, MessageCircle, Send } from "lucide-react-native";
+import { Lock, Mail, MessageCircle, Send } from "lucide-react-native";
 import { type ReactNode, useEffect, useState } from "react";
 import { ScrollView, Switch, Text, View } from "react-native";
 
@@ -32,14 +32,16 @@ export default function AdminChannelsScreen(): ReactNode {
   const q = useQuery({ queryKey: ["adminChannelConfig"], queryFn: api.adminChannelConfig });
   const [cfg, setCfg] = useState<ChannelAvailability | null>(null);
   useEffect(() => {
-    if (q.data) setCfg(q.data);
+    if (q.data) setCfg(q.data.availability);
   }, [q.data]);
+  // ADR-152: sunucuda kimlik bilgisi var mı (salt-okunur) — admin açsa bile anahtar yoksa teslim edilemez.
+  const configured = q.data?.configured;
 
   const save = useMutation({
     mutationFn: (next: ChannelAvailability) => api.setAdminChannelConfig(next),
     onSuccess: (data) => {
       qc.setQueryData(["adminChannelConfig"], data);
-      setCfg(data);
+      setCfg(data.availability);
       toast.success("Kanal ayarı güncellendi");
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "kaydedilemedi"),
@@ -93,6 +95,14 @@ export default function AdminChannelsScreen(): ReactNode {
                     ? "AÇIK — kullanıcılar kullanabilir"
                     : "KAPALI — kullanıcılara 'şu an kapalı' gösterilir"}
                 </Text>
+                {configured && !configured[r.key] ? (
+                  <View className="flex-row items-center gap-2 bg-warn/10 border border-warn/30 rounded-xl px-3 py-2.5 mt-2">
+                    <Lock size={13} color="#B45309" />
+                    <Text className="text-warn text-[11px] flex-1 leading-4">
+                      Sunucuda kimlik bilgisi yok — bu kanal, anahtar eklenene dek teslim edilemez.
+                    </Text>
+                  </View>
+                ) : null}
               </View>
             ))}
           </>

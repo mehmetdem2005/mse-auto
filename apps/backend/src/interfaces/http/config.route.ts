@@ -1,12 +1,18 @@
 import { OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import { appConfigSchema } from "@watcher/contracts";
-import { getChannelAvailability } from "../../application/channel-config";
+import {
+  configuredAvailability,
+  effectiveAvailability,
+  getChannelAvailability,
+} from "../../application/channel-config";
 import type { Container } from "../../config/container";
 import type { AuthVariables } from "./auth.middleware";
 
 /**
- * Kullanıcı uygulamasının okuduğu genel yapılandırma (ADR-107).
- * Şimdilik: admin'in açtığı ek kanallar (kanal ekranı kapalı kanalı uyarıyla gösterir).
+ * Kullanıcı uygulamasının okuduğu genel yapılandırma (ADR-107 + ADR-152).
+ * `channels` = ETKİN kullanılabilirlik (admin AÇTI ve sunucuda kimlik bilgisi var);
+ * `channelsConfigured` = sunucuda kimlik bilgisi var mı → kanal ekranı "kapalı" ile
+ * "henüz hazır değil" (sunucu kurulumu gerekiyor) ayrımını dürüstçe gösterir (sessiz başarısızlık yok).
  */
 export function configRoutes(container: Container): OpenAPIHono<{ Variables: AuthVariables }> {
   const app = new OpenAPIHono<{ Variables: AuthVariables }>();
@@ -23,7 +29,14 @@ export function configRoutes(container: Container): OpenAPIHono<{ Variables: Aut
         },
       },
     }),
-    async (c) => c.json({ channels: await getChannelAvailability(container.settings) }, 200),
+    async (c) => {
+      const admin = await getChannelAvailability(container.settings);
+      const configured = configuredAvailability(container.channels.map((ch) => ch.kind));
+      return c.json(
+        { channels: effectiveAvailability(admin, configured), channelsConfigured: configured },
+        200,
+      );
+    },
   );
   return app;
 }

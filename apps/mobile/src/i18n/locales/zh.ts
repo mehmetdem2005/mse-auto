@@ -343,6 +343,7 @@ export const zh: Catalog = {
     saved: "渠道已保存。",
     saveFail: "保存失败",
     disabledByAdmin: "此渠道当前已关闭，重新启用后即可使用。",
+    notReady: "此渠道尚未在服务器上配置。配置完成后将自动启用。",
   },
 
   quiet: {

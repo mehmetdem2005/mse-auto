@@ -395,6 +395,8 @@ export const en: Catalog = {
     saved: "Channels saved.",
     saveFail: "could not save",
     disabledByAdmin: "This channel is currently unavailable. It will work once re-enabled.",
+    notReady:
+      "This channel isn't set up on the server yet. It will work automatically once configured.",
   },
 
   quiet: {

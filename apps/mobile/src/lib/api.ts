@@ -61,7 +61,15 @@ export interface ChannelAvailability {
   email: boolean;
 }
 export interface AppConfig {
+  /** Etkin kullanılabilirlik (ADR-152): admin AÇTI ve sunucuda kimlik bilgisi var. */
   channels: ChannelAvailability;
+  /** Sunucuda kimlik bilgisi mevcut mu — "kapalı" ile "henüz hazır değil" ayrımı için. */
+  channelsConfigured: ChannelAvailability;
+}
+/** Admin kanal görünümü (ADR-152): aç/kapa tercihi + sunucuda kimlik bilgisi var mı. */
+export interface AdminChannelConfig {
+  availability: ChannelAvailability;
+  configured: ChannelAvailability;
 }
 /** Kullanıcı AI kişiselleştirme (ADR-113). */
 export interface UserAiProfile {
@@ -517,9 +525,9 @@ export const api = {
   aiProfile: () => req<UserAiProfile>("/v1/me/ai-profile"),
   setAiProfile: (p: UserAiProfile) =>
     req<UserAiProfile>("/v1/me/ai-profile", { method: "PUT", body: JSON.stringify(p) }),
-  adminChannelConfig: () => req<ChannelAvailability>("/v1/admin/channel-config"),
+  adminChannelConfig: () => req<AdminChannelConfig>("/v1/admin/channel-config"),
   setAdminChannelConfig: (cfg: ChannelAvailability) =>
-    req<ChannelAvailability>("/v1/admin/channel-config", {
+    req<AdminChannelConfig>("/v1/admin/channel-config", {
       method: "PUT",
       body: JSON.stringify(cfg),
     }),

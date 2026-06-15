@@ -1,10 +1,12 @@
 import { type OpenAPIHono, createRoute } from "@hono/zod-openapi";
 import {
+  adminChannelConfigSchema,
   channelAvailabilitySchema,
   emailPromptConfigSchema,
   setEmailPromptInputSchema,
 } from "@watcher/contracts";
 import {
+  configuredAvailability,
   getChannelAvailability,
   setChannelAvailability,
 } from "../../../application/channel-config";
@@ -29,15 +31,22 @@ export function registerChannelsAdminRoutes(
       method: "get",
       path: "/channel-config",
       tags: ["admin"],
-      summary: "Ek kanal desteği aç/kapa durumu",
+      summary: "Ek kanal desteği aç/kapa durumu + sunucuda kimlik bilgisi var mı (ADR-152)",
       responses: {
         200: {
-          content: { "application/json": { schema: channelAvailabilitySchema } },
-          description: "Kanal durumu",
+          content: { "application/json": { schema: adminChannelConfigSchema } },
+          description: "Kanal durumu (availability + configured)",
         },
       },
     }),
-    async (c) => c.json(await getChannelAvailability(container.settings), 200),
+    async (c) =>
+      c.json(
+        {
+          availability: await getChannelAvailability(container.settings),
+          configured: configuredAvailability(container.channels.map((ch) => ch.kind)),
+        },
+        200,
+      ),
   );
 
   app.openapi(
@@ -51,8 +60,8 @@ export function registerChannelsAdminRoutes(
       },
       responses: {
         200: {
-          content: { "application/json": { schema: channelAvailabilitySchema } },
-          description: "Güncel durum",
+          content: { "application/json": { schema: adminChannelConfigSchema } },
+          description: "Güncel durum (availability + configured)",
         },
       },
     }),
@@ -60,7 +69,13 @@ export function registerChannelsAdminRoutes(
       const v = c.req.valid("json");
       await setChannelAvailability(container.settings, v);
       await audit(c.get("userId"), "channels.config", "settings", null, v);
-      return c.json(v, 200);
+      return c.json(
+        {
+          availability: v,
+          configured: configuredAvailability(container.channels.map((ch) => ch.kind)),
+        },
+        200,
+      );
     },
   );
 

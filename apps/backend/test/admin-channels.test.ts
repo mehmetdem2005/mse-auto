@@ -53,7 +53,11 @@ describe("admin kanal aç/kapa (ADR-107)", () => {
     const app = makeApp();
     const g = await app.request("/v1/admin/channel-config", { headers: auth("boss") });
     expect(g.status).toBe(200);
-    expect(await g.json()).toEqual({ telegram: true, whatsapp: true, email: true });
+    // ADR-152: availability (admin tercihi) + configured (sunucuda kimlik bilgisi; test env'de yok).
+    expect(await g.json()).toEqual({
+      availability: { telegram: true, whatsapp: true, email: true },
+      configured: { telegram: false, whatsapp: false, email: false },
+    });
 
     const p = await app.request("/v1/admin/channel-config", {
       method: "PUT",
@@ -64,12 +68,15 @@ describe("admin kanal aç/kapa (ADR-107)", () => {
 
     const g2 = (await (
       await app.request("/v1/admin/channel-config", { headers: auth("boss") })
-    ).json()) as { whatsapp: boolean };
-    expect(g2.whatsapp).toBe(false);
+    ).json()) as { availability: { whatsapp: boolean } };
+    expect(g2.availability.whatsapp).toBe(false);
 
+    // /v1/config: channels = ETKİN (admin AND configured). Kimlik bilgisi yok → dürüstçe false.
     const cfg = (await (await app.request("/v1/config", { headers: auth("boss") })).json()) as {
       channels: { whatsapp: boolean };
+      channelsConfigured: { whatsapp: boolean };
     };
+    expect(cfg.channelsConfigured.whatsapp).toBe(false);
     expect(cfg.channels.whatsapp).toBe(false);
   });
 

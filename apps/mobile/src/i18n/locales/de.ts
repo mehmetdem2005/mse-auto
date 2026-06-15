@@ -408,6 +408,8 @@ export const de: Catalog = {
     saveFail: "konnte nicht gespeichert werden",
     disabledByAdmin:
       "Dieser Kanal ist derzeit deaktiviert. Er funktioniert, sobald er wieder aktiviert wird.",
+    notReady:
+      "Dieser Kanal ist auf dem Server noch nicht eingerichtet. Er funktioniert automatisch, sobald er konfiguriert ist.",
   },
 
   quiet: {
