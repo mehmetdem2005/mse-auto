@@ -1274,3 +1274,29 @@ Kullanıcının verdiği test secret key + Render API key ile Stripe uçtan uca 
 - **Doğrulama:** mobil typecheck 4/4 · biome temiz.
 - **DÜRÜST SINIR:** Backend `admin.route.ts` **968 satır / ~40 rota** tek dosyada (monolit) — gerçekten domain-modüllerine bölünmeyi hak ediyor, AMA canlı admin router'ını (para/hediye/duyuru/abonelik uçları) bu uzun oturumun sonunda aceleyle bölmek **riskli** (tüm rotalar testli değil; sessiz kırılma riski). Ayrı, **test-korumalı bir refactor** olarak önerildi — bu turda YAPILMADI (ABARTMA YOK). Kullanıcının GÖRDÜĞÜ karışıklık (frontend nav) düzeltildi.
 - **ISO/TOGAF:** 25010 Kullanılabilirlik (gruplu nav, tarama kolaylığı) + Bakımkolaylığı (gruplu veri yapısı) · 9241 (bilgi mimarisi) · TOGAF Phase C(App) **Düzeltici**.
+
+### Yol haritası (2026-06-15) — docs/faz-plani.md
+Kullanıcı "onlarca fazlık profesyonel modüler plan" istedi → `docs/faz-plani.md` oluşturuldu:
+12 modül (M1 Backend modülerleştirme · M2 Ödeme&Abonelik · M3 RAG · M4 Agentic asistan · M5 Bildirim ·
+M6 Admin olgunlaşma · M7 İzleme güvenilirliği · M8 Mobil UX/a11y · M9 Gözlemlenebilirlik · M10 Güvenlik/uyumluluk ·
+M11 Test · M12 Büyüme), ~45 faz; her faz Amaç/Çıktı/Bağımlılık/[M]migration/[G]harici-anahtar/risk + ADR-EA-gate disiplini.
+Önerilen sıra: M1 → M2.1-2.2 → M6.1+M9 → M3 → M7 → M10+M11 → kalanlar.
+
+## ADR-137 — admin.route.ts modülerleştirme: 968-satır monolit → 8 domain route modülü (M1 / FAZ 1.1-1.4)
+- **Durum:** Kabul · kullanıcı "onlarca fazlık profesyonel modüler plan" + "devam" → M1 başlatıldı. Sınıf: **Yeniden-yapılandırma (saf refactor — davranış DEĞİŞMEZ)**. ADR-136'nın "DÜRÜST SINIR"ında RİSKLİ diye ertelenen "test-korumalı backend split"i, kendi başına faz olarak bu ADR'de yapıldı.
+- **Önce:** `interfaces/http/admin.route.ts` tek dosyada **968 satır / 41 rota** (analitik · AI · içerik · fatura · kullanıcı · kanal · watcher · destek · sistem) — bakımı zor, gözden geçirmesi ağır.
+- **Yapılan (composition pattern — sub-app DEĞİL):** her domain kendi `admin/<domain>.route.ts` modülünde `register*AdminRoutes(app, container[, audit])` ile rotalarını **AYNI app örneğine** kaydeder. `app.route("/", subApp)` mount yerine aynı instance'a kayıt → OpenAPI yolları + Hono eşleşmesi + davranış **birebir** korunur (en düşük risk):
+  - `admin/_shared.ts` (24 satır) — `okSchema`/`jsonOk` + `AdminAudit` tipi (modüller arası DRY).
+  - `admin/system.route.ts` (173) — analytics · timeseries · traffic · providers · ops · growth · audit · system (salt-okunur gözlem).
+  - `admin/ai.route.ts` (116) — model + embeddings (ADR-095 / ADR-127).
+  - `admin/content.route.ts` (153) — duyuru CRUD (ADR-100) + push yayını (ADR-104; audit).
+  - `admin/billing.route.ts` (108) — fiyatlar + abonelik + CSV dışa aktarım (ADR-103).
+  - `admin/users.route.ts` (200) — kullanıcı liste/detay (ADR-101) + eylemler: yetki/sil/hediye/iptal/ban (ADR-104; audit).
+  - `admin/channels.route.ts` (107) — kanal aç-kapa (ADR-107) + e-posta besteci istemi (ADR-109; audit).
+  - `admin/watches.route.ts` (102) — watcher liste/durum/sil/timeline.
+  - `admin/support.route.ts` (113) — destek talepleri (ADR-044).
+  - `admin.route.ts` artık **44 satır** ve YALNIZ kompozisyon: app + `audit` helper + 8 `register*` çağrısı.
+- **audit DRY:** ADR-104 denetim günlüğü yardımcısı admin.route.ts'te TEK yerde tanımlanır; YAZMA içeren modüllere (`users`/`content`/`channels`) `AdminAudit` tipiyle param geçer; salt-okunur modüller (system/ai/billing/watches/support) audit almaz.
+- **Doğrulama:** biome temiz · backend typecheck 0 hata · **202 test / 38 dosya GEÇTİ**. Mevcut testler taşınan rotaları ÇALIŞMA ANINDA vurur (registration wiring kanıtı): `/admin/analytics`+`/timeseries`→system · `/support`+reply+close→support · `/users/{id}/ban`→users · `/growth`+`/export/*.csv`→system/billing · announcements→content. 41 rota statik doğrulandı: tüm **metot+yol çiftleri benzersiz** (OpenAPI/route çakışması yok). Hiçbir dosya >300 satır (plan M1 "Çıktı" hedefi). Hiçbir rota düşmedi/eklenmedi (41=41).
+- **DÜRÜST SINIR:** **FAZ 1.5** (application katmanı: büyük use-case bölme + `container.ts` modül-fabrikaları + ölü kod ayıklama) bu turda YAPILMADI — sıradaki iş (ABARTMA YOK). Diğer monolitler (ör. `app.ts`) henüz bölünmedi. OpenAPI doc'ta rota **SIRASI** değişti (kozmetik; şema + davranış aynı).
+- **ISO/TOGAF:** 25010 **Bakımkolaylığı** (modülerlik · analiz-edilebilirlik · değiştirilebilirlik — ana kazanım) + İşlevsel Uygunluk (davranış korundu) · 42010 (interfaces/http görünümü netleşti) · TOGAF Phase C(App) **saf refactor / mimari hijyen** · migration YOK · RM: P4 (sınırlar contracts'tan türer; OpenAPI sözleşmesi korunur).
