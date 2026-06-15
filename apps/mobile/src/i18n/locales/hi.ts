@@ -369,6 +369,7 @@ export const hi: Catalog = {
     saveFail: "सहेजा नहीं जा सका",
     disabledByAdmin: "यह चैनल फ़िलहाल बंद है। दोबारा सक्षम होने पर यह काम करेगा।",
     notReady: "यह चैनल अभी सर्वर पर सेट नहीं हुआ है। कॉन्फ़िगर होते ही यह अपने आप काम करेगा।",
+    telegramConnect: "Telegram जोड़ें (एक टैप)",
   },
 
   quiet: {

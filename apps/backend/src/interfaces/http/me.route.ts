@@ -164,6 +164,36 @@ export function meRoutes(container: Container): OpenAPIHono<{ Variables: AuthVar
     },
   );
 
+  // ADR-153 — Telegram tek-dokunuş bağlama: tek-kullanımlık kod + bota derin bağlantı üretir.
+  // Kullanıcı linke dokunur → bota /start <kod> gider → webhook chat_id'yi hesaba bağlar (chat
+  // kimliğiyle elle uğraşmak yok). Bot yapılandırılmadıysa url=null (uygulama "henüz hazır değil" der).
+  app.openapi(
+    createRoute({
+      method: "post",
+      path: "/channels/telegram-link",
+      tags: ["me"],
+      summary: "Telegram bağlama bağlantısı üret (tek dokunuş)",
+      responses: {
+        200: {
+          content: {
+            "application/json": {
+              schema: z.object({ url: z.string().nullable(), code: z.string() }),
+            },
+          },
+          description: "Bağlama linki",
+        },
+      },
+    }),
+    async (c) => {
+      const bot = container.telegramBot;
+      if (!bot) return c.json({ url: null, code: "" }, 200);
+      const code = container.telegramLinks.create(c.get("userId"));
+      const me = await bot.getMe();
+      const url = me ? `https://t.me/${me.username}?start=${code}` : null;
+      return c.json({ url, code }, 200);
+    },
+  );
+
   // ADR-113 — AI kişiselleştirme (kendini tanıt + ek dikkat); asistana enjekte edilir.
   app.openapi(
     createRoute({

@@ -35,6 +35,14 @@ async function main(): Promise<void> {
       roles: "http+monitoring+delivery+scheduler",
     });
   });
+
+  // Telegram webhook kaydı (ADR-153): bot + genel URL varsa, gelen mesajları /telegram/webhook'a
+  // yönlendir. Her dağıtımda idempotent çalışır; başarısızlık boot'u düşürmez (bot pasif kalır).
+  const baseUrl = env.RENDER_EXTERNAL_URL ?? env.APP_URL;
+  if (container.telegramBot && baseUrl) {
+    const ok = await container.telegramBot.setWebhook(`${baseUrl}/telegram/webhook`);
+    logger.info("telegram_webhook_set", { ok });
+  }
 }
 
 main().catch((err: unknown) => {

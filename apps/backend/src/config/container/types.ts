@@ -1,5 +1,6 @@
 import type { EmbeddingRouter } from "../../application/embeddings-config";
 import type { LlmModelRouter } from "../../application/llm-config";
+import type { TelegramLinkStore } from "../../application/telegram";
 import type { AccountGateway } from "../../domain/account";
 import type { AiProfileRepository } from "../../domain/ai-profile";
 import type { AnnouncementRepository } from "../../domain/announcement";
@@ -32,6 +33,7 @@ import type { SubscriptionRepository } from "../../domain/subscription";
 import type { SupportRepository } from "../../domain/support";
 import type { TrafficRepository } from "../../domain/traffic";
 import type { EventVerifier } from "../../domain/verifier";
+import type { TelegramBotApi } from "../../infrastructure/channels/telegram-bot";
 
 /**
  * Composition root sözleşmesi (ADR-137 — container modülerleştirme). Bu arayüz `config/container.ts`
@@ -56,6 +58,10 @@ export interface Container {
   announcements: AnnouncementRepository;
   userChannels: UserChannelRepository;
   channels: ChannelSender[];
+  /** Telegram bot kontrolü (ADR-153) — webhook yanıtı + getMe + setWebhook; token yoksa null. */
+  telegramBot: TelegramBotApi | null;
+  /** Telegram tek-kullanımlık bağlama kodu deposu (ADR-153) — bellek-içi (combined process). */
+  telegramLinks: TelegramLinkStore;
   /** Kimliksiz trafik telemetrisi (ADR-091). */
   traffic: TrafficRepository;
   checker: Checker;

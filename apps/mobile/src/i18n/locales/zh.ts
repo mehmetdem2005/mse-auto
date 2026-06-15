@@ -344,6 +344,7 @@ export const zh: Catalog = {
     saveFail: "保存失败",
     disabledByAdmin: "此渠道当前已关闭，重新启用后即可使用。",
     notReady: "此渠道尚未在服务器上配置。配置完成后将自动启用。",
+    telegramConnect: "连接 Telegram（一键）",
   },
 
   quiet: {

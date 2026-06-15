@@ -6,6 +6,7 @@ import {
 import { getEffectiveEmailPrompt } from "../application/email-prompt";
 import { EmbeddingRouter } from "../application/embeddings-config";
 import { LlmModelRouter } from "../application/llm-config";
+import { InMemoryTelegramLinkStore } from "../application/telegram";
 import type { AgentTool } from "../domain/agent";
 import type { EmailComposer } from "../domain/channels";
 import type { EmbeddingProvider, EmbeddingProviderId } from "../domain/embeddings";
@@ -14,6 +15,7 @@ import type { JobQueue } from "../domain/queue";
 import type { RagStore } from "../domain/rag";
 import type { SettingsRepository } from "../domain/settings";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
+import { TelegramBotApi } from "../infrastructure/channels/telegram-bot";
 import { GeminiEmbeddings } from "../infrastructure/embeddings/gemini.embeddings";
 import { OpenAiEmbeddings } from "../infrastructure/embeddings/openai.embeddings";
 import { SwitchableEmbedder } from "../infrastructure/embeddings/switchable.embedder";
@@ -158,6 +160,10 @@ export function createContainer(env: Env): Container {
   const notifier = buildNotifier(env);
   const pushActive = !!(env.FCM_PROJECT_ID && env.GOOGLE_SERVICE_ACCOUNT_JSON);
   const channels = buildChannels(env);
+  // Telegram bot kontrolü (ADR-153): token varsa "konuşur + otomatik bağlanır" webhook akışı; yoksa null.
+  // Bağlama kodu deposu her zaman kurulur (combined process → kod üreten uç + webhook aynı bellek).
+  const telegramBot = env.TELEGRAM_BOT_TOKEN ? new TelegramBotApi(env.TELEGRAM_BOT_TOKEN) : null;
+  const telegramLinks = new InMemoryTelegramLinkStore();
   const auth = buildAuth(env);
   const payment = buildPayment(env);
   const queue: JobQueue = env.DATABASE_URL
@@ -181,6 +187,8 @@ export function createContainer(env: Env): Container {
     ...repositories,
     settings,
     channels,
+    telegramBot,
+    telegramLinks,
     pushActive,
     embeddingRouter,
     embedder,

@@ -404,6 +404,7 @@ export const fr: Catalog = {
     disabledByAdmin: "Ce canal est actuellement désactivé. Il fonctionnera une fois réactivé.",
     notReady:
       "Ce canal n'est pas encore configuré sur le serveur. Il fonctionnera automatiquement une fois configuré.",
+    telegramConnect: "Connecter Telegram (en un geste)",
   },
 
   quiet: {

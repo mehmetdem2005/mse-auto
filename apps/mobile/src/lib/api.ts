@@ -521,6 +521,9 @@ export const api = {
   channels: () => req<UserChannels>("/v1/me/channels"),
   setChannels: (c: UserChannels) =>
     req<UserChannels>("/v1/me/channels", { method: "PUT", body: JSON.stringify(c) }),
+  // ADR-153: tek-dokunuş Telegram bağlama — bota derin bağlantı (url) + tek-kullanımlık kod döner.
+  linkTelegram: () =>
+    req<{ url: string | null; code: string }>("/v1/me/channels/telegram-link", { method: "POST" }),
   appConfig: () => req<AppConfig>("/v1/config"),
   aiProfile: () => req<UserAiProfile>("/v1/me/ai-profile"),
   setAiProfile: (p: UserAiProfile) =>
