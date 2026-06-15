@@ -43,7 +43,13 @@ export async function dispatchEventDeliveries(
   let failed = 0;
   for (const delivery of pending) {
     const tokens = await deps.devices.listTokens(delivery.userId);
-    if (tokens.length === 0) {
+    // Kişisel (personal) teslimde eşleşme kararı CİHAZDA verilir (gate=1) → cihaz yoksa
+    // sunucunun yapabileceği bir şey yoktur (ek kanal da cihazın bastıracağı uyarıyı sızdırırdı).
+    // ADR-151: paylaşılan (shared) teslimde push token YOKSA BİLE ek kanallar (e-posta/telegram/
+    // whatsapp) denenmelidir — aksi halde push cihazı olmayan ama kanal tanımlamış kullanıcıya
+    // HİÇ ulaşılamaz (erken `continue` ek-kanal bloğunu tümden atlıyordu). Token yoksa push döngüsü
+    // boş geçer; shared'da akış ek-kanal bloğuna düşer, personal'da burada `failed` ile biter.
+    if (tokens.length === 0 && delivery.archetype === "personal") {
       await deps.monitoring.markDeliveryStatus(delivery.id, "failed");
       failed++;
       continue;
