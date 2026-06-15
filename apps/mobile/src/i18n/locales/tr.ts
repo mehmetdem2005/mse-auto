@@ -234,10 +234,19 @@ export const tr = {
     plansNote: "Ödeme entegrasyonu yakında — fiyatlar aşağıda, satın alma henüz kapalı.",
     perMonth: "ay",
     perYear: "yıl",
+    checkoutError: "Ödeme başlatılamadı, tekrar dener misin?",
+    checkoutLoading: "Yönlendiriliyor…",
     invoices: "fatura geçmişi",
     invoicesEmpty: "Henüz fatura yok",
     invoicesHint:
       "Ödeme entegrasyonu açıldığında faturaların burada listelenecek ve indirilebilecek.",
+  },
+  billing: {
+    successTitle: "Ödeme alındı",
+    successBody: "Pro aboneliğin işleniyor; birkaç saniye içinde hesabına yansıyacak.",
+    cancelTitle: "Ödeme iptal edildi",
+    cancelBody: "Hiçbir şey değişmedi. İstediğinde tekrar deneyebilirsin.",
+    toApp: "Uygulamaya dön",
   },
   suggest: {
     appointment: {

@@ -232,9 +232,18 @@ export const ar: Catalog = {
     plansNote: "سيتم الدفع قريباً — الأسعار أدناه، ولكن الشراء لم يعد متاحًا بعد.",
     perMonth: "شهر",
     perYear: "سنة",
+    checkoutError: "تعذّر بدء الدفع — هل تريد المحاولة مرة أخرى؟",
+    checkoutLoading: "جارٍ التحويل…",
     invoices: "سجل الفواتير",
     invoicesEmpty: "لا توجد فواتير بعد",
     invoicesHint: "بمجرد تشغيل الدفع، سيتم عرض فواتيرك هنا ويمكنك تنزيلها.",
+  },
+  billing: {
+    successTitle: "تم استلام الدفع",
+    successBody: "يتم معالجة اشتراك Pro الخاص بك؛ سيظهر في حسابك خلال ثوانٍ.",
+    cancelTitle: "أُلغيت عملية الدفع",
+    cancelBody: "لم يتغير شيء. يمكنك المحاولة مرة أخرى متى شئت.",
+    toApp: "العودة إلى التطبيق",
   },
   suggest: {
     appointment: {

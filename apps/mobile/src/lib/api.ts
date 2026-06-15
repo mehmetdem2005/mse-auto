@@ -468,6 +468,12 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ plan: "pro", interval }),
     }),
+  /** ADR-133: gerçek Stripe ödeme oturumu başlat → dönen URL tarayıcıda/WebBrowser'da açılır. */
+  checkout: (interval: BillingInterval) =>
+    req<{ url: string }>("/v1/billing/checkout", {
+      method: "POST",
+      body: JSON.stringify({ interval }),
+    }),
   cancel: () => req<Subscription>("/v1/subscription/cancel", { method: "POST" }),
   registerDevice: (fcmToken: string, platform: "android" | "ios") =>
     req<{ ok: boolean }>("/v1/devices", {

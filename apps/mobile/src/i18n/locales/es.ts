@@ -235,9 +235,19 @@ export const es: Catalog = {
     plansNote: "Pagos próximamente — precios abajo, compra aún no disponible.",
     perMonth: "mes",
     perYear: "año",
+    checkoutError: "No se pudo iniciar el pago, ¿quieres intentarlo de nuevo?",
+    checkoutLoading: "Redirigiendo…",
     invoices: "historial de facturas",
     invoicesEmpty: "Aún no hay facturas",
     invoicesHint: "Cuando los pagos estén activos, tus facturas se listarán y descargarán aquí.",
+  },
+  billing: {
+    successTitle: "Pago recibido",
+    successBody:
+      "Tu suscripción Pro se está procesando; se reflejará en tu cuenta en unos segundos.",
+    cancelTitle: "Pago cancelado",
+    cancelBody: "No cambió nada. Puedes intentarlo de nuevo cuando quieras.",
+    toApp: "Volver a la app",
   },
   suggest: {
     appointment: {

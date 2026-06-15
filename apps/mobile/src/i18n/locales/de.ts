@@ -240,10 +240,19 @@ export const de: Catalog = {
     plansNote: "Zahlungen kommen bald — Preise unten, Kauf noch nicht aktiviert.",
     perMonth: "Monat",
     perYear: "Jahr",
+    checkoutError: "Bezahlung konnte nicht gestartet werden — erneut versuchen?",
+    checkoutLoading: "Weiterleitung…",
     invoices: "Rechnungshistorie",
     invoicesEmpty: "Noch keine Rechnungen",
     invoicesHint:
       "Sobald Zahlungen live sind, werden deine Rechnungen hier aufgelistet und können heruntergeladen werden.",
+  },
+  billing: {
+    successTitle: "Zahlung erhalten",
+    successBody: "Dein Pro-Abo wird verarbeitet; es erscheint in wenigen Sekunden in deinem Konto.",
+    cancelTitle: "Zahlung abgebrochen",
+    cancelBody: "Nichts wurde geändert. Du kannst es jederzeit erneut versuchen.",
+    toApp: "Zurück zur App",
   },
   suggest: {
     appointment: {

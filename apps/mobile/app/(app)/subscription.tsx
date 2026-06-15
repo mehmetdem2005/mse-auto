@@ -2,13 +2,14 @@
 import { EnterItem } from "@/components/motion";
 import { Badge, Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
-import { api } from "@/lib/api";
+import { type BillingInterval, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BellRing, Crown, FileText, Gauge, Music } from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import { BellRing, ChevronRight, Crown, FileText, Gauge, Music } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 
 function money(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {
@@ -40,6 +41,17 @@ export default function SubscriptionScreen() {
   const cancel = useMutation({
     mutationFn: () => api.cancel(),
     onSuccess: () => qc.invalidateQueries({ queryKey: qk.subscription }),
+  });
+
+  // ADR-133: gerçek Stripe ödeme akışı — checkout URL'ini al, tarayıcıda/WebBrowser'da aç.
+  // Web'de success_url (/billing/success) geri döner; native'de tarayıcı kapanınca aboneliği yenile.
+  const checkout = useMutation({
+    mutationFn: (interval: BillingInterval) => api.checkout(interval),
+    onSuccess: async ({ url }) => {
+      await WebBrowser.openBrowserAsync(url);
+      qc.invalidateQueries({ queryKey: qk.subscription });
+    },
+    onError: () => Alert.alert(t("sub.upgrade"), t("sub.checkoutError")),
   });
 
   if (sub.isLoading) {
@@ -143,11 +155,13 @@ export default function SubscriptionScreen() {
             </View>
           </EnterItem>
 
-          {/* Birincil CTA (maket: Planı Yükselt) — ödeme kapalıyken dürüst uyarı */}
+          {/* Birincil CTA (maket: Planı Yükselt) — gerçek Stripe checkout (ADR-133); varsayılan aylık. */}
           {!isPro ? (
             <View className="mt-4">
-              <Btn onPress={() => Alert.alert(t("sub.upgrade"), t("sub.upgradeMsg"))}>
-                <Text className="text-onAccent text-[14px] font-semibold">{t("sub.upgrade")}</Text>
+              <Btn onPress={() => checkout.mutate("month")} disabled={checkout.isPending}>
+                <Text className="text-onAccent text-[14px] font-semibold">
+                  {checkout.isPending ? t("sub.checkoutLoading") : t("sub.upgrade")}
+                </Text>
               </Btn>
             </View>
           ) : null}
@@ -196,11 +210,15 @@ export default function SubscriptionScreen() {
                 <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">
                   {t("sub.plans")}
                 </Text>
-                <Text className="text-muted text-xs mb-3">{t("sub.plansNote")}</Text>
                 {plans.data?.prices.map((p) => (
-                  <View
+                  // ADR-133: Pro değilken plan satırı dokunulabilir → o aralıkla Stripe checkout.
+                  <Pressable
                     key={`${p.plan}-${p.interval}`}
-                    className="flex-row items-center justify-between border border-line rounded-xl p-4 mb-2"
+                    onPress={() => !isPro && checkout.mutate(p.interval)}
+                    disabled={isPro || checkout.isPending}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${p.plan} ${p.interval === "month" ? t("sub.monthly") : t("sub.yearly")} — ${t("sub.upgrade")}`}
+                    className="flex-row items-center justify-between border border-line rounded-xl p-4 mb-2 min-h-[44px]"
                   >
                     <View>
                       <Text className="text-accent text-sm font-semibold uppercase">
@@ -211,8 +229,12 @@ export default function SubscriptionScreen() {
                         {p.interval === "month" ? t("sub.perMonth") : t("sub.perYear")}
                       </Text>
                     </View>
-                    <Badge tone="muted">{t("common.soon")}</Badge>
-                  </View>
+                    {isPro ? (
+                      <Badge tone="muted">{t("common.soon")}</Badge>
+                    ) : (
+                      <ChevronRight size={18} color={theme.colors.accent} />
+                    )}
+                  </Pressable>
                 ))}
               </View>
             </EnterItem>
