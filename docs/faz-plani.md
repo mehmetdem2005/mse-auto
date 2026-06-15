@@ -16,12 +16,12 @@
 
 ## M1 — Backend Modülerleştirme (bakımkolaylığı temeli)
 *Amaç: 968 satırlık `admin.route.ts` ve diğer monolitleri domain modüllerine böl; test güvenli.*
-- **FAZ 1.1 — Admin route split (kullanıcılar+abonelik):** `admin/users.route.ts` + `admin/billing.route.ts`; ortak `audit`/`jsonOk`/şema helper'larını `admin/_shared.ts`'e çıkar. Risk: orta (testle korunur). ADR.
-- **FAZ 1.2 — Admin route split (içerik+kanallar):** `admin/content.route.ts` (announcements/broadcast) + `admin/channels.route.ts` (channel-config/email-prompt).
-- **FAZ 1.3 — Admin route split (sistem+analitik+AI):** `admin/system.route.ts` (ops/system/providers/audit/timeseries/traffic/growth/analytics) + `admin/ai.route.ts` (model/embeddings). `admin.route.ts` yalnız composition (mount).
-- **FAZ 1.4 — Watcher/support route ayrımı:** `admin/watches.route.ts` + `admin/support.route.ts`; her birine birim test.
-- **FAZ 1.5 — Application katmanı denetimi:** büyük use-case dosyalarını bölme, ölü kod ayıklama, container.ts'i modül-fabrikalarına ayırma.
-- **Çıktı:** Hiçbir dosya >300 satır; her domain kendi route+test modülünde. Davranış DEĞİŞMEZ (saf refactor).
+- ✅ **FAZ 1.1 — Admin route split (kullanıcılar+abonelik):** `admin/users.route.ts` (liste/detay+eylemler) + `admin/billing.route.ts` (fiyat/abonelik/CSV); ortak `audit`/`jsonOk`/`AdminAudit` → `admin/_shared.ts`. **YAPILDI (ADR-137).**
+- ✅ **FAZ 1.2 — Admin route split (içerik+kanallar):** `admin/content.route.ts` (announcements/broadcast) + `admin/channels.route.ts` (channel-config/email-prompt). **YAPILDI (ADR-137).**
+- ✅ **FAZ 1.3 — Admin route split (sistem+analitik+AI):** `admin/system.route.ts` (analytics/timeseries/traffic/providers/ops/growth/audit/system) + `admin/ai.route.ts` (model/embeddings). `admin.route.ts` artık yalnız composition (968→44 satır). **YAPILDI (ADR-137).**
+- ✅ **FAZ 1.4 — Watcher/support route ayrımı:** `admin/watches.route.ts` + `admin/support.route.ts`. **YAPILDI (ADR-137).** _DÜRÜST: dedike per-modül test dosyası eklenmedi; mevcut `http.test.ts` taşınan rotaları (support akışı, timeseries, analytics) çalışma anında kapsar — ileride modül-bazlı testler eklenebilir._
+- ▶ **FAZ 1.5 — Application katmanı denetimi (SIRADAKİ):** büyük use-case dosyalarını bölme, ölü kod ayıklama, container.ts'i modül-fabrikalarına ayırma.
+- **Çıktı:** Hiçbir dosya >300 satır _(route modülleri için SAĞLANDI: en büyük users.route.ts=200)_; her domain kendi route modülünde. Davranış DEĞİŞMEZ (saf refactor; 202 test geçti).
 
 ## M2 — Ödeme & Abonelik (gelir hattı)
 *Amaç: Stripe'ı canlıya al, planları dinamikleştir, fatura/iade/dunning ekle, TR alternatifi.*
