@@ -1266,3 +1266,11 @@ Kullanıcının verdiği test secret key + Render API key ile Stripe uçtan uca 
 - Render `watcher-backend` servisine 5 env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PRO_MONTH/YEAR, APP_URL → redeploy CANLI.
 - Gizli değerler (sk/whsec/Supabase token) hiçbir çıktıya yazılmadı; geçici anahtar dosyaları silindi. Render API anahtarı kullanıcı tarafından revoke edilecek.
 - KALAN: gerçek para için Stripe hesabını aktive et (charges_enabled=false) + live moda geç (sk_live + live fiyat/webhook). Admin paneli yeniden-düzenleme: sıradaki iş.
+
+## ADR-136 — Admin konsol ana navigasyon reorganizasyonu (frontend gruplama)
+- **Durum:** Kabul · kullanıcı "admin paneli çok karışık ve düzensiz, hem backend hem frontend düzenle" dedi. Sınıf: **Düzeltici** (mobil UI; migration YOK).
+- **Önce:** `admin/index.tsx` tek **düz 18-öğelik** liste (gruplanmamış) → tarama zor, "karışık".
+- **Yapılan (frontend):** 18 bölüm **5 mantıksal gruba** ayrıldı — *Analitik & büyüme* · *Kullanıcılar & abonelik* · *İçerik & iletişim* · *Yapay zekâ* · *Sistem & denetim* — her grup başlıklı; kart tasarımı + nabız (4 stat) + destek rozeti korundu. design-standards (görsel hiyerarşi, ilgili işler bir arada) + ui-ux (progressive disclosure) + 8pt aralık.
+- **Doğrulama:** mobil typecheck 4/4 · biome temiz.
+- **DÜRÜST SINIR:** Backend `admin.route.ts` **968 satır / ~40 rota** tek dosyada (monolit) — gerçekten domain-modüllerine bölünmeyi hak ediyor, AMA canlı admin router'ını (para/hediye/duyuru/abonelik uçları) bu uzun oturumun sonunda aceleyle bölmek **riskli** (tüm rotalar testli değil; sessiz kırılma riski). Ayrı, **test-korumalı bir refactor** olarak önerildi — bu turda YAPILMADI (ABARTMA YOK). Kullanıcının GÖRDÜĞÜ karışıklık (frontend nav) düzeltildi.
+- **ISO/TOGAF:** 25010 Kullanılabilirlik (gruplu nav, tarama kolaylığı) + Bakımkolaylığı (gruplu veri yapısı) · 9241 (bilgi mimarisi) · TOGAF Phase C(App) **Düzeltici**.
