@@ -164,14 +164,27 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
 
   async getOps(days: number): Promise<AdminOps> {
     const since = sinceIso(days);
-    const [runsRes, delsRes] = await Promise.all([
+    // ADR-150 düzeltmesi: teslimatları `sent_at`'e göre süzME — başarısız teslimatın sent_at'i NULL
+    // (markDeliveryStatus) → `.gte("sent_at")` başarısızları DIŞLAR → başarı oranı hep %100 görünürdü.
+    // Doğrusu: penceredeki OLAYLARIN (detected_at) teslimatları (event_id) — tüm durumlar (failed dahil).
+    const [runsRes, evRes] = await Promise.all([
       this.db.from("check_runs").select("decision, confidence, tokens_used").gte("ran_at", since),
-      this.db.from("deliveries").select("status, channel").gte("sent_at", since),
+      this.db.from("detection_events").select("id").gte("detected_at", since),
     ]);
     if (runsRes.error) throw new Error(`ops check_runs: ${runsRes.error.message}`);
-    if (delsRes.error) throw new Error(`ops deliveries: ${delsRes.error.message}`);
+    if (evRes.error) throw new Error(`ops events: ${evRes.error.message}`);
     const runs = runsRes.data ?? [];
-    const dels = delsRes.data ?? [];
+    const eventIds = (evRes.data ?? []).map((e) => e.id);
+    // NOT (ölçek): event_id IN (...) — pencere büyürse id listesi büyür; gerekirse RPC/JOIN'e taşınır.
+    let dels: { status: string; channel: string }[] = [];
+    if (eventIds.length > 0) {
+      const delsRes = await this.db
+        .from("deliveries")
+        .select("status, channel")
+        .in("event_id", eventIds);
+      if (delsRes.error) throw new Error(`ops deliveries: ${delsRes.error.message}`);
+      dels = delsRes.data ?? [];
+    }
 
     const detections = runs.filter((r) => r.decision).length;
     const confidences = runs.map((r) => r.confidence).filter((c): c is number => c !== null);

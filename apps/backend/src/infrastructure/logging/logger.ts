@@ -12,9 +12,14 @@ const SENSITIVE_KEY =
   /(authorization|cookie|password|secret|token|apikey|api[_-]?key|bearer|jwt|email|e-?posta|raw[_-]?intent|service[_-]?role|access[_-]?token|refresh[_-]?token|anon[_-]?key)/i;
 const EMAIL_RE = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g;
 const BEARER_RE = /Bearer\s+[A-Za-z0-9._-]+/gi;
-/** JWT (eyJ…) · sağlayıcı anahtar önekleri (sk-/sbp_/rnd_/whsec_…) · 40+ karakterlik genel jeton. */
+/**
+ * JWT (eyJ…) · sağlayıcı anahtar önekleri (sk-/pk-/rk- · sbp_/rnd_/whsec_/ghp_/gho_/xoxb_).
+ * ADR-150: genel "40+ karakter" yakalayıcı KALDIRILDI — sha256 hash'leri, uzun URL slug'ları,
+ * boşluksuz uzun niyet metnini `[token]`'a çevirip log'u bozuyordu (gözlemlenebilirlik kaybı,
+ * sızıntı değil). Öneki-bilinen sırlar + anahtar-bazlı redaksiyon (SENSITIVE_KEY) yeterli savunma.
+ */
 const TOKEN_RE =
-  /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9._-]{6,}|\b(?:sk|pk|rk)[-_][A-Za-z0-9]{12,}|\b(?:sbp|rnd|whsec|ghp|gho|xoxb)_[A-Za-z0-9]{8,}|\b[A-Za-z0-9_-]{40,}\b/g;
+  /\beyJ[A-Za-z0-9_-]{6,}\.[A-Za-z0-9._-]{6,}|\b(?:sk|pk|rk)[-_][A-Za-z0-9]{12,}|\b(?:sbp|rnd|whsec|ghp|gho|xoxb)_[A-Za-z0-9]{8,}/g;
 
 function maskString(s: string): string {
   return s
