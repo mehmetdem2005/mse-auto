@@ -3,7 +3,7 @@ import { ConsoleShell, ErrText, Loading } from "@/features/admin/ui";
 import { type EmbeddingModel, api } from "@/lib/api";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Boxes, Check, TriangleAlert } from "lucide-react-native";
+import { Boxes, Check, PowerOff, TriangleAlert } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 
@@ -38,6 +38,24 @@ export default function EmbeddingsScreen(): ReactNode {
             değişimde yeniden-gömme gerekir.
           </Text>
 
+          {/* ADR-145: gömme durumu tek bakışta — admin "Pasif" seçebilir (anahtar korunur). */}
+          <View className="flex-row items-center gap-2 mb-3">
+            <View
+              className={`px-2.5 py-1 rounded-full ${q.data.active ? "bg-pos/10" : "bg-panel2"}`}
+            >
+              <Text
+                className={`text-[11px] font-bold tracking-wider ${q.data.active ? "text-pos" : "text-muted"}`}
+              >
+                {q.data.active ? "AKTİF" : "PASİF"}
+              </Text>
+            </View>
+            <Text className="text-muted text-xs flex-1" numberOfLines={1}>
+              {q.data.active
+                ? `Aktif: ${q.data.models.find((m) => m.id === q.data?.active)?.label ?? q.data.active}`
+                : "Gömme kapalı — RAG vektörlenmiyor"}
+            </Text>
+          </View>
+
           {!q.data.persisted && q.data.active ? (
             <View className="flex-row items-start gap-2.5 bg-warn/10 border border-warn/30 rounded-xl px-3 py-2.5 mb-3">
               <TriangleAlert size={15} color="#B45309" style={{ marginTop: 1 }} />
@@ -47,6 +65,36 @@ export default function EmbeddingsScreen(): ReactNode {
               </Text>
             </View>
           ) : null}
+
+          {/* ADR-145: gömmeyi KAPAT — anahtar silinmez (sonra tekrar seçilebilir). */}
+          {(() => {
+            const off = q.data?.active === null;
+            return (
+              <Pressable
+                onPress={() => !off && save.mutate("none")}
+                disabled={save.isPending}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: off, disabled: save.isPending }}
+                accessibilityLabel={`Pasif, gömme kapalı${off ? ", seçili" : ""}`}
+                className={`flex-row items-center gap-3 rounded-2xl border p-4 mb-2.5 min-h-[64px] ${
+                  off ? "border-accent bg-accent/5" : "border-line bg-panel active:bg-panel2"
+                }`}
+              >
+                <View
+                  className={`w-9 h-9 rounded-xl items-center justify-center ${off ? "bg-accent" : "bg-accent/10"}`}
+                >
+                  <PowerOff size={17} color={off ? theme.colors.onAccent : theme.colors.accent} />
+                </View>
+                <View className="flex-1 min-w-0">
+                  <Text className="text-text text-[15px] font-semibold">Pasif (gömme kapalı)</Text>
+                  <Text className="text-muted text-xs mt-0.5">
+                    RAG embedding üretilmez; korpus boş kalır. Anahtar korunur.
+                  </Text>
+                </View>
+                {off ? <Check size={18} color={theme.colors.accent} /> : null}
+              </Pressable>
+            );
+          })()}
 
           {q.data.models.map((m: EmbeddingModel) => {
             const active = q.data?.active === m.id;
