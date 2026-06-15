@@ -1,6 +1,18 @@
 import type { Catalog } from "./tr";
 
 export const ja: Catalog = {
+  onboarding: {
+    skip: "スキップ",
+    next: "次へ",
+    createFirst: "最初の監視を作成",
+    later: "あとで",
+    s1Title: "Whenly へようこそ",
+    s1Body: "Whenly があなたの代わりに現実世界を見張ります — 値下げ、予約の空き、結果発表など。",
+    s2Title: "ふだんの言葉で伝えるだけ",
+    s2Body: "追跡したいことを書くだけ。AI が情報源を見つけて知らせ続けます。",
+    s3Title: "大事なことを見逃さない",
+    s3Body: "重要な変化が起きた瞬間に通知が届きます。今すぐ最初の監視を作成しましょう。",
+  },
   tabs: {
     feed: "フィード",
     watchers: "ウォッチャー",

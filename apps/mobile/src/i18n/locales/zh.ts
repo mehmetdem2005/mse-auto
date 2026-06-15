@@ -1,6 +1,18 @@
 import type { Catalog } from "./tr";
 
 export const zh: Catalog = {
+  onboarding: {
+    skip: "跳过",
+    next: "下一步",
+    createFirst: "创建你的第一个监控",
+    later: "以后再说",
+    s1Title: "欢迎使用 Whenly",
+    s1Body: "Whenly 替你盯紧现实世界——降价、放号、结果公布等等。",
+    s2Title: "用你自己的话说出来",
+    s2Body: "描述你想跟踪的内容；AI 会找到来源并随时通知你。",
+    s3Title: "不错过任何变化",
+    s3Body: "一旦有重要变化，立即收到通知。现在就创建你的第一个监控。",
+  },
   tabs: {
     feed: "Feed",
     watchers: "监控者",

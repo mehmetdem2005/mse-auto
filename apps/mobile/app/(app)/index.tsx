@@ -1,5 +1,6 @@
 import { toast } from "@/components/feedback";
 import { EnterItem } from "@/components/motion";
+import { Onboarding } from "@/components/onboarding";
 import { BottomSheet } from "@/components/sheet";
 import {
   Badge,
@@ -12,6 +13,7 @@ import {
 } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
+import { useOnboarded } from "@/lib/onboarding";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
 import { useTheme } from "@/theme";
@@ -45,6 +47,7 @@ export default function Watchers() {
   const screenTheme = useTheme();
   const router = useRouter();
   const qc = useQueryClient();
+  const onboarding = useOnboarded(); // ADR-147: ilk-kullanım akışı (bir kez)
   const [filter, setFilter] = useState<"all" | "active" | "paused">("all");
   const { data, isLoading, error, refetch, isRefetching } = useQuery({
     queryKey: qk.watchers,
@@ -161,6 +164,10 @@ export default function Watchers() {
       </HeroOverlap>
       {/* Whenly Console girişi Ayarlar'a taşındı (ADR-100) — ana ekran sadeleşti. */}
       <Fab accessibilityLabel={t("watchers.newFab")} onPress={() => router.push("/new")} />
+      {/* ADR-147: ilk-kullanım onboarding overlay'i — yalnız bir kez, yükleme bitince. */}
+      {!onboarding.loading && !onboarding.onboarded ? (
+        <Onboarding onComplete={onboarding.complete} />
+      ) : null}
     </View>
   );
 }

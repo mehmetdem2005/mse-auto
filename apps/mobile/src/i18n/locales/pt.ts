@@ -1,6 +1,20 @@
 import type { Catalog } from "./tr";
 
 export const pt: Catalog = {
+  onboarding: {
+    skip: "Pular",
+    next: "Avançar",
+    createFirst: "Crie seu primeiro monitoramento",
+    later: "Talvez depois",
+    s1Title: "Boas-vindas ao Whenly",
+    s1Body:
+      "O Whenly observa o mundo real por você — quedas de preço, vagas de agendamento, anúncios de resultados e mais.",
+    s2Title: "É só dizer com suas palavras",
+    s2Body: "Descreva o que quer acompanhar; a IA encontra a fonte e mantém você informado.",
+    s3Title: "Não perca nada",
+    s3Body:
+      "Receba uma notificação na hora quando algo importante mudar. Crie seu primeiro monitoramento agora.",
+  },
   tabs: {
     feed: "Rss",
     watchers: "Observadores",

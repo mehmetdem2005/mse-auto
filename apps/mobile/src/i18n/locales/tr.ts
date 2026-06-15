@@ -1,5 +1,18 @@
 // Türkçe (taban dil) — anahtarlar ekran bazlı gruplanır.
 export const tr = {
+  onboarding: {
+    skip: "Atla",
+    next: "İleri",
+    createFirst: "İlk izlemeni oluştur",
+    later: "Belki sonra",
+    s1Title: "Whenly'ye hoş geldin",
+    s1Body:
+      "Whenly gerçek dünyadaki değişiklikleri senin için izler — fiyat düşüşü, randevu açılışı, sonuç duyurusu ve daha fazlası.",
+    s2Title: "Sadece kendi cümlenle anlat",
+    s2Body: "Neyi takip etmek istediğini yaz; yapay zekâ kaynağı bulur ve seni haberdar eder.",
+    s3Title: "Hiçbir şeyi kaçırma",
+    s3Body: "Önemli bir şey değiştiği an anında bildirim al. İlk izlemeni şimdi oluştur.",
+  },
   tabs: {
     feed: "Akış",
     watchers: "Watcher'lar",
