@@ -6,7 +6,7 @@ import { useReduceMotion } from "@/lib/reduce-motion";
 import { GRADIENT, useTheme } from "@/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { ArrowLeft, X } from "lucide-react-native";
+import { ArrowLeft, type LucideIcon, X } from "lucide-react-native";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { Animated, Platform, Pressable, Text, View } from "react-native";
 
@@ -152,6 +152,31 @@ export function useCountUp(target: number, reduce: boolean): number {
 export function ErrText({ e }: { e: unknown }): ReactNode {
   return (
     <Text className="text-neg px-5 mt-6">{e instanceof Error ? e.message : "yüklenemedi"}</Text>
+  );
+}
+
+/**
+ * Boş-durum (4-durum kuralının "boş" ayağı — ADR-140). TÜM konsol listelerinde aynı görünür:
+ * ortalanmış lucide ikon (daire) + başlık + isteğe bağlı ipucu. Düz "X yok." metinleri bununla birleşti.
+ */
+export function Empty({
+  Icon,
+  title,
+  hint,
+}: {
+  Icon: LucideIcon;
+  title: string;
+  hint?: string;
+}): ReactNode {
+  const theme = useTheme();
+  return (
+    <View className="items-center py-10 px-6">
+      <View className="w-12 h-12 rounded-full bg-panel2 items-center justify-center mb-3">
+        <Icon size={20} color={theme.colors.mutedIcon} />
+      </View>
+      <Text className="text-text text-sm font-medium text-center">{title}</Text>
+      {hint ? <Text className="text-muted text-xs text-center mt-1 leading-4">{hint}</Text> : null}
+    </View>
   );
 }
 

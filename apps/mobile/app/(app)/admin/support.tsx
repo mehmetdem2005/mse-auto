@@ -1,6 +1,7 @@
-import { ActBtn, ConsoleShell, ErrText, Loading, day } from "@/features/admin/ui";
+import { ActBtn, ConsoleShell, Empty, ErrText, Loading, day } from "@/features/admin/ui";
 import { type AdminSupportTicket, api } from "@/lib/api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { LifeBuoy } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { FlatList, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
@@ -35,7 +36,13 @@ export default function SupportScreen(): ReactNode {
           onRefresh={() => void q.refetch()}
           refreshing={q.isRefetching}
           ItemSeparatorComponent={() => <View className="h-3" />}
-          ListEmptyComponent={<Text className="text-muted mt-6">destek talebi yok.</Text>}
+          ListEmptyComponent={
+            <Empty
+              Icon={LifeBuoy}
+              title="Destek talebi yok"
+              hint="Kullanıcı talepleri burada listelenir."
+            />
+          }
           renderItem={({ item: t }) => (
             <Pressable
               onPress={() => setSelected(t)}

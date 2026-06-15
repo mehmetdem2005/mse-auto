@@ -1,6 +1,7 @@
-import { ConsoleShell, ErrText, Loading } from "@/features/admin/ui";
+import { ConsoleShell, Empty, ErrText, Loading } from "@/features/admin/ui";
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
+import { ScrollText } from "lucide-react-native";
 import type { ReactNode } from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -15,6 +16,9 @@ const ACTION_LABEL: Record<string, string> = {
   "user.admin.revoke": "Admin yetkisi alındı",
   "broadcast.send": "Push yayını gönderildi",
   "broadcast.inactive": "Push yayını denendi (kanal pasif)",
+  "plan.features": "Plan özellikleri güncellendi",
+  "channels.config": "Kanal ayarı değiştirildi",
+  "email.prompt": "E-posta istemi güncellendi",
 };
 
 const when = (iso: string): string =>
@@ -29,7 +33,11 @@ export default function AuditScreen(): ReactNode {
         {q.isLoading ? <Loading /> : null}
         {q.error ? <ErrText e={q.error} /> : null}
         {q.data?.length === 0 ? (
-          <Text className="text-muted text-sm">Henüz denetim kaydı yok.</Text>
+          <Empty
+            Icon={ScrollText}
+            title="Denetim kaydı yok"
+            hint="Admin işlemleri burada izlenir."
+          />
         ) : null}
         {q.data?.map((r) => (
           <View key={r.id} className="bg-panel border border-line rounded-xl p-3.5 mb-2">
