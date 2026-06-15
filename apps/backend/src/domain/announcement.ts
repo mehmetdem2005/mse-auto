@@ -55,4 +55,6 @@ export interface AnnouncementRepository {
   /** Kısmi güncelleme (ör. yalnız published/pinned toggle); yoksa null. */
   update(id: string, patch: AnnouncementPatch): Promise<AnnouncementRow | null>;
   remove(id: string): Promise<void>;
+  /** ADR-148: bu kullanıcıya bu şablonla daha önce duyuru açıldı mı (sistem-bildirimi dedup). */
+  existsForRecipient(userId: string, templateKey: string): Promise<boolean>;
 }

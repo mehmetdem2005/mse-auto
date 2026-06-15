@@ -50,4 +50,8 @@ export class InMemoryAnnouncementRepository implements AnnouncementRepository {
     const i = this.rows.findIndex((r) => r.id === id);
     if (i >= 0) this.rows.splice(i, 1);
   }
+
+  async existsForRecipient(userId: string, templateKey: string): Promise<boolean> {
+    return this.rows.some((r) => r.recipientUserId === userId && r.templateKey === templateKey);
+  }
 }

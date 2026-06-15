@@ -284,6 +284,10 @@ export const en: Catalog = {
       title: "Your Pro subscription is ready",
       body: "You've been gifted one year of free Pro. All Pro features are now unlocked — enjoy.",
     },
+    watchLimit: {
+      title: "You've reached your watch limit",
+      body: "The free plan allows 3 active watches. Upgrade to Pro for up to 100 and more frequent checks.",
+    },
   },
   suggest: {
     appointment: {

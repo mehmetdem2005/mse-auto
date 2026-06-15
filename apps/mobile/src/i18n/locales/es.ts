@@ -284,6 +284,10 @@ export const es: Catalog = {
       title: "Tu suscripción Pro está lista",
       body: "Te han regalado un año de Pro gratis. Todas las funciones Pro están activas — disfruta.",
     },
+    watchLimit: {
+      title: "Has alcanzado el límite de seguimientos",
+      body: "El plan gratis permite 3 seguimientos activos. Pasa a Pro para tener hasta 100 y comprobaciones más frecuentes.",
+    },
   },
   suggest: {
     appointment: {

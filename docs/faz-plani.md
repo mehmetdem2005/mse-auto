@@ -51,7 +51,7 @@
 - **FAZ 5.1 — Admin çok-dilli editör:** tek duyuruda çoklu-dil içerik (translations) sekmeli editör; otomatik-çeviri opsiyonu (LLM).
 - **FAZ 5.2 — Zamanlanmış & hedefli duyuru:** ileri-tarihli yayın + segment hedefleme (plan/dil/ülke).
 - **FAZ 5.3 — Okundu/etkileşim ölçümü:** sunucu-tarafı okuma kaydı; duyuru tıklama/CTA analitiği.
-- **FAZ 5.4 — Sistem-bildirim şablonları kataloğu:** hediye dışında (limit-aşımı, plan-bitişi, deprem-uyarısı) ×11 şablonlar.
+- 🟡 **FAZ 5.4 — Sistem-bildirim şablonları kataloğu:** ilk tetikleyicili şablon — watcher-limiti yükselt-bildirimi (templateKey=watchLimit, dedup, ADR-148). **KISMEN** — plan-bitişi/deprem/ödeme-başarısız şablonları (her biri kendi tetikleyicisi) ileride.
 
 ## M6 — Admin Konsol Olgunlaşma
 *Amaç: her admin ekranını tutarlı, güçlü, RBAC'li yap.*

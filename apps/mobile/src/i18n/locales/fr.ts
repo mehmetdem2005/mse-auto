@@ -288,6 +288,10 @@ export const fr: Catalog = {
       title: "Ton abonnement Pro est prêt",
       body: "Un an de Pro gratuit t'a été offert. Toutes les fonctions Pro sont débloquées — profite.",
     },
+    watchLimit: {
+      title: "Tu as atteint ta limite de surveillances",
+      body: "Le forfait gratuit permet 3 surveillances actives. Passe à Pro pour en avoir jusqu'à 100 et des vérifications plus fréquentes.",
+    },
   },
   suggest: {
     appointment: {
