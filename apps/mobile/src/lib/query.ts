@@ -14,6 +14,7 @@ export const qk = {
   channels: ["channels"] as const,
   aiProfile: ["aiProfile"] as const,
   plans: ["plans"] as const,
+  planFeatures: ["plans", "features"] as const,
   adminUsers: ["admin", "users"] as const,
   adminWatches: ["admin", "watches"] as const,
   adminSubscriptions: ["admin", "subscriptions"] as const,

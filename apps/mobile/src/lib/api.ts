@@ -105,6 +105,12 @@ export interface Plans {
   prices: Price[];
 }
 
+// ADR-139 — plan özellik-maddeleri (admin-yazılı, dile-özel). Boş dizi → istemci i18n varsayılanını gösterir.
+export interface PlanFeatures {
+  free: string[];
+  pro: string[];
+}
+
 // ---- Admin konsolu tipleri (backend @watcher/contracts ile birebir) ----
 export interface AdminUser {
   id: string;
@@ -469,6 +475,9 @@ export const api = {
     }),
   subscription: () => req<Subscription>("/v1/subscription"),
   plans: () => req<Plans>("/v1/plans"),
+  // ADR-139: plan özellik-maddeleri (kullanıcı diline göre; boşsa istemci i18n varsayılanı gösterir).
+  planFeatures: (lang?: string) =>
+    req<PlanFeatures>(`/v1/plans/features${lang ? `?lang=${encodeURIComponent(lang)}` : ""}`),
   subscribe: (interval: BillingInterval) =>
     req<Subscription>("/v1/subscription", {
       method: "POST",
@@ -586,6 +595,14 @@ export const api = {
     req<Plans>("/v1/admin/prices", {
       method: "PUT",
       body: JSON.stringify({ plan: "pro", interval, amountCents, currency }),
+    }),
+  // ADR-139: plan özellik-maddeleri admin yönetimi (dile-özel).
+  adminPlanFeatures: (lang: string) =>
+    req<PlanFeatures>(`/v1/admin/plan-features?lang=${encodeURIComponent(lang)}`),
+  setPlanFeatures: (plan: "free" | "pro", lang: string, bullets: string[]) =>
+    req<PlanFeatures>("/v1/admin/plan-features", {
+      method: "PUT",
+      body: JSON.stringify({ plan, lang, bullets }),
     }),
   assistChat: (messages: AssistMessage[], lang?: string) =>
     req<AssistReply>("/v1/watchers/assist", {

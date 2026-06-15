@@ -26,7 +26,7 @@
 ## M2 — Ödeme & Abonelik (gelir hattı)
 *Amaç: Stripe'ı canlıya al, planları dinamikleştir, fatura/iade/dunning ekle, TR alternatifi.*
 - **FAZ 2.1 — Stripe canlı mod `[G]`:** hesap aktivasyonu sonrası `sk_live` + live fiyat/webhook; test→live geçiş kontrol listesi.
-- **FAZ 2.2 — Plan özellik-maddeleri + şık kart:** free/pro kartlarına madde-madde özellik (app_settings, admin-düzenlenebilir); subscription ekranı yeniden tasarım. Migration YOK.
+- ✅ **FAZ 2.2 — Plan özellik-maddeleri + şık kart:** abonelik ekranı Free/Pro karşılaştırma kartları (madde-madde, lucide Check), admin-yazılı **dile-özel** maddeler (app_settings, `admin/plan-features.tsx` dil seçici ×11) + i18n ×11 varsayılan. Migration YOK. **YAPILDI (ADR-139).**
 - **FAZ 2.3 — Dinamik plan-builder `[M]`:** `plan_definitions` tablosu (slug/ad/Stripe price eşleme/özellikler); admin CRUD; entitlements DB'den. Migration izinli.
 - **FAZ 2.4 — Fatura & makbuz:** Stripe invoice webhook → `invoices` kayıt; abonelik ekranında geçmiş + PDF link.
 - **FAZ 2.5 — Dunning & yaşam döngüsü:** ödeme-başarısız (`invoice.payment_failed`) → uyarı bildirimi + grace; iptal/iade akışı; proration.

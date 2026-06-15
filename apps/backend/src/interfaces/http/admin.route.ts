@@ -34,7 +34,7 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
   registerSystemAdminRoutes(app, container); // analitik · zaman serisi · trafik · sağlayıcı · ops · büyüme · denetim · sistem
   registerAiAdminRoutes(app, container); // global LLM modeli + gömme/embedding sağlayıcısı
   registerContentAdminRoutes(app, container, audit); // duyuru CRUD + push yayını
-  registerBillingAdminRoutes(app, container); // fiyatlar + abonelik + CSV dışa aktarım
+  registerBillingAdminRoutes(app, container, audit); // fiyatlar + plan özellikleri + abonelik + CSV
   registerUserAdminRoutes(app, container, audit); // kullanıcı liste/detay + eylemler (yetki/sil/hediye/iptal/ban)
   registerChannelsAdminRoutes(app, container, audit); // kanal aç-kapa + e-posta besteci istemi
   registerWatchesAdminRoutes(app, container); // watcher liste/durum/sil/timeline
