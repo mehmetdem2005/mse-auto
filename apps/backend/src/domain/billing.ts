@@ -189,6 +189,10 @@ export interface AdminOps {
   };
   deliveries: {
     total: number;
+    /** Başarı oranı 0-100 (sent+delivered / terminal; pending hariç) — terminal yoksa null. ADR-142. */
+    successRate: number | null;
+    /** Başarısız teslimat sayısı (status="failed"). ADR-142. */
+    failed: number;
     byStatus: { key: string; count: number }[];
     byChannel: { key: string; count: number }[];
   };
