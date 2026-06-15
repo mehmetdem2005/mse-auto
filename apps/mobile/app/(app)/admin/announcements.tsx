@@ -13,6 +13,22 @@ const KINDS: { id: AnnouncementKind; label: string; color: string }[] = [
   { id: "warning", label: "Uyarı", color: "#B45309" },
 ];
 
+// ADR-135: duyuru dili. null = Tümü (her kullanıcı görür); dil kodu = yalnız o dildeki kullanıcılar.
+const LANGS: { id: string | null; label: string }[] = [
+  { id: null, label: "Tümü" },
+  { id: "tr", label: "TR" },
+  { id: "en", label: "EN" },
+  { id: "de", label: "DE" },
+  { id: "es", label: "ES" },
+  { id: "fr", label: "FR" },
+  { id: "pt", label: "PT" },
+  { id: "ru", label: "RU" },
+  { id: "ar", label: "AR" },
+  { id: "hi", label: "HI" },
+  { id: "ja", label: "JA" },
+  { id: "zh", label: "ZH" },
+];
+
 const EMPTY: AnnouncementInput = {
   title: "",
   body: "",
@@ -22,6 +38,7 @@ const EMPTY: AnnouncementInput = {
   ctaUrl: null,
   pinned: false,
   published: true,
+  lang: null,
 };
 
 export default function AdminAnnouncementsScreen(): ReactNode {
@@ -77,6 +94,7 @@ export default function AdminAnnouncementsScreen(): ReactNode {
       ctaUrl: a.ctaUrl,
       pinned: a.pinned,
       published: a.published,
+      lang: a.lang,
     });
   }
 
@@ -134,6 +152,35 @@ export default function AdminAnnouncementsScreen(): ReactNode {
                       style={{ color: on ? k.color : "#94A3B8" }}
                     >
                       {k.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </Field>
+
+          <Field label="Dil (kim görsün)">
+            <View className="flex-row flex-wrap gap-2">
+              {LANGS.map((l) => {
+                const on = (form.lang ?? null) === l.id;
+                return (
+                  <Pressable
+                    key={l.id ?? "all"}
+                    onPress={() => set("lang", l.id)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: on }}
+                    accessibilityLabel={`Dil: ${l.label}`}
+                    className="rounded-full px-3 py-2 min-h-[36px] justify-center border"
+                    style={{
+                      borderColor: on ? "#6366F1" : "#2B3A57",
+                      backgroundColor: on ? "#6366F11A" : "transparent",
+                    }}
+                  >
+                    <Text
+                      className="text-xs font-semibold"
+                      style={{ color: on ? "#6366F1" : "#94A3B8" }}
+                    >
+                      {l.label}
                     </Text>
                   </Pressable>
                 );

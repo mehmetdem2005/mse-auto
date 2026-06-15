@@ -22,11 +22,15 @@ export function announcementsRoutes(
       },
     }),
     async (c) => {
-      // ADR-134: global (recipientUserId=null) + YALNIZ bu kullanıcıya hedefli duyurular.
-      // Filtre burada (JS) → migration uygulanmasa da bozulmaz; recipientUserId yanıttan çıkarılır (gizlilik).
+      // ADR-134/135: filtre burada (JS) → migration uygulanmasa da bozulmaz.
+      //  - recipientUserId: global (null) + yalnız bu kullanıcı; yanıttan ÇIKARILIR (gizlilik).
+      //  - lang: dil-bağımsız (null) + kullanıcının dili (?lang); templateKey'li sistem mesajları
+      //    lang=null taşır → herkese gider, istemci kullanıcı dilinde yerelleştirir.
       const userId = c.get("userId");
+      const lang = c.req.query("lang") ?? null;
       const visible = (await container.announcements.listPublished())
         .filter((a) => !a.recipientUserId || a.recipientUserId === userId)
+        .filter((a) => !a.lang || !lang || a.lang === lang)
         .map(({ recipientUserId: _omit, ...pub }) => pub);
       return c.json(visible, 200);
     },

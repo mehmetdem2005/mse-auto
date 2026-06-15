@@ -242,6 +242,16 @@ export const zh: Catalog = {
     cancelBody: "没有任何更改。你可以随时再试一次。",
     toApp: "返回应用",
   },
+  notif: {
+    giftProMonth: {
+      title: "你的 Pro 订阅已就绪",
+      body: "你获赠了一个月的免费 Pro。所有 Pro 功能现已解锁——尽情使用。",
+    },
+    giftProYear: {
+      title: "你的 Pro 订阅已就绪",
+      body: "你获赠了一年的免费 Pro。所有 Pro 功能现已解锁——尽情使用。",
+    },
+  },
   suggest: {
     appointment: { label: "预约", sentence: "当我需要的官方预约（签证、领事馆等）开放时通知我" },
     doctor: { label: "就医预约", sentence: "当我需要的医生或诊所预约开放时通知我" },

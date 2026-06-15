@@ -249,6 +249,16 @@ export const en: Catalog = {
     cancelBody: "Nothing changed. You can try again whenever you like.",
     toApp: "Back to the app",
   },
+  notif: {
+    giftProMonth: {
+      title: "Your Pro subscription is ready",
+      body: "You've been gifted one month of free Pro. All Pro features are now unlocked — enjoy.",
+    },
+    giftProYear: {
+      title: "Your Pro subscription is ready",
+      body: "You've been gifted one year of free Pro. All Pro features are now unlocked — enjoy.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Appointment",

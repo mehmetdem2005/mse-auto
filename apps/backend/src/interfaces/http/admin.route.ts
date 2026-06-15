@@ -526,6 +526,9 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       // başarısızsa (ör. migration henüz uygulanmadıysa) sessizce atlanır, hediye düşmez.
       try {
         await container.announcements.create({
+          // ADR-135: templateKey ile istemci KULLANICI dilinde yerelleştirir (×11). title/body TR
+          // yedeği (admin görünümü + şablonu tanımayan istemci için). lang=null → şablon tüm dilleri kapsar.
+          templateKey: interval === "year" ? "giftProYear" : "giftProMonth",
           title: "Pro aboneliğin hazır",
           body:
             interval === "year"

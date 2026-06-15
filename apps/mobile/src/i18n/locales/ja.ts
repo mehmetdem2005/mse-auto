@@ -248,6 +248,16 @@ export const ja: Catalog = {
     cancelBody: "何も変更されていません。いつでも再度お試しいただけます。",
     toApp: "アプリに戻る",
   },
+  notif: {
+    giftProMonth: {
+      title: "Proサブスクリプションが有効になりました",
+      body: "1か月分の無料Proが贈られました。すべてのPro機能が利用可能です。お楽しみください。",
+    },
+    giftProYear: {
+      title: "Proサブスクリプションが有効になりました",
+      body: "1年分の無料Proが贈られました。すべてのPro機能が利用可能です。お楽しみください。",
+    },
+  },
   suggest: {
     appointment: {
       label: "予約",

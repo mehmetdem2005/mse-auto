@@ -32,6 +32,8 @@ export class InMemoryAnnouncementRepository implements AnnouncementRepository {
       updatedAt: now,
       ...input,
       recipientUserId: input.recipientUserId ?? null, // ADR-134: global varsayılan
+      templateKey: input.templateKey ?? null, // ADR-135
+      lang: input.lang ?? null, // ADR-135: tüm diller
     };
     this.rows.push(row);
     return row;
