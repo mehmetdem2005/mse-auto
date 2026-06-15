@@ -1251,3 +1251,9 @@ Faz 0 Temel & Çerçeve · 1 App Mimarisi · 2 Backend & API · 3 Güvenlik · 4
 - **Doğrulama:** typecheck 4/4 · biome temiz · backend **202 test** (+1: lang filtresi; hediye testi `templateKey`'e güncellendi). Tipli i18n 11 dilde `notif.*` anahtarlarını doğruladı.
 - **DÜRÜST SINIR:** migration'ları (**0018 + 0019**) CANLIYA **kullanıcı uygular** (yerelde Supabase erişimi yok); kod resilient (uygulanana dek yeni alanlar pasif, eski davranış sürer). "Tam yönetim" = mevcut duyuru CRUD + dil seçici + hediye sistem-şablonu; ancak **sistem-şablon METNİ çeviri dosyalarında** (panelden düzenlenmez) — tam-dinamik admin şablon editörü kapsam dışı (sonraki faz; ABARTMA YOK). Plan özellik-maddeleri kartı hâlâ sıradaki faz.
 - **ISO/TOGAF:** 25010 İşlevsel Uygunluk + Kullanılabilirlik (her kullanıcı kendi dili) + Taşınabilirlik (i18n ×11) · 25012 (nullable kolon, geri-uyumlu veri) · 27001 (recipient gizliliği) · 9241 (çok-dilli etkileşim) · TOGAF Phase C(App+Data) **Artımlı** · migration **açık izinle**.
+
+### Operasyon notu (2026-06-15) — migration 0018+0019 CANLIYA uygulandı
+ADR-134/135 migration'ları (announcements.recipient_user_id / template_key / lang) kullanıcının açık
+izni + Render'daki SUPABASE_ACCESS_TOKEN ile Supabase Management API üzerinden canlıya uygulandı ve
+doğrulandı (3 kolon mevcut). Böylece hediye kişiye-özel bildirimi + çok-dilli duyurular + dil filtresi
+artık tam AKTİF. Token değeri hiçbir çıktıya yazılmadı (gizlilik). Önceki ADR'lerdeki "migration bekliyor" notu kapandı.
