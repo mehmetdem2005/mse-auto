@@ -24,6 +24,7 @@ import type { PaymentGateway } from "../../domain/payment";
 import type { CanonicalTopicRepository, WatchRepository } from "../../domain/ports";
 import type { ProviderUsagePort } from "../../domain/providers";
 import type { JobQueue } from "../../domain/queue";
+import type { RagStore } from "../../domain/rag";
 import type { RateLimiter } from "../../domain/rate-limit";
 import type { SettingsRepository } from "../../domain/settings";
 import type { SitePolicyResolver } from "../../domain/site-policy";
@@ -74,6 +75,8 @@ export interface Container {
   embedder: EmbeddingProvider;
   /** Site izleme politikası çözücü (ADR-128) — robots.txt; ajan `check_site_policy` aracı + fizibilite. */
   sitePolicy: SitePolicyResolver;
+  /** RAG bilgi tabanı (ADR-143) — pgvector embeddings deposu; DB/migration yoksa dormant (available=false). */
+  rag: RagStore;
   /** Sağlayıcı kullanım panosu (ADR-095) — gerçek API verisi. */
   providerUsage: ProviderUsagePort;
   authority: AuthorityResolver;

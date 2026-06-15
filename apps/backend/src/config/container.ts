@@ -11,6 +11,7 @@ import type { EmailComposer } from "../domain/channels";
 import type { EmbeddingProvider, EmbeddingProviderId } from "../domain/embeddings";
 import type { IntentAssistant } from "../domain/intent-assistant";
 import type { JobQueue } from "../domain/queue";
+import type { RagStore } from "../domain/rag";
 import type { SettingsRepository } from "../domain/settings";
 import { HeuristicIntentAssistant } from "../infrastructure/assistant/heuristic.assistant";
 import { GeminiEmbeddings } from "../infrastructure/embeddings/gemini.embeddings";
@@ -32,6 +33,8 @@ import { logger } from "../infrastructure/logging/logger";
 import { HttpProviderUsageService } from "../infrastructure/providers/usage";
 import { InMemoryJobQueue } from "../infrastructure/queue/in-memory.queue";
 import { PgBossJobQueue } from "../infrastructure/queue/pgboss.queue";
+import { NullRagStore } from "../infrastructure/rag/null.store";
+import { SupabaseRagStore } from "../infrastructure/rag/pgvector.store";
 import { InMemoryRateLimiter } from "../infrastructure/rate-limit/in-memory.limiter";
 import { RobotsSitePolicyResolver } from "../infrastructure/search/site-policy";
 import { createSupabaseAdminClient } from "../infrastructure/supabase/client";
@@ -88,6 +91,8 @@ export function createContainer(env: Env): Container {
   const embedder = new SwitchableEmbedder(embeddingRouter, embedProviders);
   // Site-izni çözücü (ADR-128): robots.txt tabanlı; fizibilite ajanı `check_site_policy` ile kullanır.
   const sitePolicy = new RobotsSitePolicyResolver(env.RENDER_FETCH_TEMPLATE ?? null);
+  // RAG bilgi tabanı (ADR-143 / M3.1): DB varsa pgvector deposu, yoksa dormant null (graceful).
+  const rag: RagStore = db ? new SupabaseRagStore(db) : new NullRagStore();
   // Arama sağlayıcısını checker'dan AYRI kur — hem watcher checker'ı hem fizibilite ajanı (ADR-129) paylaşır.
   const searchProvider = buildSearchProvider(env);
   const reasoner = anyLlm ? new SwitchableEventReasoner(llmRouter, llmKeys) : null;
@@ -180,6 +185,7 @@ export function createContainer(env: Env): Container {
     embeddingRouter,
     embedder,
     sitePolicy,
+    rag,
     checker,
     verifier,
     checkTimeoutMs,

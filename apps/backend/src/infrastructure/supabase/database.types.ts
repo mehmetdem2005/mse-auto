@@ -485,12 +485,44 @@ export interface Database {
         };
         Relationships: [];
       };
+      embeddings: {
+        Row: {
+          id: string;
+          source_type: string;
+          source_id: string;
+          content: string;
+          // pgvector → PostgREST string gösterimi "[0.1,0.2,…]" (ADR-143).
+          embedding: string;
+          created_at: string;
+        };
+        Insert: {
+          source_type: string;
+          source_id: string;
+          content: string;
+          embedding: string;
+          id?: string;
+          created_at?: string;
+        };
+        Update: {
+          content?: string;
+          embedding?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
       topics_due_for_check: {
         Args: { p_now: string };
         Returns: { id: string; canonical_query: string; last_checked_at: string | null }[];
+      };
+      match_embeddings: {
+        Args: {
+          query_embedding: string;
+          match_count?: number;
+          filter_source_types?: string[] | null;
+        };
+        Returns: { source_type: string; source_id: string; content: string; score: number }[];
       };
     };
     Enums: Record<string, never>;
