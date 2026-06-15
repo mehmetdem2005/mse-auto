@@ -1,18 +1,27 @@
-import { type OpenAPIHono, createRoute } from "@hono/zod-openapi";
-import { adminSubscriptionListSchema, plansSchema, setPriceInputSchema } from "@watcher/contracts";
+import { type OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
+import {
+  adminSubscriptionListSchema,
+  planFeaturesSchema,
+  plansSchema,
+  setPlanFeaturesInputSchema,
+  setPriceInputSchema,
+} from "@watcher/contracts";
 import { getPlans } from "../../../application/get-plans";
+import { getPlanFeatures, setPlanFeatures } from "../../../application/plan-features";
 import { setPlanPrice } from "../../../application/set-price";
 import type { Container } from "../../../config/container";
 import type { AuthVariables } from "../auth.middleware";
+import type { AdminAudit } from "./_shared";
 
 /**
- * Fatura/fiyat & abonelik admin rotaları (ADR-137) — fiyat görüntüle/ayarla · abonelik listesi ·
- * CSV dışa aktarım (kullanıcı + abonelik). Rotalar AYNI admin app'ine kaydedilir (davranış birebir
- * aynı; yalnız kod admin.route.ts'ten buraya taşındı). Salt-okunur metotlar denetim günlüğüne yazmaz.
+ * Fatura/fiyat & abonelik admin rotaları (ADR-137) — fiyat görüntüle/ayarla · plan özellik-maddeleri
+ * (ADR-139, dile-özel, audit) · abonelik listesi · CSV dışa aktarım. Rotalar AYNI admin app'ine
+ * kaydedilir (davranış birebir aynı). Salt-okunur metotlar denetim günlüğüne yazmaz.
  */
 export function registerBillingAdminRoutes(
   app: OpenAPIHono<{ Variables: AuthVariables }>,
   container: Container,
+  audit: AdminAudit,
 ): void {
   app.openapi(
     createRoute({
@@ -45,6 +54,53 @@ export function registerBillingAdminRoutes(
       const input = c.req.valid("json");
       await setPlanPrice(container, input.plan, input.interval, input.amountCents, input.currency);
       return c.json(await getPlans(container), 200);
+    },
+  );
+
+  // ---- ADR-139: Plan özellik-maddeleri (admin-yazılı, dile-özel; app_settings, migration YOK) ----
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/plan-features",
+      tags: ["admin"],
+      summary: "Plan özellik-maddeleri (bir dil için)",
+      request: { query: z.object({ lang: z.string().min(2).max(8).optional() }) },
+      responses: {
+        200: {
+          content: { "application/json": { schema: planFeaturesSchema } },
+          description: "Maddeler",
+        },
+      },
+    }),
+    async (c) =>
+      c.json(await getPlanFeatures(container.settings, c.req.valid("query").lang ?? "tr"), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/plan-features",
+      tags: ["admin"],
+      summary: "Plan özellik-maddelerini ayarla (tek plan + tek dil)",
+      request: {
+        body: { content: { "application/json": { schema: setPlanFeaturesInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: planFeaturesSchema } },
+          description: "Güncel maddeler",
+        },
+      },
+    }),
+    async (c) => {
+      const input = c.req.valid("json");
+      const result = await setPlanFeatures(container.settings, input);
+      await audit(c.get("userId"), "plan.features", "settings", null, {
+        plan: input.plan,
+        lang: input.lang,
+        count: input.bullets.length,
+      });
+      return c.json(result, 200);
     },
   );
 

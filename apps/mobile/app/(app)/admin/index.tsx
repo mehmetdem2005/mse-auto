@@ -15,6 +15,7 @@ import {
   Gauge,
   LifeBuoy,
   LineChart,
+  ListChecks,
   type LucideIcon,
   Mail,
   Megaphone,
@@ -45,6 +46,7 @@ type AdminHref =
   | "/admin/users"
   | "/admin/watches"
   | "/admin/subs"
+  | "/admin/plan-features"
   | "/admin/support"
   | "/admin/system";
 
@@ -94,6 +96,12 @@ const GROUPS: { label: string; items: AdminSection[] }[] = [
         desc: "Hesap & yetki · Pro hediye",
       },
       { href: "/admin/subs", Icon: CreditCard, title: "Abonelik", desc: "Tüm abonelikler & fiyat" },
+      {
+        href: "/admin/plan-features",
+        Icon: ListChecks,
+        title: "Plan Özellikleri",
+        desc: "Madde madde · dile özel",
+      },
       { href: "/admin/watches", Icon: Bell, title: "Watcher'lar", desc: "Tüm izlemeler" },
     ],
   },

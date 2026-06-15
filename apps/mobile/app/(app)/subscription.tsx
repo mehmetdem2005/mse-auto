@@ -7,7 +7,7 @@ import { qk } from "@/lib/query";
 import { useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
-import { BellRing, ChevronRight, Crown, FileText, Gauge, Music } from "lucide-react-native";
+import { BellRing, Check, ChevronRight, Crown, FileText, Gauge, Music } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 
@@ -37,6 +37,11 @@ export default function SubscriptionScreen() {
   const qc = useQueryClient();
   const sub = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const plans = useQuery({ queryKey: qk.plans, queryFn: api.plans });
+  // ADR-139: plan özellik-maddeleri (admin-yazılı, dile-özel). Boşsa yerelleştirilmiş i18n varsayılanı.
+  const features = useQuery({
+    queryKey: [...qk.planFeatures, i18n.language],
+    queryFn: () => api.planFeatures(i18n.language),
+  });
 
   const cancel = useMutation({
     mutationFn: () => api.cancel(),
@@ -73,6 +78,24 @@ export default function SubscriptionScreen() {
   const used = s?.usage.activeWatches ?? 0;
   const max = s?.limits.maxActiveWatches ?? 1;
   const pct = Math.min(100, Math.round((used / Math.max(1, max)) * 100));
+
+  // ADR-139: madde listesi = admin-yazılı (API, dile-özel) varsa o; yoksa yerelleştirilmiş varsayılan.
+  const defaultFree = [
+    t("sub.featFreeWatches"),
+    t("sub.featFreeFreq"),
+    t("sub.featFreeChannels"),
+    t("sub.featFreeAssistant"),
+  ];
+  const defaultPro = [
+    t("sub.featProWatches"),
+    t("sub.featProFreq"),
+    t("sub.featProAlarm"),
+    t("sub.featProSounds"),
+    t("sub.featProChannels"),
+    t("sub.featProSupport"),
+  ];
+  const freeBullets = features.data?.free.length ? features.data.free : defaultFree;
+  const proBullets = features.data?.pro.length ? features.data.pro : defaultPro;
 
   return (
     <View className="flex-1 bg-ink">
@@ -166,9 +189,32 @@ export default function SubscriptionScreen() {
             </View>
           ) : null}
 
+          {/* ADR-139 — Plan karşılaştırma kartları: free vs pro, madde-madde özellikler (şık). */}
+          <EnterItem index={1} className="mt-6">
+            <Text className="text-muted text-[10px] tracking-widest uppercase mb-3 px-1">
+              {t("sub.compare")}
+            </Text>
+            <View className="gap-3">
+              <PlanCompareCard
+                name={t("sub.freeName")}
+                tier="FREE"
+                bullets={freeBullets}
+                active={!isPro}
+                highlight={false}
+              />
+              <PlanCompareCard
+                name={t("sub.proName")}
+                tier="PRO"
+                bullets={proBullets}
+                active={isPro}
+                highlight={!isPro}
+              />
+            </View>
+          </EnterItem>
+
           {/* Faturalama (gerçek abonelik varsa) */}
           {d ? (
-            <EnterItem index={1} className="mt-4">
+            <EnterItem index={2} className="mt-4">
               <View className="bg-panel border border-line rounded-2xl p-5">
                 <Text className="text-muted text-[10px] tracking-widest uppercase mb-1">
                   {t("sub.billing")}
@@ -205,7 +251,7 @@ export default function SubscriptionScreen() {
               </View>
             </EnterItem>
           ) : (
-            <EnterItem index={1} className="mt-4">
+            <EnterItem index={2} className="mt-4">
               <View className="bg-panel border border-line rounded-2xl p-5">
                 <Text className="text-muted text-[10px] tracking-widest uppercase mb-2">
                   {t("sub.plans")}
@@ -240,7 +286,7 @@ export default function SubscriptionScreen() {
             </EnterItem>
           )}
           {/* Fatura geçmişi (maket) — gerçek fatura oluştukça burada listelenir */}
-          <EnterItem index={2} className="mt-4">
+          <EnterItem index={3} className="mt-4">
             <View className="bg-panel border border-line rounded-2xl p-5">
               <View className="flex-row items-center justify-between mb-2">
                 <Text className="text-muted text-[10px] tracking-widest uppercase">
@@ -272,6 +318,73 @@ function Feature({ Icon, label, on = true }: { Icon: typeof Crown; label: string
     >
       <Icon size={12} color={on ? colors.pos : colors.muted2} />
       <Text className={`text-[11px] font-medium ${on ? "text-pos" : "text-muted"}`}>{label}</Text>
+    </View>
+  );
+}
+
+// ADR-139 — plan karşılaştırma kartı: madde-madde özellikler (lucide Check ikonları, 8pt aralık).
+// `highlight` (free kullanıcıya Pro) → accent vurgu; `active` → mevcut plan rozeti.
+function PlanCompareCard({
+  name,
+  tier,
+  bullets,
+  active,
+  highlight,
+}: {
+  name: string;
+  tier: "FREE" | "PRO";
+  bullets: string[];
+  active: boolean;
+  highlight: boolean;
+}) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const isPro = tier === "PRO";
+  const accent = highlight || (active && isPro);
+  return (
+    <View
+      className={`rounded-2xl p-5 border ${accent ? "bg-accent/[0.06] border-accent/40" : "bg-panel border-line"}`}
+      style={
+        accent
+          ? {
+              shadowColor: colors.accent,
+              shadowOpacity: 0.12,
+              shadowRadius: 14,
+              shadowOffset: { width: 0, height: 6 },
+              elevation: 2,
+            }
+          : undefined
+      }
+    >
+      <View className="flex-row items-center justify-between mb-3">
+        <View className="flex-row items-center gap-2">
+          {isPro ? <Crown size={18} color={colors.accent} /> : null}
+          <Text
+            className="text-xl font-extrabold"
+            style={{ color: isPro ? colors.accent : colors.text }}
+          >
+            {tier}
+          </Text>
+          <Text className="text-muted text-xs">{name}</Text>
+        </View>
+        {active ? (
+          <Badge tone="accent">{t("sub.currentPlan")}</Badge>
+        ) : highlight ? (
+          <Badge tone="accent">{t("sub.recommended")}</Badge>
+        ) : null}
+      </View>
+      <View className="gap-2.5">
+        {bullets.map((b, i) => (
+          <View key={`${tier}-${i}-${b}`} className="flex-row items-start gap-2.5">
+            <View
+              className={`w-5 h-5 rounded-full items-center justify-center mt-0.5 ${accent ? "bg-accent/15" : "bg-pos/10"}`}
+            >
+              <Check size={12} color={accent ? colors.accent : colors.pos} />
+            </View>
+            <Text className="text-text text-[13px] leading-5 flex-1">{b}</Text>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
