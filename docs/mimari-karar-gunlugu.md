@@ -1274,3 +1274,10 @@ Kullanıcının verdiği test secret key + Render API key ile Stripe uçtan uca 
 - **Doğrulama:** mobil typecheck 4/4 · biome temiz.
 - **DÜRÜST SINIR:** Backend `admin.route.ts` **968 satır / ~40 rota** tek dosyada (monolit) — gerçekten domain-modüllerine bölünmeyi hak ediyor, AMA canlı admin router'ını (para/hediye/duyuru/abonelik uçları) bu uzun oturumun sonunda aceleyle bölmek **riskli** (tüm rotalar testli değil; sessiz kırılma riski). Ayrı, **test-korumalı bir refactor** olarak önerildi — bu turda YAPILMADI (ABARTMA YOK). Kullanıcının GÖRDÜĞÜ karışıklık (frontend nav) düzeltildi.
 - **ISO/TOGAF:** 25010 Kullanılabilirlik (gruplu nav, tarama kolaylığı) + Bakımkolaylığı (gruplu veri yapısı) · 9241 (bilgi mimarisi) · TOGAF Phase C(App) **Düzeltici**.
+
+### Yol haritası (2026-06-15) — docs/faz-plani.md
+Kullanıcı "onlarca fazlık profesyonel modüler plan" istedi → `docs/faz-plani.md` oluşturuldu:
+12 modül (M1 Backend modülerleştirme · M2 Ödeme&Abonelik · M3 RAG · M4 Agentic asistan · M5 Bildirim ·
+M6 Admin olgunlaşma · M7 İzleme güvenilirliği · M8 Mobil UX/a11y · M9 Gözlemlenebilirlik · M10 Güvenlik/uyumluluk ·
+M11 Test · M12 Büyüme), ~45 faz; her faz Amaç/Çıktı/Bağımlılık/[M]migration/[G]harici-anahtar/risk + ADR-EA-gate disiplini.
+Önerilen sıra: M1 → M2.1-2.2 → M6.1+M9 → M3 → M7 → M10+M11 → kalanlar.
