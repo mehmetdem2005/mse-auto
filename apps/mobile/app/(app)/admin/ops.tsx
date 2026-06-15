@@ -7,6 +7,15 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 
 const RANGES = [1, 7, 30];
 
+// ADR-150: başarı-oranı renk eşiği — TEK kaynak (baş gösterge + kanal satırları aynı eşiği kullanır,
+// drift olmaz). null=veri yok; ≥95 iyi; ≥80 uyarı; <80 kritik.
+function rateTone(rate: number | null): { text: string; bg: string } {
+  if (rate === null) return { text: "text-muted", bg: "bg-line" };
+  if (rate >= 95) return { text: "text-pos", bg: "bg-pos" };
+  if (rate >= 80) return { text: "text-warn", bg: "bg-warn" };
+  return { text: "text-neg", bg: "bg-neg" };
+}
+
 // ADR-102: tek ekranda işleyiş sağlığı — kontrol/tespit/token + teslimat başarı/hata.
 export default function OpsScreen(): ReactNode {
   const [days, setDays] = useState(7);
@@ -18,14 +27,7 @@ export default function OpsScreen(): ReactNode {
   const succeeded = byStatus("sent") + byStatus("delivered");
   const failed = o?.deliveries.failed ?? 0;
   const rate = o?.deliveries.successRate ?? null;
-  const rateTone =
-    rate === null
-      ? { text: "text-muted", bg: "bg-line" }
-      : rate >= 95
-        ? { text: "text-pos", bg: "bg-pos" }
-        : rate >= 80
-          ? { text: "text-warn", bg: "bg-warn" }
-          : { text: "text-neg", bg: "bg-neg" };
+  const tone = rateTone(rate);
 
   return (
     <ConsoleShell title="Operasyon" sub={`son ${days} gün`}>
@@ -88,7 +90,7 @@ export default function OpsScreen(): ReactNode {
                 <Text className="text-muted text-[11px] uppercase tracking-widest">
                   başarı oranı
                 </Text>
-                <Text className={`text-2xl font-extrabold ${rateTone.text}`}>
+                <Text className={`text-2xl font-extrabold ${tone.text}`}>
                   {rate !== null ? `%${rate}` : "—"}
                 </Text>
               </View>
@@ -99,7 +101,7 @@ export default function OpsScreen(): ReactNode {
                 accessibilityValue={{ min: 0, max: 100, now: rate ?? 0 }}
               >
                 <View
-                  className={`h-full rounded-full ${rateTone.bg}`}
+                  className={`h-full rounded-full ${tone.bg}`}
                   style={{ width: `${rate ?? 0}%` }}
                 />
               </View>
@@ -137,14 +139,7 @@ export default function OpsScreen(): ReactNode {
                 <View className="bg-panel border border-line rounded-2xl overflow-hidden">
                   {o.deliveries.channelHealth.map((ch, i) => {
                     const r = ch.successRate;
-                    const tone =
-                      r === null
-                        ? "text-muted"
-                        : r >= 95
-                          ? "text-pos"
-                          : r >= 80
-                            ? "text-warn"
-                            : "text-neg";
+                    const chTone = rateTone(r).text; // ADR-150: tek-kaynak eşik (baş göstergeyle aynı)
                     return (
                       <View
                         key={ch.channel}
@@ -158,7 +153,7 @@ export default function OpsScreen(): ReactNode {
                             {ch.total} teslimat · {ch.failed} başarısız
                           </Text>
                         </View>
-                        <Text className={`text-base font-bold ${tone}`}>
+                        <Text className={`text-base font-bold ${chTone}`}>
                           {r !== null ? `%${r}` : "—"}
                         </Text>
                       </View>

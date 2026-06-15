@@ -30,6 +30,15 @@ describe("logger PII redaksiyonu (ADR-141)", () => {
     expect(String(out.stack)).not.toContain("sbp_0123456789abcdefghij");
   });
 
+  it("ADR-150: uzun hash/slug yanlışlıkla maskelenmez (gözlemlenebilirlik) — yalnız öneki-bilinen sırlar", () => {
+    const hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"; // sha256 (64 hex)
+    const out = redactPii({ message: `digest ${hash} path /reports/2026-q2-summary-export-final` });
+    expect(out.message).toContain(hash); // 40+ genel-yakalayıcı kaldırıldı → hash korunur
+    expect(out.message).not.toContain("[token]");
+    // Öneki-bilinen sır YİNE maskelenir:
+    expect(redactPii({ m: "key sk-abcdef0123456789" }).m as string).toContain("[token]");
+  });
+
   it("iç içe nesnelerde de redakte eder", () => {
     const out = redactPii({ meta: { secret: "x", nested: { email: "a@b.com" } }, plan: "pro" });
     expect(out).toEqual({
