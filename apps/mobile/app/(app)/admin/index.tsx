@@ -21,6 +21,7 @@ import {
   Megaphone,
   MessageCircle,
   ScrollText,
+  Search,
   Send,
   Server,
   TrendingUp,
@@ -43,6 +44,7 @@ type AdminHref =
   | "/admin/channels"
   | "/admin/email-prompt"
   | "/admin/providers"
+  | "/admin/search"
   | "/admin/users"
   | "/admin/watches"
   | "/admin/subs"
@@ -89,6 +91,7 @@ const GROUPS: { label: string; items: AdminSection[] }[] = [
   {
     label: "Kullanıcılar & abonelik",
     items: [
+      { href: "/admin/search", Icon: Search, title: "Ara", desc: "Kullanıcı · watcher · abonelik" },
       {
         href: "/admin/users",
         Icon: Users,

@@ -57,7 +57,7 @@
 *Amaç: her admin ekranını tutarlı, güçlü, RBAC'li yap.*
 - 🟡 **FAZ 6.1 — Ekran-bazlı tutarlılık geçişi:** paylaşılan `Empty` atomic bileşeni + 6 liste ekranı boş-durum birleşimi (subs/watches/users/support/audit/announcements); 4-durum "boş" ayağı tek-tip. **KISMEN (ADR-140)** — pano grafik-içi + destek dizgesi boş hâli ileride.
 - **FAZ 6.2 — Rol tabanlı erişim (RBAC):** admin/süper-admin/destek rolleri; route+UI yetki kapıları; audit zenginleştirme.
-- **FAZ 6.3 — Global arama & hızlı eylemler:** kullanıcı/watcher/abonelik hızlı arama; klavye kısayolları (web).
+- 🟡 **FAZ 6.3 — Global arama & hızlı eylemler:** tek sorguyla kullanıcı/watcher/abonelik arama (`searchAdmin` + `admin/search.tsx`, ADR-149). **KISMEN** — hızlı eylemler + klavye kısayolları (web) ileride; ölçek için DB ILIKE'a taşınabilir.
 - **FAZ 6.4 — Admin onboarding & yardım:** ilk-kullanım turu + her bölümde kısa açıklama.
 
 ## M7 — İzleme Hattı Güvenilirliği (çekirdek değer)

@@ -4,12 +4,15 @@ import {
   adminGrowthSchema,
   adminOpsSchema,
   adminProvidersSchema,
+  adminSearchQuerySchema,
+  adminSearchSchema,
   adminStatsSchema,
   adminSystemSchema,
   adminTimeseriesQuerySchema,
   adminTimeseriesSchema,
   adminTrafficSchema,
 } from "@watcher/contracts";
+import { searchAdmin } from "../../../application/admin-search";
 import { getAdminStats } from "../../../application/admin-stats";
 import { getProviderUsage } from "../../../application/provider-usage";
 import type { Container } from "../../../config/container";
@@ -25,6 +28,24 @@ export function registerSystemAdminRoutes(
   app: OpenAPIHono<{ Variables: AuthVariables }>,
   container: Container,
 ): void {
+  // ADR-149 — global arama: tek sorguyla kullanıcı/watcher/abonelik eşleşmeleri (destek/ops kolaylığı).
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/search",
+      tags: ["admin"],
+      summary: "Global arama (kullanıcı · watcher · abonelik)",
+      request: { query: adminSearchQuerySchema },
+      responses: {
+        200: {
+          content: { "application/json": { schema: adminSearchSchema } },
+          description: "Eşleşmeler",
+        },
+      },
+    }),
+    async (c) => c.json(await searchAdmin(container, c.req.valid("query").q), 200),
+  );
+
   app.openapi(
     createRoute({
       method: "get",
