@@ -235,9 +235,18 @@ export const ja: Catalog = {
     plansNote: "パックターターをパックターターです。パックターターをバトスターターです。",
     perMonth: "月晇",
     perYear: "年晇",
+    checkoutError: "決済を開始できませんでした。もう一度お試しください。",
+    checkoutLoading: "リダイレクト中…",
     invoices: "パックターターを表示した",
     invoicesEmpty: "パックターターを表示した。",
     invoicesHint: "パックターターを表示した。パックターターを表示した。",
+  },
+  billing: {
+    successTitle: "お支払いを受け付けました",
+    successBody: "Proサブスクリプションを処理しています。数秒でアカウントに反映されます。",
+    cancelTitle: "支払いをキャンセルしました",
+    cancelBody: "何も変更されていません。いつでも再度お試しいただけます。",
+    toApp: "アプリに戻る",
   },
   suggest: {
     appointment: {

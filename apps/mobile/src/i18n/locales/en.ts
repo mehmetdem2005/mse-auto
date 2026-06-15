@@ -235,9 +235,19 @@ export const en: Catalog = {
     plansNote: "Payments coming soon — prices below, purchasing not yet enabled.",
     perMonth: "mo",
     perYear: "yr",
+    checkoutError: "Couldn't start checkout — want to try again?",
+    checkoutLoading: "Redirecting…",
     invoices: "invoice history",
     invoicesEmpty: "No invoices yet",
     invoicesHint: "Once payments are live, your invoices will be listed and downloadable here.",
+  },
+  billing: {
+    successTitle: "Payment received",
+    successBody:
+      "Your Pro subscription is being processed; it'll reflect on your account in a few seconds.",
+    cancelTitle: "Payment canceled",
+    cancelBody: "Nothing changed. You can try again whenever you like.",
+    toApp: "Back to the app",
   },
   suggest: {
     appointment: {

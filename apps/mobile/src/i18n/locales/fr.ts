@@ -238,10 +238,20 @@ export const fr: Catalog = {
       "Les paiements arrivent bientôt — les prix sont indiqués ci-dessous, mais la mise en vente n'est pas encore activée.",
     perMonth: "mo",
     perYear: "yr",
+    checkoutError: "Impossible de démarrer le paiement — réessayer ?",
+    checkoutLoading: "Redirection…",
     invoices: "historique des factures",
     invoicesEmpty: "Aucune facture encore",
     invoicesHint:
       "Une fois les paiements opérationnels, votre historique des factures sera listé et téléchargeable ici.",
+  },
+  billing: {
+    successTitle: "Paiement reçu",
+    successBody:
+      "Ton abonnement Pro est en cours de traitement ; il apparaîtra sur ton compte dans quelques secondes.",
+    cancelTitle: "Paiement annulé",
+    cancelBody: "Rien n'a changé. Tu peux réessayer quand tu veux.",
+    toApp: "Retour à l'app",
   },
   suggest: {
     appointment: {

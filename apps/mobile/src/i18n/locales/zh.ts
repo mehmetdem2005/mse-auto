@@ -229,9 +229,18 @@ export const zh: Catalog = {
     plansNote: "付款即将推出 — 以下价格，购买尚未启用。",
     perMonth: "月",
     perYear: "年",
+    checkoutError: "无法开始支付，要再试一次吗？",
+    checkoutLoading: "正在跳转…",
     invoices: "发票历史",
     invoicesEmpty: "尚无发票。",
     invoicesHint: "付款推出后，你的发票将列在这里并可下载。",
+  },
+  billing: {
+    successTitle: "已收到付款",
+    successBody: "你的 Pro 订阅正在处理中，几秒后会反映到你的账户。",
+    cancelTitle: "支付已取消",
+    cancelBody: "没有任何更改。你可以随时再试一次。",
+    toApp: "返回应用",
   },
   suggest: {
     appointment: { label: "预约", sentence: "当我需要的官方预约（签证、领事馆等）开放时通知我" },

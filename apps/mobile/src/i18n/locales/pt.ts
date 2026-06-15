@@ -236,10 +236,20 @@ export const pt: Catalog = {
     plansNote: "Pagamentos em breve — preços abaixo, compra não habilitada ainda.",
     perMonth: "mês",
     perYear: "ano",
+    checkoutError: "Não foi possível iniciar o pagamento — quer tentar de novo?",
+    checkoutLoading: "Redirecionando…",
     invoices: "histórico de faturas",
     invoicesEmpty: "Nenhuma fatura ainda",
     invoicesHint:
       "Uma vez os pagamentos estiverem ativos, suas faturas serão listadas e baixáveis aqui.",
+  },
+  billing: {
+    successTitle: "Pagamento recebido",
+    successBody:
+      "Sua assinatura Pro está sendo processada; aparecerá na sua conta em alguns segundos.",
+    cancelTitle: "Pagamento cancelado",
+    cancelBody: "Nada mudou. Você pode tentar de novo quando quiser.",
+    toApp: "Voltar ao app",
   },
   suggest: {
     appointment: {
