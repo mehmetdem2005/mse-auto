@@ -20,6 +20,17 @@ export default function Channels() {
   // Admin'in açtığı kanallar (ADR-107) — kapalıysa kart kilitlenir + uyarı gösterilir.
   const cfg = useQuery({ queryKey: ["appConfig"], queryFn: api.appConfig });
   const avail = cfg.data?.channels;
+  const configured = cfg.data?.channelsConfigured;
+  // ADR-152: kanal kullanılamıyorsa NEDEN'i dürüstçe ayır — sunucuda kimlik bilgisi yok mu
+  // ("henüz hazır değil") yoksa admin mi kapattı. Sessiz başarısızlık yerine net mesaj.
+  function channelState(kind: ChannelKind): { available: boolean; disabledText: string } {
+    const available = avail ? avail[kind] : true;
+    const unconfigured = configured ? !configured[kind] : false;
+    return {
+      available,
+      disabledText: unconfigured ? t("channels.notReady") : t("channels.disabledByAdmin"),
+    };
+  }
 
   const [tg, setTg] = useState("");
   const [email, setEmail] = useState("");
@@ -92,8 +103,7 @@ export default function Channels() {
             onChange={setTg}
             placeholder={t("channels.telegramPlaceholder")}
             keyboardType="default"
-            available={avail ? avail.telegram : true}
-            disabledText={t("channels.disabledByAdmin")}
+            {...channelState("telegram")}
           />
           <ChannelCard
             Icon={Mail}
@@ -106,8 +116,7 @@ export default function Channels() {
             onChange={setEmail}
             placeholder={t("channels.emailPlaceholder")}
             keyboardType="email-address"
-            available={avail ? avail.email : true}
-            disabledText={t("channels.disabledByAdmin")}
+            {...channelState("email")}
           />
           <ChannelCard
             Icon={Phone}
@@ -120,8 +129,7 @@ export default function Channels() {
             onChange={setWa}
             placeholder={t("channels.whatsappPlaceholder")}
             keyboardType="phone-pad"
-            available={avail ? avail.whatsapp : true}
-            disabledText={t("channels.disabledByAdmin")}
+            {...channelState("whatsapp")}
           />
 
           <Text className="text-muted text-[11px] leading-4 mt-1 mb-4">

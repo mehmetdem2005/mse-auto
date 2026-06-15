@@ -402,6 +402,8 @@ export const fr: Catalog = {
     saved: "Canaux enregistrés.",
     saveFail: "échec de l'enregistrement",
     disabledByAdmin: "Ce canal est actuellement désactivé. Il fonctionnera une fois réactivé.",
+    notReady:
+      "Ce canal n'est pas encore configuré sur le serveur. Il fonctionnera automatiquement une fois configuré.",
   },
 
   quiet: {

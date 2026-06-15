@@ -49,3 +49,25 @@ export function enabledKinds(av: ChannelAvailability): Set<ChannelKind> {
   if (av.email) s.add("email");
   return s;
 }
+
+/**
+ * Sunucunun GERÇEKTEN gönderebildiği kanallar (ADR-152) — `buildChannels(env)` çıktısının
+ * kind kümesinden türetilir (kimlik bilgisi = sender üretilmiş demek). Admin bir kanalı açsa bile
+ * sunucuda anahtar yoksa teslim edilemez; bunu UI'da "henüz hazır değil" olarak dürüstçe göster.
+ */
+export function configuredAvailability(kinds: Iterable<ChannelKind>): ChannelAvailability {
+  const s = new Set(kinds);
+  return { telegram: s.has("telegram"), whatsapp: s.has("whatsapp"), email: s.has("email") };
+}
+
+/** Etkin kullanılabilirlik (ADR-152) = admin AÇTI **ve** sunucuda kimlik bilgisi var. */
+export function effectiveAvailability(
+  admin: ChannelAvailability,
+  configured: ChannelAvailability,
+): ChannelAvailability {
+  return {
+    telegram: admin.telegram && configured.telegram,
+    whatsapp: admin.whatsapp && configured.whatsapp,
+    email: admin.email && configured.email,
+  };
+}

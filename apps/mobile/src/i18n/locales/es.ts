@@ -397,6 +397,8 @@ export const es: Catalog = {
     saveFail: "no se pudo guardar",
     disabledByAdmin:
       "Este canal está desactivado por ahora. Funcionará cuando se vuelva a activar.",
+    notReady:
+      "Este canal aún no está configurado en el servidor. Funcionará automáticamente cuando se configure.",
   },
 
   quiet: {

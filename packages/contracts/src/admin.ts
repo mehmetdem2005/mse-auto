@@ -197,8 +197,20 @@ export const channelAvailabilitySchema = z.object({
 export type ChannelAvailability = z.infer<typeof channelAvailabilitySchema>;
 
 /** Kullanıcı uygulamasının okuduğu genel yapılandırma (auth'lu, salt-okunur). */
-export const appConfigSchema = z.object({ channels: channelAvailabilitySchema });
+export const appConfigSchema = z.object({
+  /** Etkin kullanılabilirlik (ADR-152): admin AÇTI **ve** sunucuda kimlik bilgisi var. */
+  channels: channelAvailabilitySchema,
+  /** Sunucunun gerçekten gönderebildiği kanallar (kimlik bilgisi mevcut) — "henüz hazır değil" ayrımı için. */
+  channelsConfigured: channelAvailabilitySchema,
+});
 export type AppConfig = z.infer<typeof appConfigSchema>;
+
+/** Admin kanal görünümü (ADR-152): admin'in aç/kapa tercihi + sunucuda kimlik bilgisi var mı (salt-okunur). */
+export const adminChannelConfigSchema = z.object({
+  availability: channelAvailabilitySchema,
+  configured: channelAvailabilitySchema,
+});
+export type AdminChannelConfig = z.infer<typeof adminChannelConfigSchema>;
 
 /** Admin e-posta besteci istemi: varsayılan mı kullanılıyor + (özel) istem metni. */
 export const emailPromptConfigSchema = z.object({
