@@ -7,10 +7,10 @@ import { type ChannelKind, type UserChannels, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import { BRAND, useTheme } from "@/theme";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Lock, Mail, MessageCircle, Phone } from "lucide-react-native";
+import { Lock, Mail, MessageCircle, Phone, Send } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { Linking, Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 export default function Channels() {
   const { t } = useTranslation();
@@ -73,6 +73,18 @@ export default function Channels() {
     });
   }
 
+  // ADR-153: tek-dokunuş Telegram bağlama — sunucudan derin bağlantı al, Telegram'ı aç. Kullanıcı
+  // bota /start'a basınca webhook chat_id'yi otomatik bağlar (chat kimliğiyle elle uğraşmak yok).
+  async function connectTelegram() {
+    try {
+      const { url } = await api.linkTelegram();
+      if (url) await Linking.openURL(url);
+      else toast.error(t("channels.notReady"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("channels.saveFail"));
+    }
+  }
+
   if (q.isLoading) {
     return (
       <View className="flex-1 bg-ink">
@@ -103,6 +115,8 @@ export default function Channels() {
             onChange={setTg}
             placeholder={t("channels.telegramPlaceholder")}
             keyboardType="default"
+            onConnect={connectTelegram}
+            connectLabel={t("channels.telegramConnect")}
             {...channelState("telegram")}
           />
           <ChannelCard
@@ -158,6 +172,8 @@ function ChannelCard({
   keyboardType,
   available = true,
   disabledText,
+  onConnect,
+  connectLabel,
 }: {
   Icon: typeof Mail;
   tint: string;
@@ -172,6 +188,9 @@ function ChannelCard({
   /** Admin bu kanalı açtı mı (ADR-107) — false ise kart kilitli + uyarı. */
   available?: boolean;
   disabledText?: string;
+  /** ADR-153: tek-dokunuş bağlama eylemi (yalnız Telegram kartında); available iken gösterilir. */
+  onConnect?: () => void;
+  connectLabel?: string;
 }) {
   const theme = useTheme();
   return (
@@ -212,6 +231,17 @@ function ChannelCard({
         />
       ) : null}
       <Text className="text-muted text-[11px] leading-4 mt-2">{note}</Text>
+      {available && onConnect && connectLabel ? (
+        <Pressable
+          onPress={onConnect}
+          accessibilityRole="button"
+          accessibilityLabel={connectLabel}
+          className="flex-row items-center justify-center gap-2 bg-accent/10 border border-accent/30 rounded-xl px-3 py-3 mt-3 min-h-[44px] active:opacity-80"
+        >
+          <Send size={14} color={theme.colors.accent} />
+          <Text className="text-accent text-[13px] font-semibold">{connectLabel}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }

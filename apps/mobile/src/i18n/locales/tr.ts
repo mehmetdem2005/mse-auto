@@ -391,6 +391,7 @@ export const tr = {
     saveFail: "kaydedilemedi",
     disabledByAdmin: "Bu kanal şu anda kapalı. Yeniden açıldığında çalışır.",
     notReady: "Bu kanal henüz sunucuda kurulmadı. Kurulum tamamlanınca otomatik çalışır.",
+    telegramConnect: "Telegram'ı bağla (tek dokunuş)",
   },
 
   quiet: {

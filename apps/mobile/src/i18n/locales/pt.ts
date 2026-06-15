@@ -401,6 +401,7 @@ export const pt: Catalog = {
       "Este canal está desativado no momento. Voltará a funcionar quando for reativado.",
     notReady:
       "Este canal ainda não está configurado no servidor. Funcionará automaticamente assim que for configurado.",
+    telegramConnect: "Conectar o Telegram (um toque)",
   },
 
   quiet: {

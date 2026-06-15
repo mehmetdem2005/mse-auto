@@ -56,6 +56,8 @@ const EnvSchema = z.object({
   STRIPE_PRICE_PRO_MONTH: z.string().min(1).optional(),
   STRIPE_PRICE_PRO_YEAR: z.string().min(1).optional(),
   APP_URL: z.url().optional(),
+  // Render servis genel URL'i (Render otomatik enjekte eder) — Telegram webhook kurulumu (ADR-153) için.
+  RENDER_EXTERNAL_URL: z.url().optional(),
   // Rate limit
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
   WATCH_CREATE_PER_HOUR: z.coerce.number().int().positive().default(30),

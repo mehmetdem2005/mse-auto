@@ -397,6 +397,7 @@ export const en: Catalog = {
     disabledByAdmin: "This channel is currently unavailable. It will work once re-enabled.",
     notReady:
       "This channel isn't set up on the server yet. It will work automatically once configured.",
+    telegramConnect: "Connect Telegram (one tap)",
   },
 
   quiet: {

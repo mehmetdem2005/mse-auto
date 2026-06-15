@@ -21,6 +21,7 @@ import { plansRoutes } from "./plans.route";
 import { onlyMethod, rateLimit } from "./rate-limit.middleware";
 import { subscriptionRoutes } from "./subscription.route";
 import { supportRoutes } from "./support.route";
+import { telegramRoutes } from "./telegram.route";
 import { telemetryRoutes } from "./telemetry.route";
 import { watchersRoutes } from "./watchers.route";
 import { webhookRoutes } from "./webhook.route";
@@ -67,6 +68,8 @@ export function createApp(
 
   app.route("/health", healthRoute);
   app.route("/webhooks", webhookRoutes(container));
+  // Telegram webhook (ADR-153): AUTH ÖNCESİ (Telegram çağırır); secret_token başlığıyla doğrulanır.
+  app.route("/telegram", telegramRoutes(container));
 
   // Kimliksiz trafik beacon'ı (ADR-091): AUTH ÖNCESİ (site ziyaretçisinin hesabı yok).
   // IP, X-Forwarded-For'un SAĞINDAN alınır: soldaki girdiler istemci-kontrollüdür

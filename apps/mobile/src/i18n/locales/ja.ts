@@ -363,6 +363,7 @@ export const ja: Catalog = {
     disabledByAdmin: "このチャネルは現在無効です。再度有効化されると利用できます。",
     notReady:
       "このチャネルはまだサーバーに設定されていません。設定が完了すると自動的に利用できます。",
+    telegramConnect: "Telegram を連携（ワンタップ）",
   },
 
   quiet: {
