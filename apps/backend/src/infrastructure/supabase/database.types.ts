@@ -447,6 +447,7 @@ export interface Database {
           cta_url: string | null;
           pinned: boolean;
           published: boolean;
+          recipient_user_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -459,6 +460,7 @@ export interface Database {
           cta_url?: string | null;
           pinned?: boolean;
           published?: boolean;
+          recipient_user_id?: string | null;
           id?: string;
           created_at?: string;
           updated_at?: string;
@@ -472,6 +474,7 @@ export interface Database {
           cta_url?: string | null;
           pinned?: boolean;
           published?: boolean;
+          recipient_user_id?: string | null;
           updated_at?: string;
         };
         Relationships: [];

@@ -522,6 +522,29 @@ export function adminRoutes(container: Container): OpenAPIHono<{ Variables: Auth
       const { interval } = c.req.valid("json");
       await container.adminConsole.giftPro(id, interval);
       await audit(c.get("userId"), "user.gift_pro", "user", id, { interval });
+      // ADR-134: kişiye-özel zil bildirimi (best-effort) — hediye HER ZAMAN başarılı olur; bildirim
+      // başarısızsa (ör. migration henüz uygulanmadıysa) sessizce atlanır, hediye düşmez.
+      try {
+        await container.announcements.create({
+          title: "Pro aboneliğin hazır",
+          body:
+            interval === "year"
+              ? "Sana bir yıllık ücretsiz Pro aboneliği hediye edildi. Tüm Pro özellikleri artık açık — keyfini çıkar."
+              : "Sana bir aylık ücretsiz Pro aboneliği hediye edildi. Tüm Pro özellikleri artık açık — keyfini çıkar.",
+          kind: "promo",
+          imageUrl: null,
+          ctaLabel: null,
+          ctaUrl: null,
+          pinned: false,
+          published: true,
+          recipientUserId: id,
+        });
+      } catch (err) {
+        container.logger.warn("gift announcement skipped", {
+          userId: id,
+          err: err instanceof Error ? err.message : String(err),
+        });
+      }
       return c.json({ ok: true }, 200);
     },
   );

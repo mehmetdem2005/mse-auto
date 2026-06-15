@@ -14,6 +14,8 @@ export interface AnnouncementRow {
   ctaUrl: string | null;
   pinned: boolean;
   published: boolean;
+  /** ADR-134: NULL = global (herkese); dolu = yalnız bu kullanıcı (hediye bildirimi vb.). */
+  recipientUserId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -27,6 +29,8 @@ export interface AnnouncementInput {
   ctaUrl: string | null;
   pinned: boolean;
   published: boolean;
+  /** ADR-134: verilirse duyuru yalnız bu kullanıcıya gider (global değil). */
+  recipientUserId?: string | null | undefined;
 }
 
 /** Kısmi güncelleme yaması — zod `.partial()` çıktısıyla uyumlu (değer `| undefined` olabilir). */

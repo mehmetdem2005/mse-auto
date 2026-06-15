@@ -109,4 +109,27 @@ describe("duyurular (ADR-100)", () => {
     });
     expect(del.status).toBe(200);
   });
+
+  it("ADR-134: pro hediyesi alıcının zilinde KİŞİYE-ÖZEL duyuru açar; başkası görmez; recipientUserId sızmaz", async () => {
+    const app = makeApp();
+    const gift = await app.request("/v1/admin/users/alice/gift-pro", {
+      method: "POST",
+      headers: auth("boss"),
+      body: JSON.stringify({ interval: "month" }),
+    });
+    expect(gift.status).toBe(200);
+
+    const aliceList = (await (
+      await app.request("/v1/announcements", { headers: auth("alice") })
+    ).json()) as Announcement[];
+    expect(aliceList.some((a) => a.title === "Pro aboneliğin hazır")).toBe(true);
+    // Gizlilik: hedef alanı istemciye sızmaz.
+    expect(aliceList.every((a) => !("recipientUserId" in a))).toBe(true);
+
+    // Başka kullanıcı kişiye-özel hediyeyi GÖRMEZ.
+    const bobList = (await (
+      await app.request("/v1/announcements", { headers: auth("bob") })
+    ).json()) as Announcement[];
+    expect(bobList.some((a) => a.title === "Pro aboneliğin hazır")).toBe(false);
+  });
 });
