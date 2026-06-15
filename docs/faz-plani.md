@@ -70,7 +70,7 @@
 
 ## M8 — Mobil UX & Erişilebilirlik
 *Amaç: AAA his + WCAG 2.2 AA tam uyum.*
-- **FAZ 8.1 — Onboarding akışı:** ilk-açılış değer-anlatımı + örnek watcher + izin istekleri (bildirim).
+- 🟡 **FAZ 8.1 — Onboarding akışı:** ilk-kullanım 3-adımlı overlay (`useOnboarded` + `onboarding.tsx`, son adım→/new aktivasyon), i18n ×11, 4 tasarım skill (ADR-147). **KISMEN** — bildirim izni istemi + signup-öncesi value-prop ileride.
 - **FAZ 8.2 — Sihirbaz cilası:** fizibilite/detay kartları mikro-etkileşim + boş/hata durumları; klavye davranışı (ADR-131) genel denetim.
 - **FAZ 8.3 — Erişilebilirlik denetimi:** kontrast/odak/ekran-okuyucu turu; reduce-motion her ekranda; biome a11y sıfır-uyarı.
 - **FAZ 8.4 — Performans:** CWV/RAIL ölçümü; bundle bölme; liste sanallaştırma; görsel lazy-load.
