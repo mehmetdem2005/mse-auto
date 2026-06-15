@@ -1257,3 +1257,12 @@ ADR-134/135 migration'ları (announcements.recipient_user_id / template_key / la
 izni + Render'daki SUPABASE_ACCESS_TOKEN ile Supabase Management API üzerinden canlıya uygulandı ve
 doğrulandı (3 kolon mevcut). Böylece hediye kişiye-özel bildirimi + çok-dilli duyurular + dil filtresi
 artık tam AKTİF. Token değeri hiçbir çıktıya yazılmadı (gizlilik). Önceki ADR'lerdeki "migration bekliyor" notu kapandı.
+
+### Operasyon notu (2026-06-15) — Stripe TEST modunda bağlandı
+Kullanıcının verdiği test secret key + Render API key ile Stripe uçtan uca kuruldu (ADR-133 kodu zaten hazırdı):
+- Ürün `prod_Uhye5D7VfIdXIm` (Whenly Pro); fiyatlar uygulamadaki görünen fiyatla EŞLEŞTİRİLDİ:
+  aylık `price_1TiYjMCeXZPZJy2vI40T2xHx` ($5.00), yıllık `price_1TiYjNCeXZPZJy2vPqUVi3dA` ($30.00).
+  (İlk yanlış $4.99/$49.99 fiyatları arşivlendi.) Webhook `we_1TiYhg…` → /webhooks/stripe (subscription.* olayları).
+- Render `watcher-backend` servisine 5 env: STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_PRO_MONTH/YEAR, APP_URL → redeploy CANLI.
+- Gizli değerler (sk/whsec/Supabase token) hiçbir çıktıya yazılmadı; geçici anahtar dosyaları silindi. Render API anahtarı kullanıcı tarafından revoke edilecek.
+- KALAN: gerçek para için Stripe hesabını aktive et (charges_enabled=false) + live moda geç (sk_live + live fiyat/webhook). Admin paneli yeniden-düzenleme: sıradaki iş.
