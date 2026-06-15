@@ -12,7 +12,7 @@ import type {
   BillingInterval,
 } from "../../domain/billing";
 import { addInterval } from "../../domain/billing";
-import { deliveryHealth } from "../shared/delivery-health.util";
+import { channelHealth, deliveryHealth } from "../shared/delivery-health.util";
 import { dayKey, emptyBuckets, finalizeTimeseries, sinceIso } from "../shared/timeseries.util";
 import type { Database } from "./database.types";
 
@@ -208,6 +208,7 @@ export class SupabaseAdminConsoleRepository implements AdminConsoleRepository {
         failed,
         byStatus: tally(dels.map((d) => ({ key: d.status }))),
         byChannel: tally(dels.map((d) => ({ key: d.channel }))),
+        channelHealth: channelHealth(dels.map((d) => ({ status: d.status, channel: d.channel }))),
       },
     };
   }

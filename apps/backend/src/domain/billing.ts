@@ -195,6 +195,8 @@ export interface AdminOps {
     failed: number;
     byStatus: { key: string; count: number }[];
     byChannel: { key: string; count: number }[];
+    /** Kanal-bazlı sağlık (ADR-146) — total'e göre azalan. */
+    channelHealth: { channel: string; total: number; failed: number; successRate: number | null }[];
   };
 }
 
