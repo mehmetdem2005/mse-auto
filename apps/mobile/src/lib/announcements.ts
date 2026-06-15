@@ -4,6 +4,7 @@ import { type Announcement, api } from "@/lib/api";
 import { qk } from "@/lib/query";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 const SEEN_KEY = "whenly:announcements:seenAt";
 
@@ -11,9 +12,19 @@ async function getSeenAt(): Promise<string | null> {
   return AsyncStorage.getItem(SEEN_KEY);
 }
 
-/** Yayınlanan duyurular (sabit önce) — kullanıcı ekranı + zil rozeti ortak kaynağı. */
+/**
+ * Yayınlanan duyurular (sabit önce) — kullanıcı ekranı + zil rozeti ortak kaynağı.
+ * ADR-135: kullanıcının dili sunucuya iletilir → dil-bağımsız + o dildeki duyurular gelir;
+ * dil anahtara eklenir ki dil değişince yeniden çekilsin.
+ */
 export function useAnnouncements() {
-  return useQuery({ queryKey: qk.announcements, queryFn: api.announcements, staleTime: 60_000 });
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
+  return useQuery({
+    queryKey: [...qk.announcements, lang],
+    queryFn: () => api.announcements(lang),
+    staleTime: 60_000,
+  });
 }
 
 /** "En son görülen an" — react-query ile reaktif (okununca güncellenir). */

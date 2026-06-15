@@ -21,8 +21,10 @@ function toRow(r: Row): AnnouncementRow {
     ctaUrl: r.cta_url,
     pinned: r.pinned,
     published: r.published,
-    // ADR-134: migration uygulanmadıysa sütun yok → undefined → null (global; eski davranış).
+    // ADR-134/135: migration uygulanmadıysa sütun yok → undefined → null (eski davranış).
     recipientUserId: r.recipient_user_id ?? null,
+    templateKey: r.template_key ?? null,
+    lang: r.lang ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
@@ -76,8 +78,11 @@ export class SupabaseAnnouncementRepository implements AnnouncementRepository {
         cta_url: input.ctaUrl,
         pinned: input.pinned,
         published: input.published,
-        // ADR-134: yalnız hedefli (hediye) duyuruda sütuna dokun → global oluşturma migration'sız da çalışır.
+        // ADR-134/135: yalnız DOLU olan yeni sütunlara dokun → eski (global, tek-dil, serbest-metin)
+        // oluşturma migration uygulanmadan da çalışır; sütun yoksa hata vermez.
         ...(input.recipientUserId ? { recipient_user_id: input.recipientUserId } : {}),
+        ...(input.templateKey ? { template_key: input.templateKey } : {}),
+        ...(input.lang ? { lang: input.lang } : {}),
       })
       .select("*")
       .single();

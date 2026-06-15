@@ -248,6 +248,16 @@ export const tr = {
     cancelBody: "Hiçbir şey değişmedi. İstediğinde tekrar deneyebilirsin.",
     toApp: "Uygulamaya dön",
   },
+  notif: {
+    giftProMonth: {
+      title: "Pro aboneliğin hazır",
+      body: "Sana bir aylık ücretsiz Pro aboneliği hediye edildi. Tüm Pro özellikleri artık açık — keyfini çıkar.",
+    },
+    giftProYear: {
+      title: "Pro aboneliğin hazır",
+      body: "Sana bir yıllık ücretsiz Pro aboneliği hediye edildi. Tüm Pro özellikleri artık açık — keyfini çıkar.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Randevu",

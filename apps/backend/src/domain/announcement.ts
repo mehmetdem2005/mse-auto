@@ -16,6 +16,10 @@ export interface AnnouncementRow {
   published: boolean;
   /** ADR-134: NULL = global (herkese); dolu = yalnız bu kullanıcı (hediye bildirimi vb.). */
   recipientUserId: string | null;
+  /** ADR-135: dolu → istemci kullanıcı dilinde yerelleştirir (sistem bildirimi); NULL → serbest-metin. */
+  templateKey: string | null;
+  /** ADR-135: admin duyuru dili (tr/en/…); NULL = tüm diller. */
+  lang: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,6 +35,10 @@ export interface AnnouncementInput {
   published: boolean;
   /** ADR-134: verilirse duyuru yalnız bu kullanıcıya gider (global değil). */
   recipientUserId?: string | null | undefined;
+  /** ADR-135: sistem bildirimi şablon anahtarı (istemci yerelleştirir). */
+  templateKey?: string | null | undefined;
+  /** ADR-135: duyuru dili (tr/en/…); NULL/verilmezse tüm diller. */
+  lang?: string | null | undefined;
 }
 
 /** Kısmi güncelleme yaması — zod `.partial()` çıktısıyla uyumlu (değer `| undefined` olabilir). */

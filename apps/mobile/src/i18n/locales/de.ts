@@ -254,6 +254,16 @@ export const de: Catalog = {
     cancelBody: "Nichts wurde geändert. Du kannst es jederzeit erneut versuchen.",
     toApp: "Zurück zur App",
   },
+  notif: {
+    giftProMonth: {
+      title: "Dein Pro-Abo ist da",
+      body: "Dir wurde ein Monat Pro kostenlos geschenkt. Alle Pro-Funktionen sind jetzt frei — viel Spaß.",
+    },
+    giftProYear: {
+      title: "Dein Pro-Abo ist da",
+      body: "Dir wurde ein Jahr Pro kostenlos geschenkt. Alle Pro-Funktionen sind jetzt frei — viel Spaß.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Termin",

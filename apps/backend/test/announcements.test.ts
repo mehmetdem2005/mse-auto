@@ -122,7 +122,8 @@ describe("duyurular (ADR-100)", () => {
     const aliceList = (await (
       await app.request("/v1/announcements", { headers: auth("alice") })
     ).json()) as Announcement[];
-    expect(aliceList.some((a) => a.title === "Pro aboneliğin hazır")).toBe(true);
+    // ADR-135: hediye templateKey taşır → istemci kullanıcı dilinde yerelleştirir (×11).
+    expect(aliceList.some((a) => a.templateKey === "giftProMonth")).toBe(true);
     // Gizlilik: hedef alanı istemciye sızmaz.
     expect(aliceList.every((a) => !("recipientUserId" in a))).toBe(true);
 
@@ -130,6 +131,28 @@ describe("duyurular (ADR-100)", () => {
     const bobList = (await (
       await app.request("/v1/announcements", { headers: auth("bob") })
     ).json()) as Announcement[];
-    expect(bobList.some((a) => a.title === "Pro aboneliğin hazır")).toBe(false);
+    expect(bobList.some((a) => a.templateKey === "giftProMonth")).toBe(false);
+  });
+
+  it("ADR-135: admin dil-özel duyuru yalnız o dildeki kullanıcıya gider (lang filtresi)", async () => {
+    const app = makeApp();
+    const created = await app.request("/v1/admin/announcements", {
+      method: "POST",
+      headers: auth("boss"),
+      body: JSON.stringify({ title: "EN only", body: "english news", lang: "en" }),
+    });
+    expect(created.status).toBe(200);
+
+    // TR kullanıcısı EN-özel duyuruyu GÖRMEZ.
+    const trList = (await (
+      await app.request("/v1/announcements?lang=tr", { headers: auth("user") })
+    ).json()) as Announcement[];
+    expect(trList.some((a) => a.title === "EN only")).toBe(false);
+
+    // EN kullanıcısı GÖRÜR.
+    const enList = (await (
+      await app.request("/v1/announcements?lang=en", { headers: auth("user") })
+    ).json()) as Announcement[];
+    expect(enList.some((a) => a.title === "EN only")).toBe(true);
   });
 });

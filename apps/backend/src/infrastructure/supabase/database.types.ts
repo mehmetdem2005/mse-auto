@@ -448,6 +448,8 @@ export interface Database {
           pinned: boolean;
           published: boolean;
           recipient_user_id: string | null;
+          template_key: string | null;
+          lang: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -461,6 +463,8 @@ export interface Database {
           pinned?: boolean;
           published?: boolean;
           recipient_user_id?: string | null;
+          template_key?: string | null;
+          lang?: string | null;
           id?: string;
           created_at?: string;
           updated_at?: string;
@@ -475,6 +479,8 @@ export interface Database {
           pinned?: boolean;
           published?: boolean;
           recipient_user_id?: string | null;
+          template_key?: string | null;
+          lang?: string | null;
           updated_at?: string;
         };
         Relationships: [];

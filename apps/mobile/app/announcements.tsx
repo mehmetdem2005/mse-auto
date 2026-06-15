@@ -68,9 +68,30 @@ export default function AnnouncementsScreen() {
   );
 }
 
+/**
+ * ADR-135: sistem bildirimleri (templateKey dolu) KULLANICI dilinde gösterilir; admin serbest-metin
+ * duyuruları olduğu gibi. Sabit switch → tipli i18n anahtarları (dinamik anahtar değil); bilinmeyen
+ * şablonda sunucudaki title/body'ye düşer (geri-uyum).
+ */
+function localizedAnnouncement(
+  a: Announcement,
+  t: ReturnType<typeof useTranslation>["t"],
+): { title: string; body: string } {
+  switch (a.templateKey) {
+    case "giftProMonth":
+      return { title: t("notif.giftProMonth.title"), body: t("notif.giftProMonth.body") };
+    case "giftProYear":
+      return { title: t("notif.giftProYear.title"), body: t("notif.giftProYear.body") };
+    default:
+      return { title: a.title, body: a.body };
+  }
+}
+
 function AnnouncementCard({ a, pinnedLabel }: { a: Announcement; pinnedLabel: string }) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const meta = KIND_META[a.kind];
+  const { title, body } = localizedAnnouncement(a, t);
   const date = new Date(a.createdAt).toLocaleDateString();
   return (
     <Card>
@@ -100,8 +121,8 @@ function AnnouncementCard({ a, pinnedLabel }: { a: Announcement; pinnedLabel: st
         ) : null}
         <Text className="text-muted2 text-[11px] ml-auto">{date}</Text>
       </View>
-      <Text className="text-text text-base font-bold leading-5">{a.title}</Text>
-      <Text className="text-muted text-sm mt-1.5 leading-5">{a.body}</Text>
+      <Text className="text-text text-base font-bold leading-5">{title}</Text>
+      <Text className="text-muted text-sm mt-1.5 leading-5">{body}</Text>
       {a.ctaLabel && a.ctaUrl ? (
         <Pressable
           onPress={() => a.ctaUrl && void Linking.openURL(a.ctaUrl)}

@@ -253,6 +253,16 @@ export const fr: Catalog = {
     cancelBody: "Rien n'a changé. Tu peux réessayer quand tu veux.",
     toApp: "Retour à l'app",
   },
+  notif: {
+    giftProMonth: {
+      title: "Ton abonnement Pro est prêt",
+      body: "Un mois de Pro gratuit t'a été offert. Toutes les fonctions Pro sont débloquées — profite.",
+    },
+    giftProYear: {
+      title: "Ton abonnement Pro est prêt",
+      body: "Un an de Pro gratuit t'a été offert. Toutes les fonctions Pro sont débloquées — profite.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Rendez-vous",

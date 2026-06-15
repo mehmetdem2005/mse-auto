@@ -302,6 +302,10 @@ export interface Announcement {
   ctaUrl: string | null;
   pinned: boolean;
   published: boolean;
+  /** ADR-135: dolu → istemci kullanıcı dilinde yerelleştirir (sistem bildirimi, ör. "giftProMonth"). */
+  templateKey: string | null;
+  /** ADR-135: duyuru dili (tr/en/…); null = tüm diller. */
+  lang: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -314,6 +318,8 @@ export interface AnnouncementInput {
   ctaUrl: string | null;
   pinned: boolean;
   published: boolean;
+  /** ADR-135: admin duyuru dili; boş/null = tüm diller. */
+  lang?: string | null;
 }
 
 // ---- Watcher "araştırma" geçmişi ----
@@ -558,8 +564,10 @@ export const api = {
       body: JSON.stringify({ model }),
     }),
   adminProviders: () => req<AdminProviders>("/v1/admin/providers"),
-  // ---- Duyurular (ADR-100) ----
-  announcements: () => req<Announcement[]>("/v1/announcements"),
+  // ---- Duyurular (ADR-100/135) ----
+  // ADR-135: kullanıcı dili sunucuya iletilir → dil-bağımsız + o dildeki duyurular döner.
+  announcements: (lang?: string) =>
+    req<Announcement[]>(`/v1/announcements${lang ? `?lang=${encodeURIComponent(lang)}` : ""}`),
   adminAnnouncements: () => req<Announcement[]>("/v1/admin/announcements"),
   createAnnouncement: (input: AnnouncementInput) =>
     req<Announcement>("/v1/admin/announcements", {

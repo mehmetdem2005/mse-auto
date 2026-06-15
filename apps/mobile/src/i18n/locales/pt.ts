@@ -251,6 +251,16 @@ export const pt: Catalog = {
     cancelBody: "Nada mudou. Você pode tentar de novo quando quiser.",
     toApp: "Voltar ao app",
   },
+  notif: {
+    giftProMonth: {
+      title: "Sua assinatura Pro está pronta",
+      body: "Você ganhou um mês de Pro grátis. Todos os recursos Pro estão liberados — aproveite.",
+    },
+    giftProYear: {
+      title: "Sua assinatura Pro está pronta",
+      body: "Você ganhou um ano de Pro grátis. Todos os recursos Pro estão liberados — aproveite.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Agendamento",

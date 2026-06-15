@@ -27,6 +27,10 @@ export const announcementSchema = z.object({
   ctaUrl: z.string().nullable(),
   pinned: z.boolean(),
   published: z.boolean(),
+  // ADR-135: çok-dillilik. templateKey dolu → istemci kullanıcı dilinde yerelleştirir (sistem msg).
+  templateKey: z.string().nullable(),
+  /** Duyuru dili (tr/en/…); null = tüm diller. */
+  lang: z.string().nullable(),
   createdAt: isoTimestamp,
   updatedAt: isoTimestamp,
 });
@@ -48,6 +52,14 @@ export const createAnnouncementInputSchema = z.object({
   ctaUrl: optionalHttpUrl,
   pinned: z.boolean().default(false),
   published: z.boolean().default(true),
+  // ADR-135: admin duyuru dili (tr/en/…); boş/verilmezse null = tüm diller.
+  lang: z
+    .string()
+    .trim()
+    .min(2)
+    .max(8)
+    .nullish()
+    .transform((v) => (v ? v : null)),
 });
 export type CreateAnnouncementInput = z.infer<typeof createAnnouncementInputSchema>;
 

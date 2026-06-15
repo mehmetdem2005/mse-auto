@@ -245,6 +245,16 @@ export const ar: Catalog = {
     cancelBody: "لم يتغير شيء. يمكنك المحاولة مرة أخرى متى شئت.",
     toApp: "العودة إلى التطبيق",
   },
+  notif: {
+    giftProMonth: {
+      title: "اشتراك Pro جاهز",
+      body: "تم إهداؤك شهرًا مجانيًا من Pro. كل ميزات Pro مفتوحة الآن — استمتع.",
+    },
+    giftProYear: {
+      title: "اشتراك Pro جاهز",
+      body: "تم إهداؤك سنة مجانية من Pro. كل ميزات Pro مفتوحة الآن — استمتع.",
+    },
+  },
   suggest: {
     appointment: {
       label: "مواعيد",

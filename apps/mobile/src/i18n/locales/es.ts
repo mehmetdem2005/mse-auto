@@ -249,6 +249,16 @@ export const es: Catalog = {
     cancelBody: "No cambió nada. Puedes intentarlo de nuevo cuando quieras.",
     toApp: "Volver a la app",
   },
+  notif: {
+    giftProMonth: {
+      title: "Tu suscripción Pro está lista",
+      body: "Te han regalado un mes de Pro gratis. Todas las funciones Pro están activas — disfruta.",
+    },
+    giftProYear: {
+      title: "Tu suscripción Pro está lista",
+      body: "Te han regalado un año de Pro gratis. Todas las funciones Pro están activas — disfruta.",
+    },
+  },
   suggest: {
     appointment: {
       label: "Cita",
