@@ -9,6 +9,8 @@ import {
 import type { SettingsRepository } from "../domain/settings";
 
 const SETTINGS_KEY = "embeddings.active";
+/** Admin'in gömmeyi açıkça KAPATTIĞI sentinel (ADR-145) — active=null'a karşılık gelir (RAG dormant). */
+export const EMBEDDING_DISABLED = "none";
 
 /** Hata mesajları route'ta 400 gövdesine yazılır. */
 export class EmbeddingConfigError extends Error {}
@@ -40,6 +42,12 @@ export class EmbeddingRouter {
     this.loadedAt = Date.now();
     const stored = await this.settings.get(SETTINGS_KEY);
     if (typeof stored === "string") {
+      // ADR-145: admin açıkça "kapalı" seçtiyse varsayılana DÜŞME — gömme pasif kalır.
+      if (stored === EMBEDDING_DISABLED) {
+        this.activeId = null;
+        this.persisted = true;
+        return;
+      }
       const spec = findEmbeddingModel(stored);
       if (spec && this.isAvailable(spec)) {
         this.activeId = stored;
@@ -72,6 +80,13 @@ export class EmbeddingRouter {
   }
 
   async setActive(id: string): Promise<EmbeddingConfig> {
+    // ADR-145: admin gömmeyi KAPATABİLİR ("none") → active=null; anahtar silinmez (sonra tekrar açılır).
+    if (id === EMBEDDING_DISABLED) {
+      this.persisted = await this.settings.set(SETTINGS_KEY, EMBEDDING_DISABLED);
+      this.activeId = null;
+      this.loadedAt = Date.now();
+      return this.getConfig();
+    }
     const spec = findEmbeddingModel(id);
     if (!spec) throw new EmbeddingConfigError(`Bilinmeyen gömme modeli: ${id}`);
     if (!this.isAvailable(spec)) {
