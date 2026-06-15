@@ -62,6 +62,15 @@ export const adminSubscriptionSchema = z.object({
 export type AdminSubscription = z.infer<typeof adminSubscriptionSchema>;
 export const adminSubscriptionListSchema = z.array(adminSubscriptionSchema);
 
+/** Admin global arama (ADR-149) — tek sorgu; kullanıcı/watcher/abonelik eşleşmeleri (sınırlı). */
+export const adminSearchSchema = z.object({
+  users: adminUserListSchema,
+  watches: adminWatchListSchema,
+  subscriptions: adminSubscriptionListSchema,
+});
+export type AdminSearch = z.infer<typeof adminSearchSchema>;
+export const adminSearchQuerySchema = z.object({ q: z.string().max(120) });
+
 /** Kullanıcı 360° detayı (ADR-101). */
 export const adminUserDetailSchema = adminUserSchema.extend({
   subscription: adminSubscriptionSchema.nullable(),

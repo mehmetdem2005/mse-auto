@@ -156,6 +156,12 @@ export interface AdminSubscription {
   currentPeriodEnd: string | null;
   cancelAtPeriodEnd: boolean;
 }
+// ADR-149: global arama sonucu (kullanıcı/watcher/abonelik eşleşmeleri).
+export interface AdminSearch {
+  users: AdminUser[];
+  watches: AdminWatch[];
+  subscriptions: AdminSubscription[];
+}
 export interface AdminSystem {
   now: string;
   backend: string;
@@ -564,6 +570,8 @@ export const api = {
   deleteWatch: (id: string) =>
     req<{ ok: boolean }>(`/v1/admin/watches/${id}`, { method: "DELETE" }),
   adminSubscriptions: () => req<AdminSubscription[]>("/v1/admin/subscriptions"),
+  // ADR-149: admin global arama.
+  adminSearch: (q: string) => req<AdminSearch>(`/v1/admin/search?q=${encodeURIComponent(q)}`),
   adminSystem: () => req<AdminSystem>("/v1/admin/system"),
   adminStats: () => req<AdminStats>("/v1/admin/analytics"),
   adminTimeseries: (days = 14) => req<AdminTimeseries>(`/v1/admin/timeseries?days=${days}`),
