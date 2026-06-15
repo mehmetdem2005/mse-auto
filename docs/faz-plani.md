@@ -35,7 +35,7 @@
 ## M3 — RAG & Embeddings (doğruluk)
 *Amaç: dormant embedding katmanını (ADR-127) gerçek RAG'e çevir.*
 - ✅ **FAZ 3.1 — pgvector + embeddings tablosu `[M][G]`:** migration 0020 (vector ext + embeddings vector(768) + HNSW cosine + match_embeddings RPC + RLS) **CANLIYA UYGULANDI + uçtan-uca doğrulandı** (768-vektör insert→match skor 1.0→temizlik); `RagStore` port/adapter + `indexDocuments` embed-yazım yolu (ADR-143). Kalan: korpus indeksleme (M3.2) + retrieval tool (M3.3) henüz yok.
-- **FAZ 3.2 — Corpus indeksleme:** detection_events + check_runs.search_hits + site-policy notları → embed + upsert (batch worker).
+- 🟡 **FAZ 3.2 — Corpus indeksleme:** detection_events watermark'lı batch worker (`indexNewDetectionEvents` + 5dk tick, ADR-144) — embeddings korpusu CANLI dolmaya başlar. **KISMEN** — check_runs.search_hits + site-policy notları henüz indekslenmedi.
 - **FAZ 3.3 — `rag_retrieve` aracını gerçekle:** ajan + reasoner için benzerlik sorgusu (top-k); ADR-122 stub → gerçek.
 - **FAZ 3.4 — Reasoner RAG-grounding:** reasoner istemine ilgili geçmiş bağlam; halüsinasyon/yanlış-pozitif azaltma ölçümü.
 
