@@ -21,7 +21,15 @@ export function announcementsRoutes(
         },
       },
     }),
-    async (c) => c.json(await container.announcements.listPublished(), 200),
+    async (c) => {
+      // ADR-134: global (recipientUserId=null) + YALNIZ bu kullanıcıya hedefli duyurular.
+      // Filtre burada (JS) → migration uygulanmasa da bozulmaz; recipientUserId yanıttan çıkarılır (gizlilik).
+      const userId = c.get("userId");
+      const visible = (await container.announcements.listPublished())
+        .filter((a) => !a.recipientUserId || a.recipientUserId === userId)
+        .map(({ recipientUserId: _omit, ...pub }) => pub);
+      return c.json(visible, 200);
+    },
   );
   return app;
 }

@@ -26,7 +26,13 @@ export class InMemoryAnnouncementRepository implements AnnouncementRepository {
 
   async create(input: AnnouncementInput): Promise<AnnouncementRow> {
     const now = new Date().toISOString();
-    const row: AnnouncementRow = { id: newId("ann"), createdAt: now, updatedAt: now, ...input };
+    const row: AnnouncementRow = {
+      id: newId("ann"),
+      createdAt: now,
+      updatedAt: now,
+      ...input,
+      recipientUserId: input.recipientUserId ?? null, // ADR-134: global varsayılan
+    };
     this.rows.push(row);
     return row;
   }

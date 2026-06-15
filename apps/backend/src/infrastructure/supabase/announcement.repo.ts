@@ -21,6 +21,8 @@ function toRow(r: Row): AnnouncementRow {
     ctaUrl: r.cta_url,
     pinned: r.pinned,
     published: r.published,
+    // ADR-134: migration uygulanmadıysa sütun yok → undefined → null (global; eski davranış).
+    recipientUserId: r.recipient_user_id ?? null,
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
@@ -74,6 +76,8 @@ export class SupabaseAnnouncementRepository implements AnnouncementRepository {
         cta_url: input.ctaUrl,
         pinned: input.pinned,
         published: input.published,
+        // ADR-134: yalnız hedefli (hediye) duyuruda sütuna dokun → global oluşturma migration'sız da çalışır.
+        ...(input.recipientUserId ? { recipient_user_id: input.recipientUserId } : {}),
       })
       .select("*")
       .single();
