@@ -121,6 +121,48 @@ describe("çok-kanallı teslim (ADR-084)", () => {
     expect(d.pushSent).toEqual(["tok"]); // push yine de gider (cihaz gate'ler)
   });
 
+  it("ADR-151: PUSH TOKEN YOKSA paylaşılan teslimde ek kanallar YİNE denenir", async () => {
+    // Push cihazı olmayan ama kanal tanımlamış kullanıcı aksi halde HİÇ ulaşılamaz kalırdı
+    // (erken `continue` ek-kanal bloğunu atlıyordu). Token yok → push boş geçer, kanal gider.
+    const email = recordingSender("email");
+    const wa = recordingSender("whatsapp");
+    const prefs: UserChannels = {
+      telegramChatId: null,
+      email: "a@b.com",
+      whatsappTo: "+905551112233",
+      enabled: ["whatsapp", "email"],
+    };
+    const d = deps({ archetype: "shared", channels: [email, wa], prefs, tokens: [] });
+    const out = await dispatchEventDeliveries(d, job);
+    expect(d.pushSent).toEqual([]); // push cihazı yok
+    expect(email.sent).toEqual(["a@b.com"]);
+    expect(wa.sent).toEqual(["+905551112233"]);
+    expect(d.statuses.d1).toBe("sent"); // kanal başarısı → teslim başarılı
+    expect(out.sent).toBe(1);
+  });
+
+  it("ADR-151: token yok + kanal da yoksa paylaşılan teslim failed (gerçekten ulaşılamaz)", async () => {
+    const d = deps({ archetype: "shared", channels: [], prefs: EMPTY_USER_CHANNELS, tokens: [] });
+    const out = await dispatchEventDeliveries(d, job);
+    expect(d.statuses.d1).toBe("failed");
+    expect(out.failed).toBe(1);
+  });
+
+  it("ADR-151: KİŞİSEL + token yok → fail-fast; ek kanal SIZDIRILMAZ (gizlilik korunur)", async () => {
+    const tg = recordingSender("telegram");
+    const prefs: UserChannels = {
+      telegramChatId: "123",
+      email: null,
+      whatsappTo: null,
+      enabled: ["telegram"],
+    };
+    const d = deps({ archetype: "personal", channels: [tg], prefs, tokens: [] });
+    await dispatchEventDeliveries(d, job);
+    expect(tg.sent).toEqual([]); // cihaz yok → sunucu kişisel kriteri bilmez, sızdırmaz
+    expect(d.pushSent).toEqual([]);
+    expect(d.statuses.d1).toBe("failed");
+  });
+
   it("ek kanal bağımlılığı yoksa yalnız push (geri-uyumlu)", async () => {
     const d = {
       ...deps({ archetype: "shared", channels: [], prefs: EMPTY_USER_CHANNELS }),
