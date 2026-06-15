@@ -34,7 +34,7 @@
 
 ## M3 — RAG & Embeddings (doğruluk)
 *Amaç: dormant embedding katmanını (ADR-127) gerçek RAG'e çevir.*
-- **FAZ 3.1 — pgvector + embeddings tablosu `[M][G]`:** migration (extension + tablo); OpenAI/Gemini embed yazımı. (OPENAI_API_KEY Render'da hazır.)
+- 🟡 **FAZ 3.1 — pgvector + embeddings tablosu `[M][G]`:** migration 0020 (vector ext + embeddings vector(768) + match_embeddings RPC) + `RagStore` port/adapter + `indexDocuments` embed-yazım yolu (ADR-143). **KOD HAZIR/DEPLOY; migration CANLI UYGULANMADI** — bu ortamda Supabase/Render token yok (revoke); kullanıcı uygular (token verir ya da SQL editor). Kod dormant-safe.
 - **FAZ 3.2 — Corpus indeksleme:** detection_events + check_runs.search_hits + site-policy notları → embed + upsert (batch worker).
 - **FAZ 3.3 — `rag_retrieve` aracını gerçekle:** ajan + reasoner için benzerlik sorgusu (top-k); ADR-122 stub → gerçek.
 - **FAZ 3.4 — Reasoner RAG-grounding:** reasoner istemine ilgili geçmiş bağlam; halüsinasyon/yanlış-pozitif azaltma ölçümü.
