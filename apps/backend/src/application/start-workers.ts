@@ -2,7 +2,11 @@ import type { Container } from "../config/container";
 import { enabledKinds, getChannelAvailability } from "./channel-config";
 import { registerDeliveryWorker } from "./delivery";
 import { registerMonitoringWorker } from "./monitoring-worker";
+import { indexNewDetectionEvents } from "./rag-corpus";
 import { runSchedulerTick } from "./scheduler";
+
+/** RAG korpus indeksleme aralığı (ADR-144) — scheduler'dan seyrek; gömme maliyeti batch'lenir. */
+const RAG_INDEX_INTERVAL_MS = 5 * 60_000;
 
 export interface WorkersHandle {
   /** Scheduler döngüsünü durdurur (graceful shutdown). */
@@ -58,5 +62,31 @@ export async function startWorkers(
   };
   await tick();
   const timer = setInterval(() => void tick(), intervalMs);
-  return { stop: () => clearInterval(timer) };
+
+  // ADR-144 (M3.2) — RAG korpus indeksleme tick'i: yeni tespitleri göm + embeddings'e yaz (watermark'lı,
+  // idempotent). RAG dormant (DB/gömme anahtarı yok) → no-op 0. Hatalar yutulur (tek tick süreci düşürmesin).
+  const ragTick = async (): Promise<void> => {
+    try {
+      const n = await indexNewDetectionEvents({
+        monitoring: container.monitoring,
+        embedder: container.embedder,
+        rag: container.rag,
+        settings: container.settings,
+      });
+      if (n > 0) container.logger.info("rag_indexed", { events: n });
+    } catch (err) {
+      container.logger.error("rag_index_failed", {
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
+  };
+  void ragTick(); // boot'ta backlog'u başlat (bloklamadan)
+  const ragTimer = setInterval(() => void ragTick(), RAG_INDEX_INTERVAL_MS);
+
+  return {
+    stop: () => {
+      clearInterval(timer);
+      clearInterval(ragTimer);
+    },
+  };
 }

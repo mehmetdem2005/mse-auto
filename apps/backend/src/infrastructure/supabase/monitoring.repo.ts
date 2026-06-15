@@ -192,6 +192,23 @@ export class SupabaseMonitoringRepository implements MonitoringRepository {
     }));
   }
 
+  // ADR-144 — RAG korpus indeksleme: sinceIso'dan SONRAKİ tüm tespitler (konu-bağımsız), en eski→yeni.
+  async listDetectionEventsSince(sinceIso: string, limit: number): Promise<DetectionEventView[]> {
+    const { data, error } = await this.db
+      .from("detection_events")
+      .select("id, description, detected_at, facts")
+      .gt("detected_at", sinceIso)
+      .order("detected_at", { ascending: true })
+      .limit(limit);
+    if (error) throw new Error(`listDetectionEventsSince: ${error.message}`);
+    return (data ?? []).map((e) => ({
+      id: e.id,
+      description: e.description,
+      detectedAt: e.detected_at,
+      facts: (e.facts as EventFacts | null) ?? null,
+    }));
+  }
+
   async listFeed(userId: string, limit: number): Promise<FeedItemRow[]> {
     const { data: dels, error } = await this.db
       .from("deliveries")

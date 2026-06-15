@@ -100,6 +100,8 @@ export interface MonitoringRepository {
   /** Verilen konulardaki kontrol sayısı (since'ten beri) — kullanıcı istatistiği. */
   countCheckRunsSince(topicIds: string[], sinceIso: string): Promise<number>;
   listDetectionEvents(topicId: string, limit: number): Promise<DetectionEventView[]>;
+  /** RAG korpus indeksleme (ADR-144) — `sinceIso`'dan SONRAKİ tespitler, en eski→yeni (watermark ilerlemesi). */
+  listDetectionEventsSince(sinceIso: string, limit: number): Promise<DetectionEventView[]>;
   // --- aktivite feed + geri bildirim (kullanıcı) ---
   listFeed(userId: string, limit: number): Promise<FeedItemRow[]>;
   recordFeedback(userId: string, eventId: string, verdict: FeedbackVerdict): Promise<void>;

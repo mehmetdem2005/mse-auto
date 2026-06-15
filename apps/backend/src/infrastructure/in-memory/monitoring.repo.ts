@@ -155,6 +155,20 @@ export class InMemoryMonitoringRepository implements MonitoringRepository {
       }));
   }
 
+  // ADR-144 — RAG korpus: sinceIso'dan sonraki tespitler, en eski→yeni (watermark ilerlemesi).
+  async listDetectionEventsSince(sinceIso: string, limit: number): Promise<DetectionEventView[]> {
+    return this.store.events
+      .filter((e) => e.detectedAt > sinceIso)
+      .sort((a, b) => a.detectedAt.localeCompare(b.detectedAt))
+      .slice(0, limit)
+      .map((e) => ({
+        id: e.id,
+        description: e.description,
+        detectedAt: e.detectedAt,
+        facts: e.facts ?? null,
+      }));
+  }
+
   async listFeed(userId: string, limit: number): Promise<FeedItemRow[]> {
     return this.store.deliveries
       .filter((d) => d.userId === userId)
