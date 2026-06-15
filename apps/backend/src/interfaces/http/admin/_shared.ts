@@ -5,7 +5,7 @@ import { type RouteConfig, z } from "@hono/zod-openapi";
  * Her domain modülü kendi rotalarını AYNI app örneğine kaydeder (`register*`); davranış değişmez,
  * yalnız kod domain dosyalarına bölünür.
  */
-export const okSchema = z.object({ ok: z.boolean() });
+const okSchema = z.object({ ok: z.boolean() });
 export const jsonOk = {
   content: { "application/json": { schema: okSchema } },
   description: "Tamam",

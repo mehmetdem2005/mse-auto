@@ -8,7 +8,8 @@ import type {
  * Anahtarsız/dev ortam için sezgisel niyet asistanı (LLM yok).
  * İlk istek çok kısa/genelse bir kez netleştirme sorusu sorar; aksi halde
  * (veya kullanıcı yanıt verdikten sonra) niyeti hazır kabul eder.
- * Üretimde GroqIntentAssistant devrededir; bu yalnız tip uyumu + yerel çalışma.
+ * Üretimde fizibilite ajanı / tek-atış asistan (ADR-129/126) devrededir; bu, LLM geçici
+ * hatasında dayanıklılık fallback'i (ADR-118) + anahtarsız yerel çalışma içindir.
  */
 /** Tüm kullanıcı metni bundan kısaysa muğlak sayılır (LLM istemindeki "genel istek" eşiğine paralel). */
 const VAGUE_COMBINED_CHARS = 20;

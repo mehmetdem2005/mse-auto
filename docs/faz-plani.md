@@ -20,8 +20,8 @@
 - ✅ **FAZ 1.2 — Admin route split (içerik+kanallar):** `admin/content.route.ts` (announcements/broadcast) + `admin/channels.route.ts` (channel-config/email-prompt). **YAPILDI (ADR-137).**
 - ✅ **FAZ 1.3 — Admin route split (sistem+analitik+AI):** `admin/system.route.ts` (analytics/timeseries/traffic/providers/ops/growth/audit/system) + `admin/ai.route.ts` (model/embeddings). `admin.route.ts` artık yalnız composition (968→44 satır). **YAPILDI (ADR-137).**
 - ✅ **FAZ 1.4 — Watcher/support route ayrımı:** `admin/watches.route.ts` + `admin/support.route.ts`. **YAPILDI (ADR-137).** _DÜRÜST: dedike per-modül test dosyası eklenmedi; mevcut `http.test.ts` taşınan rotaları (support akışı, timeseries, analytics) çalışma anında kapsar — ileride modül-bazlı testler eklenebilir._
-- ▶ **FAZ 1.5 — Application katmanı denetimi (SIRADAKİ):** büyük use-case dosyalarını bölme, ölü kod ayıklama, container.ts'i modül-fabrikalarına ayırma.
-- **Çıktı:** Hiçbir dosya >300 satır _(route modülleri için SAĞLANDI: en büyük users.route.ts=200)_; her domain kendi route modülünde. Davranış DEĞİŞMEZ (saf refactor; 202 test geçti).
+- ✅ **FAZ 1.5 — Application katmanı denetimi:** `container.ts` 487→200 satır, `config/container/{types,builders,repositories}.ts`'e bölündü (db/in-memory tekrarlı literal → tek repo fabrikası); ölü kod ayıklandı (3 dosya: groq.assistant/deepseek.reasoner/groq.verifier + StaticAccessTokenProvider). Use-case dosyaları zaten küçüktü (en büyük 183 satır) → bölünmedi. **YAPILDI (ADR-138).**
+- **Çıktı:** ✅ M1 TAMAM — Hiçbir route/config dosyası >300 satır (en büyük users.route.ts=200); her domain kendi route modülünde; composition root types/builders/repositories'e ayrıldı. Davranış DEĞİŞMEZ (saf refactor; 202 test geçti). _Kalan monolit denetimi (ör. app.ts) ileriki bakım turlarına._
 
 ## M2 — Ödeme & Abonelik (gelir hattı)
 *Amaç: Stripe'ı canlıya al, planları dinamikleştir, fatura/iade/dunning ekle, TR alternatifi.*
