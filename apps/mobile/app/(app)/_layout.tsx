@@ -1,6 +1,10 @@
 import { TermsGate } from "@/components/terms-gate";
 import { api } from "@/lib/api";
-import { configureNotificationHandler, registerForegroundListener } from "@/lib/notifications";
+import {
+  configureNotificationHandler,
+  registerForegroundListener,
+  registerResponseListener,
+} from "@/lib/notifications";
 import { qk } from "@/lib/query";
 import { useTermsAccepted } from "@/lib/terms";
 import { useTheme } from "@/theme";
@@ -35,7 +39,12 @@ export default function AppLayout() {
   const theme = useTheme();
   useEffect(() => {
     configureNotificationHandler();
-    return registerForegroundListener();
+    const offForeground = registerForegroundListener();
+    const offResponse = registerResponseListener();
+    return () => {
+      offForeground();
+      offResponse();
+    };
   }, []);
   // /me erken yüklenir (ana ekrandaki konsol girişi + admin guard'ı bu cache'i kullanır).
   const { isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
@@ -126,6 +135,8 @@ export default function AppLayout() {
           stray tab + "ai-profile/appearance" başlıklı varsayılan header olarak gösteriyordu. */}
       <Tabs.Screen name="ai-profile" options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="appearance" options={{ href: null, headerShown: false }} />
+      {/* ADR-162: tam ekran çalan-alarm — tab dışı, header'sız (kendi tam-ekran kabuğu). */}
+      <Tabs.Screen name="alarm" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

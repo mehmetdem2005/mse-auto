@@ -229,6 +229,28 @@ export const pt: Catalog = {
     rFreq: "frequência",
     rAlert: "alerta",
     rNote: "Plano gratuito permite 3 assistentes e uma frequência mínima de 60 minutos.",
+    rChannels: "canais",
+    channelsHint:
+      "Quando este monitoramento disparar, como devemos avisá-lo? Você pode escolher mais de um.",
+    selectAll: "Selecionar tudo",
+    chPush: "Notificação",
+    chPushD: "Receba um push instantâneo no seu celular.",
+    chAlarm: "Alarme",
+    chAlarmD: "Seu celular toca; alerta em tela cheia com som.",
+    chTelegramD: "Receba como mensagem do Telegram.",
+    chEmailD: "Receba a novidade por e-mail.",
+    chWhatsappD: "Receba como mensagem do WhatsApp.",
+    relayBadge: "conta",
+    relayNote:
+      "Telegram, e-mail e WhatsApp estão vinculados à sua conta — ativar um se aplica a todos os seus watchers compartilhados, e eles só funcionam em monitoramentos sem filtro pessoal.",
+    connectChannel: "Conectar",
+  },
+  alarm: {
+    title: "Alarme",
+    defaultBody: "A mudança que você acompanhava aconteceu.",
+    stop: "Parar",
+    snooze: "Soneca de 5 minutos",
+    a11yScreen: "Tela de alarme — o evento que você acompanhava aconteceu",
   },
   sub: {
     currentPlan: "PLANO ATUAL",

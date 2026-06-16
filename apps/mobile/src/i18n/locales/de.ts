@@ -235,6 +235,28 @@ export const de: Catalog = {
     rFreq: "Häufigkeit",
     rAlert: "Benachrichtigung",
     rNote: "Kostenloser Plan erlaubt 3 Watcher und ein 60-minütiges Mindestintervall.",
+    rChannels: "Kanäle",
+    channelsHint:
+      "Wenn diese Überwachung auslöst, wie sollen wir dich erreichen? Du kannst mehrere auswählen.",
+    selectAll: "Alle auswählen",
+    chPush: "Benachrichtigung",
+    chPushD: "Erhalte sofort einen Push auf dein Handy.",
+    chAlarm: "Alarm",
+    chAlarmD: "Dein Handy klingelt; Vollbild-Alarm mit Ton.",
+    chTelegramD: "Erhalte es als Telegram-Nachricht.",
+    chEmailD: "Erhalte das Update per E-Mail.",
+    chWhatsappD: "Erhalte es als WhatsApp-Nachricht.",
+    relayBadge: "Konto",
+    relayNote:
+      "Telegram, E-Mail und WhatsApp sind an dein Konto gebunden — wenn du eines aktivierst, gilt es für all deine geteilten Watcher, und sie funktionieren nur bei Watchern ohne persönlichen Filter.",
+    connectChannel: "Verbinden",
+  },
+  alarm: {
+    title: "Alarm",
+    defaultBody: "Die Änderung, auf die du gewartet hast, ist eingetreten.",
+    stop: "Stopp",
+    snooze: "5 Minuten schlummern",
+    a11yScreen: "Alarmbildschirm — das Ereignis, das du beobachtet hast, ist eingetreten",
   },
   sub: {
     currentPlan: "AKTUELLES PLAN",
