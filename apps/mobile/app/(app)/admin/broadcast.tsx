@@ -1,10 +1,11 @@
 import { toast } from "@/components/feedback";
 import { ActBtn, ConsoleShell } from "@/features/admin/ui";
 import { type AdminBroadcastResult, type BroadcastSegment, api } from "@/lib/api";
+import { confirmAsync } from "@/lib/confirm";
 import { useMutation } from "@tanstack/react-query";
 import { Send } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 const SEGMENTS: { id: BroadcastSegment; label: string }[] = [
   { id: "all", label: "Herkes" },
@@ -34,14 +35,18 @@ export default function BroadcastScreen(): ReactNode {
 
   // Dışa-dönük işlem: gerçek kullanıcılara push gider → önce onay iste.
   const confirmSend = (): void => {
-    Alert.alert(
-      "Push yayını gönder",
-      `"${title.trim()}" bildirimi ${segLabel} segmentine gönderilsin mi?`,
-      [
-        { text: "Vazgeç", style: "cancel" },
-        { text: "Gönder", onPress: () => send.mutate() },
-      ],
-    );
+    void (async () => {
+      if (
+        await confirmAsync({
+          title: "Push yayını gönder",
+          message: `"${title.trim()}" bildirimi ${segLabel} segmentine gönderilsin mi?`,
+          confirmLabel: "Gönder",
+          cancelLabel: "Vazgeç",
+        })
+      ) {
+        send.mutate();
+      }
+    })();
   };
 
   return (
