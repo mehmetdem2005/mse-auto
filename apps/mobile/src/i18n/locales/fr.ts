@@ -138,6 +138,8 @@ export const fr: Catalog = {
       source: "Source",
       freq: "Fréquence",
       alert: "Alertes",
+      channels: "Canaux",
+      alarm: "Son d'alarme",
       review: "Aperçu",
     },
     titles: {
@@ -145,6 +147,8 @@ export const fr: Catalog = {
       source: "Préférence de la source",
       freq: "Combien de fois devrions-nous vérifier?",
       alert: "Comment devrions-nous vous alerter?",
+      channels: "Comment devrions-nous vous alerter?",
+      alarm: "Son d'alarme",
       review: "Summary & confirm",
     },
     greeting:
@@ -246,6 +250,12 @@ export const fr: Catalog = {
     relayNote:
       "Telegram, e-mail et WhatsApp sont liés à votre compte — en activer un s'applique à tous vos watchers partagés, et ils ne fonctionnent que pour les surveillances sans filtre personnel.",
     connectChannel: "Connecter",
+    alarmStudioTitle: "Studio d'alarme",
+    alarmStudioHint:
+      "Choisissez et écoutez le son qui sera joué lorsque cette surveillance déclenche une alarme.",
+    siteOk: "Cette source semble accessible à une surveillance automatique.",
+    siteLimited:
+      "La surveillance directe de cette source peut être limitée ; je surveillerai l'annonce publique associée.",
   },
   alarm: {
     title: "Alarme",

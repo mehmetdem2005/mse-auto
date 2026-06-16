@@ -135,6 +135,8 @@ export const tr = {
       source: "Kaynak",
       freq: "Sıklık",
       alert: "Bildirim",
+      channels: "Kanallar",
+      alarm: "Alarm sesi",
       review: "Önizle",
     },
     titles: {
@@ -142,6 +144,8 @@ export const tr = {
       source: "Kaynak tercihi",
       freq: "Ne sıklıkla kontrol edilsin?",
       alert: "Nasıl haber verilsin?",
+      channels: "Nasıl haber verilsin?",
+      alarm: "Alarm sesi",
       review: "Özet ve onay",
     },
     greeting:
@@ -241,6 +245,10 @@ export const tr = {
     relayNote:
       "Telegram, e-posta ve WhatsApp hesabına bağlıdır — açtığında tüm paylaşılan izlemelerinde geçerli olur ve yalnız kişisel-filtresiz izlemelerde çalışır.",
     connectChannel: "Bağla",
+    alarmStudioTitle: "Alarm stüdyosu",
+    alarmStudioHint: "Bu izleme gerçekleşip alarm çaldığında çalacak sesi seç ve dinle.",
+    siteOk: "Bu kaynak otomatik takibe uygun görünüyor.",
+    siteLimited: "Bu kaynağın doğrudan takibi kısıtlı olabilir; ilgili kamusal duyuruyu izlerim.",
   },
   alarm: {
     title: "Alarm",

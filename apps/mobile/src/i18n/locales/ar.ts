@@ -135,6 +135,8 @@ export const ar: Catalog = {
       source: "المصدر",
       freq: "التكرار",
       alert: "الإشعارات",
+      channels: "القنوات",
+      alarm: "صوت المنبّه",
       review: "النظرة المسبقة",
     },
     titles: {
@@ -142,6 +144,8 @@ export const ar: Catalog = {
       source: "تفضيل المصدر",
       freq: "كم مرة يجب أن نตรวจف؟",
       alert: "كيف يجب أن تنبهني؟",
+      channels: "كيف يجب أن ننبهك؟",
+      alarm: "صوت المنبّه",
       review: "Summary & confirm",
     },
     greeting:
@@ -238,6 +242,10 @@ export const ar: Catalog = {
     relayNote:
       "ترتبط قنوات Telegram والبريد الإلكتروني وWhatsApp بحسابك — تفعيل إحداها يسري على جميع مراقباتك المشتركة، وتعمل فقط في المراقبات التي بلا فلتر شخصي.",
     connectChannel: "ربط",
+    alarmStudioTitle: "استوديو المنبّه",
+    alarmStudioHint: "اختر واستمع إلى الصوت الذي سيُشغَّل عند إطلاق هذه المراقبة لمنبّه.",
+    siteOk: "يبدو أن هذا المصدر مفتوح للمراقبة الآلية.",
+    siteLimited: "قد تكون المراقبة المباشرة لهذا المصدر محدودة؛ سأراقب الإعلان العام المرتبط به.",
   },
   alarm: {
     title: "منبّه",

@@ -14,6 +14,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
+  AlarmClock,
   Bell,
   BellRing,
   CheckCheck,
@@ -40,7 +41,7 @@ import {
   Sparkles,
   Users2,
 } from "lucide-react-native";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -57,13 +58,43 @@ const FREQ = [1, 15, 60, 360, 720, 1440];
 // FSM: çok adımlı sihirbaz (design-standards §5 — çok adımlı akış açık durumlarla).
 // 1. adım artık AI sohbeti: asistan muğlak isteği soruyla netleştirir (ADR-035).
 // (ADR-094: cihaz-içi "kişisel filtre" adımı kaldırıldı — amacı belirsiz/karmaşıktı.)
-const STEPS = [
-  { key: "intent", titleK: "wizard.titles.intent", shortK: "wizard.steps.intent" },
-  { key: "source", titleK: "wizard.titles.source", shortK: "wizard.steps.source" },
-  { key: "frequency", titleK: "wizard.titles.freq", shortK: "wizard.steps.freq" },
-  { key: "alert", titleK: "wizard.titles.alert", shortK: "wizard.steps.alert" },
-  { key: "review", titleK: "wizard.titles.review", shortK: "wizard.steps.review" },
-] as const;
+// FSM adımları DİNAMİK (ADR-163): "Kanallar" hep var; Alarm toggle AÇIKSA aralarına "Alarm sesi"
+// (studio) adımı girer → 5↔6 sayfa. Böylece alarm seçilince 6. sayfa olarak alarm stüdyosu açılır.
+interface StepDef {
+  key: string;
+  titleK: string;
+  shortK: string;
+}
+const STEP_INTENT: StepDef = {
+  key: "intent",
+  titleK: "wizard.titles.intent",
+  shortK: "wizard.steps.intent",
+};
+const STEP_SOURCE: StepDef = {
+  key: "source",
+  titleK: "wizard.titles.source",
+  shortK: "wizard.steps.source",
+};
+const STEP_FREQ: StepDef = {
+  key: "frequency",
+  titleK: "wizard.titles.freq",
+  shortK: "wizard.steps.freq",
+};
+const STEP_CHANNELS: StepDef = {
+  key: "channels",
+  titleK: "wizard.titles.channels",
+  shortK: "wizard.steps.channels",
+};
+const STEP_ALARM: StepDef = {
+  key: "alarm",
+  titleK: "wizard.titles.alarm",
+  shortK: "wizard.steps.alarm",
+};
+const STEP_REVIEW: StepDef = {
+  key: "review",
+  titleK: "wizard.titles.review",
+  shortK: "wizard.steps.review",
+};
 
 const FREQ_KEYS: Record<number, { n: string; d: string }> = {
   1: { n: "wizard.freqNames.f1", d: "wizard.freqDescs.f1" },
@@ -252,7 +283,9 @@ function FeasibilityCard({ plan }: { plan: AssistReply }) {
           ) : (
             <ShieldX size={13} color={colors.neg} />
           )}
-          <Text className="text-muted text-[11px] leading-4 flex-1">{perm.note}</Text>
+          <Text className="text-muted text-[11px] leading-4 flex-1">
+            {t(perm.allowed ? "wizard.siteOk" : "wizard.siteLimited")}
+          </Text>
         </View>
       ) : null}
     </EnterItem>
@@ -432,6 +465,14 @@ export default function NewWatcher() {
   // İÇERİR → "Bildirim" kapanırsa "Alarm" da kapanır (silent); "Alarm" açılırsa "Bildirim" zorunlu.
   const pushOn = alarmChannel !== "silent";
   const alarmOn = alarmChannel === "alarm";
+  // Alarm açıkken "Alarm sesi" stüdyosu Kanallar ile Önizle arasına girer (5↔6 sayfa).
+  const steps = useMemo<StepDef[]>(
+    () =>
+      alarmOn
+        ? [STEP_INTENT, STEP_SOURCE, STEP_FREQ, STEP_CHANNELS, STEP_ALARM, STEP_REVIEW]
+        : [STEP_INTENT, STEP_SOURCE, STEP_FREQ, STEP_CHANNELS, STEP_REVIEW],
+    [alarmOn],
+  );
   const onPush = (v: boolean): void =>
     setAlarmChannel(v ? (alarmOn ? "alarm" : "notify") : "silent");
   const onAlarm = (v: boolean): void => {
@@ -486,7 +527,7 @@ export default function NewWatcher() {
   // preview.stop stabil useCallback → yalnız [step]/mount'a bağlamak kasıtlı.
   // biome-ignore lint/correctness/useExhaustiveDependencies: stop stabil; adım değişiminde çalışmalı
   useEffect(() => {
-    if (STEPS[step]?.key !== "alert") preview.stop();
+    if (steps[step]?.key !== "alarm") preview.stop();
   }, [step]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: yalnız unmount temizliği
   useEffect(() => () => preview.stop(), []);
@@ -582,8 +623,9 @@ export default function NewWatcher() {
     return true;
   }
 
-  const current = STEPS[step];
-  const isLast = step === STEPS.length - 1;
+  // step, alarm-toggle ile dizi kısalınca taşabilir → güvenli sınırla (review'a düşer).
+  const current = steps[step] ?? steps[steps.length - 1];
+  const isLast = step >= steps.length - 1;
 
   function next() {
     setErr(null);
@@ -595,7 +637,7 @@ export default function NewWatcher() {
       mutation.mutate();
       return;
     }
-    setStep((s) => Math.min(STEPS.length - 1, s + 1));
+    setStep((s) => Math.min(steps.length - 1, s + 1));
   }
 
   function back() {
@@ -605,7 +647,7 @@ export default function NewWatcher() {
 
   return (
     <View className="flex-1 bg-ink">
-      <GradientHero title={t(current.titleK)} subtitle={`${step + 1} / ${STEPS.length}`} back />
+      <GradientHero title={t(current.titleK)} subtitle={`${step + 1} / ${steps.length}`} back />
       {/* Numaralı adım göstergesi (maket: 1-2-3-4-5 bağlantılı) */}
       <View
         className="mx-5 -mt-10 bg-panel border border-line rounded-2xl px-4 py-3"
@@ -623,11 +665,11 @@ export default function NewWatcher() {
           default: {},
         })}
         accessibilityRole="progressbar"
-        accessibilityValue={{ min: 1, max: STEPS.length, now: step + 1 }}
-        accessibilityLabel={`${step + 1} / ${STEPS.length}: ${t(current.titleK)}`}
+        accessibilityValue={{ min: 1, max: steps.length, now: step + 1 }}
+        accessibilityLabel={`${step + 1} / ${steps.length}: ${t(current.titleK)}`}
       >
         <View className="flex-row items-center">
-          {STEPS.map((st, i) => (
+          {steps.map((st, i) => (
             <View key={st.key} className="flex-row items-center flex-1">
               <View
                 className={`w-7 h-7 rounded-full items-center justify-center ${
@@ -641,7 +683,7 @@ export default function NewWatcher() {
                   {i + 1}
                 </Text>
               </View>
-              {i < STEPS.length - 1 ? (
+              {i < steps.length - 1 ? (
                 <View className={`flex-1 h-0.5 mx-1 ${i < step ? "bg-accent" : "bg-line"}`} />
               ) : null}
             </View>
@@ -649,7 +691,7 @@ export default function NewWatcher() {
         </View>
         {/* Maket: her dairenin altında kısa adım etiketi */}
         <View className="flex-row mt-1.5">
-          {STEPS.map((st, i) => (
+          {steps.map((st, i) => (
             <Text
               key={st.key}
               className={`flex-1 text-[9px] ${i === step ? "text-accent font-semibold" : "text-muted"}`}
@@ -924,7 +966,7 @@ export default function NewWatcher() {
         ) : null}
 
         {/* 4) Uyarı şekli */}
-        {current.key === "alert" ? (
+        {current.key === "channels" ? (
           <>
             <Text className="text-muted text-sm mb-3">{t("wizard.channelsHint")}</Text>
             <View className="border border-line rounded-2xl overflow-hidden">
@@ -1015,131 +1057,139 @@ export default function NewWatcher() {
               <Text className="text-muted text-[11px] mt-2">{t("wizard.alarmPro")}</Text>
             ) : null}
             <Text className="text-muted text-[11px] mt-2 leading-4">{t("wizard.relayNote")}</Text>
-            {alarmChannel === "alarm" ? (
-              <View className="mt-1">
-                <View className="flex-row flex-wrap gap-2 mb-2">
-                  {ALARM_CATEGORIES.map((c) => (
-                    <Pressable
-                      key={c}
-                      onPress={() => setSoundCat(c)}
-                      className={chip(soundCat === c)}
-                      accessibilityRole="button"
-                    >
-                      <Text
-                        className={
-                          soundCat === c ? "text-accent text-[11px]" : "text-muted text-[11px]"
-                        }
-                      >
-                        {c}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-                <View className="border border-line rounded-xl overflow-hidden">
-                  {ALARM_SOUNDS.filter((s) => s.category === soundCat).map((s) => {
-                    const locked = !canAllSounds && s.id !== DEFAULT_ALARM_CONFIG.soundId;
-                    const sel = soundId === s.id && !customSound;
-                    const playing = preview.playingId === s.id;
-                    let cls = "text-text text-xs flex-1";
-                    if (locked) cls = "text-muted text-xs opacity-50 flex-1";
-                    else if (sel) cls = "text-accent text-xs flex-1 font-semibold";
-                    return (
-                      <View
-                        key={s.id}
-                        className={`flex-row items-center px-3 border-b border-line ${sel ? "bg-accent/10" : ""}`}
-                      >
-                        {/* Seç (satıra dokun) */}
-                        <Pressable
-                          disabled={locked}
-                          onPress={
-                            locked
-                              ? undefined
-                              : () => {
-                                  setSoundId(s.id);
-                                  setCustomSound(null);
-                                  preview.play(s.id);
-                                }
-                          }
-                          accessibilityRole="button"
-                          accessibilityState={{ selected: sel, disabled: locked }}
-                          accessibilityLabel={locked ? `${s.name} (Pro)` : s.name}
-                          className="flex-1 flex-row items-center py-2.5 min-h-[44px]"
-                        >
-                          <Text className={cls} numberOfLines={1}>
-                            {sel ? "• " : ""}
-                            {locked ? `${s.name} (Pro)` : s.name}
-                          </Text>
-                        </Pressable>
-                        {/* Önizle/Durdur (dinle) */}
-                        {!locked ? (
-                          <Pressable
-                            onPress={() => (playing ? preview.stop() : preview.play(s.id))}
-                            accessibilityRole="button"
-                            accessibilityLabel={t(
-                              playing ? "wizard.soundStop" : "wizard.soundPlay",
-                              {
-                                name: s.name,
-                              },
-                            )}
-                            className="w-11 h-11 items-center justify-center"
-                          >
-                            {playing ? (
-                              <Pause size={16} color={colors.accent} />
-                            ) : (
-                              <Play size={16} color={colors.muted2} />
-                            )}
-                          </Pressable>
-                        ) : null}
-                      </View>
-                    );
-                  })}
-                </View>
-                {!canAllSounds ? (
-                  <Text className="text-muted text-[10px] mt-1">{t("wizard.allSoundsPro")}</Text>
-                ) : null}
-
-                {/* Cihazdan kendi sesini seç (ADR-083) — Pro'da açık */}
-                {canAllSounds ? (
-                  <Pressable
-                    onPress={() => void pickCustomSound()}
-                    accessibilityRole="button"
-                    accessibilityLabel={t("wizard.soundCustomPick")}
-                    className="flex-row items-center gap-2 mt-2.5 border border-accent/40 bg-accent/5 rounded-xl px-3.5 py-3 min-h-[44px] active:bg-accent/15"
-                  >
-                    <FileMusic size={16} color={colors.accent} />
-                    <Text className="text-accent text-xs font-semibold flex-1" numberOfLines={1}>
-                      {customSound ? customSound.name : t("wizard.soundCustomPick")}
-                    </Text>
-                    {customSound ? (
-                      <Pressable
-                        onPress={() =>
-                          preview.playingId === "custom"
-                            ? preview.stop()
-                            : preview.playUri(customSound.uri)
-                        }
-                        accessibilityRole="button"
-                        accessibilityLabel={t(
-                          preview.playingId === "custom" ? "wizard.soundStop" : "wizard.soundPlay",
-                          { name: customSound.name },
-                        )}
-                        className="w-9 h-9 items-center justify-center"
-                      >
-                        {preview.playingId === "custom" ? (
-                          <Pause size={15} color={colors.accent} />
-                        ) : (
-                          <Play size={15} color={colors.accent} />
-                        )}
-                      </Pressable>
-                    ) : null}
-                  </Pressable>
-                ) : null}
-                <Text className="text-muted text-[10px] mt-2">{t("wizard.soundNote")}</Text>
-              </View>
-            ) : null}
           </>
         ) : null}
 
-        {/* 5) Özet */}
+        {/* 5) Alarm stüdyosu (yalnız Alarm açıkken; ADR-163) — ses seç + dinle */}
+        {current.key === "alarm" ? (
+          <>
+            <View className="flex-row items-center gap-2 mb-3">
+              <AlarmClock size={18} color={colors.accent} />
+              <Text className="text-text text-base font-semibold flex-1">
+                {t("wizard.alarmStudioTitle")}
+              </Text>
+            </View>
+            <Text className="text-muted text-sm mb-4">{t("wizard.alarmStudioHint")}</Text>
+            <View className="mt-1">
+              <View className="flex-row flex-wrap gap-2 mb-2">
+                {ALARM_CATEGORIES.map((c) => (
+                  <Pressable
+                    key={c}
+                    onPress={() => setSoundCat(c)}
+                    className={chip(soundCat === c)}
+                    accessibilityRole="button"
+                  >
+                    <Text
+                      className={
+                        soundCat === c ? "text-accent text-[11px]" : "text-muted text-[11px]"
+                      }
+                    >
+                      {c}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <View className="border border-line rounded-xl overflow-hidden">
+                {ALARM_SOUNDS.filter((s) => s.category === soundCat).map((s) => {
+                  const locked = !canAllSounds && s.id !== DEFAULT_ALARM_CONFIG.soundId;
+                  const sel = soundId === s.id && !customSound;
+                  const playing = preview.playingId === s.id;
+                  let cls = "text-text text-xs flex-1";
+                  if (locked) cls = "text-muted text-xs opacity-50 flex-1";
+                  else if (sel) cls = "text-accent text-xs flex-1 font-semibold";
+                  return (
+                    <View
+                      key={s.id}
+                      className={`flex-row items-center px-3 border-b border-line ${sel ? "bg-accent/10" : ""}`}
+                    >
+                      {/* Seç (satıra dokun) */}
+                      <Pressable
+                        disabled={locked}
+                        onPress={
+                          locked
+                            ? undefined
+                            : () => {
+                                setSoundId(s.id);
+                                setCustomSound(null);
+                                preview.play(s.id);
+                              }
+                        }
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: sel, disabled: locked }}
+                        accessibilityLabel={locked ? `${s.name} (Pro)` : s.name}
+                        className="flex-1 flex-row items-center py-2.5 min-h-[44px]"
+                      >
+                        <Text className={cls} numberOfLines={1}>
+                          {sel ? "• " : ""}
+                          {locked ? `${s.name} (Pro)` : s.name}
+                        </Text>
+                      </Pressable>
+                      {/* Önizle/Durdur (dinle) */}
+                      {!locked ? (
+                        <Pressable
+                          onPress={() => (playing ? preview.stop() : preview.play(s.id))}
+                          accessibilityRole="button"
+                          accessibilityLabel={t(playing ? "wizard.soundStop" : "wizard.soundPlay", {
+                            name: s.name,
+                          })}
+                          className="w-11 h-11 items-center justify-center"
+                        >
+                          {playing ? (
+                            <Pause size={16} color={colors.accent} />
+                          ) : (
+                            <Play size={16} color={colors.muted2} />
+                          )}
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  );
+                })}
+              </View>
+              {!canAllSounds ? (
+                <Text className="text-muted text-[10px] mt-1">{t("wizard.allSoundsPro")}</Text>
+              ) : null}
+
+              {/* Cihazdan kendi sesini seç (ADR-083) — Pro'da açık */}
+              {canAllSounds ? (
+                <Pressable
+                  onPress={() => void pickCustomSound()}
+                  accessibilityRole="button"
+                  accessibilityLabel={t("wizard.soundCustomPick")}
+                  className="flex-row items-center gap-2 mt-2.5 border border-accent/40 bg-accent/5 rounded-xl px-3.5 py-3 min-h-[44px] active:bg-accent/15"
+                >
+                  <FileMusic size={16} color={colors.accent} />
+                  <Text className="text-accent text-xs font-semibold flex-1" numberOfLines={1}>
+                    {customSound ? customSound.name : t("wizard.soundCustomPick")}
+                  </Text>
+                  {customSound ? (
+                    <Pressable
+                      onPress={() =>
+                        preview.playingId === "custom"
+                          ? preview.stop()
+                          : preview.playUri(customSound.uri)
+                      }
+                      accessibilityRole="button"
+                      accessibilityLabel={t(
+                        preview.playingId === "custom" ? "wizard.soundStop" : "wizard.soundPlay",
+                        { name: customSound.name },
+                      )}
+                      className="w-9 h-9 items-center justify-center"
+                    >
+                      {preview.playingId === "custom" ? (
+                        <Pause size={15} color={colors.accent} />
+                      ) : (
+                        <Play size={15} color={colors.accent} />
+                      )}
+                    </Pressable>
+                  ) : null}
+                </Pressable>
+              ) : null}
+              <Text className="text-muted text-[10px] mt-2">{t("wizard.soundNote")}</Text>
+            </View>
+          </>
+        ) : null}
+
+        {/* 6) Özet */}
         {current.key === "review" ? (
           <Card>
             <ReviewRow label={t("wizard.rIntent")} value={rawIntent.trim() || "—"} />

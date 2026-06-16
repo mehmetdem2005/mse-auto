@@ -135,6 +135,8 @@ export const ja: Catalog = {
       source: "ソース",
       freq: "頻度",
       alert: "通知",
+      channels: "チャネル",
+      alarm: "アラーム音",
       review: "プレビュー",
     },
     titles: {
@@ -142,6 +144,8 @@ export const ja: Catalog = {
       source: "ソースの優先度",
       freq: "チェックの頻度は?",
       alert: "通知方法は?",
+      channels: "どのように通知しますか?",
+      alarm: "アラーム音",
       review: "確認して作成",
     },
     greeting:
@@ -241,6 +245,10 @@ export const ja: Catalog = {
     relayNote:
       "Telegram・メール・WhatsApp はアカウントに紐づきます。1 つ有効にすると共有中のすべてのウォッチャーに適用され、個人フィルタのない監視でのみ機能します。",
     connectChannel: "連携",
+    alarmStudioTitle: "アラームスタジオ",
+    alarmStudioHint: "このウォッチがアラームを鳴らすときに再生される音を選んで試聴できます。",
+    siteOk: "このソースは自動監視に対応しているようです。",
+    siteLimited: "このソースの直接監視は限定的かもしれません。関連する公開告知を監視します。",
   },
   alarm: {
     title: "アラーム",
