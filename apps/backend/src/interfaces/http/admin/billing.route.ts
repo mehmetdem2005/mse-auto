@@ -1,12 +1,15 @@
 import { type OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import {
   adminSubscriptionListSchema,
+  planEntitlementsConfigSchema,
   planFeaturesSchema,
   plansSchema,
+  setPlanEntitlementsInputSchema,
   setPlanFeaturesInputSchema,
   setPriceInputSchema,
 } from "@watcher/contracts";
 import { getPlans } from "../../../application/get-plans";
+import { getPlanEntitlements, setPlanEntitlements } from "../../../application/plan-config";
 import { getPlanFeatures, setPlanFeatures } from "../../../application/plan-features";
 import { setPlanPrice } from "../../../application/set-price";
 import type { Container } from "../../../config/container";
@@ -99,6 +102,50 @@ export function registerBillingAdminRoutes(
         plan: input.plan,
         lang: input.lang,
         count: input.bullets.length,
+      });
+      return c.json(result, 200);
+    },
+  );
+
+  // ---- ADR-160: Plan YETKİLERİ (admin-yapılandırılır limitler; app_settings, migration YOK) ----
+  app.openapi(
+    createRoute({
+      method: "get",
+      path: "/plan-entitlements",
+      tags: ["admin"],
+      summary: "Plan yetkileri (limitler) — free + pro",
+      responses: {
+        200: {
+          content: { "application/json": { schema: planEntitlementsConfigSchema } },
+          description: "Yetkiler",
+        },
+      },
+    }),
+    async (c) => c.json(await getPlanEntitlements(container.settings), 200),
+  );
+
+  app.openapi(
+    createRoute({
+      method: "put",
+      path: "/plan-entitlements",
+      tags: ["admin"],
+      summary: "Bir planın yetkilerini ayarla (watcher limiti / sıklık / alarm / sesler)",
+      request: {
+        body: { content: { "application/json": { schema: setPlanEntitlementsInputSchema } } },
+      },
+      responses: {
+        200: {
+          content: { "application/json": { schema: planEntitlementsConfigSchema } },
+          description: "Güncel yetki tablosu",
+        },
+      },
+    }),
+    async (c) => {
+      const input = c.req.valid("json");
+      const result = await setPlanEntitlements(container.settings, input.plan, input.entitlements);
+      await audit(c.get("userId"), "plan.entitlements", "settings", null, {
+        plan: input.plan,
+        ...input.entitlements,
       });
       return c.json(result, 200);
     },

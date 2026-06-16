@@ -1,6 +1,7 @@
 import type { BillingInterval, PriceRepository } from "../domain/billing";
 import type { PaymentEvent, PaymentGateway } from "../domain/payment";
 import type { WatchRepository } from "../domain/ports";
+import type { SettingsRepository } from "../domain/settings";
 import type { SubscriptionRepository } from "../domain/subscription";
 import { reconcilePlan } from "./reconcile-plan";
 import { subscribeUser } from "./subscribe";
@@ -25,6 +26,8 @@ export interface WebhookDeps {
   prices: PriceRepository;
   subscriptions: SubscriptionRepository;
   watches: WatchRepository;
+  /** ADR-160: reconcilePlan'a iletilir → admin-yapılandırılır limitler (opsiyonel; yoksa varsayılan). */
+  settings?: SettingsRepository | undefined;
 }
 
 /**

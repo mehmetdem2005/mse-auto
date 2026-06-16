@@ -17,6 +17,7 @@ const ACTION_LABEL: Record<string, string> = {
   "broadcast.send": "Push yayını gönderildi",
   "broadcast.inactive": "Push yayını denendi (kanal pasif)",
   "plan.features": "Plan özellikleri güncellendi",
+  "plan.entitlements": "Plan limitleri güncellendi",
   "channels.config": "Kanal ayarı değiştirildi",
   "email.prompt": "E-posta istemi güncellendi",
 };

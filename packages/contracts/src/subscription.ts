@@ -67,3 +67,29 @@ export const setPlanFeaturesInputSchema = z.object({
   bullets: z.array(z.string().trim().min(1).max(120)).max(12),
 });
 export type SetPlanFeaturesInput = z.infer<typeof setPlanFeaturesInputSchema>;
+
+/**
+ * Plan YETKİLERİ (ADR-160) — admin-yapılandırılır limitler. domain PLAN_ENTITLEMENTS varsayılan;
+ * admin app_settings'te override yazar (migration YOK). maxActiveWatches/minFrequencyMinutes ≥1 clamp.
+ */
+export const planEntitlementsSchema = z.object({
+  maxActiveWatches: z.number().int().min(1).max(100000),
+  minFrequencyMinutes: z.number().int().min(1).max(100000),
+  alarmChannel: z.boolean(),
+  allSounds: z.boolean(),
+});
+export type PlanEntitlementsDto = z.infer<typeof planEntitlementsSchema>;
+
+/** Tüm planların yetki tablosu (admin GET/PUT yanıtı). */
+export const planEntitlementsConfigSchema = z.object({
+  free: planEntitlementsSchema,
+  pro: planEntitlementsSchema,
+});
+export type PlanEntitlementsConfig = z.infer<typeof planEntitlementsConfigSchema>;
+
+/** Admin: bir planın yetkilerini ayarla. */
+export const setPlanEntitlementsInputSchema = z.object({
+  plan: planSchema,
+  entitlements: planEntitlementsSchema,
+});
+export type SetPlanEntitlementsInput = z.infer<typeof setPlanEntitlementsInputSchema>;

@@ -1,13 +1,17 @@
 import type { Subscription } from "@watcher/contracts";
 import { effectivePlan } from "../domain/billing";
-import { entitlementsFor, limitsFor } from "../domain/plan";
+import { entitlementsFor } from "../domain/plan";
 import type { WatchRepository } from "../domain/ports";
+import type { SettingsRepository } from "../domain/settings";
 import type { SubscriptionRepository } from "../domain/subscription";
+import { getEntitlements } from "./plan-config";
 import { reconcilePlan } from "./reconcile-plan";
 
 export interface GetSubscriptionDeps {
   subscriptions: SubscriptionRepository;
   watches: WatchRepository;
+  /** ADR-160: verilirse admin-yapılandırılır yetkiler okunur; yoksa statik varsayılan (geri-uyumlu). */
+  settings?: SettingsRepository | undefined;
 }
 
 export async function getSubscription(
@@ -17,8 +21,11 @@ export async function getSubscription(
   await reconcilePlan(deps, userId);
   const sub = await deps.subscriptions.getByUser(userId);
   const plan = effectivePlan(sub, new Date());
-  const limits = limitsFor(plan);
-  const ent = entitlementsFor(plan);
+  const ent = deps.settings ? await getEntitlements(deps.settings, plan) : entitlementsFor(plan);
+  const limits = {
+    maxActiveWatches: ent.maxActiveWatches,
+    minFrequencyMinutes: ent.minFrequencyMinutes,
+  };
   const activeWatches = (await deps.watches.listByUser(userId)).filter(
     (w) => w.status === "active",
   ).length;

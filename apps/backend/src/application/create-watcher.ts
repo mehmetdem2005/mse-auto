@@ -6,7 +6,9 @@ import { PlanLimitError } from "../domain/errors";
 import { limitsFor } from "../domain/plan";
 import type { CanonicalTopicRepository, WatchRepository } from "../domain/ports";
 import type { JobQueue } from "../domain/queue";
+import type { SettingsRepository } from "../domain/settings";
 import type { SubscriptionRepository } from "../domain/subscription";
+import { getLimits } from "./plan-config";
 import { CHECK_QUEUE, type TopicCheckJob } from "./scheduler";
 
 export interface CreateWatcherDeps {
@@ -16,6 +18,8 @@ export interface CreateWatcherDeps {
   queue: JobQueue;
   /** ADR-148: limite takılan free kullanıcıya tek-seferlik "Pro'ya yüksel" sistem bildirimi (opsiyonel). */
   announcements?: AnnouncementRepository | undefined;
+  /** ADR-160: verilirse admin-yapılandırılır limitler okunur; yoksa statik varsayılan (geri-uyumlu). */
+  settings?: SettingsRepository | undefined;
 }
 
 /** ADR-148: free kullanıcı watcher limitine takılınca bir kez (dedup'lı) yükselt-bildirimi (best-effort). */
@@ -48,7 +52,7 @@ export async function createWatcher(
 ): Promise<WatchDto> {
   const sub = await deps.subscriptions.getByUser(userId);
   const plan = effectivePlan(sub, new Date());
-  const limits = limitsFor(plan);
+  const limits = deps.settings ? await getLimits(deps.settings, plan) : limitsFor(plan);
 
   if (input.frequencyMinutes < limits.minFrequencyMinutes) {
     throw new PlanLimitError(

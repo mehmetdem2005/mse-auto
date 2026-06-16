@@ -1,11 +1,15 @@
 import { effectivePlan } from "../domain/billing";
 import { limitsFor } from "../domain/plan";
 import type { WatchRepository } from "../domain/ports";
+import type { SettingsRepository } from "../domain/settings";
 import type { SubscriptionRepository } from "../domain/subscription";
+import { getLimits } from "./plan-config";
 
 export interface ReconcilePlanDeps {
   subscriptions: SubscriptionRepository;
   watches: WatchRepository;
+  /** ADR-160: verilirse admin-yapılandırılır limitler okunur; yoksa statik varsayılan (geri-uyumlu). */
+  settings?: SettingsRepository | undefined;
 }
 
 export interface ReconcileResult {
@@ -27,7 +31,8 @@ export async function reconcilePlan(
   now: Date = new Date(),
 ): Promise<ReconcileResult> {
   const sub = await deps.subscriptions.getByUser(userId);
-  const limits = limitsFor(effectivePlan(sub, now));
+  const plan = effectivePlan(sub, now);
+  const limits = deps.settings ? await getLimits(deps.settings, plan) : limitsFor(plan);
   const watches = await deps.watches.listByUser(userId);
 
   const byNewest = [...watches].sort((a, b) => b.createdAt.localeCompare(a.createdAt));

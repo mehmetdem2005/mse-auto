@@ -71,6 +71,17 @@ export interface AdminChannelConfig {
   availability: ChannelAvailability;
   configured: ChannelAvailability;
 }
+/** Plan yetkileri (ADR-160) — admin-yapılandırılır limitler. */
+export interface PlanEntitlement {
+  maxActiveWatches: number;
+  minFrequencyMinutes: number;
+  alarmChannel: boolean;
+  allSounds: boolean;
+}
+export interface PlanEntitlementsConfig {
+  free: PlanEntitlement;
+  pro: PlanEntitlement;
+}
 /** Kullanıcı AI kişiselleştirme (ADR-113). */
 export interface UserAiProfile {
   about: string;
@@ -627,6 +638,13 @@ export const api = {
     req<PlanFeatures>("/v1/admin/plan-features", {
       method: "PUT",
       body: JSON.stringify({ plan, lang, bullets }),
+    }),
+  // ADR-160: admin-yapılandırılır plan limitleri (watcher/sıklık/alarm/sesler).
+  adminPlanEntitlements: () => req<PlanEntitlementsConfig>("/v1/admin/plan-entitlements"),
+  setAdminPlanEntitlements: (plan: "free" | "pro", entitlements: PlanEntitlement) =>
+    req<PlanEntitlementsConfig>("/v1/admin/plan-entitlements", {
+      method: "PUT",
+      body: JSON.stringify({ plan, entitlements }),
     }),
   assistChat: (messages: AssistMessage[], lang?: string) =>
     req<AssistReply>("/v1/watchers/assist", {
