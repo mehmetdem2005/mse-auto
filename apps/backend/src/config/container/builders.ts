@@ -122,19 +122,41 @@ export function buildChannels(env: Env): ChannelSender[] {
 }
 
 export function buildAuth(env: Env): AuthVerifier {
-  return env.SUPABASE_URL ? new SupabaseJwtVerifier(env.SUPABASE_URL) : new DevAuthVerifier();
+  if (env.SUPABASE_URL) return new SupabaseJwtVerifier(env.SUPABASE_URL);
+  // ADR-156 (H1): production'da DevAuthVerifier = TAM kimlik-doğrulama bypass'ı (Bearer = userId,
+  // imza yok). Env eksikse sessizce sahte doğrulayıcıya düşmek yerine fail-fast (12-factor).
+  if (env.NODE_ENV !== "development") {
+    throw new Error(
+      "Güvenlik: production'da SUPABASE_URL zorunlu — DevAuthVerifier (imzasız) reddedildi.",
+    );
+  }
+  return new DevAuthVerifier();
 }
 
 export function buildPayment(env: Env): PaymentGateway {
   const appUrl = env.APP_URL ?? `http://localhost:${env.PORT}`;
   if (env.STRIPE_SECRET_KEY && env.STRIPE_PRICE_PRO_MONTH && env.STRIPE_PRICE_PRO_YEAR) {
+    // ADR-156 (C2): canlı ağ geçidi seçildi ama webhook gizi yoksa, Stripe `constructEvent` boş
+    // gizle imzayı DOĞRULAR (fail-OPEN) → saldırgan kendi imzasını üretip bedava Pro alır. Fail-fast.
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+      throw new Error(
+        "Güvenlik: Stripe canlı ağ geçidi için STRIPE_WEBHOOK_SECRET zorunlu — webhook imzası doğrulanamaz (fail-open) → başlatma reddedildi.",
+      );
+    }
     return new StripePaymentGateway({
       secretKey: env.STRIPE_SECRET_KEY,
-      webhookSecret: env.STRIPE_WEBHOOK_SECRET ?? "",
+      webhookSecret: env.STRIPE_WEBHOOK_SECRET,
       priceMonth: env.STRIPE_PRICE_PRO_MONTH,
       priceYear: env.STRIPE_PRICE_PRO_YEAR,
       appUrl,
     });
+  }
+  // ADR-156 (H1): InMemoryPaymentGateway imzasız webhook'u KABUL eder → production'da bedava-Pro
+  // deliği. Production'da sahte ağ geçidini reddet (gerçek Stripe yapılandırması gerekli).
+  if (env.NODE_ENV !== "development") {
+    throw new Error(
+      "Güvenlik: production'da sahte ödeme ağ geçidi (imzasız webhook kabul eder) reddedildi — Stripe yapılandırması gerekli.",
+    );
   }
   return new InMemoryPaymentGateway(appUrl);
 }
