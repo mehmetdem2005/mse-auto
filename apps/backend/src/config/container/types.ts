@@ -62,6 +62,8 @@ export interface Container {
   telegramBot: TelegramBotApi | null;
   /** Telegram tek-kullanımlık bağlama kodu deposu (ADR-153) — bellek-içi (combined process). */
   telegramLinks: TelegramLinkStore;
+  /** RevenueCat (Android IAP) webhook doğrulama gizi (ADR-159) — yoksa webhook dormant. */
+  revenueCatWebhookAuth: string | null;
   /** Kimliksiz trafik telemetrisi (ADR-091). */
   traffic: TrafficRepository;
   checker: Checker;

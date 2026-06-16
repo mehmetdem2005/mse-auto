@@ -189,6 +189,7 @@ export function createContainer(env: Env): Container {
     channels,
     telegramBot,
     telegramLinks,
+    revenueCatWebhookAuth: env.REVENUECAT_WEBHOOK_AUTH ?? null,
     pushActive,
     embeddingRouter,
     embedder,

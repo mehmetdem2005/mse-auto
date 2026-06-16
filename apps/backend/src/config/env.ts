@@ -58,6 +58,8 @@ const EnvSchema = z.object({
   APP_URL: z.url().optional(),
   // Render servis genel URL'i (Render otomatik enjekte eder) — Telegram webhook kurulumu (ADR-153) için.
   RENDER_EXTERNAL_URL: z.url().optional(),
+  // RevenueCat (Android IAP) webhook doğrulama gizi (ADR-159) — RC bunu Authorization başlığında yollar.
+  REVENUECAT_WEBHOOK_AUTH: z.string().min(1).optional(),
   // Rate limit
   RATE_LIMIT_PER_MINUTE: z.coerce.number().int().positive().default(120),
   WATCH_CREATE_PER_HOUR: z.coerce.number().int().positive().default(30),
