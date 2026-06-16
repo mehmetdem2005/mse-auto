@@ -12,6 +12,14 @@ export const tr = {
     s2Body: "Neyi takip etmek istediğini yaz; yapay zekâ kaynağı bulur ve seni haberdar eder.",
     s3Title: "Hiçbir şeyi kaçırma",
     s3Body: "Önemli bir şey değiştiği an anında bildirim al. İlk izlemeni şimdi oluştur.",
+    back: "Geri",
+  },
+  terms: {
+    gateTitle: "Kullanıcı Sözleşmesi",
+    gateIntro:
+      "Whenly'yi kullanmaya başlamadan önce Kullanım Koşulları'nı ve Gizlilik Politikası'nı kabul etmen gerekir.",
+    readAndAccept: "Kullanım Koşulları'nı ve Gizlilik Politikası'nı okudum ve kabul ediyorum.",
+    acceptButton: "Kabul Et ve Devam",
   },
   tabs: {
     feed: "Akış",

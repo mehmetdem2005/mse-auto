@@ -14,6 +14,14 @@ export const es: Catalog = {
     s3Title: "No te pierdas nada",
     s3Body:
       "Recibe una notificación al instante cuando algo importante cambie. Crea tu primer seguimiento ahora.",
+    back: "Atrás",
+  },
+  terms: {
+    gateTitle: "Acuerdo de usuario",
+    gateIntro:
+      "Antes de empezar a usar Whenly, debes aceptar los Términos del servicio y la Política de privacidad.",
+    readAndAccept: "He leído y acepto los Términos del servicio y la Política de privacidad.",
+    acceptButton: "Aceptar y continuar",
   },
   tabs: {
     feed: "Actividad",

@@ -2,7 +2,7 @@ import { EnterItem } from "@/components/motion";
 import { Btn } from "@/components/ui";
 import { useTheme } from "@/theme";
 import { useRouter } from "expo-router";
-import { BellRing, Telescope, Wand2 } from "lucide-react-native";
+import { BellRing, ChevronLeft, ChevronRight, Telescope, Wand2 } from "lucide-react-native";
 import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Pressable, Text, View } from "react-native";
@@ -29,17 +29,7 @@ export function Onboarding({ onComplete }: { onComplete: () => void }): ReactNod
 
   return (
     <View className="absolute inset-0 z-50 bg-ink" accessibilityViewIsModal>
-      {/* Atla */}
-      <View className="flex-row justify-end px-5 pt-12">
-        <Pressable
-          onPress={onComplete}
-          accessibilityRole="button"
-          accessibilityLabel={t("onboarding.skip")}
-          className="min-h-[44px] px-3 justify-center"
-        >
-          <Text className="text-muted text-sm font-medium">{t("onboarding.skip")}</Text>
-        </Pressable>
-      </View>
+      <View className="pt-14" />
 
       {/* İçerik — adım değişince yeniden-monte olur → giriş animasyonu (reduce-motion: anında) */}
       <View className="flex-1 items-center justify-center px-8">
@@ -71,32 +61,57 @@ export function Onboarding({ onComplete }: { onComplete: () => void }): ReactNod
           ))}
         </View>
 
-        {last ? (
-          <>
-            <Btn
-              onPress={() => {
-                onComplete();
-                router.push("/new");
-              }}
-            >
-              <Text className="text-onAccent text-[15px] font-semibold">
-                {t("onboarding.createFirst")}
-              </Text>
-            </Btn>
-            <Pressable
-              onPress={onComplete}
-              accessibilityRole="button"
-              accessibilityLabel={t("onboarding.later")}
-              className="min-h-[44px] items-center justify-center mt-2"
-            >
-              <Text className="text-muted text-sm">{t("onboarding.later")}</Text>
-            </Pressable>
-          </>
-        ) : (
-          <Btn onPress={() => setStep(step + 1)}>
-            <Text className="text-onAccent text-[15px] font-semibold">{t("onboarding.next")}</Text>
-          </Btn>
-        )}
+        <View className="flex-row items-center gap-3">
+          {/* Geri oku — ilk adımda devre dışı (görsel olarak soluk) */}
+          <Pressable
+            onPress={() => setStep((s) => Math.max(0, s - 1))}
+            disabled={step === 0}
+            accessibilityRole="button"
+            accessibilityLabel={t("onboarding.back")}
+            className={`w-14 min-h-[52px] items-center justify-center rounded-2xl border border-line ${
+              step === 0 ? "opacity-30" : "active:opacity-70"
+            }`}
+          >
+            <ChevronLeft size={22} color={colors.text} />
+          </Pressable>
+
+          {/* İleri oku / Başla */}
+          <View className="flex-1">
+            {last ? (
+              <Btn
+                onPress={() => {
+                  onComplete();
+                  router.push("/new");
+                }}
+              >
+                <Text className="text-onAccent text-[15px] font-semibold">
+                  {t("onboarding.createFirst")}
+                </Text>
+              </Btn>
+            ) : (
+              <Btn onPress={() => setStep(step + 1)}>
+                <View className="flex-row items-center justify-center gap-1.5">
+                  <Text className="text-onAccent text-[15px] font-semibold">
+                    {t("onboarding.next")}
+                  </Text>
+                  <ChevronRight size={18} color="#FFFFFF" />
+                </View>
+              </Btn>
+            )}
+          </View>
+        </View>
+
+        {/* Atla / Belki sonra — ikincil eylem */}
+        <Pressable
+          onPress={onComplete}
+          accessibilityRole="button"
+          accessibilityLabel={last ? t("onboarding.later") : t("onboarding.skip")}
+          className="min-h-[44px] items-center justify-center mt-3"
+        >
+          <Text className="text-muted text-sm">
+            {last ? t("onboarding.later") : t("onboarding.skip")}
+          </Text>
+        </Pressable>
       </View>
     </View>
   );

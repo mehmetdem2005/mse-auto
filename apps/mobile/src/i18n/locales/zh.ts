@@ -12,6 +12,13 @@ export const zh: Catalog = {
     s2Body: "描述你想跟踪的内容；AI 会找到来源并随时通知你。",
     s3Title: "不错过任何变化",
     s3Body: "一旦有重要变化，立即收到通知。现在就创建你的第一个监控。",
+    back: "返回",
+  },
+  terms: {
+    gateTitle: "用户协议",
+    gateIntro: "在开始使用 Whenly 之前，您需要接受服务条款和隐私政策。",
+    readAndAccept: "我已阅读并接受服务条款和隐私政策。",
+    acceptButton: "接受并继续",
   },
   tabs: {
     feed: "Feed",

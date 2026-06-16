@@ -12,6 +12,14 @@ export const ja: Catalog = {
     s2Body: "追跡したいことを書くだけ。AI が情報源を見つけて知らせ続けます。",
     s3Title: "大事なことを見逃さない",
     s3Body: "重要な変化が起きた瞬間に通知が届きます。今すぐ最初の監視を作成しましょう。",
+    back: "戻る",
+  },
+  terms: {
+    gateTitle: "利用規約",
+    gateIntro:
+      "Whenly の利用を始める前に、利用規約とプライバシーポリシーに同意する必要があります。",
+    readAndAccept: "利用規約とプライバシーポリシーを読み、同意します。",
+    acceptButton: "同意して続ける",
   },
   tabs: {
     feed: "フィード",
