@@ -186,6 +186,7 @@ export const en = {
 
   useCases: [
     {
+      key: "price-drop",
       slug: "price-drop-alerts",
       icon: "trendingDown",
       name: "Price drop alerts",
@@ -218,6 +219,7 @@ export const en = {
       related: ["restock-alerts", "rental-listing-alerts", "ticket-alerts"],
     },
     {
+      key: "restock",
       slug: "restock-alerts",
       icon: "pkg",
       name: "Restock alerts",
@@ -250,6 +252,7 @@ export const en = {
       related: ["price-drop-alerts", "ticket-alerts", "announcement-alerts"],
     },
     {
+      key: "rental-listing",
       slug: "rental-listing-alerts",
       icon: "home",
       name: "Property listing alerts",
@@ -282,6 +285,7 @@ export const en = {
       related: ["price-drop-alerts", "tender-alerts", "announcement-alerts"],
     },
     {
+      key: "ticket",
       slug: "ticket-alerts",
       icon: "ticket",
       name: "Event ticket alerts",
@@ -314,6 +318,7 @@ export const en = {
       related: ["restock-alerts", "price-drop-alerts", "announcement-alerts"],
     },
     {
+      key: "tender",
       slug: "tender-alerts",
       icon: "gavel",
       name: "Tender & RFP alerts",
@@ -346,6 +351,7 @@ export const en = {
       related: ["grant-alerts", "regulation-alerts", "competitor-alerts"],
     },
     {
+      key: "grant",
       slug: "grant-alerts",
       icon: "coins",
       name: "Grant & funding alerts",
@@ -378,6 +384,7 @@ export const en = {
       related: ["tender-alerts", "regulation-alerts", "announcement-alerts"],
     },
     {
+      key: "regulation",
       slug: "regulation-alerts",
       icon: "scale",
       name: "Regulation alerts",
@@ -410,6 +417,7 @@ export const en = {
       related: ["tender-alerts", "competitor-alerts", "grant-alerts"],
     },
     {
+      key: "competitor",
       slug: "competitor-alerts",
       icon: "eye",
       name: "Competitor & brand alerts",
@@ -442,6 +450,7 @@ export const en = {
       related: ["regulation-alerts", "tender-alerts", "price-drop-alerts"],
     },
     {
+      key: "announcement",
       slug: "announcement-alerts",
       icon: "megaphone",
       name: "Announcement & page alerts",
@@ -687,6 +696,7 @@ export const en = {
     versionLabel: "Version",
     canonicalNote:
       "This text is a copy of the version inside the app; if they differ, the in-app version prevails.",
+    translatedNote: "The legally binding version of this document is the English text.",
   },
 
   ucStrings: {

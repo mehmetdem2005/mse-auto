@@ -7,7 +7,7 @@
 // biçimindedir; sayfa kısadır; örnekler evrensel (ülkeye/kuruma kilitli değil).
 
 /** @typedef {{ q: string, a: string }} Faq */
-/** @typedef {{ slug: string, icon: string, name: string, metaTitle: string,
+/** @typedef {{ key: string, slug: string, icon: string, name: string, metaTitle: string,
  *   metaDescription: string, h1: string, answer: string, context: string[],
  *   examples: string[], faq: Faq[], related: string[] }} UseCase */
 
@@ -195,6 +195,7 @@ export const tr = {
   /** @type {UseCase[]} */
   useCases: [
     {
+      key: "price-drop",
       slug: "fiyat-takibi",
       icon: "trendingDown",
       name: "Fiyat takibi",
@@ -227,6 +228,7 @@ export const tr = {
       related: ["stok-takibi", "kiralik-ev-ilan-takibi", "bilet-takibi"],
     },
     {
+      key: "restock",
       slug: "stok-takibi",
       icon: "pkg",
       name: "Stok / restock takibi",
@@ -259,6 +261,7 @@ export const tr = {
       related: ["fiyat-takibi", "bilet-takibi", "duyuru-takibi"],
     },
     {
+      key: "rental-listing",
       slug: "kiralik-ev-ilan-takibi",
       icon: "home",
       name: "Kiralık ev ilanı takibi",
@@ -291,6 +294,7 @@ export const tr = {
       related: ["fiyat-takibi", "ihale-takibi", "duyuru-takibi"],
     },
     {
+      key: "ticket",
       slug: "bilet-takibi",
       icon: "ticket",
       name: "Etkinlik bileti takibi",
@@ -323,6 +327,7 @@ export const tr = {
       related: ["stok-takibi", "fiyat-takibi", "duyuru-takibi"],
     },
     {
+      key: "tender",
       slug: "ihale-takibi",
       icon: "gavel",
       name: "İhale ve RFP takibi",
@@ -355,6 +360,7 @@ export const tr = {
       related: ["hibe-destek-takibi", "mevzuat-takibi", "rakip-takibi"],
     },
     {
+      key: "grant",
       slug: "hibe-destek-takibi",
       icon: "coins",
       name: "Hibe ve destek takibi",
@@ -387,6 +393,7 @@ export const tr = {
       related: ["ihale-takibi", "mevzuat-takibi", "duyuru-takibi"],
     },
     {
+      key: "regulation",
       slug: "mevzuat-takibi",
       icon: "scale",
       name: "Mevzuat takibi",
@@ -419,6 +426,7 @@ export const tr = {
       related: ["ihale-takibi", "rakip-takibi", "hibe-destek-takibi"],
     },
     {
+      key: "competitor",
       slug: "rakip-takibi",
       icon: "eye",
       name: "Rakip ve marka takibi",
@@ -451,6 +459,7 @@ export const tr = {
       related: ["mevzuat-takibi", "ihale-takibi", "fiyat-takibi"],
     },
     {
+      key: "announcement",
       slug: "duyuru-takibi",
       icon: "megaphone",
       name: "Duyuru ve sayfa takibi",
@@ -695,6 +704,7 @@ export const tr = {
     versionLabel: "Sürüm",
     canonicalNote:
       "Bu metin uygulama içindeki metnin kopyasıdır; fark olursa uygulamadaki sürüm geçerlidir.",
+    translatedNote: "Bu belgenin bağlayıcı sürümü İngilizce metindir.",
   },
 
   /** Çözüm sayfası ortak dizgileri — render'da ternary/elle eşleme YOK (tek kaynak). */

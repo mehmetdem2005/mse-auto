@@ -7,7 +7,7 @@ tabanı: **`docs/GEO-pazarlama-mimarisi.md`** (kanonik) · mimari karar: ADR-090
 
 ## Komutlar
 
-    node build.mjs            # dist/ üret (36 sayfa + sitemap/robots/llms/og)
+    node build.mjs            # dist/ üret (11 dil × 18 ≈ 198 sayfa + sitemap/robots/llms/og)
     node build.mjs --serve    # üret + http://localhost:4321 önizleme
     pnpm typecheck            # tsc checkJs (JSDoc tipleri)
     pnpm test                 # node:test — link/SEO/a11y/emoji değişmezleri
@@ -19,8 +19,11 @@ tabanı: **`docs/GEO-pazarlama-mimarisi.md`** (kanonik) · mimari karar: ADR-090
 
 ## Yapı
 
-- `src/content.tr.mjs` + `src/content.en.mjs` — **TEK içerik kaynağı** (sayfa metinleri,
-  use-case verileri, SSS). HTML + sitemap + llms.txt + JSON-LD hep buradan türetilir.
+- `src/content.{en,tr,de,es,fr,pt,ru,ar,hi,ja,zh}.mjs` — **11 dilin içerik kaynağı**
+  (aynı nesne şekli; EN kanonik şablon, TR Türkiye-özel, kalan 9 dil EN'den çevrili).
+  HTML + sitemap + llms.txt + JSON-LD hep buradan türetilir. EN kök (`prefix:""`), kalan
+  10 dil önekli (`/tr`, `/de`, …). Diller `build.mjs` `LOCALES` + `site.mjs` `LANG_ORDER`
+  ile kayıtlı; her use-case'in dil-bağımsız bir `key`'i vardır (cross-language hreflang).
 - `src/legal.mjs` — uygulamadaki kanonik hukuki metinlerin kopyası
   (`apps/mobile/src/legal/index.ts` ile birlikte güncellenir).
 - `src/render.mjs` — şablonlar (atomic: ikon/buton → kart/maket → bölüm → sayfa).
@@ -30,9 +33,11 @@ tabanı: **`docs/GEO-pazarlama-mimarisi.md`** (kanonik) · mimari karar: ADR-090
 
 ## Yeni use-case sayfası eklemek
 
-1. `content.tr.mjs` → `useCases`'e nesne ekle (slug/icon/metaTitle/metaDescription/h1/
-   answer/context/examples/faq/related). `content.en.mjs`'e eşleniğini ekle.
-2. `build.mjs` → `SLUG_MAP`'e TR↔EN slug çiftini ekle (test simetriyi zorlar).
+1. **Her 11 dilin** `content.<lang>.mjs` → `useCases`'ine nesne ekle (aynı `key` ile;
+   slug/icon/metaTitle/metaDescription/h1/answer/context/examples/faq/related). `key`
+   tüm dillerde aynı olmalı (eşleştirme bununla yapılır); `icon` da aynı.
+2. `related` her dilde o dilin kendi slug'larını kullanır. SLUG_MAP YOK — eşleştirme
+   `key` üzerinden otomatiktir; test `key` paritesini ve hreflang simetrisini zorlar.
 3. Yazım kuralları (GEO + kullanıcı yönergesi): ilk paragraf 40-60 kelimelik bağımsız
    cevap · H2'ler soru biçiminde · NE yaptığını anlat, NASIL'ı açma (yalnız "belirli
    aralıklarla tarar") · iç mekanik/strateji yazma · **yalnız gerçekten erişilebilir

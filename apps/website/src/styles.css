@@ -1256,6 +1256,50 @@ thead .t-self {
   font-size: var(--fs--1);
 }
 
+/* Dil değiştirici — 11 dil; aktif dil vurgulu. Tam genişlik satır (grid sonu). */
+.ftr-lang {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--line);
+  padding-top: var(--s-6);
+}
+.ftr-lang ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+}
+.ftr-lang a[aria-current="true"] {
+  color: var(--accent);
+  font-weight: 650;
+}
+
+/* ---------- RTL (ar) — mantıksal özellikler çoğu yerleşimi otomatik çevirir;
+   yalnız fiziksel kalıntılar (vurgu kenarı, skip-link, kırıntı ayracı) düzeltilir. */
+[dir="rtl"] .answer,
+[dir="rtl"] .stat,
+[dir="rtl"] .example {
+  border-left: 0;
+}
+[dir="rtl"] .answer {
+  border-right: 3px solid var(--accent);
+  border-radius: var(--r-m) 0 0 var(--r-m);
+}
+[dir="rtl"] .stat {
+  border-right: 2px solid var(--accent);
+  padding-left: 0;
+  padding-right: var(--s-4);
+}
+[dir="rtl"] .example {
+  border-right: 3px solid var(--accent);
+}
+[dir="rtl"] .skip {
+  left: auto;
+  right: var(--s-4);
+}
+[dir="rtl"] .crumb li + li::before {
+  margin-right: 0;
+  margin-left: var(--s-2);
+}
+
 /* ---------- 6 UTILITIES ---------- */
 /* Görünüme-girince beliren öğeler — yalnız JS varken gizlenir; reduce-motion'da kapalı */
 html.js .rv {

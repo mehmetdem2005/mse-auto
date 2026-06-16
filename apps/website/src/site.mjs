@@ -35,6 +35,44 @@ export const BRAND = {
   ink: "#0B1220",
 };
 
+/** Dil sırası — mobil i18n SUPPORTED_LANGS ile hizalı (en, tr önde). Dil değiştiricide
+ *  ve hreflang yayımında bu sıra kullanılır. build.mjs LOCALES sırasıyla eşleşmeli. */
+export const LANG_ORDER = ["en", "tr", "de", "es", "fr", "pt", "ru", "ar", "hi", "ja", "zh"];
+
+/** Her dilin KENDİ dilindeki adı (dil değiştirici, hreflang etiketleri).
+ *  apps/mobile SUPPORTED_LANGS.native ile birebir. @type {Record<string,string>} */
+export const LANG_NAMES = {
+  en: "English",
+  tr: "Türkçe",
+  de: "Deutsch",
+  es: "Español",
+  fr: "Français",
+  pt: "Português",
+  ru: "Русский",
+  ar: "العربية",
+  hi: "हिन्दी",
+  ja: "日本語",
+  zh: "中文",
+};
+
+/** Sağdan-sola yazılan diller (HTML dir + minimal CSS). */
+export const RTL_LANGS = new Set(["ar"]);
+
+/** og:locale değeri — eşleşme yoksa makul varsayılan. @type {Record<string,string>} */
+export const OG_LOCALES = {
+  en: "en_US",
+  tr: "tr_TR",
+  de: "de_DE",
+  es: "es_ES",
+  fr: "fr_FR",
+  pt: "pt_BR",
+  ru: "ru_RU",
+  ar: "ar_AR",
+  hi: "hi_IN",
+  ja: "ja_JP",
+  zh: "zh_CN",
+};
+
 /** @param {string} s */
 export function esc(s) {
   return s
