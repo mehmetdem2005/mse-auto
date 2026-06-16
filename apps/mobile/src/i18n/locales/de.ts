@@ -141,6 +141,8 @@ export const de: Catalog = {
       source: "Quelle",
       freq: "Häufigkeit",
       alert: "Benachrichtigungen",
+      channels: "Kanäle",
+      alarm: "Alarmton",
       review: "Überprüfung",
     },
     titles: {
@@ -148,6 +150,8 @@ export const de: Catalog = {
       source: "Quellenpräferenz",
       freq: "Wie oft soll ich überprüfen?",
       alert: "Wie soll ich dich benachrichtigen?",
+      channels: "Wie sollen wir dich benachrichtigen?",
+      alarm: "Alarmton",
       review: "Zusammenfassung & Bestätigung",
     },
     greeting:
@@ -250,6 +254,12 @@ export const de: Catalog = {
     relayNote:
       "Telegram, E-Mail und WhatsApp sind an dein Konto gebunden — wenn du eines aktivierst, gilt es für all deine geteilten Watcher, und sie funktionieren nur bei Watchern ohne persönlichen Filter.",
     connectChannel: "Verbinden",
+    alarmStudioTitle: "Alarm-Studio",
+    alarmStudioHint:
+      "Wähle den Ton, der abgespielt wird, wenn diese Überwachung einen Alarm auslöst, und höre ihn vorab an.",
+    siteOk: "Diese Quelle scheint für eine automatische Überwachung offen zu sein.",
+    siteLimited:
+      "Die direkte Überwachung dieser Quelle kann eingeschränkt sein; ich beobachte die zugehörige öffentliche Ankündigung.",
   },
   alarm: {
     title: "Alarm",

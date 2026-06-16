@@ -134,6 +134,8 @@ export const zh: Catalog = {
       source: "来源",
       freq: "频率",
       alert: "警告",
+      channels: "渠道",
+      alarm: "警报声音",
       review: "Preview",
     },
     titles: {
@@ -141,6 +143,8 @@ export const zh: Catalog = {
       source: "来源偏好",
       freq: "我们应该多频繁地检查？",
       alert: "我们应该如何警告你？",
+      channels: "我们应该如何提醒你？",
+      alarm: "警报声音",
       review: "Summary & confirm",
     },
     greeting: "嗨！我应该通知你什么？描述它自然 — 如果太宽泛，我会问一个问题来缩小范围。",
@@ -234,6 +238,10 @@ export const zh: Catalog = {
     relayNote:
       "Telegram、邮件和 WhatsApp 与你的账户绑定——启用其一即对你所有共享的监控者生效，且仅对无个人过滤的监控有效。",
     connectChannel: "连接",
+    alarmStudioTitle: "警报工作室",
+    alarmStudioHint: "选择并试听此监控触发警报时播放的声音。",
+    siteOk: "此来源似乎可以进行自动监控。",
+    siteLimited: "对此来源的直接监控可能有限；我会关注相关的公开公告。",
   },
   alarm: {
     title: "警报",

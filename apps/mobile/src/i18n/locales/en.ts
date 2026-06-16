@@ -137,6 +137,8 @@ export const en: Catalog = {
       source: "Source",
       freq: "Frequency",
       alert: "Alerts",
+      channels: "Channels",
+      alarm: "Alarm sound",
       review: "Preview",
     },
     titles: {
@@ -144,6 +146,8 @@ export const en: Catalog = {
       source: "Source preference",
       freq: "How often should we check?",
       alert: "How should we alert you?",
+      channels: "How should we alert you?",
+      alarm: "Alarm sound",
       review: "Summary & confirm",
     },
     greeting:
@@ -242,6 +246,11 @@ export const en: Catalog = {
     relayNote:
       "Telegram, email and WhatsApp are tied to your account — enabling one applies to all your shared watchers, and they only work on watches without a personal filter.",
     connectChannel: "Connect",
+    alarmStudioTitle: "Alarm studio",
+    alarmStudioHint: "Pick and preview the sound that plays when this watch triggers an alarm.",
+    siteOk: "This source looks open to automated monitoring.",
+    siteLimited:
+      "Direct monitoring of this source may be limited; I'll watch the related public announcement.",
   },
   alarm: {
     title: "Alarm",
