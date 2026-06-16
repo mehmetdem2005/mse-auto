@@ -5,6 +5,7 @@ import { Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap } from "@/components/ui";
 import { type LangCode, SUPPORTED_LANGS, setLanguage } from "@/i18n";
 import { api } from "@/lib/api";
+import { confirmAsync } from "@/lib/confirm";
 import { siteUrlFor } from "@/lib/links";
 import { qk } from "@/lib/query";
 import { supabase } from "@/lib/supabase";
@@ -31,7 +32,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Linking, Platform, Pressable, ScrollView, Share, Text, View } from "react-native";
+import { Linking, Platform, Pressable, ScrollView, Share, Text, View } from "react-native";
 
 export default function Settings() {
   const { t, i18n } = useTranslation();
@@ -116,14 +117,19 @@ export default function Settings() {
   }
 
   function deleteAccount() {
-    Alert.alert(t("settings.deleteTitle"), t("settings.deleteMsg"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("settings.deleteTitle"),
-        style: "destructive",
-        onPress: () => void confirmDelete(),
-      },
-    ]);
+    void (async () => {
+      if (
+        await confirmAsync({
+          title: t("settings.deleteTitle"),
+          message: t("settings.deleteMsg"),
+          confirmLabel: t("settings.deleteTitle"),
+          cancelLabel: t("common.cancel"),
+          destructive: true,
+        })
+      ) {
+        void confirmDelete();
+      }
+    })();
   }
 
   return (

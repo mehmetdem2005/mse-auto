@@ -1,4 +1,5 @@
 // Abonelik — maket düzeni (hero plan kartı + kullanım barı + faturalama), gerçek veri.
+import { toast } from "@/components/feedback";
 import { EnterItem } from "@/components/motion";
 import { Badge, Btn } from "@/components/ui";
 import { GradientHero, HeroOverlap, SkeletonCard } from "@/components/ui";
@@ -9,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as WebBrowser from "expo-web-browser";
 import { BellRing, Check, ChevronRight, Crown, FileText, Gauge, Music } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 function money(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {
@@ -56,7 +57,7 @@ export default function SubscriptionScreen() {
       await WebBrowser.openBrowserAsync(url);
       qc.invalidateQueries({ queryKey: qk.subscription });
     },
-    onError: () => Alert.alert(t("sub.upgrade"), t("sub.checkoutError")),
+    onError: () => toast.error(t("sub.checkoutError")),
   });
 
   if (sub.isLoading) {

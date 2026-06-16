@@ -13,6 +13,7 @@ import {
 } from "@/components/ui";
 import { type Watch, api } from "@/lib/api";
 import { categoryOf } from "@/lib/category";
+import { confirmAsync } from "@/lib/confirm";
 import { useOnboarded } from "@/lib/onboarding";
 import { qk } from "@/lib/query";
 import { useAgo } from "@/lib/time";
@@ -31,7 +32,7 @@ import {
 } from "lucide-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 
 function useLabelFreq(): (m: number) => string {
   const { t } = useTranslation();
@@ -73,10 +74,19 @@ export default function Watchers() {
   });
 
   function confirmDelete(w: Watch) {
-    Alert.alert(t("watchers.deleteTitle"), t("watchers.deleteMsg", { intent: w.rawIntent }), [
-      { text: t("common.cancel"), style: "cancel" },
-      { text: t("common.delete"), style: "destructive", onPress: () => del.mutate(w.id) },
-    ]);
+    void (async () => {
+      if (
+        await confirmAsync({
+          title: t("watchers.deleteTitle"),
+          message: t("watchers.deleteMsg", { intent: w.rawIntent }),
+          confirmLabel: t("common.delete"),
+          cancelLabel: t("common.cancel"),
+          destructive: true,
+        })
+      ) {
+        del.mutate(w.id);
+      }
+    })();
   }
 
   const activeCount = (data ?? []).filter((w) => w.status === "active").length;

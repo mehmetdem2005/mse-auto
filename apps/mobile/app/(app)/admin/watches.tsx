@@ -1,11 +1,12 @@
 import { ActBtn, ConsoleShell, Empty, ErrText, Loading } from "@/features/admin/ui";
 import { type AdminWatch, api } from "@/lib/api";
+import { confirmAsync } from "@/lib/confirm";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { BellOff } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { Alert, FlatList, Text, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 
 export default function WatchesScreen(): ReactNode {
   const qc = useQueryClient();
@@ -66,12 +67,21 @@ export default function WatchesScreen(): ReactNode {
                   label="sil"
                   tone="danger"
                   disabled={busy}
-                  onPress={() =>
-                    Alert.alert("Watcher sil", "Bu watcher silinsin mi?", [
-                      { text: "Vazgeç", style: "cancel" },
-                      { text: "Sil", style: "destructive", onPress: () => del.mutate(w.id) },
-                    ])
-                  }
+                  onPress={() => {
+                    void (async () => {
+                      if (
+                        await confirmAsync({
+                          title: "Watcher sil",
+                          message: "Bu watcher silinsin mi?",
+                          confirmLabel: "Sil",
+                          cancelLabel: "Vazgeç",
+                          destructive: true,
+                        })
+                      ) {
+                        del.mutate(w.id);
+                      }
+                    })();
+                  }}
                 />
               </View>
             </View>

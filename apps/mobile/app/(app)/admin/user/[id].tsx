@@ -1,6 +1,7 @@
 import { toast } from "@/components/feedback";
 import { ActBtn, ConsoleShell, ErrText, Loading, Stat, day, money } from "@/features/admin/ui";
 import { type BillingInterval, api } from "@/lib/api";
+import { confirmAsync } from "@/lib/confirm";
 import { qk } from "@/lib/query";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,7 +16,7 @@ import {
   Smartphone,
 } from "lucide-react-native";
 import type { ReactNode } from "react";
-import { Alert, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 export default function UserDetailScreen(): ReactNode {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -211,12 +212,21 @@ export default function UserDetailScreen(): ReactNode {
               label="hesabı sil"
               tone="danger"
               disabled={busy}
-              onPress={() =>
-                Alert.alert("Hesabı sil", `${u.email ?? userId} kalıcı silinsin mi?`, [
-                  { text: "Vazgeç", style: "cancel" },
-                  { text: "Sil", style: "destructive", onPress: () => del.mutate() },
-                ])
-              }
+              onPress={() => {
+                void (async () => {
+                  if (
+                    await confirmAsync({
+                      title: "Hesabı sil",
+                      message: `${u.email ?? userId} kalıcı silinsin mi?`,
+                      confirmLabel: "Sil",
+                      cancelLabel: "Vazgeç",
+                      destructive: true,
+                    })
+                  ) {
+                    del.mutate();
+                  }
+                })();
+              }}
             />
           </View>
         </ScrollView>
