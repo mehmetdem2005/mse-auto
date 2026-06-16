@@ -4,15 +4,27 @@
 // tablolara klavye-erişilebilir kaydırma bölgesi. Animasyon: .rv (reveal) sınıfları
 // client.js + prefers-reduced-motion kapısıyla çalışır; JS yoksa içerik tam görünür.
 import { privacy, terms } from "./legal.mjs";
-import { APP_URL, BRAND, CONTACT_EMAIL, brandMark, esc, icon, jsonLd } from "./site.mjs";
+import {
+  APP_URL,
+  BRAND,
+  CONTACT_EMAIL,
+  LANG_NAMES,
+  LANG_ORDER,
+  OG_LOCALES,
+  RTL_LANGS,
+  brandMark,
+  esc,
+  icon,
+  jsonLd,
+} from "./site.mjs";
 
 /** @typedef {import("./content.tr.mjs").tr} Locale */
 
 /**
  * @param {object} o
- * @param {any} o.L yerel içerik (tr/en)
- * @param {string} o.path  kanonik yol ("/", "/cozumler/x/")
- * @param {string} o.altPath  diğer dildeki eşlenik yol
+ * @param {any} o.L yerel içerik (en/tr/de/…)
+ * @param {string} o.path  kanonik yol ("/", "/use-cases/x/")
+ * @param {Record<string,string>} o.alts  TÜM dillerdeki eşlenik yollar {lang: path}
  * @param {string} o.title
  * @param {string} o.desc
  * @param {string} o.siteUrl
@@ -20,13 +32,18 @@ import { APP_URL, BRAND, CONTACT_EMAIL, brandMark, esc, icon, jsonLd } from "./s
  * @param {unknown[]} [o.ld]  JSON-LD blokları
  * @param {boolean} [o.noindex]
  */
-export function layout({ L, path, altPath, title, desc, siteUrl, body, ld = [], noindex = false }) {
+export function layout({ L, path, alts, title, desc, siteUrl, body, ld = [], noindex = false }) {
   const canonical = siteUrl + path;
-  const altUrl = siteUrl + altPath;
-  const trUrl = L.lang === "tr" ? canonical : altUrl;
-  const enUrl = L.lang === "en" ? canonical : altUrl;
+  const dir = RTL_LANGS.has(L.lang) ? "rtl" : "ltr";
+  // N-yönlü hreflang: her dilin eşleniği + x-default → EN (ADR-096 global-first).
+  const hreflangs = LANG_ORDER.filter((lng) => alts[lng])
+    .map((lng) => `<link rel="alternate" hreflang="${lng}" href="${siteUrl}${alts[lng]}">`)
+    .join("\n");
+  const xDefault = alts.en
+    ? `\n<link rel="alternate" hreflang="x-default" href="${siteUrl}${alts.en}">`
+    : "";
   return `<!doctype html>
-<html lang="${L.lang}">
+<html lang="${L.lang}" dir="${dir}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,9 +51,7 @@ export function layout({ L, path, altPath, title, desc, siteUrl, body, ld = [], 
 <meta name="description" content="${esc(desc)}">
 ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <link rel="canonical" href="${canonical}">
-<link rel="alternate" hreflang="tr" href="${trUrl}">
-<link rel="alternate" hreflang="en" href="${enUrl}">
-<link rel="alternate" hreflang="x-default" href="${enUrl}">
+${hreflangs}${xDefault}
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F5F7FB">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="${BRAND.ink}">
 <meta property="og:type" content="website">
@@ -47,7 +62,7 @@ ${noindex ? '<meta name="robots" content="noindex">' : ""}
 <meta property="og:image" content="${siteUrl}/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:locale" content="${L.lang === "tr" ? "tr_TR" : "en_US"}">
+<meta property="og:locale" content="${OG_LOCALES[L.lang] ?? "en_US"}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preload" href="/fonts/inter-latin-ext.woff2" as="font" type="font/woff2" crossorigin>
@@ -61,7 +76,7 @@ ${header(L, path)}
 <main id="main">
 ${body}
 </main>
-${footer(L, altPath)}
+${footer(L, alts)}
 <script src="/assets/client.js" defer></script>
 </body>
 </html>
@@ -100,8 +115,25 @@ function header(L, path) {
 </header>`;
 }
 
-/** @param {any} L @param {string} altPath */
-function footer(L, altPath) {
+/** Dil değiştirici — 11 dil; her biri eşlenik sayfaya (alts) gider, kendi dilinde adlandırılır.
+ *  Aktif dil aria-current ile işaretlenir. @param {any} L @param {Record<string,string>} alts */
+function langSwitcher(L, alts) {
+  const items = LANG_ORDER.filter((lng) => alts[lng])
+    .map((lng) => {
+      const current = lng === L.lang ? ' aria-current="true"' : "";
+      return `<li><a href="${alts[lng]}" hreflang="${lng}" lang="${lng}"${current}>${esc(LANG_NAMES[lng])}</a></li>`;
+    })
+    .join("\n          ");
+  return `<nav class="ftr-lang" aria-label="${esc(L.footer.langSwitch)}">
+        <h2 class="ftr-h">${esc(L.footer.langSwitch)}</h2>
+        <ul>
+          ${items}
+        </ul>
+      </nav>`;
+}
+
+/** @param {any} L @param {Record<string,string>} alts */
+function footer(L, alts) {
   const p = L.prefix;
   const ucLinks = L.useCases
     .map(
@@ -137,9 +169,9 @@ function footer(L, altPath) {
           <li><a href="${p}/${L.lang === "tr" ? privacy.slugTr : privacy.slugEn}/">${esc(L.footer.privacy)}</a></li>
           <li><a href="${p}/${L.lang === "tr" ? terms.slugTr : terms.slugEn}/">${esc(L.footer.terms)}</a></li>
           <li><a href="/llms.txt">${esc(L.footer.forAi)}</a></li>
-          <li><a href="${altPath}" hreflang="${L.lang === "tr" ? "en" : "tr"}">${esc(L.footer.langSwitch)}</a></li>
         </ul>
       </nav>
+      ${langSwitcher(L, alts)}
     </div>
     <p class="ftr-note">© ${new Date().getFullYear()} ${BRAND.name} · ${esc(L.footer.updated)}: <time datetime="${BUILD_DAY}">${BUILD_DAY}</time></p>
   </div>
@@ -579,14 +611,17 @@ export function aboutBody(L) {
 ${ctaBand(L)}`;
 }
 
-/** Hukuki sayfa. @param {any} L @param {{title:string,sections:{h:string,p:string}[]}} doc @param {string} version @param {string} updated */
-export function legalBody(L, doc, version, updated) {
+/** Hukuki sayfa. TR+EN dışındaki dillerde EN metni + "bağlayıcı sürüm EN" notu basılır.
+ *  @param {any} L @param {{title:string,sections:{h:string,p:string}[]}} doc
+ *  @param {string} version @param {string} updated @param {string} [translatedNote] */
+export function legalBody(L, doc, version, updated, translatedNote) {
+  const note = translatedNote ? `\n    <p class="cta-note">${esc(translatedNote)}</p>` : "";
   return `<section class="sec sec-first">
   <div class="wrap narrow legal">
     ${breadcrumb(L, [["", doc.title]])}
     <h1>${esc(doc.title)}</h1>
     <p class="cta-note">${esc(L.legalCommon.versionLabel)}: ${esc(version)} · ${esc(L.legalCommon.updatedLabel)}: <time datetime="${esc(updated)}">${esc(updated)}</time></p>
-    <p class="cta-note">${esc(L.legalCommon.canonicalNote)}</p>
+    <p class="cta-note">${esc(L.legalCommon.canonicalNote)}</p>${note}
     ${doc.sections.map((s) => `<h2>${esc(s.h)}</h2>\n    <p>${esc(s.p)}</p>`).join("\n    ")}
   </div>
 </section>`;

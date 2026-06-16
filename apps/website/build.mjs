@@ -7,8 +7,17 @@ import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { ar } from "./src/content.ar.mjs";
+import { de } from "./src/content.de.mjs";
 import { en } from "./src/content.en.mjs";
+import { es } from "./src/content.es.mjs";
+import { fr } from "./src/content.fr.mjs";
+import { hi } from "./src/content.hi.mjs";
+import { ja } from "./src/content.ja.mjs";
+import { pt } from "./src/content.pt.mjs";
+import { ru } from "./src/content.ru.mjs";
 import { tr } from "./src/content.tr.mjs";
+import { zh } from "./src/content.zh.mjs";
 import { privacy, terms } from "./src/legal.mjs";
 import {
   aboutBody,
@@ -25,18 +34,19 @@ import { API_URL, APP_URL, BRAND, CONTACT_EMAIL, INDEXNOW_KEY, SITE_URL } from "
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 
-/** TR ↔ EN çözüm sayfası eşleniği (hreflang + dil anahtarı için zorunlu, testle doğrulanır). */
-export const SLUG_MAP = {
-  "fiyat-takibi": "price-drop-alerts",
-  "stok-takibi": "restock-alerts",
-  "kiralik-ev-ilan-takibi": "rental-listing-alerts",
-  "bilet-takibi": "ticket-alerts",
-  "ihale-takibi": "tender-alerts",
-  "hibe-destek-takibi": "grant-alerts",
-  "mevzuat-takibi": "regulation-alerts",
-  "rakip-takibi": "competitor-alerts",
-  "duyuru-takibi": "announcement-alerts",
-};
+/**
+ * Dil kütüğü (ADR-096 global-first → N-dil): EN kök (prefix:""); kalan 10 dil önekli.
+ * Sıra mobil i18n SUPPORTED_LANGS ile hizalı (en, tr ilk; sonra büyüklük sırası).
+ * Eşlenik eşleştirme `key`/sayfa-tipi üzerinden yapılır — ikili SLUG_MAP kaldırıldı.
+ * @type {any[]}
+ */
+export const LOCALES = [en, tr, de, es, fr, pt, ru, ar, hi, ja, zh];
+
+/** RTL diller (layout `dir` + minimal CSS için). */
+export const RTL_LANGS = new Set(["ar"]);
+
+/** Hukuk belgesinin İngilizce metni TR+EN dışındaki dillerde gösterilir (bağlayıcı = EN). */
+const CANONICAL_LEGAL_LANGS = new Set(["tr", "en"]);
 
 /** @param {string} siteUrl */
 function orgLd(siteUrl) {
@@ -151,34 +161,70 @@ function breadcrumbLd(siteUrl, items) {
   };
 }
 
+/** Bir dilde bir sayfa-tipinin kanonik yolu (tüm diller için eşlenik hesabında kullanılır).
+ *  Eşlenik anahtarları: use-case → `key`; legal → "privacy"/"terms"; compareTool → araç slug'ı
+ *  (tüm dillerde aynı). Bulunamazsa null (örn. dilde olmayan use-case — pratikte hep var).
+ *  @param {any} L @param {string} type @param {string} [key]
+ *  @returns {string|null} */
+function pathForType(L, type, key) {
+  const home = L.prefix === "" ? "/" : `${L.prefix}/`;
+  switch (type) {
+    case "home":
+      return home;
+    case "ucIndex":
+      return `${L.useCaseBase}/`;
+    case "uc": {
+      const u = L.useCases.find((/** @type {any} */ x) => x.key === key);
+      return u ? `${L.useCaseBase}/${u.slug}/` : null;
+    }
+    case "compare":
+      return `${L.prefix}/${L.compare.slug}/`;
+    case "compareTool": {
+      const t = L.compare.tools.find((/** @type {any} */ x) => x.slug === key);
+      return t ? `${L.prefix}/${L.compare.slug}/${t.slug}/` : null;
+    }
+    case "about":
+      return `${L.prefix}/${L.about.slug}/`;
+    case "legal": {
+      const doc = key === "privacy" ? privacy : terms;
+      const slug = L.lang === "tr" ? doc.slugTr : doc.slugEn;
+      return `${L.prefix}/${slug}/`;
+    }
+    default:
+      return null;
+  }
+}
+
+/** Bir sayfanın TÜM dillerdeki eşlenik yol haritası `{lang: path}` (N-yönlü hreflang + switcher).
+ *  @param {string} type @param {string} [key] @returns {Record<string,string>} */
+function altsFor(type, key) {
+  /** @type {Record<string,string>} */
+  const alts = {};
+  for (const L2 of LOCALES) {
+    const p = pathForType(L2, type, key);
+    if (p) alts[L2.lang] = p;
+  }
+  return alts;
+}
+
 /**
- * Sayfa modeli — her sayfa: yol, eşlenik dil yolu, başlık/özet, gövde, JSON-LD.
+ * Sayfa modeli — her sayfa: yol, TÜM dillerdeki eşlenikler (alts), başlık/özet, gövde, JSON-LD.
  * @param {string} siteUrl
- * @returns {Array<{path:string,altPath:string,L:any,title:string,desc:string,body:string,ld:unknown[],noindex?:boolean,md:string}>}
+ * @returns {Array<{path:string,alts:Record<string,string>,L:any,title:string,desc:string,body:string,ld:unknown[],noindex?:boolean,md:string}>}
  */
 export function pageModel(siteUrl) {
-  /** @type {Array<{path:string,altPath:string,L:any,title:string,desc:string,body:string,ld:unknown[],noindex?:boolean,md:string}>} */
+  /** @type {Array<{path:string,alts:Record<string,string>,L:any,title:string,desc:string,body:string,ld:unknown[],noindex?:boolean,md:string}>} */
   const pages = [];
-  const locales = [tr, en];
   /** @param {any} L @param {string} slug */
   const ucPath = (L, slug) => `${L.useCaseBase}/${slug}/`;
-  /** @param {string} trSlug */
-  const enSlugOf = (trSlug) => SLUG_MAP[/** @type {keyof typeof SLUG_MAP} */ (trSlug)];
-  const trSlugOf = (/** @type {string} */ enSlug) => {
-    const hit = Object.entries(SLUG_MAP).find(([, v]) => v === enSlug);
-    if (!hit) throw new Error(`SLUG_MAP eksik: ${enSlug}`);
-    return hit[0];
-  };
 
-  for (const L of locales) {
-    const other = L === tr ? en : tr;
+  for (const L of LOCALES) {
     const home = L.prefix === "" ? "/" : `${L.prefix}/`;
-    const otherHome = other.prefix === "" ? "/" : `${other.prefix}/`;
 
     // Ana sayfa
     pages.push({
       path: home,
-      altPath: otherHome,
+      alts: altsFor("home"),
       L,
       title: L.home.metaTitle,
       desc: L.home.metaDescription,
@@ -194,7 +240,7 @@ export function pageModel(siteUrl) {
     // Çözümler dizini
     pages.push({
       path: `${L.useCaseBase}/`,
-      altPath: `${other.useCaseBase}/`,
+      alts: altsFor("ucIndex"),
       L,
       title: L.useCasesIndex.metaTitle,
       desc: L.useCasesIndex.metaDescription,
@@ -207,10 +253,9 @@ export function pageModel(siteUrl) {
 
     // Çözüm sayfaları
     for (const u of L.useCases) {
-      const altSlug = L === tr ? enSlugOf(u.slug) : trSlugOf(u.slug);
       pages.push({
         path: ucPath(L, u.slug),
-        altPath: ucPath(other, altSlug),
+        alts: altsFor("uc", u.key),
         L,
         title: u.metaTitle,
         desc: u.metaDescription,
@@ -234,7 +279,7 @@ export function pageModel(siteUrl) {
     // Karşılaştırma
     pages.push({
       path: `${L.prefix}/${L.compare.slug}/`,
-      altPath: `${other.prefix}/${other.compare.slug}/`,
+      alts: altsFor("compare"),
       L,
       title: L.compare.metaTitle,
       desc: L.compare.metaDescription,
@@ -251,11 +296,11 @@ export function pageModel(siteUrl) {
         .join("\n")}\n\n${L.compare.afterTable}`,
     });
 
-    // Rakip-bazlı derin karşılaştırmalar (GEO/ADR-097) — slug iki dilde aynı.
+    // Rakip-bazlı derin karşılaştırmalar (GEO/ADR-097) — slug tüm dillerde aynı.
     for (const t of L.compare.tools) {
       pages.push({
         path: `${L.prefix}/${L.compare.slug}/${t.slug}/`,
-        altPath: `${other.prefix}/${other.compare.slug}/${t.slug}/`,
+        alts: altsFor("compareTool", t.slug),
         L,
         title: t.metaTitle,
         desc: t.metaDescription,
@@ -278,7 +323,7 @@ export function pageModel(siteUrl) {
     // Hakkında
     pages.push({
       path: `${L.prefix}/${L.about.slug}/`,
-      altPath: `${other.prefix}/${other.about.slug}/`,
+      alts: altsFor("about"),
       L,
       title: L.about.metaTitle,
       desc: L.about.metaDescription,
@@ -287,18 +332,23 @@ export function pageModel(siteUrl) {
       md: L.about.paras.join("\n\n"),
     });
 
-    // Hukuki sayfalar
-    for (const doc of [privacy, terms]) {
-      const slug = L === tr ? doc.slugTr : doc.slugEn;
-      const altSlug = L === tr ? doc.slugEn : doc.slugTr;
-      const localized = L === tr ? doc.tr : doc.en;
+    // Hukuki sayfalar — TR+EN kanonik kendi dilinde; kalan diller EN metni + "bağlayıcı = EN" notu.
+    for (const [docKey, doc] of /** @type {[string, typeof privacy][]} */ ([
+      ["privacy", privacy],
+      ["terms", terms],
+    ])) {
+      const slug = L.lang === "tr" ? doc.slugTr : doc.slugEn;
+      const localized = L.lang === "tr" ? doc.tr : doc.en;
+      const translatedNote = CANONICAL_LEGAL_LANGS.has(L.lang)
+        ? undefined
+        : L.legalCommon.translatedNote;
       pages.push({
         path: `${L.prefix}/${slug}/`,
-        altPath: `${other.prefix}/${altSlug}/`,
+        alts: altsFor("legal", docKey),
         L,
         title: `${localized.title} — ${BRAND.name}`,
         desc: localized.sections[0].p.slice(0, 155),
-        body: legalBody(L, localized, doc.version, doc.updated),
+        body: legalBody(L, localized, doc.version, doc.updated, translatedNote),
         ld: [breadcrumbLd(siteUrl, [[`${L.prefix}/${slug}/`, localized.title]])],
         md: localized.sections.map((s) => `### ${s.h}\n${s.p}`).join("\n\n"),
       });
@@ -313,15 +363,22 @@ function sitemapXml(pages, siteUrl) {
   const entries = pages
     .filter((p) => !p.noindex)
     .map((p) => {
-      const trPath = p.L.lang === "tr" ? p.path : p.altPath;
-      const enPath = p.L.lang === "en" ? p.path : p.altPath;
       // x-default → EN (ADR-096 global-first): dil eşleşmeyen ziyaretçi EN görür.
+      const alts = LOCALES.map((L2) => {
+        const ap = p.alts[L2.lang];
+        return ap
+          ? `    <xhtml:link rel="alternate" hreflang="${L2.lang}" href="${siteUrl}${ap}"/>`
+          : "";
+      })
+        .filter(Boolean)
+        .join("\n");
+      const xDefault = p.alts.en
+        ? `\n    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${p.alts.en}"/>`
+        : "";
       return `  <url>
     <loc>${siteUrl}${p.path}</loc>
     <lastmod>${today}</lastmod>
-    <xhtml:link rel="alternate" hreflang="tr" href="${siteUrl}${trPath}"/>
-    <xhtml:link rel="alternate" hreflang="en" href="${siteUrl}${enPath}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${siteUrl}${enPath}"/>
+${alts}${xDefault}
   </url>`;
     })
     .join("\n");
@@ -368,8 +425,11 @@ Sitemap: ${siteUrl}/sitemap.xml
 function llmsTxt(pages, siteUrl) {
   /** @param {any} p */
   const line = (p) => `- [${p.title}](${siteUrl}${p.path}): ${p.desc}`;
-  const trPages = pages.filter((p) => p.L.lang === "tr" && !p.noindex);
-  const enPages = pages.filter((p) => p.L.lang === "en" && !p.noindex);
+  // Dil bölümleri: EN + TR önde (kanonik diller), kalan diller alfabetik olarak izler.
+  const sections = LOCALES.map((L2) => {
+    const lp = pages.filter((p) => p.L.lang === L2.lang && !p.noindex);
+    return `## ${L2.langName} (${L2.lang})\n\n${lp.map(line).join("\n")}`;
+  }).join("\n\n");
   return `# ${BRAND.name}
 
 > Whenly is a monitoring and alerts app. You describe what you want to watch in plain
@@ -381,13 +441,7 @@ function llmsTxt(pages, siteUrl) {
 > Limits, stated plainly: it only watches public pages (not pages behind a login,
 > password or captcha), and check timing is best-effort, not guaranteed.
 
-## Pages (English)
-
-${enPages.map(line).join("\n")}
-
-## Sayfalar (Türkçe)
-
-${trPages.map(line).join("\n")}
+${sections}
 
 ## Full content
 
@@ -472,7 +526,7 @@ export function buildSite(opts = {}) {
     layout({
       L: en,
       path: "/404.html",
-      altPath: "/tr/",
+      alts: altsFor("home"),
       title: en.notFound.metaTitle,
       desc: en.notFound.text,
       siteUrl,
