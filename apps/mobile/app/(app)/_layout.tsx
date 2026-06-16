@@ -1,6 +1,8 @@
+import { TermsGate } from "@/components/terms-gate";
 import { api } from "@/lib/api";
 import { configureNotificationHandler, registerForegroundListener } from "@/lib/notifications";
 import { qk } from "@/lib/query";
+import { useTermsAccepted } from "@/lib/terms";
 import { useTheme } from "@/theme";
 import { useQuery } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
@@ -37,12 +39,18 @@ export default function AppLayout() {
   }, []);
   // /me erken yüklenir (ana ekrandaki konsol girişi + admin guard'ı bu cache'i kullanır).
   const { isLoading } = useQuery({ queryKey: qk.me, queryFn: api.me });
-  if (isLoading) {
+  const terms = useTermsAccepted();
+  if (isLoading || terms.loading) {
     return (
       <View style={{ flex: 1, backgroundColor: theme.colors.ink, justifyContent: "center" }}>
         <ActivityIndicator color={theme.colors.accent} />
       </View>
     );
+  }
+  // ADR-157: giriş SONRASI zorunlu sözleşme kapısı — kabul edilene dek uygulama (sekmeler) render
+  // edilmez (atlanamaz; tüm uygulamanın yerine geçer). Kabulden sonra ana ekran onboarding'i çıkar.
+  if (!terms.accepted) {
+    return <TermsGate onAccept={terms.accept} />;
   }
   return (
     <Tabs

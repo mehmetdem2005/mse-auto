@@ -14,6 +14,15 @@ export const fr: Catalog = {
     s3Title: "Ne rate plus rien",
     s3Body:
       "Reçois une notification instantanée dès qu'un changement important survient. Crée ta première surveillance maintenant.",
+    back: "Retour",
+  },
+  terms: {
+    gateTitle: "Contrat d'utilisation",
+    gateIntro:
+      "Avant d'utiliser Whenly, vous devez accepter les Conditions d'utilisation et la Politique de confidentialité.",
+    readAndAccept:
+      "J'ai lu et j'accepte les Conditions d'utilisation et la Politique de confidentialité.",
+    acceptButton: "Accepter et continuer",
   },
   tabs: {
     feed: "Alimentation",
