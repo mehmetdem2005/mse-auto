@@ -1,5 +1,6 @@
 import type { SitePolicyResolver, SitePolicyVerdict } from "../../domain/site-policy";
-import { buildFetchUrl, isFetchableDomain } from "./origin";
+import { buildFetchUrl } from "./origin";
+import { type HostResolver, isPublicHost, safeFetch } from "./ssrf-guard";
 
 const TIMEOUT_MS = 5000;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 saat — site politikası nadiren değişir.
@@ -61,6 +62,7 @@ export class RobotsSitePolicyResolver implements SitePolicyResolver {
   constructor(
     private readonly renderTemplate?: string | null,
     private readonly fetchImpl: typeof fetch = fetch,
+    private readonly resolve?: HostResolver,
   ) {}
 
   async check(domain: string): Promise<SitePolicyVerdict> {
@@ -73,7 +75,8 @@ export class RobotsSitePolicyResolver implements SitePolicyResolver {
   }
 
   private async compute(domain: string): Promise<SitePolicyVerdict> {
-    if (!isFetchableDomain(domain)) {
+    // ADR-156: DNS-çözümlü SSRF guard (özel/iç IP + rebinding kapanır).
+    if (!(await isPublicHost(domain, this.resolve))) {
       return {
         domain,
         allowed: false,
@@ -88,12 +91,22 @@ export class RobotsSitePolicyResolver implements SitePolicyResolver {
         this.renderTemplate ? TIMEOUT_MS * 2 : TIMEOUT_MS,
       );
       const url = buildFetchUrl(`https://${domain}/robots.txt`, this.renderTemplate);
-      const res = await this.fetchImpl(url, {
-        signal: ctrl.signal,
-        headers: { "User-Agent": "WhenlyBot/1.0 (+monitoring)" },
-        redirect: "follow",
-      });
+      // ADR-156: SSRF-güvenli fetch — redirect'ler elle doğrulanır.
+      const res = await safeFetch(
+        url,
+        this.fetchImpl,
+        { signal: ctrl.signal, headers: { "User-Agent": "WhenlyBot/1.0 (+monitoring)" } },
+        { resolve: this.resolve },
+      );
       clearTimeout(timer);
+      if (!res) {
+        return {
+          domain,
+          allowed: true,
+          reason: "robots.txt okunamadı (güvenlik/ağ).",
+          source: "error",
+        };
+      }
       if (res.status === 404) {
         return {
           domain,

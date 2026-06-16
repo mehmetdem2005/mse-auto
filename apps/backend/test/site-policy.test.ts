@@ -4,6 +4,9 @@ import {
   isFullyDisallowed,
 } from "../src/infrastructure/search/site-policy";
 
+// ADR-156: SSRF guard DNS çözer → deterministik test için kamusal-IP stub'ı.
+const pub = async (): Promise<string[]> => ["93.184.216.34"];
+
 describe("isFullyDisallowed — robots.txt tam-blok ayrıştırma (ADR-128)", () => {
   it("User-agent: * + Disallow: / → tam blok", () => {
     expect(isFullyDisallowed("User-agent: *\nDisallow: /")).toBe(true);
@@ -32,14 +35,14 @@ function res(status: number, body = ""): Response {
 describe("RobotsSitePolicyResolver.check (ADR-128)", () => {
   it("Disallow: / → allowed=false, source=robots", async () => {
     const f = vi.fn(async () => res(200, "User-agent: *\nDisallow: /")) as unknown as typeof fetch;
-    const v = await new RobotsSitePolicyResolver(null, f).check("example.com");
+    const v = await new RobotsSitePolicyResolver(null, f, pub).check("example.com");
     expect(v.allowed).toBe(false);
     expect(v.source).toBe("robots");
   });
 
   it("404 → allowed=true, source=none", async () => {
     const f = vi.fn(async () => res(404)) as unknown as typeof fetch;
-    const v = await new RobotsSitePolicyResolver(null, f).check("example.com");
+    const v = await new RobotsSitePolicyResolver(null, f, pub).check("example.com");
     expect(v.allowed).toBe(true);
     expect(v.source).toBe("none");
   });
@@ -48,7 +51,7 @@ describe("RobotsSitePolicyResolver.check (ADR-128)", () => {
     const f = vi.fn(async () => {
       throw new Error("network");
     }) as unknown as typeof fetch;
-    const v = await new RobotsSitePolicyResolver(null, f).check("example.com");
+    const v = await new RobotsSitePolicyResolver(null, f, pub).check("example.com");
     expect(v.allowed).toBe(true);
     expect(v.source).toBe("error");
   });
@@ -63,7 +66,7 @@ describe("RobotsSitePolicyResolver.check (ADR-128)", () => {
 
   it("24s cache: ikinci çağrı yeniden fetch ETMEZ", async () => {
     const f = vi.fn(async () => res(200, "User-agent: *\nDisallow: /x")) as unknown as typeof fetch;
-    const r = new RobotsSitePolicyResolver(null, f);
+    const r = new RobotsSitePolicyResolver(null, f, pub);
     await r.check("example.com");
     await r.check("example.com");
     expect((f as unknown as { mock: { calls: unknown[] } }).mock.calls).toHaveLength(1);

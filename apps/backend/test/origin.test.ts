@@ -7,6 +7,9 @@ import {
   isInformative,
 } from "../src/infrastructure/search/origin";
 
+// ADR-156: SSRF guard artık DNS çözer → testlerde gerçek DNS yerine kamusal-IP stub'ı enjekte et.
+const pub = async (): Promise<string[]> => ["93.184.216.34"];
+
 describe("canlı kaynak okuma (ADR-047)", () => {
   it("SSRF koruması: IP/localhost/iç ağ reddedilir, kamusal alan kabul", () => {
     expect(isFetchableDomain("osym.gov.tr")).toBe(true);
@@ -48,11 +51,11 @@ describe("canlı kaynak okuma (ADR-047)", () => {
         status: 200,
         text: async () => `<body>${"Resmî duyuru metni. ".repeat(10)}</body>`,
       }) as Response) as typeof fetch;
-    expect(await fetchOriginText("kurum.gov.tr", okFetch)).toContain("Resmî duyuru");
+    expect(await fetchOriginText("kurum.gov.tr", okFetch, null, pub)).toContain("Resmî duyuru");
 
     const failFetch: typeof fetch = (async () =>
       ({ ok: false, status: 500 }) as Response) as typeof fetch;
-    expect(await fetchOriginText("kurum.gov.tr", failFetch)).toBeNull();
+    expect(await fetchOriginText("kurum.gov.tr", failFetch, null, pub)).toBeNull();
 
     expect(await fetchOriginText("localhost", okFetch)).toBeNull(); // guard fetch'e gitmez
   });
@@ -83,7 +86,7 @@ describe("JS-render proxy (ADR-070)", () => {
       } as Response;
     }) as typeof fetch;
     const tpl = "https://proxy.test/?url={url}";
-    const out = await fetchOriginText("kurum.gov.tr", okFetch, tpl);
+    const out = await fetchOriginText("kurum.gov.tr", okFetch, tpl, pub);
     expect(out).toContain("ihale");
     expect(calls.every((c) => c.startsWith("https://proxy.test/?url="))).toBe(true);
   });

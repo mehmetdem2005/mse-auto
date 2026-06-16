@@ -10,6 +10,8 @@
  *  - Güvenlik: yalnız https + kamusal alan adı (SSRF guard), 5 sn timeout/yol.
  */
 
+import { type HostResolver, isPublicHost, safeFetch } from "./ssrf-guard";
+
 const MAX_CHARS = 1800;
 const TIMEOUT_MS = 5000;
 const MIN_USEFUL_CHARS = 80;
@@ -71,19 +73,22 @@ async function fetchPath(
   path: string,
   fetchImpl: typeof fetch,
   renderTemplate?: string | null,
+  resolve?: HostResolver,
 ): Promise<string | null> {
   try {
     const ctrl = new AbortController();
     // Render-proxy daha yavaştır (gerçek tarayıcı) → JS-render'da timeout 2x.
     const timer = setTimeout(() => ctrl.abort(), renderTemplate ? TIMEOUT_MS * 2 : TIMEOUT_MS);
     const url = buildFetchUrl(`https://${domain}${path}`, renderTemplate);
-    const res = await fetchImpl(url, {
-      signal: ctrl.signal,
-      headers: { "User-Agent": "WhenlyBot/1.0 (+monitoring)" },
-      redirect: "follow",
-    });
+    // ADR-156: SSRF-güvenli fetch — redirect'ler elle, her atlamada host yeniden doğrulanır.
+    const res = await safeFetch(
+      url,
+      fetchImpl,
+      { signal: ctrl.signal, headers: { "User-Agent": "WhenlyBot/1.0 (+monitoring)" } },
+      { resolve },
+    );
     clearTimeout(timer);
-    if (!res.ok) return null;
+    if (!res || !res.ok) return null;
     const text = htmlToText(await res.text());
     return isInformative(text) ? text : null;
   } catch {
@@ -100,10 +105,12 @@ export async function fetchOriginText(
   domain: string,
   fetchImpl: typeof fetch = fetch,
   renderTemplate?: string | null,
+  resolve?: HostResolver,
 ): Promise<string | null> {
-  if (!isFetchableDomain(domain)) return null;
+  // ADR-156: DNS-çözümlü SSRF guard (özel/iç IP'ler + rebinding kapanır).
+  if (!(await isPublicHost(domain, resolve))) return null;
   const results = await Promise.all(
-    PATHS.map((p) => fetchPath(domain, p, fetchImpl, renderTemplate)),
+    PATHS.map((p) => fetchPath(domain, p, fetchImpl, renderTemplate, resolve)),
   );
   const useful = results.filter((t): t is string => t !== null);
   if (useful.length === 0) return null;
