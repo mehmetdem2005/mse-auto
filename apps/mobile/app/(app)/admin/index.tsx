@@ -49,6 +49,7 @@ type AdminHref =
   | "/admin/watches"
   | "/admin/subs"
   | "/admin/plan-features"
+  | "/admin/plan-entitlements"
   | "/admin/support"
   | "/admin/system";
 
@@ -104,6 +105,12 @@ const GROUPS: { label: string; items: AdminSection[] }[] = [
         Icon: ListChecks,
         title: "Plan Özellikleri",
         desc: "Madde madde · dile özel",
+      },
+      {
+        href: "/admin/plan-entitlements",
+        Icon: Gauge,
+        title: "Plan Limitleri",
+        desc: "Watcher · sıklık · alarm",
       },
       { href: "/admin/watches", Icon: Bell, title: "Watcher'lar", desc: "Tüm izlemeler" },
     ],

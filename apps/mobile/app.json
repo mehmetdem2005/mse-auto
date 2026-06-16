@@ -6,9 +6,14 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "icon": "./assets/icon.png",
     "newArchEnabled": true,
     "android": {
-      "package": "app.watcher.mobile"
+      "package": "app.watcher.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#1E90FF"
+      }
     },
     "ios": {
       "supportsTablet": true,
