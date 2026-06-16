@@ -231,6 +231,28 @@ export const fr: Catalog = {
     rFreq: "fréquence",
     rAlert: "alerte",
     rNote: "Le plan gratuit permet 3 watchers et une fréquence minimale de 60 min.",
+    rChannels: "canaux",
+    channelsHint:
+      "Lorsque cette surveillance se déclenche, comment devons-nous vous joindre ? Vous pouvez en choisir plusieurs.",
+    selectAll: "Tout sélectionner",
+    chPush: "Notification",
+    chPushD: "Recevez une notification push instantanée sur votre téléphone.",
+    chAlarm: "Alarme",
+    chAlarmD: "Votre téléphone sonne ; alerte plein écran avec son.",
+    chTelegramD: "Recevez-le sous forme de message Telegram.",
+    chEmailD: "Recevez la nouveauté par e-mail.",
+    chWhatsappD: "Recevez-le sous forme de message WhatsApp.",
+    relayBadge: "compte",
+    relayNote:
+      "Telegram, e-mail et WhatsApp sont liés à votre compte — en activer un s'applique à tous vos watchers partagés, et ils ne fonctionnent que pour les surveillances sans filtre personnel.",
+    connectChannel: "Connecter",
+  },
+  alarm: {
+    title: "Alarme",
+    defaultBody: "Le changement que vous surveilliez s'est produit.",
+    stop: "Arrêter",
+    snooze: "Répéter dans 5 minutes",
+    a11yScreen: "Écran d'alarme — l'événement que vous surveilliez s'est produit",
   },
   sub: {
     currentPlan: "PLAN ACTUEL",

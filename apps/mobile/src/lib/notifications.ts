@@ -1,4 +1,5 @@
 import * as Notifications from "expo-notifications";
+import { router } from "expo-router";
 import { Platform } from "react-native";
 import { getAlarmConfig } from "./alarm-config";
 import { ALARM_SOUNDS } from "./alarm-sounds";
@@ -103,11 +104,12 @@ export async function handleIncomingData(data: Record<string, string | undefined
   };
 
   if (channel === "alarm" && cfg && !quiet) {
-    const channelId = await ensureAlarmChannel(cfg.soundId);
-    await Notifications.scheduleNotificationAsync({
-      content: { ...content, sound: soundFile(cfg.soundId) ?? true },
-      trigger: { channelId },
-    });
+    // ADR-162: ön planda TAM EKRAN çalan-alarm ekranını aç — ses DÖNGÜYLE orada çalar, bu yüzden
+    // ayrıca gürültülü bildirim PLANLAMAYIZ (çift ses olmaz). Kilit/arka planda OS'nin alarm kanalı
+    // (ensureAlarmChannel; MAX importance, bypassDnd) çalar; bildirime dokununca response-listener
+    // yine bu ekrana getirir. ensureAlarmChannel kanalı, arka-plan native bildirim için hazır kalır.
+    await ensureAlarmChannel(cfg.soundId);
+    openAlarmScreen(data);
     return;
   }
   await Notifications.scheduleNotificationAsync({
@@ -124,6 +126,51 @@ export function registerForegroundListener(): () => void {
   const sub = Notifications.addNotificationReceivedListener((event) => {
     const data = (event.request.content.data ?? {}) as Record<string, string | undefined>;
     void handleIncomingData(data);
+  });
+  return () => sub.remove();
+}
+
+/** Tam ekran çalan-alarm ekranına git (ön plan + bildirime-dokunma ortak yolu; ADR-162). */
+function openAlarmScreen(data: Record<string, string | undefined>): void {
+  try {
+    router.push({
+      pathname: "/alarm",
+      params: {
+        watchId: data.watchId ?? "",
+        title: data.title ?? "Watcher",
+        body: data.body ?? "",
+      },
+    });
+  } catch {
+    // Router henüz hazır değilse (nadir) sessiz geç — bildirim yine de görünür.
+  }
+}
+
+/**
+ * Bildirime DOKUNMA (arka plan→ön plan): alarm tercihli watcher'sa tam ekran alarm ekranını açar.
+ * registerForegroundListener alarmı ön planda zaten yakalar; bu, kilitliyken gelen OS bildirimine
+ * dokunulduğunda devreye girer (ADR-162). Alarm değilse hiçbir şey yapmaz (normal akış sürer).
+ */
+export function registerResponseListener(): () => void {
+  const sub = Notifications.addNotificationResponseReceivedListener((resp) => {
+    const data = (resp.notification.request.content.data ?? {}) as Record<
+      string,
+      string | undefined
+    >;
+    void (async () => {
+      if (data.alarm === "1") {
+        openAlarmScreen(data);
+        return;
+      }
+      const watchId = data.watchId;
+      if (!watchId) return;
+      const cfg = await getAlarmConfig(watchId);
+      if (cfg.channel !== "alarm") return;
+      // Teslim-zamanı yetki backstop'u (handleIncomingData ile tutarlı): alarm yetkisi düştüyse açma.
+      const ent = await getCachedEntitlements();
+      if (ent && !ent.alarmChannel) return;
+      openAlarmScreen(data);
+    })();
   });
   return () => sub.remove();
 }

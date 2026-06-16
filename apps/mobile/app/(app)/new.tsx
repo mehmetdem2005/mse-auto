@@ -3,7 +3,7 @@ import { Btn, Card } from "@/components/ui";
 import { GradientHero, PrimaryButton } from "@/components/ui";
 import { type AlarmChannel, DEFAULT_ALARM_CONFIG } from "@/lib/alarm-config";
 import { ALARM_CATEGORIES, ALARM_SOUNDS } from "@/lib/alarm-sounds";
-import { type AssistMessage, type AssistReply, api } from "@/lib/api";
+import { type AssistMessage, type AssistReply, type ChannelKind, api } from "@/lib/api";
 import { setCachedEntitlements } from "@/lib/entitlements-cache";
 import { haptic } from "@/lib/haptics";
 import { qk } from "@/lib/query";
@@ -14,12 +14,19 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
+  Bell,
+  BellRing,
+  CheckCheck,
   CheckCircle2,
   ClipboardList,
   FileMusic,
   Globe,
   Landmark,
+  Link2,
   ListChecks,
+  type LucideIcon,
+  Mail,
+  MessageCircle,
   Newspaper,
   Pause,
   Play,
@@ -33,7 +40,7 @@ import {
   Sparkles,
   Users2,
 } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -166,12 +173,6 @@ function FreqSlider({
   );
 }
 
-const ALERT_LABEL: Record<AlarmChannel, string> = {
-  silent: "wizard.alertSilent",
-  notify: "wizard.alertNotify",
-  alarm: "wizard.alertAlarm",
-};
-
 const chip = (active: boolean): string =>
   `px-3 py-2 rounded-lg border ${active ? "border-accent bg-accent/10" : "border-line"}`;
 
@@ -289,6 +290,80 @@ function DetailsCard({ details }: { details: { label: string; value: string }[] 
   );
 }
 
+/**
+ * ADR-162: kanal aç/kapa satırı — ikon + başlık (+ rozet) + açıklama + Switch. Telefon kanalları
+ * (Bildirim/Alarm) cihaz-yerel watch-başına; ek kanallar (Telegram/E-posta/WhatsApp) hesap düzeyi.
+ * design-standards (token, 8pt, ≥44pt dokunma) + web-design (lucide ikon) + WCAG (switch rol+label).
+ */
+function ChannelRow({
+  Icon,
+  title,
+  desc,
+  value,
+  onChange,
+  disabled,
+  badge,
+  footer,
+}: {
+  Icon: LucideIcon;
+  title: string;
+  desc: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  badge?: string;
+  footer?: ReactNode;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View className={`px-4 py-3 border-b border-line ${disabled ? "opacity-50" : ""}`}>
+      <View className="flex-row items-center gap-3 min-h-[44px]">
+        <View className="w-9 h-9 rounded-xl bg-accent/10 items-center justify-center shrink-0">
+          <Icon size={18} color={colors.accent} />
+        </View>
+        <View className="flex-1 min-w-0">
+          <View className="flex-row items-center gap-2">
+            <Text className="text-text text-sm font-semibold">{title}</Text>
+            {badge ? (
+              <Text className="text-muted2 text-[9px] uppercase tracking-wider border border-line rounded px-1 py-0.5">
+                {badge}
+              </Text>
+            ) : null}
+          </View>
+          <Text className="text-muted text-[11px] mt-0.5" numberOfLines={2}>
+            {desc}
+          </Text>
+        </View>
+        <Switch
+          value={value}
+          onValueChange={onChange}
+          disabled={disabled}
+          trackColor={{ false: colors.line, true: colors.accent }}
+          thumbColor="#FFFFFF"
+          accessibilityLabel={title}
+        />
+      </View>
+      {footer}
+    </View>
+  );
+}
+
+/** Bağlı olmayan ek kanal seçilince "Bağla" ipucu — /channels'e götürür (ADR-162). */
+function ConnectHint({ onPress, label }: { onPress: () => void; label: string }) {
+  const { colors } = useTheme();
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className="flex-row items-center gap-1.5 mt-2 ml-12 min-h-[36px]"
+    >
+      <Link2 size={13} color={colors.accent} />
+      <Text className="text-accent text-[11px] font-semibold">{label}</Text>
+    </Pressable>
+  );
+}
+
 export default function NewWatcher() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
@@ -337,6 +412,69 @@ export default function NewWatcher() {
   const { data: sub } = useQuery({ queryKey: qk.subscription, queryFn: api.subscription });
   const canAlarm = sub?.entitlements.alarmChannel ?? false;
   const canAllSounds = sub?.entitlements.allSounds ?? false;
+
+  // ADR-162: ek (relay) kanallar HESAP düzeyidir (ADR-084) — watcher oluştururken seçim hesap
+  // tercihine yazılır. appConfig "etkin kullanılabilirlik"i (admin açtı + sunucuda kimlik var)
+  // verir → dürüstçe "yakında/kapalı" gösterilir (ADR-152).
+  const { data: acctChannels } = useQuery({ queryKey: qk.channels, queryFn: api.channels });
+  const { data: appCfg } = useQuery({ queryKey: ["appConfig"], queryFn: api.appConfig });
+  const RELAYS: ChannelKind[] = ["telegram", "email", "whatsapp"];
+  const [relaySel, setRelaySel] = useState<Set<ChannelKind>>(new Set());
+  const [relayInit, setRelayInit] = useState(false);
+  useEffect(() => {
+    if (acctChannels && !relayInit) {
+      setRelaySel(new Set(acctChannels.enabled));
+      setRelayInit(true);
+    }
+  }, [acctChannels, relayInit]);
+
+  // Telefon kanalları (cihaz-yerel, watch-başına) 3-durum enum'undan türetilir: alarm bildirimi
+  // İÇERİR → "Bildirim" kapanırsa "Alarm" da kapanır (silent); "Alarm" açılırsa "Bildirim" zorunlu.
+  const pushOn = alarmChannel !== "silent";
+  const alarmOn = alarmChannel === "alarm";
+  const onPush = (v: boolean): void =>
+    setAlarmChannel(v ? (alarmOn ? "alarm" : "notify") : "silent");
+  const onAlarm = (v: boolean): void => {
+    if (!canAlarm) return;
+    setAlarmChannel(v ? "alarm" : "notify");
+  };
+  const onRelay = (k: ChannelKind, v: boolean): void =>
+    setRelaySel((prev) => {
+      const next = new Set(prev);
+      if (v) next.add(k);
+      else next.delete(k);
+      return next;
+    });
+  const relayAvailable = (k: ChannelKind): boolean => (appCfg ? appCfg.channels[k] : true);
+  const relayConnected = (k: ChannelKind): boolean =>
+    k === "telegram"
+      ? !!acctChannels?.telegramChatId
+      : k === "email"
+        ? !!acctChannels?.email
+        : !!acctChannels?.whatsappTo;
+  const relayDesc = (k: ChannelKind, base: string): string => {
+    if (appCfg && !appCfg.channelsConfigured[k]) return t("channels.notReady");
+    if (appCfg && !appCfg.channels[k]) return t("channels.disabledByAdmin");
+    return base;
+  };
+  const availableRelays = RELAYS.filter((k) => relayAvailable(k));
+  const allChannelsOn =
+    pushOn && (canAlarm ? alarmOn : true) && availableRelays.every((k) => relaySel.has(k));
+  const toggleAllChannels = (v: boolean): void => {
+    setAlarmChannel(v ? (canAlarm ? "alarm" : "notify") : "silent");
+    setRelaySel(v ? new Set(availableRelays) : new Set());
+  };
+  const channelSummary = (): string => {
+    const parts: string[] = [
+      alarmChannel === "alarm"
+        ? t("wizard.chAlarm")
+        : alarmChannel === "notify"
+          ? t("wizard.chPush")
+          : t("wizard.alertSilent"),
+    ];
+    for (const k of RELAYS) if (relaySel.has(k)) parts.push(t(`channels.${k}`));
+    return parts.join(" · ");
+  };
   useEffect(() => {
     if (!sub) return;
     void setCachedEntitlements({
@@ -416,6 +554,21 @@ export default function NewWatcher() {
       haptic.success();
       preview.stop();
       await persistSound(watch.id, alarmChannel, soundId, customSound);
+      // ADR-162: seçili ek kanalları HESAP tercihine yaz (değiştiyse). Hedefi olmayan kanal
+      // sunucuda sessiz kalır (resolveTargets) → zararsız; kullanıcı /channels'ten bağlar.
+      if (acctChannels) {
+        const desired = RELAYS.filter((k) => relaySel.has(k));
+        const cur = acctChannels.enabled;
+        const changed = desired.length !== cur.length || desired.some((k) => !cur.includes(k));
+        if (changed) {
+          await api
+            .setChannels({ ...acctChannels, enabled: desired })
+            .then(() => qc.invalidateQueries({ queryKey: qk.channels }))
+            .catch(() => {
+              /* kanal kaydı başarısızsa watcher yine oluştu — sessiz geç */
+            });
+        }
+      }
       await qc.invalidateQueries({ queryKey: qk.watchers });
       await qc.invalidateQueries({ queryKey: qk.subscription });
       router.replace("/");
@@ -773,44 +926,95 @@ export default function NewWatcher() {
         {/* 4) Uyarı şekli */}
         {current.key === "alert" ? (
           <>
-            <View className="flex-row flex-wrap gap-2 mb-2">
-              {(["silent", "notify", "alarm"] as const).map((v) => {
-                const locked = v === "alarm" && !canAlarm;
-                let txt = "text-muted text-sm";
-                if (locked) txt = "text-muted text-sm opacity-50";
-                else if (alarmChannel === v) txt = "text-accent text-sm";
-                return (
-                  <Pressable
-                    key={v}
-                    disabled={locked}
-                    onPress={locked ? undefined : () => setAlarmChannel(v)}
-                    className={chip(alarmChannel === v)}
-                    accessibilityRole="button"
-                  >
-                    <Text className={txt}>
-                      {locked ? `${t(ALERT_LABEL[v])} (Pro)` : t(ALERT_LABEL[v])}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <Text className="text-muted text-sm mb-3">{t("wizard.channelsHint")}</Text>
+            <View className="border border-line rounded-2xl overflow-hidden">
+              {/* Hepsini seç — mevcut (kilitli olmayan + sunucuda hazır) tüm kanalları açar/kapar. */}
+              <View className="flex-row items-center justify-between px-4 py-3 bg-panel border-b border-line min-h-[44px]">
+                <View className="flex-row items-center gap-2">
+                  <CheckCheck size={16} color={colors.accent} />
+                  <Text className="text-text text-sm font-semibold">{t("wizard.selectAll")}</Text>
+                </View>
+                <Switch
+                  value={allChannelsOn}
+                  onValueChange={toggleAllChannels}
+                  trackColor={{ false: colors.line, true: colors.accent }}
+                  thumbColor="#FFFFFF"
+                  accessibilityLabel={t("wizard.selectAll")}
+                />
+              </View>
+              {/* Telefon kanalları (cihaz-yerel, bu watcher'a özel) */}
+              <ChannelRow
+                Icon={Bell}
+                title={t("wizard.chPush")}
+                desc={t("wizard.chPushD")}
+                value={pushOn}
+                onChange={onPush}
+              />
+              <ChannelRow
+                Icon={BellRing}
+                title={canAlarm ? t("wizard.chAlarm") : `${t("wizard.chAlarm")} (Pro)`}
+                desc={t("wizard.chAlarmD")}
+                value={alarmOn}
+                onChange={onAlarm}
+                disabled={!canAlarm}
+              />
+              {/* Ek kanallar (hesap düzeyi) — Telegram · E-posta · WhatsApp */}
+              <ChannelRow
+                Icon={Send}
+                title={t("channels.telegram")}
+                desc={relayDesc("telegram", t("wizard.chTelegramD"))}
+                badge={t("wizard.relayBadge")}
+                value={relaySel.has("telegram")}
+                onChange={(v) => onRelay("telegram", v)}
+                disabled={!relayAvailable("telegram")}
+                footer={
+                  relaySel.has("telegram") && !relayConnected("telegram") ? (
+                    <ConnectHint
+                      onPress={() => router.push("/channels")}
+                      label={t("wizard.connectChannel")}
+                    />
+                  ) : null
+                }
+              />
+              <ChannelRow
+                Icon={Mail}
+                title={t("channels.email")}
+                desc={relayDesc("email", t("wizard.chEmailD"))}
+                badge={t("wizard.relayBadge")}
+                value={relaySel.has("email")}
+                onChange={(v) => onRelay("email", v)}
+                disabled={!relayAvailable("email")}
+                footer={
+                  relaySel.has("email") && !relayConnected("email") ? (
+                    <ConnectHint
+                      onPress={() => router.push("/channels")}
+                      label={t("wizard.connectChannel")}
+                    />
+                  ) : null
+                }
+              />
+              <ChannelRow
+                Icon={MessageCircle}
+                title={t("channels.whatsapp")}
+                desc={relayDesc("whatsapp", t("wizard.chWhatsappD"))}
+                badge={t("wizard.relayBadge")}
+                value={relaySel.has("whatsapp")}
+                onChange={(v) => onRelay("whatsapp", v)}
+                disabled={!relayAvailable("whatsapp")}
+                footer={
+                  relaySel.has("whatsapp") && !relayConnected("whatsapp") ? (
+                    <ConnectHint
+                      onPress={() => router.push("/channels")}
+                      label={t("wizard.connectChannel")}
+                    />
+                  ) : null
+                }
+              />
             </View>
             {!canAlarm ? (
-              <Text className="text-muted text-[11px] mb-3">{t("wizard.alarmPro")}</Text>
+              <Text className="text-muted text-[11px] mt-2">{t("wizard.alarmPro")}</Text>
             ) : null}
-            {/* Maket: ek bildirim yöntemleri — entegrasyon hazır olana dek 'yakında' */}
-            <View className="mt-3 border border-line rounded-xl overflow-hidden">
-              {(["email", "whatsapp", "telegram"] as const).map((ch) => (
-                <View
-                  key={ch}
-                  className="flex-row items-center justify-between px-4 py-3 border-b border-line opacity-50"
-                >
-                  <Text className="text-text text-sm">{t(`channels.${ch}`)}</Text>
-                  <Text className="text-muted text-overline font-semibold uppercase">
-                    {t("common.soon")}
-                  </Text>
-                </View>
-              ))}
-            </View>
+            <Text className="text-muted text-[11px] mt-2 leading-4">{t("wizard.relayNote")}</Text>
             {alarmChannel === "alarm" ? (
               <View className="mt-1">
                 <View className="flex-row flex-wrap gap-2 mb-2">
@@ -951,7 +1155,7 @@ export default function NewWatcher() {
               }
             />
             <ReviewRow label={t("wizard.rFreq")} value={labelFreq(freq)} />
-            <ReviewRow label={t("wizard.rAlert")} value={t(ALERT_LABEL[alarmChannel])} last />
+            <ReviewRow label={t("wizard.rChannels")} value={channelSummary()} last />
             <Text className="text-muted text-[11px] mt-4">{t("wizard.rNote")}</Text>
           </Card>
         ) : null}
