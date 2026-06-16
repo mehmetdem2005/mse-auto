@@ -44,6 +44,13 @@ export function buildServiceHealth(env: Env): { name: string; ok: boolean }[] {
       name: "Bildirim (FCM)",
       ok: !!(env.FCM_PROJECT_ID && env.GOOGLE_SERVICE_ACCOUNT_JSON),
     },
+    // Ek bildirim kanalları (ADR-154) — diğer servisler gibi gerçek-config sağlığı (kimlik bilgisi var mı).
+    { name: "E-posta (Resend)", ok: !!(env.RESEND_API_KEY && env.RESEND_FROM) },
+    { name: "Telegram", ok: !!env.TELEGRAM_BOT_TOKEN },
+    {
+      name: "WhatsApp",
+      ok: !!(env.WHATSAPP_ACCESS_TOKEN && env.WHATSAPP_PHONE_NUMBER_ID),
+    },
     { name: "Ödeme (Stripe)", ok: !!env.STRIPE_SECRET_KEY },
   ];
 }
